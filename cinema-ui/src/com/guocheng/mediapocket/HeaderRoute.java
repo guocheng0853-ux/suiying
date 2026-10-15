@@ -9,16 +9,20 @@ import java.io.*;import java.net.*;import java.nio.charset.StandardCharsets;impo
 public final class HeaderRoute {
  static final int PLAYLIST_LIMIT=8*1024*1024;
  static volatile Server server;
+ /** 多线程加速开关（设置页同步；默认开）。 */
+ public static volatile boolean accelerate=true;
+ static boolean isLoopback(String host){if(host==null)return true;String h=host.toLowerCase(Locale.ROOT);return h.equals("localhost")||h.startsWith("127.")||h.equals("[::1]")||h.equals("::1")||h.equals("0.0.0.0");}
  private HeaderRoute(){}
 
  /** 由主 DEX 的 VlcPlayback.setSource 调用；任何异常都退回原地址，绝不阻断原播放流程。 */
  public static String url(String url,Map<String,String> headers){
   try{
-   if(url==null||headers==null||headers.isEmpty()||isProxied(url))return url;
-   String scheme=URI.create(url.trim()).getScheme();
+   if(url==null||isProxied(url))return url;
+   URI uri=URI.create(url.trim());String scheme=uri.getScheme();
    if(scheme==null||!(scheme.equalsIgnoreCase("http")||scheme.equalsIgnoreCase("https")))return url;
-   Map<String,String> all=canonical(headers);
-   if(!needsProxy(all))return url;
+   Map<String,String> all=canonical(headers==null?new HashMap<>():headers);
+   // 本机地址（影视仓组件自带的代理等）不再套一层；开启多线程加速时其余 HTTP(S) 都经代理，由代理判断是否分段并行
+   if(!needsProxy(all)&&(!accelerate||isLoopback(uri.getHost())))return url;
    return start().wrap(url.trim(),all);
   }catch(Throwable t){return url;}
  }
@@ -76,42 +80,58 @@ public final class HeaderRoute {
     if(parts.length<4||!MessageDigestEq.equal(parts[1],token)){status(out,403,"text/plain","forbidden");return;}
     Map<String,String> headers=headerSets.get(parts[2]);if(headers==null){status(out,410,"text/plain","expired");return;}
     String target=new String(Base64Url.decode(parts[3]),StandardCharsets.UTF_8);
-    relay(target,headers,clientHeaders.get("range"),req[0].equals("HEAD"),out);
+    relay(target,headers,clientHeaders,req[0].equals("HEAD"),out);
    }catch(Exception ignored){}
   }
-  void relay(String target,Map<String,String> headers,String range,boolean head,OutputStream out)throws IOException{
-   HttpURLConnection conn=null;String current=target;
+  /** 打开上游连接（手动跟随最多 6 次跳转，以便跨协议跳转也带上请求头）。 */
+  static HttpURLConnection open(String target,Map<String,String> headers,String range,boolean head)throws IOException{
+   String current=target;
    for(int hop=0;hop<6;hop++){
-    URL u=new URL(current);if(!(u.getProtocol().equals("http")||u.getProtocol().equals("https"))){status(out,502,"text/plain","bad scheme");return;}
-    conn=(HttpURLConnection)u.openConnection();conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(15000);conn.setReadTimeout(30000);conn.setRequestMethod(head?"HEAD":"GET");
+    URL u=new URL(current);if(!(u.getProtocol().equals("http")||u.getProtocol().equals("https")))throw new IOException("bad scheme");
+    HttpURLConnection conn=(HttpURLConnection)u.openConnection();conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(15000);conn.setReadTimeout(30000);conn.setRequestMethod(head?"HEAD":"GET");
     if(!headers.containsKey("User-Agent"))conn.setRequestProperty("User-Agent","Mozilla/5.0");
     for(Map.Entry<String,String> e:headers.entrySet())conn.setRequestProperty(e.getKey(),e.getValue());
     if(range!=null&&range.matches("bytes=[0-9]*-[0-9]*"))conn.setRequestProperty("Range",range);
     conn.setRequestProperty("Accept-Encoding","identity");
     int code=conn.getResponseCode();
     if(code>=300&&code<400&&conn.getHeaderField("Location")!=null){current=new URL(u,conn.getHeaderField("Location")).toString();conn.disconnect();continue;}
-    break;
+    return conn;
    }
-   if(conn==null){status(out,502,"text/plain","no response");return;}
+   throw new IOException("too many redirects");
+  }
+  void relay(String target,Map<String,String> lineHeaders,Map<String,String> client,boolean head,OutputStream out)throws IOException{
+   // 线路没声明 UA/Referer 时沿用播放器自己发来的，保持与直连时一致
+   Map<String,String> headers=new LinkedHashMap<>(lineHeaders);
+   if(!headers.containsKey("User-Agent")&&client.get("user-agent")!=null)headers.put("User-Agent",client.get("user-agent"));
+   if(!headers.containsKey("Referer")&&client.get("referer")!=null)headers.put("Referer",client.get("referer"));
+   String range=client.get("range");
+   HttpURLConnection conn;
+   try{conn=open(target,headers,range,head);}catch(IOException e){status(out,502,"text/plain","upstream: "+e.getClass().getSimpleName());return;}
+   boolean reusable=false;
    try{
     int code=conn.getResponseCode();
-    if(code>=300&&code<400){status(out,502,"text/plain","too many redirects");return;}
     InputStream body=code>=400?conn.getErrorStream():conn.getInputStream();if(body==null)body=new ByteArrayInputStream(new byte[0]);
     PushbackInputStream peek=new PushbackInputStream(body,16);byte[] first=new byte[16];int n=0;
     if(!head&&code<300){while(n<first.length){int r=peek.read(first,n,first.length-n);if(r<0)break;n+=r;}if(n>0)peek.unread(first,0,n);}
     String type=conn.getContentType();
     if(code<300&&(Sniff.isPlaylist(first,n)||(head&&type!=null&&type.toLowerCase(Locale.ROOT).contains("mpegurl")))){
      if(head){header(out,200,"application/vnd.apple.mpegurl",-1,null);out.flush();return;}
-     byte[] text=readAll(peek,PLAYLIST_LIMIT);byte[] rewritten=rewrite(new String(text,StandardCharsets.UTF_8),conn.getURL().toString(),headers).getBytes(StandardCharsets.UTF_8);
+     byte[] text=readAll(peek,PLAYLIST_LIMIT);peek.close();reusable=true;
+     byte[] rewritten=rewrite(new String(text,StandardCharsets.UTF_8),conn.getURL().toString(),lineHeaders).getBytes(StandardCharsets.UTF_8);
      header(out,200,"application/vnd.apple.mpegurl",rewritten.length,null);out.write(rewritten);out.flush();return;
     }
     LinkedHashMap<String,String> extra=new LinkedHashMap<>();
     for(String k:new String[]{"Content-Range","Accept-Ranges","Last-Modified","ETag"}){String v=conn.getHeaderField(k);if(v!=null)extra.put(k,v);}
     long length=conn.getContentLengthLong();
+    long[] span=RangeAccelerator.span(code,length,conn.getHeaderField("Content-Range"),conn.getHeaderField("Accept-Ranges"));
     header(out,code,type==null?"application/octet-stream":type,length,extra);
-    if(!head){byte[] buf=new byte[65536];int r;while((r=peek.read(buf))!=-1)out.write(buf,0,r);}
-    out.flush();
-   }finally{conn.disconnect();}
+    if(head){out.flush();reusable=true;return;}
+    if(accelerate&&span!=null&&span[1]-span[0]+1>=RangeAccelerator.MIN_BYTES){
+     RangeAccelerator.stream(conn,peek,conn.getURL().toString(),headers,span[0],span[1],out);return;
+    }
+    byte[] buf=new byte[65536];int r;while((r=peek.read(buf))!=-1)out.write(buf,0,r);
+    out.flush();peek.close();reusable=true;
+   }finally{if(!reusable)conn.disconnect();}// 完整读完的连接交回连接池复用（HLS 分片免重复握手）
   }
   static final Pattern URI_ATTR=Pattern.compile("URI=\"([^\"]+)\"");
   String rewrite(String playlist,String base,Map<String,String> headers){

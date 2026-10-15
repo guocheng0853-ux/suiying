@@ -2,7 +2,8 @@ package com.guocheng.mediapocket;
 import com.sun.net.httpserver.*;import org.json.*;import java.net.*;import java.util.concurrent.*;
 public class StremioStreamsTest {
  static void check(boolean b,String name){if(!b)throw new AssertionError(name);}
- public static void main(String[] args)throws Exception{
+ public static void main(String[] args)throws Exception{try{run();}catch(Throwable e){e.printStackTrace();System.exit(1);}}
+ static void run()throws Exception{
   HttpServer s=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
   s.createContext("/ok/stream/movie/tt1.json",ex->{check("MediaPocket/0.1".equals(ex.getRequestHeaders().getFirst("User-Agent")),"original UA kept");byte[] b="{\"streams\":[{\"name\":\"A\",\"url\":\"https://x/a.mp4\"},{\"name\":\"B\",\"infoHash\":\"abc\"},{\"name\":\"C\",\"ytId\":\"q\"}]}".getBytes();ex.sendResponseHeaders(200,b.length);ex.getResponseBody().write(b);ex.close();});
   s.createContext("/slow/stream/movie/tt1.json",ex->{try{Thread.sleep(6000);}catch(Exception e){}ex.close();});

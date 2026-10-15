@@ -13,8 +13,10 @@ public class HeaderRouteTest {
  static final Set<String> seenPaths=ConcurrentHashMap.newKeySet();
  static String run(String... cmd)throws Exception{Process p=new ProcessBuilder(cmd).redirectErrorStream(true).start();String out=new String(p.getInputStream().readAllBytes());if(!p.waitFor(180,TimeUnit.SECONDS)){p.destroyForcibly();throw new AssertionError("timeout "+String.join(" ",cmd));}return p.exitValue()+"\n"+out;}
  static int frames(String out){int n=-1;java.util.regex.Matcher m=java.util.regex.Pattern.compile("frame=\\s*(\\d+)").matcher(out);while(m.find())n=Integer.parseInt(m.group(1));return n;}
- public static void main(String[] args)throws Exception{
-  System.setProperty("sun.net.http.allowRestrictedHeaders","true");// JDK 默认丢弃 Origin；Android 的 HttpURLConnection 不限制
+ public static void main(String[] args)throws Exception{try{run();}catch(Throwable e){e.printStackTrace();System.exit(1);}}
+ static void run()throws Exception{
+  System.setProperty("sun.net.http.allowRestrictedHeaders","true");HeaderRoute.accelerate=false;// 本测试只验证请求头补齐；加速见 RangeAcceleratorTest
+// JDK 默认丢弃 Origin；Android 的 HttpURLConnection 不限制
   Path dir=Files.createTempDirectory("hroute");Path v=dir.resolve("v");Files.createDirectories(v);
   // AES-128 key + keyinfo（key URI 为相对路径，用来验证 #EXT-X-KEY URI 改写）
   byte[] key=new byte[16];new Random(7).nextBytes(key);Files.write(v.resolve("k.bin"),key);

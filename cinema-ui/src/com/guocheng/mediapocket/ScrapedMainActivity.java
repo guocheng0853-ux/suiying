@@ -9,7 +9,7 @@ public final class ScrapedMainActivity extends MainActivity {
  JSONArray heroes=new JSONArray();String heroType="series";final Handler carousel=new Handler(Looper.getMainLooper());
  final String[] tabs={"首页","发现","收藏","插件","设置"};
  @Override public void onCreate(Bundle saved){
-  android.content.SharedPreferences p=getSharedPreferences("data",0);appearance=p.getString("cinemaAppearance","dark");
+  android.content.SharedPreferences p=getSharedPreferences("data",0);appearance=p.getString("cinemaAppearance","dark");HeaderRoute.accelerate=p.getBoolean("accelerate.v1",true);
   light=appearance.equals("light")||(appearance.equals("system")&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)!=Configuration.UI_MODE_NIGHT_YES);
   p.edit().putString("themeMode",light?"light":"dark").apply();
   getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);UiImages.configure(getCacheDir());
@@ -108,6 +108,7 @@ public final class ScrapedMainActivity extends MainActivity {
  }
  void bindHero(JSONObject m){heroImage.setImageDrawable(null);TvPosterImages.load(this,heroImage,m.optString("background",m.optString("poster")),getResources().getDisplayMetrics().widthPixels);String logo=m.optString("logo");heroLogo.setImageDrawable(null);heroLogo.setVisibility(logo.isEmpty()?View.GONE:View.VISIBLE);heroTitle.setVisibility(View.VISIBLE);heroTitle.setTextSize(logo.isEmpty()?29:17);if(!logo.isEmpty())TvPosterImages.load(this,heroLogo,logo,dp(320));heroTitle.setText(m.optString("name","影片"));String score=m.optString("imdbRating");heroFacts.setText((m.has("fusion.site")?"影视仓 · "+m.optString("fusion.source")+"   ":"")+(score.isEmpty()?"":"★ "+score+"   ")+m.optString("releaseInfo")+"   "+m.optString("runtime"));heroDescription.setText(m.optString("description","点开影片，查看简介、演员与选集"));}
  /** 0.1.46：Stremio 选源改为按插件分组的弹窗，留在详情页；选中后仍走原 play()（原播放器与换源队列）。 */
+ String accelLabel(){return "多线程加速："+(prefs.getBoolean("accelerate.v1",true)?"开（网盘等大文件 4 连接分段下载）":"关");}
  @Override void streams(String id,String type,JSONObject meta){new StremioSourceDialog(this,addons,id,type,meta,(stream,all)->{if(isFinishing())return;currentSources=all;sourceEpisode=id;play(stream,id,type,meta);},()->addDialog(""));}
  @Override void renderDetail(JSONObject meta,String id,String type){
   homeCanvas=false;carousel.removeCallbacks(tick);prefs.edit().putString("cinema.meta."+type+"."+id,meta.toString()).apply();super.renderDetail(meta,id,type);updateInsets();
@@ -118,6 +119,7 @@ public final class ScrapedMainActivity extends MainActivity {
   for(int i=body.getChildCount()-1;i>=0;i--){View v=body.getChildAt(i);if(v instanceof TextView){String label=((TextView)v).getText().toString();if(label.equals("管理插件")||label.equals("最近观看")||label.startsWith("播放时点击画面"))body.removeViewAt(i);}}
   body.addView(button("外观："+(light?"日间":"深青色"),()->new AlertDialog.Builder(this).setTitle("影院外观").setSingleChoiceItems(new String[]{"深青色影院","日间模式","跟随系统"},appearance.equals("dark")?0:appearance.equals("light")?1:2,(d,i)->{prefs.edit().putString("cinemaAppearance",new String[]{"dark","light","system"}[i]).apply();d.dismiss();recreate();}).show()));
   body.addView(button("清理封面缓存 · "+(UiImages.diskSize()+TvPosterImages.diskSize(this))/1024/1024+" MB",()->clearPosterCache()));
+  Button[] accel=new Button[1];accel[0]=button(accelLabel(),()->{boolean on=!prefs.getBoolean("accelerate.v1",true);prefs.edit().putBoolean("accelerate.v1",on).apply();HeaderRoute.accelerate=on;accel[0].setText(accelLabel());Toast.makeText(this,on?"多线程加速已开启，下次开播生效":"多线程加速已关闭，下次开播生效",Toast.LENGTH_SHORT).show();});body.addView(accel[0]);
   body.addView(button("故障排查",()->new AlertDialog.Builder(this).setTitle("故障排查").setItems(new String[]{"封面加载状态","字幕查询记录","影视仓自定义接口","播放地址检查记录"},(d,n)->{if(n==3){new AlertDialog.Builder(this).setTitle("播放地址检查").setMessage(PlaybackCheck.report(this)).setPositiveButton("确定",null).show();return;}if(n==0)new AlertDialog.Builder(this).setTitle("封面加载").setMessage(TvPosterImages.diagnostic()).setPositiveButton("确定",null).show();else if(n==1)new AlertDialog.Builder(this).setTitle("字幕查询").setMessage(prefs.getString("subtitleReport","尚无字幕查询记录，请先在播放器里搜索字幕。")).setPositiveButton("确定",null).show();else startActivity(new Intent(this,TvBoxActivity.class));}).show()));
  }
  void clearPosterCache(){new AlertDialog.Builder(this).setTitle("清理封面缓存？").setNegativeButton("取消",null).setPositiveButton("清理",(d,w)->job(()->{UiImages.clearDisk();TvPosterImages.clearDisk(this);runOnUiThread(()->notice("缓存已清理"));})).show();}

@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json
 root=Path(__file__).resolve().parent
-apk=root.parent/'deliverables/MediaPocket-0.1.46-source-check-arm64.apk'
+apk=root.parent/'deliverables/MediaPocket-0.1.47-accelerate-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]
@@ -28,7 +28,7 @@ with zipfile.ZipFile(apk) as z:
    classes,methods=dex(z.read(n));assert not seen.intersection(classes),'Duplicate Android class definitions';seen.update(classes);refs.extend(methods);count+=1
  assert 'lib/arm64-v8a/libquickjs-android-wrapper.so' in z.namelist()
  for n in ['assets/public-home-sources.json','assets/fusion-default.json','assets/js/lib/host-compat.js','assets/js/lib/cheerio.min.js','assets/Fusion-runtime-license.txt']:assert n in z.namelist(),n
- for c in ['SourcePickerDialog','HomeSources','CmsApi','ScrapedMainActivity','FusionCatalog','FusionLibraryActivity','TvSpiderRuntime','ClawConnectionProbe','SourceSubtitleLoader','FusionPlaybackSources','SubtitleTextRules','SubtitleHttp','PlaybackSitePicker','SourceSearchClient','SourceSearchRules','FullscreenMode','FullscreenRules','HeaderRoute','LinkProbe','PlaybackCheck','StremioSourceDialog','StremioStreams','TvBoxPlay','WebSniffer','SniffRules']:assert 'Lcom/guocheng/mediapocket/'+c+';' in seen
+ for c in ['SourcePickerDialog','HomeSources','CmsApi','ScrapedMainActivity','FusionCatalog','FusionLibraryActivity','TvSpiderRuntime','ClawConnectionProbe','SourceSubtitleLoader','FusionPlaybackSources','SubtitleTextRules','SubtitleHttp','PlaybackSitePicker','SourceSearchClient','SourceSearchRules','FullscreenMode','FullscreenRules','HeaderRoute','LinkProbe','PlaybackCheck','StremioSourceDialog','StremioStreams','TvBoxPlay','WebSniffer','SniffRules','RangeAccelerator']:assert 'Lcom/guocheng/mediapocket/'+c+';' in seen
  missing=sorted({cls for cls,_,_ in refs if cls.startswith(('Lcom/guocheng/','Lcom/github/catvod/','Lcom/fongmi/','Lcom/whl/')) and cls not in seen})
  assert not missing,missing
 with zipfile.ZipFile(root/'base.apk') as z:
@@ -37,8 +37,8 @@ with zipfile.ZipFile(root/'base.apk') as z:
   if n.startswith('classes') and n.endswith('.dex'):methods+=dex(z.read(n))[1]
  for name,method,proto in [('TvBoxNet','fetch','(Ljava/lang/String;Lorg/json/JSONObject;Ljava/lang/String;)Ljava/lang/String;'),('TvBoxRules','resolve','(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;'),('UiImages','<init>','()V'),('UiImages','load','(Landroid/widget/ImageView;Ljava/lang/String;I)V')]:
   assert ('Lcom/guocheng/mediapocket/'+name+';',method,proto) in methods,(name,method,proto)
-validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':47,'default_home_provider':'stremio','android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
+validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':48,'default_home_provider':'stremio','android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
  'header_route_patch':'VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)',
  'jvm_playback_chain_test':'HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.',
  'real_source_playback_tested':False,'real_source_note':'cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build',
- 'stremio_picker_android_ui_tested':False,'web_sniffer_android_tested':False,'link_probe_android_tested':False});(root/'VALIDATION.json').write_text(json.dumps(validation,indent=2));print('PASS: unique classes, component method ABI, manifest build/version, runtime assets, native module, original code preservation.')
+ 'stremio_picker_android_ui_tested':False,'web_sniffer_android_tested':False,'link_probe_android_tested':False,'range_accelerator':'RangeAcceleratorTest: 2MB/s-per-connection origin, single vs 4-connection proxy ~4x faster, sha256 identical, Range/no-Range correct, ffmpeg decode via accelerator. JVM, not Android.','accelerator_android_tested':False,'probe_budget_ms':4000});(root/'VALIDATION.json').write_text(json.dumps(validation,indent=2));print('PASS: unique classes, component method ABI, manifest build/version, runtime assets, native module, original code preservation.')

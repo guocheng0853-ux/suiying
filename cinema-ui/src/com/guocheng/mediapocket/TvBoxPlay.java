@@ -36,7 +36,7 @@ final class TvBoxPlay {
  }
  static long left(long deadline){return Math.max(1000,deadline-System.currentTimeMillis());}
  static Resolved checked(FusionCatalog.Session s,String flag,String url,JSONObject h,String via,long deadline){
-  LinkProbe.Result check=LinkProbe.probe(url,map(h),(int)Math.min(12000,left(deadline)));
+  LinkProbe.Result check=LinkProbe.probe(url,map(h),(int)Math.min(4000,left(deadline)));
   try{JSONObject stream=new JSONObject().put("url",url).put("name",s.site.optString("name")+(flag==null||flag.isEmpty()?"":" · "+flag)).put("behaviorHints",new JSONObject().put("proxyHeaders",new JSONObject().put("request",h))).put("mediapocket.via",via).put("mediapocket.check",check.summary());return new Resolved(stream,check,via);}catch(JSONException e){throw new RuntimeException(e);}
  }
 }

@@ -75,7 +75,7 @@ final class StremioSourceDialog {
   ProgressDialog wait=ProgressDialog.show(a,"正在检查播放地址",g.name,true,true);int token=generation;
   Thread t=new Thread(()->{
    JSONObject hints=s.optJSONObject("behaviorHints");JSONObject proxy=hints==null?null:hints.optJSONObject("proxyHeaders");JSONObject req=proxy==null?null:proxy.optJSONObject("request");
-   LinkProbe.Result r=LinkProbe.probe(s.optString("url"),req==null?new HashMap<>():TvBoxPlay.map(req),10000);
+   LinkProbe.Result r=LinkProbe.probe(s.optString("url"),req==null?new HashMap<>():TvBoxPlay.map(req),4000);
    a.runOnUiThread(()->{if(!wait.isShowing()||closed||token!=generation)return;wait.dismiss();PlaybackCheck.decide(a,g.name+" · "+s.optString("name").replace('\n',' '),s.optString("url"),"Stremio 直链",r,()->{dialog.dismiss();host.play(s,all);});});
   },"stremio-check");t.setDaemon(true);t.start();
   wait.setOnCancelListener(d->{});
