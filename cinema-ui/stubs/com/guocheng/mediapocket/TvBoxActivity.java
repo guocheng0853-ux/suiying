@@ -1,0 +1,1 @@
+package com.guocheng.mediapocket;public class TvBoxActivity extends android.app.Activity {}

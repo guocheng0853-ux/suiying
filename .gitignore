@@ -1,0 +1,12 @@
+# 签名密钥绝不入库（公开仓库）
+*.jks
+*.keystore
+# 构建工具与产物
+build-tools/
+deliverables/
+cinema-ui/build/
+*.apk
+!cinema-ui/base.apk
+__pycache__/
+# 含个人小雅令牌的真实默认配置：只保留在本地，仓库里是脱敏样例 fusion-default.example.json
+cinema-ui/assets/fusion-default.json

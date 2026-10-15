@@ -1,0 +1,1 @@
+package com.guocheng.mediapocket;public class UiImages {public static void configure(java.io.File f){}public void load(android.widget.ImageView v,String u,int w){}public static long diskSize(){return 0;}public static void clearDisk(){} }

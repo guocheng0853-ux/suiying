@@ -1,0 +1,1 @@
+package com.guocheng.mediapocket;public class NavIcon extends android.graphics.drawable.Drawable {public NavIcon(int a,int b,int c){}public void tint(int c){}public void draw(android.graphics.Canvas c){}public void setAlpha(int a){}public void setColorFilter(android.graphics.ColorFilter f){}public int getOpacity(){return 0;}}

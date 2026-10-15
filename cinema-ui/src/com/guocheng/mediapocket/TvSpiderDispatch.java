@@ -1,0 +1,6 @@
+package com.guocheng.mediapocket;
+import com.github.catvod.crawler.Spider;import java.util.*;
+final class TvSpiderDispatch {
+ static boolean emptySearch(String value){return value==null||value.trim().isEmpty()||value.replaceAll("\\s+", "").equals("{}")||value.matches("(?s).*\"list\"\\s*:\\s*\\[\\s*\\].*");}
+ static String invoke(Spider s,String op,String value,String flag,int page,List<String> vip)throws Exception{if(op.equals("home"))return s.homeContent(true);if(op.equals("category"))return s.categoryContent(value,String.valueOf(page),true,new HashMap<>());if(op.equals("search")){boolean paged=s.getClass().getMethod("searchContent",String.class,boolean.class,String.class).getDeclaringClass()!=Spider.class;String result=null;Exception error=null;try{result=paged?s.searchContent(value,false,String.valueOf(page)):s.searchContent(value,false);}catch(Exception e){error=e;}if(emptySearch(result)){String alternate=paged?s.searchContent(value,false):s.searchContent(value,false,String.valueOf(page));if(alternate!=null&&!alternate.trim().isEmpty())return alternate;if(error!=null)throw error;}return result;}if(op.equals("detail"))return s.detailContent(new ArrayList<>(Collections.singletonList(value)));if(op.equals("player"))return s.playerContent(flag,value,vip);throw new IllegalArgumentException("不支持的站点操作");}
+}

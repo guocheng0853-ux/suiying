@@ -1,0 +1,51 @@
+{
+  "tested_at": "2026-10-15",
+  "environment": "cloud",
+  "android_tested": false,
+  "samples": [
+    {
+      "source": "如意",
+      "title": "归还者的魔法要特别第二季",
+      "android_tested": false,
+      "segment_bytes": 196272,
+      "tracks": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio"
+        }
+      ],
+      "decoded_sample": true,
+      "frames": "21",
+      "error": ""
+    },
+    {
+      "source": "如意",
+      "title": "新网球王子U-17世界杯决赛成员决定战",
+      "android_tested": false,
+      "segment_bytes": 547080,
+      "tracks": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio"
+        }
+      ],
+      "decoded_sample": true,
+      "frames": "21",
+      "error": ""
+    },
+    {
+      "source": "如意",
+      "title": "爱上草莓的季节",
+      "android_tested": false,
+      "error": "URLError: <urlopen error timed out>"
+    }
+  ]
+}

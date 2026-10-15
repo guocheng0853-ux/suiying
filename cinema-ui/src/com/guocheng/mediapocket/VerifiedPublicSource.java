@@ -1,0 +1,9 @@
+package com.guocheng.mediapocket;
+import android.content.*;import org.json.*;import java.io.*;
+final class VerifiedPublicSource {
+ static final String KEY="mp_public_ruyi";
+ static JSONObject bundled(Context c)throws Exception{try(InputStream in=c.getAssets().open("fusion-default.json")){return new JSONObject(new String(CoverFiles.read(in,4*1024*1024),"UTF-8"));}}
+ static JSONObject site()throws Exception{return new JSONObject().put("key",KEY).put("name","如意 · 公开源").put("type",3).put("api",CmsApi.MARKER).put("jar","").put("searchable",1).put("quickSearch",1).put("filterable",0).put("ext",new JSONObject().put("api","https://cj.rycjapi.com/api.php/provide/vod"));}
+ static void seed(Context c){SharedPreferences p=c.getSharedPreferences("data",0);if(p.getBoolean("tvbox.verifiedRuyi.v1",false))return;try{JSONObject b=bundled(c);String defaultUrl=b.getString("base"),active=p.getString("tvbox.active",defaultUrl);SharedPreferences.Editor e=p.edit();JSONObject config=new JSONObject(p.getString("tvbox.config:"+defaultUrl,b.getJSONObject("config").toString()));e.putString("tvbox.config:"+defaultUrl,CmsApi.merge(config,site()).toString());if(!active.equals(defaultUrl)){String raw=p.getString("tvbox.config:"+active,"");if(raw.isEmpty())return;JSONObject current=new JSONObject(raw);e.putString("tvbox.config:"+active,CmsApi.merge(current,site()).toString());}e.putBoolean("tvbox.verifiedRuyi.v1",true).apply();}catch(Exception ignored){}}
+ static void open(Context c){seed(c);try{JSONObject b=bundled(c);String url=c.getSharedPreferences("data",0).getString("tvbox.active",b.getString("base"));Intent in=new Intent(c,FusionLibraryActivity.class);in.putExtra("config",url);in.putExtra("site",KEY);c.startActivity(in);}catch(Exception e){android.widget.Toast.makeText(c,"当前接口尚未读取，请先打开影视仓片库",android.widget.Toast.LENGTH_LONG).show();}}
+}

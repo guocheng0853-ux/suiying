@@ -1,0 +1,6 @@
+package com.guocheng.mediapocket;
+import java.util.*;
+public class SubtitleTextRulesTest {
+ static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
+ public static void main(String[] args)throws Exception{String ass="[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.23,0:00:03.45,Default,,0,0,0,,{\\an8}你好,朋友\\N第二行";ArrayList<SubtitleParser.Cue> cues=SubtitleParser.parse(SubtitleTextRules.timeline(ass));check(cues.size()==1&&cues.get(0).start==1230&&cues.get(0).end==3450,"ASS accurate time conversion");check(cues.get(0).text.equals("你好,朋友\n第二行"),"ASS commas/newlines and override stripping");String srt="1\n00:00:01,000 --> 00:00:02,000\n中文字幕\n\n";check(SubtitleParser.parse(SubtitleTextRules.decode(srt.getBytes("GB18030"))).get(0).text.equals("中文字幕"),"GB18030 Chinese text");check(SubtitleParser.parse(SubtitleTextRules.decode(srt.getBytes("UTF-16"))).size()==1,"UTF16 BOM");check(SubtitleParser.parse(SubtitleTextRules.timeline("<html>Blocked</html>")).isEmpty(),"reject non-subtitle response");System.out.println("PASS: original subtitle parser consumes converted ASS, Chinese GB18030, UTF16; HTML is not accepted as subtitles.");}
+}

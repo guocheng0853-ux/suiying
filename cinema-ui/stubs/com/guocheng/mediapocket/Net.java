@@ -1,0 +1,1 @@
+package com.guocheng.mediapocket;public final class Net{public static org.json.JSONObject json(String url)throws Exception{return null;}public static String esc(String text){return text;}public static byte[] bytes(String url)throws Exception{return null;}}

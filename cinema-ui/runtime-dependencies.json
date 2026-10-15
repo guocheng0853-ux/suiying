@@ -1,0 +1,63 @@
+{
+  "stage": "compile_and_dex_only",
+  "android_runtime_tested": false,
+  "apk_generated": false,
+  "dependencies": [
+    {
+      "file": "annotation-1.2.0.jar",
+      "sha256": "9029262bddce116e6d02be499e4afdba21f24c239087b76b3b57d7e98b490a36"
+    },
+    {
+      "file": "annotations-13.0.jar",
+      "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478"
+    },
+    {
+      "file": "collection-1.1.0.jar",
+      "sha256": "632a0e5407461de774409352940e292a291037724207a787820c77daf7d33b72"
+    },
+    {
+      "file": "failureaccess-1.0.1.jar",
+      "sha256": "a171ee4c734dd2da837e4b16be9df4661afab72a41adaf31eb84dfdaf936ca26"
+    },
+    {
+      "file": "gson-2.10.1.jar",
+      "sha256": "4241c14a7727c34feea6507ec801318a3d4a90f070e4525681079fb94ee4c593"
+    },
+    {
+      "file": "guava-32.1.3-android.jar",
+      "sha256": "20e6ac8902ddf49e7806cc70f3054c8d91accb5eefdc10f3207e80e0a336b263"
+    },
+    {
+      "file": "kotlin-stdlib-2.1.21.jar",
+      "sha256": "263bdc679e1f62012db7b091796279b6d71cf36f4797a98ff1ace05835f201c8"
+    },
+    {
+      "file": "logger-2.2.0-classes.jar",
+      "sha256": "4eda10ce3b29c9fd0cb787bdcbaf2340058a6ce39ff9850b1a322acd58c34e95"
+    },
+    {
+      "file": "logging-interceptor-5.5.0.jar",
+      "sha256": "ef9c93cea95f764a44c140a9f252ecf4f45358ec929f31c911d94f209ac54fab"
+    },
+    {
+      "file": "okhttp-dnsoverhttps-5.5.0.jar",
+      "sha256": "5ed8b1d7329bcda3b4d86c99c88b0a9f68a48ccbb6a7dd94c68ca1cd665db595"
+    },
+    {
+      "file": "okhttp-jvm-5.5.0.jar",
+      "sha256": "234194a04aac54858df0a750d243af7b2e39df5e4eb86e9912043ad33a9f9a52"
+    },
+    {
+      "file": "okio-jvm-3.18.1.jar",
+      "sha256": "b97b640557a650d15411f2be29aef558c4e422a83653cb18ba494311dbed18be"
+    },
+    {
+      "file": "quickjs-android-3.2.3.jar",
+      "sha256": "16600311f3ecd036f565961d2b860a0bc3adf90f2e5d09927132a4f3da0258d9"
+    },
+    {
+      "file": "quickjs-java-3.2.3.jar",
+      "sha256": "2f795c28787ecf77b7081fdc9764ce75dc7f9d39402c56b09161625d3ce97de3"
+    }
+  ]
+}

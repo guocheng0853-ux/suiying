@@ -1,0 +1,1 @@
+package com.guocheng.mediapocket;public final class AddonRegistry{public static org.json.JSONArray forResource(org.json.JSONArray addons,String resource,String type,String id){return null;}}
