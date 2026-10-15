@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json
 root=Path(__file__).resolve().parent
-apk=root.parent/'deliverables/MediaPocket-0.1.49-private-addons-arm64.apk'
+apk=root.parent/'deliverables/MediaPocket-0.1.50-p2p-buffer-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]
@@ -37,7 +37,7 @@ with zipfile.ZipFile(root/'base.apk') as z:
   if n.startswith('classes') and n.endswith('.dex'):methods+=dex(z.read(n))[1]
  for name,method,proto in [('TvBoxNet','fetch','(Ljava/lang/String;Lorg/json/JSONObject;Ljava/lang/String;)Ljava/lang/String;'),('TvBoxRules','resolve','(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;'),('UiImages','<init>','()V'),('UiImages','load','(Landroid/widget/ImageView;Ljava/lang/String;I)V')]:
   assert ('Lcom/guocheng/mediapocket/'+name+';',method,proto) in methods,(name,method,proto)
-validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':50,'default_home_provider':'stremio','android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
+validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':51,'default_home_provider':'stremio','android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
  'header_route_patch':'VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)',
  'jvm_playback_chain_test':'HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.',
  'real_source_playback_tested':False,'real_source_note':'cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build',

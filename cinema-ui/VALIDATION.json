@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.49",
+  "ui_version": "0.1.50",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -17,9 +17,9 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 5838,
+  "unique_classes": 5839,
   "dex_files": 3,
-  "main_version_code": 50,
+  "main_version_code": 51,
   "default_home_provider": "stremio",
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,
@@ -36,5 +36,8 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false
+  "torrent_boost_android_tested": false,
+  "p2p_reader": "0.1.50: verified partial reads across missing piece boundaries, unaligned file offsets, timeout recovery, EOF, cancellation, interruption; JVM PieceReadsTest passed",
+  "piece_deadlines": "Earliest deadline preserved across overlapping requests; four native call sites patched; native scheduling/device playback not tested",
+  "p2p_device_tested": false
 }

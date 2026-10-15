@@ -16,6 +16,15 @@ public final class TorrentBoost {
   "udp://tracker.opentrackr.com:6969/announce","http://tracker.opentrackr.org:1337/announce"};
  public static final int UPLOAD_LIMIT=512*1024;
  private TorrentBoost(){}
+ private static final Map<TorrentHandle,PieceDeadlines> DEADLINES=new WeakHashMap<TorrentHandle,PieceDeadlines>();
+ public static void deadline(TorrentHandle handle,int piece,int delay){
+  synchronized(DEADLINES){
+   PieceDeadlines book=DEADLINES.get(handle);
+   if(book==null){book=new PieceDeadlines();DEADLINES.put(handle,book);}
+   if(book.advance(piece,delay,System.nanoTime()/1000000))handle.setPieceDeadline(piece,delay);
+  }
+ }
+
  public static void tune(SessionManager s){
   if(!enabled||s==null)return;
   try{
