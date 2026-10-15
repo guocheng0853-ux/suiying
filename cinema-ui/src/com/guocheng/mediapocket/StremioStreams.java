@@ -10,7 +10,7 @@ final class StremioStreams {
   try{
    int code=c.getResponseCode();if(code!=200)throw new IOException("服务器返回 HTTP "+code);
    ByteArrayOutputStream out=new ByteArrayOutputStream();try(InputStream in=c.getInputStream()){byte[] b=new byte[16384];int n;while((n=in.read(b))!=-1){out.write(b,0,n);if(out.size()>16*1024*1024)throw new IOException("响应过大");}}
-   JSONArray streams=new JSONObject(out.toString("UTF-8")).optJSONArray("streams");JSONArray result=new JSONArray();
+   JSONObject response=new JSONObject(out.toString("UTF-8"));if(response.has("error"))throw new IOException(response.optString("error","插件查询失败"));JSONArray streams=response.optJSONArray("streams");JSONArray result=new JSONArray();
    for(int i=0;streams!=null&&i<Math.min(100,streams.length());i++){JSONObject s=streams.optJSONObject(i);if(s!=null)result.put(s);}
    return result;
   }catch(IOException e){if(System.currentTimeMillis()-start>=budgetMs-50)throw new SocketTimeoutException("超过 "+budgetMs/1000+" 秒");throw e;}

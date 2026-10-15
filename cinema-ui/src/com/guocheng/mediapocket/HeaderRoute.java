@@ -127,6 +127,7 @@ public final class HeaderRoute {
     header(out,code,type==null?"application/octet-stream":type,length,extra);
     if(head){out.flush();reusable=true;return;}
     if(accelerate&&span!=null&&span[1]-span[0]+1>=RangeAccelerator.MIN_BYTES){
+     String validator=conn.getHeaderField("ETag");if(validator==null||validator.startsWith("W/"))validator=conn.getHeaderField("Last-Modified");if(validator!=null)headers.put("If-Range",validator);
      RangeAccelerator.stream(conn,peek,conn.getURL().toString(),headers,span[0],span[1],out);return;
     }
     byte[] buf=new byte[65536];int r;while((r=peek.read(buf))!=-1)out.write(buf,0,r);

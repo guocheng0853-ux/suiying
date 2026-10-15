@@ -10,6 +10,11 @@ final class TvBoxPlay {
  static JSONObject headers(JSONObject r){JSONObject h=r.optJSONObject("header");if(h==null&&r.opt("header") instanceof String)try{h=new JSONObject(r.optString("header"));}catch(Exception ignored){}return h==null?new JSONObject():h;}
  static Map<String,String> map(JSONObject h){LinkedHashMap<String,String> m=new LinkedHashMap<>();Iterator<String> k=h.keys();while(k.hasNext()){String key=k.next();m.put(key,h.optString(key));}return m;}
  static Resolved resolve(Activity a,FusionCatalog.Session s,String flag,JSONObject r,long budgetMs)throws Exception{
+  Resolved got=resolveInner(a,s,flag,r,budgetMs);
+  StreamSubtitles.attach(got.stream,r,s.url);
+  return got;
+ }
+ static Resolved resolveInner(Activity a,FusionCatalog.Session s,String flag,JSONObject r,long budgetMs)throws Exception{
   long deadline=System.currentTimeMillis()+budgetMs;
   String raw=r.optString("url");if(raw.isEmpty())throw new Exception("线路没有返回播放地址");
   String url=TvBoxRules.resolve(s.url,raw);JSONObject h=headers(r);

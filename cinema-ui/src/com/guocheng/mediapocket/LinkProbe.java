@@ -1,11 +1,13 @@
 package com.guocheng.mediapocket;
 import java.io.*;import java.net.*;import java.nio.charset.StandardCharsets;import java.util.*;
+import java.util.concurrent.*;
 /**
  * 播放前的真实链接检查：带线路声明的全部请求头取首字节，识别视频容器、m3u8、网页、JSON 和 HTTP 错误。
  * m3u8 会继续读取子播放列表与首个分片，所以“目录/详情能打开”和“地址真的给出视频数据”是两件分开记录的事。
  * 只说明地址此刻是否返回了像视频的数据，不代表解码器一定能播放（编码格式、DRM 仍可能失败）。
  */
 public final class LinkProbe {
+ static final ScheduledExecutorService TIMER=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"link-probe-budget");t.setDaemon(true);return t;});
  public static final class Result {
   public final boolean media;      // 读到了可识别的视频/音频数据（含 HLS 首分片）
   public final boolean definitive; // 明确不是视频：HTTP 错误、网页、JSON、空响应
@@ -71,9 +73,12 @@ public final class LinkProbe {
  }
  static Response http(String url,Map<String,String> headers,int limit,int timeoutMs)throws IOException{
   String current=url;
+  long deadline=System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(timeoutMs);
   for(int hop=0;hop<6;hop++){
+   long remaining=TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime());if(remaining<=0)throw new SocketTimeoutException("检查超时");
    URL u=new URL(current);if(!(u.getProtocol().equals("http")||u.getProtocol().equals("https")))throw new IOException("跳转到不支持的协议");
-   HttpURLConnection c=(HttpURLConnection)u.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout(Math.min(timeoutMs,10000));c.setReadTimeout(timeoutMs);
+   HttpURLConnection c=(HttpURLConnection)u.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout((int)Math.min(remaining,10000));c.setReadTimeout((int)Math.max(1,remaining));
+   ScheduledFuture<?> kill=TIMER.schedule(c::disconnect,remaining,TimeUnit.MILLISECONDS);
    if(!headers.containsKey("User-Agent"))c.setRequestProperty("User-Agent","Mozilla/5.0");
    for(Map.Entry<String,String> e:headers.entrySet())c.setRequestProperty(e.getKey(),e.getValue());
    c.setRequestProperty("Accept-Encoding","identity");
@@ -82,9 +87,9 @@ public final class LinkProbe {
     if(code>=300&&code<400&&c.getHeaderField("Location")!=null){current=new URL(u,c.getHeaderField("Location")).toString();continue;}
     InputStream in=code>=400?c.getErrorStream():c.getInputStream();ByteArrayOutputStream b=new ByteArrayOutputStream();
     // 非播放列表只需首 4KB 判断容器；m3u8 需要完整读到 limit 内
-    if(in!=null)try(InputStream s=in){byte[] buf=new byte[8192];int r,cap=limit;while(b.size()<cap&&(r=s.read(buf,0,Math.min(buf.length,cap-b.size())))!=-1){b.write(buf,0,r);if(b.size()>=16&&cap>4096&&!HeaderRoute.Sniff.isPlaylist(b.toByteArray(),16))cap=4096;}}
+    if(in!=null)try(InputStream s=in){byte[] buf=new byte[8192];int r,cap=limit;while(b.size()<cap&&(r=s.read(buf,0,Math.min(buf.length,cap-b.size())))!=-1){if(System.nanoTime()>=deadline||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时或已取消");b.write(buf,0,r);if(b.size()>=16&&cap>4096&&!HeaderRoute.Sniff.isPlaylist(b.toByteArray(),16))cap=4096;}}
     return new Response(code,c.getContentType(),c.getURL().toString(),b.toByteArray());
-   }finally{c.disconnect();}
+   }finally{kill.cancel(false);c.disconnect();}
   }
   throw new IOException("跳转次数过多");
  }

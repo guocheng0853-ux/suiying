@@ -8,10 +8,10 @@ import android.app.Activity;import android.os.Looper;import android.webkit.*;imp
 final class WebSniffer {
  static JSONObject sniff(Activity a,String page,JSONObject headers,long timeoutMs)throws Exception{
   if(Looper.myLooper()==Looper.getMainLooper())throw new IllegalStateException("sniff on UI thread");
-  CountDownLatch done=new CountDownLatch(1);AtomicReference<JSONObject> hit=new AtomicReference<>();AtomicReference<WebView> view=new AtomicReference<>();AtomicReference<String> failure=new AtomicReference<>();
+  CountDownLatch done=new CountDownLatch(1);AtomicReference<JSONObject> hit=new AtomicReference<>();AtomicReference<WebView> view=new AtomicReference<>();AtomicReference<String> failure=new AtomicReference<>();AtomicBoolean cancelled=new AtomicBoolean();
   String ua=headers==null?"":headers.optString("User-Agent",headers.optString("user-agent",""));
   a.runOnUiThread(()->{
-   if(a.isFinishing()||a.isDestroyed()){failure.set("页面已关闭");done.countDown();return;}
+   if(cancelled.get()||a.isFinishing()||a.isDestroyed()){failure.set("页面已关闭");done.countDown();return;}
    try{
     WebView w=new WebView(a);view.set(w);WebSettings s=w.getSettings();
     s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setMediaPlaybackRequiresUserGesture(false);s.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);s.setAllowFileAccess(false);s.setAllowContentAccess(false);
@@ -38,8 +38,9 @@ final class WebSniffer {
     w.loadUrl(page,extra);
    }catch(Throwable t){failure.set("WebView 不可用："+t.getClass().getSimpleName());done.countDown();}
   });
-  boolean finished=done.await(timeoutMs,TimeUnit.MILLISECONDS);
-  a.runOnUiThread(()->{WebView w=view.getAndSet(null);if(w!=null){try{w.stopLoading();w.loadUrl("about:blank");w.destroy();}catch(Throwable ignored){}}});
+  boolean finished;
+  try{finished=done.await(timeoutMs,TimeUnit.MILLISECONDS);}
+  finally{cancelled.set(true);a.runOnUiThread(()->{WebView w=view.getAndSet(null);if(w!=null){try{w.stopLoading();w.loadUrl("about:blank");w.destroy();}catch(Throwable ignored){}}});}
   if(hit.get()!=null)return hit.get();
   if(failure.get()!=null)throw new Exception(failure.get());
   throw new Exception(finished?"网页嗅探失败":"播放页 "+(timeoutMs/1000)+" 秒内没有请求视频地址");

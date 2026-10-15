@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.48",
+  "ui_version": "0.1.49",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -17,9 +17,9 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 5824,
+  "unique_classes": 5838,
   "dex_files": 3,
-  "main_version_code": 49,
+  "main_version_code": 50,
   "default_home_provider": "stremio",
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,

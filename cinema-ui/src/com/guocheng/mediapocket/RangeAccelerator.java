@@ -49,6 +49,9 @@ final class RangeAccelerator {
    boolean ok=false;
    try{
     int code=c.getResponseCode();if(code!=206)throw new IOException("分段请求返回 HTTP "+code);
+    long declared=c.getContentLengthLong();
+    long[] actual=span(code,b-a+1,c.getHeaderField("Content-Range"),null);
+    if((declared>=0&&declared!=b-a+1)||actual==null||actual[0]!=a||actual[1]!=b)throw new IOException("服务器返回了错误的分段区间");
     byte[] data;try(InputStream in=c.getInputStream()){data=readExactly(in,b-a+1);}
     ok=true;return data;
    }catch(IOException e){last=e;}

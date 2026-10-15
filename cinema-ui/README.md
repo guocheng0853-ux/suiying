@@ -1,3 +1,30 @@
+# 随影 0.1.49 播放修复与私用 Stremio 源
+
+- 修复新版 TVBox 播放解析丢失 `subt/subtitles`：保留字幕语言、单独请求头，解析相对地址并去重；直接播放、网页解析及播放器内换源共用。
+- 字幕下载允许站点声明的 Cookie / Authorization；仍拒绝换行和控制字符。
+- 多线程分段核对 Content-Range 与声明长度，拒绝“206 但返回错位置”的数据；支持有效的 chunked 206；上游有 ETag/Last-Modified 时使用 If-Range 防止文件变化后混拼。
+- 地址探测增加总预算断开与读取循环检查，慢速持续响应不再无限拖延。
+- 网页解析在取消/中断时也销毁 WebView，取消后不再创建新的页面。
+
+**EZTV / 海盗湾私用源**：
+- 首次升级自动添加两个可移除的 Stremio stream 插件；从影片详情的播放来源弹窗选择。
+- 只在设备的 127.0.0.1 随机端口监听；标准 `/manifest.json` 与 `/stream/{type}/{id}.json`，随机访问令牌；不发布到任何插件市场，不需要云服务器。
+- EZTV 仅剧集，按 IMDb 查询，最多 10 页、总预算 18 秒，找到同集结果后停止；海盗湾通过 APIBay 按 IMDb 查询。按做种数排序、infoHash 去重。
+- 严格匹配季集，跳过整季包和多集合集，不指定不可靠的文件索引；返回 infoHash 交给应用现有 P2P 队列与播放器。
+- 重启更新本机地址；用户移除后不会再次自动添加，插件页可点“恢复私用播放源”。
+- 上游 HTTP/JSON/网络错误直接显示查询失败，不伪装为空结果或播放成功。
+
+**验证**：全部源码 JVM 编译通过，22 个 JVM 测试通过；新增异常回归覆盖字幕丢失、带 Cookie/Authorization 的字幕、错误/正确 chunked Range、慢速响应总预算；私用源测试走真实本机 HTTP Stremio 接口与模拟上游，验证分页、错集/整季排除、去重排序、infoHash 交接、403 可见。
+
+**限制**：本次环境访问 EZTV / APIBay 上游均返回 HTTP 403，未获得真实上游种子播放验证；没有 Android 真机/模拟器，因此不能宣称两个源已实播成功，也未真机验证后台恢复或网页解析取消。当前版继承原播放器，核心仍是基础 APK 的叠加构建。
+
+接口依据（不是复制第三方插件代码）：
+- https://eztv.yt/api/
+- https://github.com/codeit-ninja/apibay
+- https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/api/responses/stream.md
+
+版本 0.1.49 / code 50。
+
 # 随影 0.1.48 P2P 加速
 
 原 TorrentEngine 的 libtorrent 会话几乎全是默认值：上传限 128KB/s，而 BT 是“多上传才能多下载”，限得太低会拖慢下载；磁力链接只带 3 个 tracker。

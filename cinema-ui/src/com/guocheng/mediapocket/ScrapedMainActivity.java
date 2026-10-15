@@ -13,7 +13,7 @@ public final class ScrapedMainActivity extends MainActivity {
   light=appearance.equals("light")||(appearance.equals("system")&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)!=Configuration.UI_MODE_NIGHT_YES);
   p.edit().putString("themeMode",light?"light":"dark").apply();
   getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);UiImages.configure(getCacheDir());
-  HomeSources.seed(this);super.onCreate(saved);if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();
+  HomeSources.seed(this);super.onCreate(saved);try{addons=PrivateTorrentAddons.sync(this,addons,false);}catch(Exception e){say("私用播放源初始化失败："+e.getClass().getSimpleName());}if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();
  }
  int surface(){return light?0xffedf5f5:0xff10343e;}int card(){return light?0xffffffff:0xff19434e;}int ink(){return light?0xff173740:0xfff5fafb;}int muted(){return light?0xff52757c:0xffafcbd2;}int accent(){return light?0xff246984:0xffa2d0ed;}
  int map(int c){if(c==0xff0b0b12||c==0xff101018||c==0xff10101c)return surface();if(c==0xff1b1b29||c==0xff11111c)return card();if(c==0xfff4f3fa)return ink();if(c==0xff9693aa)return muted();if(c==0xff8d68f5||c==0xff6844ce)return accent();return c;}
@@ -135,6 +135,7 @@ public final class ScrapedMainActivity extends MainActivity {
  @Override void settings(){
   pinTorrentClaw();super.settings();
   for(int i=body.getChildCount()-1;i>=0;i--){View v=body.getChildAt(i);if(v instanceof TextView){String label=((TextView)v).getText().toString();if((v instanceof Button&&label.toLowerCase(java.util.Locale.ROOT).contains("torrentclaw"))||label.equals("内置插件 · 可导入专属地址更新配置"))body.removeViewAt(i);}}
+  body.addView(button("恢复私用播放源 · EZTV / 海盗湾",()->{try{addons=PrivateTorrentAddons.sync(this,addons,true);settings();}catch(Exception e){notice("私用源添加失败："+e.getClass().getSimpleName());}}));
   body.addView(button("插件市场 · 浏览与添加",()->startActivity(new Intent(this,AddonMarketActivity.class))),0);
  }
 
