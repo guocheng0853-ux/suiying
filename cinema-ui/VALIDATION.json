@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.47",
+  "ui_version": "0.1.48",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -17,9 +17,9 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 5822,
+  "unique_classes": 5824,
   "dex_files": 3,
-  "main_version_code": 48,
+  "main_version_code": 49,
   "default_home_provider": "stremio",
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,
@@ -34,5 +34,7 @@
   "link_probe_android_tested": false,
   "range_accelerator": "RangeAcceleratorTest: 2MB/s-per-connection origin, single vs 4-connection proxy ~4x faster, sha256 identical, Range/no-Range correct, ffmpeg decode via accelerator. JVM, not Android.",
   "accelerator_android_tested": false,
-  "probe_budget_ms": 4000
+  "probe_budget_ms": 4000,
+  "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
+  "torrent_boost_android_tested": false
 }

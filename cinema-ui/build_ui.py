@@ -22,7 +22,7 @@ with zipfile.ZipFile(work/'stubs.jar','w') as z:
 (work/'dex').mkdir(exist_ok=True)
 run(bt/'d8','--min-api','26','--lib',sdk,'--classpath',work/'stubs.jar','--classpath',work/'runtime.jar','--output',work/'dex',work/'ui.jar')
 jadx=tools/'jadx/lib/jadx-1.5.3-all.jar'
-run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java',root/'tools/PatchHeaderRoute.java')
+run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java',root/'tools/PatchHeaderRoute.java',root/'tools/PatchTorrentBoost.java')
 with zipfile.ZipFile(root/'base.apk') as base:
  (work/'original-main.dex').write_bytes(base.read('classes.dex'))
 (work/'patched-main.dex').unlink(missing_ok=True)
@@ -58,6 +58,17 @@ assert vlc_name
 run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchHeaderRoute',work/'original-vlc.dex',work/'patched-vlc.dex')
 final_dex[vlc_name]=(work/'patched-vlc.dex').read_bytes()
 assert final_dex[vlc_name][:4]==b'dex\n'
+# 0.1.48：TorrentEngine 会话参数与磁力 tracker（TorrentBoost）
+torrent_name=None
+with zipfile.ZipFile(root/'base.apk') as base:
+ for name in base.namelist():
+  if name.startswith('classes') and name.endswith('.dex') and b'Lcom/guocheng/mediapocket/TorrentEngine;' in base.read(name) and b'acquireSession' in base.read(name):torrent_name=name
+assert torrent_name
+(work/'original-torrent.dex').write_bytes(final_dex.get(torrent_name) or zipfile.ZipFile(root/'base.apk').read(torrent_name))
+(work/'patched-torrent.dex').unlink(missing_ok=True)
+run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchTorrentBoost',work/'original-torrent.dex',work/'patched-torrent.dex')
+final_dex[torrent_name]=(work/'patched-torrent.dex').read_bytes()
+assert final_dex[torrent_name][:4]==b'dex\n'
 # 真实默认配置含个人令牌，不入库；缺失时用脱敏样例（打包名仍为 fusion-default.json）
 if not (root/'assets/fusion-default.json').exists():
  shutil.copy(root/'assets/fusion-default.example.json',root/'assets/fusion-default.json');print('WARNING: assets/fusion-default.json missing, using sanitized example')
@@ -93,7 +104,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
     out.write(p,n)
  out.write(root/'RUNTIME-LICENSE.md','assets/Fusion-runtime-license.txt')
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.47-accelerate-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.48-p2p-boost-arm64.apk'
 run(bt/'apksigner','sign','--ks',root/'signing.jks','--ks-pass','pass:android','--key-pass','pass:android','--out',apk,work/'aligned.apk')
 run(bt/'apksigner','verify',apk)
 with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
@@ -103,5 +114,5 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
   if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
    if n in final_dex:continue
    assert base.read(n)==updated.read(n),n;preserved.append(n)
- (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.47','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
+ (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.48','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
 print(subprocess.check_output([str(bt/'aapt2'),'dump','badging',str(apk)]).decode().splitlines()[0]);print(apk)

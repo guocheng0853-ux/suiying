@@ -1,0 +1,1 @@
+package com.frostwire.jlibtorrent;public class SettingsPack{public SettingsPack setBoolean(int n,boolean v){return this;} public SettingsPack setInteger(int n,int v){return this;} public void setEnableLsd(boolean v){} public SettingsPack uploadRateLimit(int v){return this;} public SettingsPack connectionsLimit(int v){return this;}}
