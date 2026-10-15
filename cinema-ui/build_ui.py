@@ -22,7 +22,7 @@ with zipfile.ZipFile(work/'stubs.jar','w') as z:
 (work/'dex').mkdir(exist_ok=True)
 run(bt/'d8','--min-api','26','--lib',sdk,'--classpath',work/'stubs.jar','--classpath',work/'runtime.jar','--output',work/'dex',work/'ui.jar')
 jadx=tools/'jadx/lib/jadx-1.5.3-all.jar'
-run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java')
+run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java',root/'tools/PatchHeaderRoute.java')
 with zipfile.ZipFile(root/'base.apk') as base:
  (work/'original-main.dex').write_bytes(base.read('classes.dex'))
 (work/'patched-main.dex').unlink(missing_ok=True)
@@ -46,6 +46,18 @@ if subtitle_name=='classes.dex':(work/'original-subtitle.dex').write_bytes(patch
 run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchSubtitleSearch',work/'original-subtitle.dex',work/'patched-subtitle.dex')
 patched_subtitle=(work/'patched-subtitle.dex').read_bytes()
 assert patched_subtitle[:4]==b'dex\n' and struct.unpack_from('<I',patched_subtitle,96)[0]>0
+# 0.1.46：VlcPlayback.setSource 前插 HeaderRoute（VLC 3 不支持 :http-header，额外请求头经本机代理补齐）
+final_dex={'classes.dex':patched_main};final_dex[subtitle_name]=patched_subtitle
+vlc_name=None
+with zipfile.ZipFile(root/'base.apk') as base:
+ for name in base.namelist():
+  if name.startswith('classes') and name.endswith('.dex') and b'Lcom/guocheng/mediapocket/VlcPlayback;' in base.read(name):vlc_name=name
+assert vlc_name
+(work/'original-vlc.dex').write_bytes(final_dex.get(vlc_name) or zipfile.ZipFile(root/'base.apk').read(vlc_name))
+(work/'patched-vlc.dex').unlink(missing_ok=True)
+run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchHeaderRoute',work/'original-vlc.dex',work/'patched-vlc.dex')
+final_dex[vlc_name]=(work/'patched-vlc.dex').read_bytes()
+assert final_dex[vlc_name][:4]==b'dex\n'
 # 真实默认配置含个人令牌，不入库；缺失时用脱敏样例（打包名仍为 fusion-default.json）
 if not (root/'assets/fusion-default.json').exists():
  shutil.copy(root/'assets/fusion-default.example.json',root/'assets/fusion-default.json');print('WARNING: assets/fusion-default.json missing, using sanitized example')
@@ -61,13 +73,13 @@ assert '0x7f010000 drawable/icon' in resources and '0x7f020000 style/AppTheme' i
 for folder in [work/'dex',work/'host-dex']:
  for dex_path in folder.glob('classes*.dex'):
   data=dex_path.read_bytes();assert data[:4]==b'dex\n' and struct.unpack_from('<I',data,96)[0]>0,dex_path
-for data in [patched_main,patched_subtitle]:
+for data in final_dex.values():
  assert data[:4]==b'dex\n' and struct.unpack_from('<I',data,96)[0]>0
 with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk') as manifests,zipfile.ZipFile(work/'unsigned.apk','w',zipfile.ZIP_DEFLATED) as out:
  names=base.namelist();indices=[1 if n=='classes.dex' else int(n[7:-4]) for n in names if n.startswith('classes') and n.endswith('.dex')]
  for info in base.infolist():
   if info.filename.startswith('META-INF/') or info.filename=='AndroidManifest.xml':continue
-  out.writestr(info,patched_subtitle if info.filename==subtitle_name else patched_main if info.filename=='classes.dex' else base.read(info.filename))
+  out.writestr(info,final_dex[info.filename] if info.filename in final_dex else base.read(info.filename))
  out.writestr('AndroidManifest.xml',manifests.read('AndroidManifest.xml'))
  next_index=max(indices)+1
  for folder in [work/'dex',work/'host-dex']:
@@ -81,7 +93,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
     out.write(p,n)
  out.write(root/'RUNTIME-LICENSE.md','assets/Fusion-runtime-license.txt')
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.45-home-sources-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.46-source-check-arm64.apk'
 run(bt/'apksigner','sign','--ks',root/'signing.jks','--ks-pass','pass:android','--key-pass','pass:android','--out',apk,work/'aligned.apk')
 run(bt/'apksigner','verify',apk)
 with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
@@ -89,7 +101,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
  preserved=[]
  for n in base.namelist():
   if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
-   if n in ('classes.dex',subtitle_name):continue
+   if n in final_dex:continue
    assert base.read(n)==updated.read(n),n;preserved.append(n)
- (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.45','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
+ (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.46','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
 print(subprocess.check_output([str(bt/'aapt2'),'dump','badging',str(apk)]).decode().splitlines()[0]);print(apk)

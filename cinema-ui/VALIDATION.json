@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.45",
+  "ui_version": "0.1.46",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -17,14 +17,19 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 5766,
+  "unique_classes": 5817,
   "dex_files": 3,
-  "main_version_code": 46,
+  "main_version_code": 47,
   "default_home_provider": "stremio",
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,
-  "source_picker_scope": "TVBox detail and playback",
-  "source_picker_android_ui_tested": false,
   "presets_empty": true,
-  "torrentclaw_removal_retained": true
+  "torrentclaw_removal_retained": true,
+  "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
+  "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
+  "real_source_playback_tested": false,
+  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
+  "stremio_picker_android_ui_tested": false,
+  "web_sniffer_android_tested": false,
+  "link_probe_android_tested": false
 }
