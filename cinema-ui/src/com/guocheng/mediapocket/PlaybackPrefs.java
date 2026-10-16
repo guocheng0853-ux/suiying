@@ -1,6 +1,6 @@
 package com.guocheng.mediapocket;
 import android.app.*;import android.content.*;import android.os.*;import java.util.*;
-/** 详情页设置的音轨/字幕偏好；开播后自动匹配音轨（字幕偏好写入原有 subtitleLanguage，由原自动字幕流程使用）。 */
+/** 详情页设置的音轨/字幕偏好。音轨在开播后匹配；字幕偏好交给 TrackSelection（简体优先于繁体，关闭则不自动加载）。 */
 public final class PlaybackPrefs {
  static final String[] AUDIO={"auto","zh","yue","en"},AUDIO_LABELS={"自动（片源默认）","国语 / 普通话","粤语","英语"};
  static final String[] SUBS={"zho","eng","off"},SUB_LABELS={"中文优先","英文优先","关闭（不自动加载）"};
