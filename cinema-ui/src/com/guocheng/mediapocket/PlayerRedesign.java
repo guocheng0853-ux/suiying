@@ -3,8 +3,8 @@ import android.app.Activity;import android.content.res.ColorStateList;import and
 /**
  * 0.1.61 播放页重新排版（在原播放器控件上整理，不重建播放逻辑）：
  *  顶栏：‹ 片名 …… 画中画 · 旋转（只留图标）；去掉与底栏重复的「视频」（同「播放器」菜单）。
- *  中间：后退 10 秒 / 播放暂停 / 前进 10 秒，半透明圆形、向中间收拢。
- *  底栏：状态 → 进度条 → 胶囊按钮行；「倍速」是唯一的调速入口并显示当前倍速。
+ *  中间：只留播放/暂停。左右「后退 / 前进 10 秒」按钮不显示，双击左右三分之一直接跳转。
+ *  底栏：状态 → 进度条 → 胶囊按钮行。倍速改到画面右侧，底栏不再留一颗。
  * 幂等：可反复调用（补齐后加入的按钮、横竖屏切换后重新定位）。
  */
 final class PlayerRedesign {
@@ -37,17 +37,17 @@ final class PlayerRedesign {
    if(d.equals("返回")){STYLED.put(v,true);continue;}
   }
  }
+ /** 左右快进/快退按钮保持隐藏。双击左右区域直接跳 10 秒，不靠这两个按钮。 */
+ static void hideSeekButtons(Activity a){Object c=OnlineSubtitleSearch.field(a,"center");if(!(c instanceof ViewGroup))return;ViewGroup center=(ViewGroup)c;for(int i=0;i<center.getChildCount();i++){View v=center.getChildAt(i);if(!(v instanceof Button))continue;String d=desc(v);if(d.contains("后退")||d.contains("前进")||d.contains("快退")||d.contains("快进")){v.setVisibility(View.GONE);v.setTranslationX(0);}}}
  static void center(Activity a){
+  hideSeekButtons(a);
   Object c=OnlineSubtitleSearch.field(a,"center");if(!(c instanceof FrameLayout))return;FrameLayout center=(FrameLayout)c;
-  View root=(View)OnlineSubtitleSearch.field(a,"root");int width=root==null?0:root.getWidth(),height=root==null?0:root.getHeight();
-  int gap=width>height?dp(a,150):dp(a,104);
   for(int i=0;i<center.getChildCount();i++){
    View v=center.getChildAt(i);if(!(v instanceof Button))continue;String d=desc(v);
-   boolean play=d.contains("播放或暂停"),back=d.contains("后退"),forward=d.contains("前进");if(!play&&!back&&!forward)continue;
-   int size=play?dp(a,76):dp(a,58);
-   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(size,size,Gravity.CENTER);v.setLayoutParams(lp);
-   v.setTranslationX(back?-gap:forward?gap:0);
-   if(!STYLED.containsKey(v)){v.setBackground(circle(play?0x59000000:0x40000000));v.setPadding(0,0,0,0);STYLED.put(v,true);}
+   if(!d.contains("播放或暂停"))continue;
+   int size=dp(a,76);
+   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(size,size,Gravity.CENTER);v.setLayoutParams(lp);v.setTranslationX(0);
+   if(!STYLED.containsKey(v)){v.setBackground(circle(0x59000000));v.setPadding(0,0,0,0);STYLED.put(v,true);}
   }
  }
  static void bottom(Activity a){
@@ -60,7 +60,7 @@ final class PlayerRedesign {
    LinearLayout row=(LinearLayout)inner;row.setGravity(Gravity.CENTER);row.setPadding(0,dp(a,6),0,0);
    for(int n=0;n<row.getChildCount();n++){
     View v=row.getChildAt(n);if(!(v instanceof Button))continue;Button btn=(Button)v;
-    if(desc(btn).equals("倍速")||btn.getTag()=="mp-speed"){btn.setTag("mp-speed");btn.setOnClickListener(x->PlayerChrome.chooseSpeed(a));speedLabel(a,btn);}
+    if(desc(btn).equals("倍速")||"mp-speed".equals(btn.getTag())){btn.setTag("mp-speed");btn.setVisibility(View.GONE);continue;}
     if(STYLED.containsKey(v))continue;
     btn.setTextSize(13);btn.setBackground(pill(a,0x29ffffff));btn.setPadding(dp(a,14),0,dp(a,16),0);btn.setMinHeight(0);btn.setMinimumHeight(0);
     LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-2,dp(a,38));lp.leftMargin=dp(a,4);lp.rightMargin=dp(a,4);btn.setLayoutParams(lp);
@@ -70,5 +70,5 @@ final class PlayerRedesign {
  }
  /** 倍速按钮文字：1.0× 时显示「倍速」，否则直接显示当前倍速。 */
  static void speedLabel(Activity a,Button b){float s=PlaybackPrefs.speed(PlayerChrome.prefs(a));b.setText(Math.abs(s-1f)<0.01f?"倍速":PlaybackPrefs.speedLabel(s));b.setContentDescription("倍速");}
- static void refreshSpeed(Activity a){Object b=OnlineSubtitleSearch.field(a,"bottom");if(!(b instanceof View))return;View v=((View)b).findViewWithTag("mp-speed");if(v instanceof Button)speedLabel(a,(Button)v);}
+ static void refreshSpeed(Activity a){PlayerChrome c=PlayerChrome.ALL.get(a);if(c!=null&&c.speed!=null)speedLabel(a,c.speed);}
 }
