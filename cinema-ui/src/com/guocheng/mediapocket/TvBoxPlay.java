@@ -17,7 +17,10 @@ final class TvBoxPlay {
  static Resolved resolveInner(Activity a,FusionCatalog.Session s,String flag,JSONObject r,long budgetMs)throws Exception{
   long deadline=System.currentTimeMillis()+budgetMs;
   String raw=r.optString("url");if(raw.isEmpty())throw new Exception("线路没有返回播放地址");
-  String url=TvBoxRules.resolve(s.url,raw);JSONObject h=headers(r);
+  JSONObject h=headers(r);
+  // 磁力不是配置/组件地址。TvBoxRules 的 HTTP 限制留在接口、jar 和直播列表上；选集走原 TorrentEngine。
+  if(MagnetLinks.isMagnet(raw)){MagnetLinks.Info magnet=MagnetLinks.parse(raw);if(magnet==null)throw new Exception("磁力地址没有可用的 BT v1 哈希");return torrent(s,flag,magnet,h);}
+  String url=TvBoxRules.resolve(s.url,raw);
   int parse=r.optInt("parse",0),jx=r.optInt("jx",0);
   if(jx!=0){
    List<JSONObject> parsers=SniffRules.parsers(s.config);
@@ -39,6 +42,11 @@ final class TvBoxPlay {
   }
   return direct;
  }
+ static Resolved torrent(FusionCatalog.Session s,String flag,MagnetLinks.Info magnet,JSONObject h){
+  try{JSONObject stream=new JSONObject().put("url","").put("infoHash",magnet.infoHash).put("sources",magnet.trackers).put("name",s.site.optString("name")+(flag==null||flag.isEmpty()?"":" · "+flag)).put("behaviorHints",new JSONObject().put("proxyHeaders",new JSONObject().put("request",h))).put("mediapocket.via","磁力 / P2P").put("mediapocket.check","磁力 · 交给 P2P 引擎");return new Resolved(stream,new LinkProbe.Result(false,false,"磁力","交给 P2P 引擎"),"磁力 / P2P");}catch(JSONException e){throw new RuntimeException(e);}
+ }
+ /** 爬虫没把磁力原样返回时，选集值本身已是 magnet 就直接交给 P2P，不再当成 HTTP 读取失败。 */
+ static JSONObject orMagnet(JSONObject response,String value)throws JSONException{if(response!=null&&!response.optString("url").isEmpty())return response;if(!MagnetLinks.isMagnet(value))return response==null?new JSONObject():response;return new JSONObject().put("parse",0).put("jx",0).put("url",value.trim());}
  static long left(long deadline){return Math.max(1000,deadline-System.currentTimeMillis());}
  static Resolved checked(FusionCatalog.Session s,String flag,String url,JSONObject h,String via,long deadline){
   LinkProbe.Result check=LinkProbe.probe(url,map(h),(int)Math.min(4000,left(deadline)));
