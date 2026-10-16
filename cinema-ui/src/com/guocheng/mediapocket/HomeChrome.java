@@ -19,13 +19,16 @@ final class HomeChrome {
  void pickSource(JSONArray options,String current,View anchor){
   if(options==null||options.length()==0)return;
   FrameLayout overlay=new FrameLayout(a);View dim=new View(a);dim.setBackgroundColor(0xff000000);dim.setAlpha(0);overlay.addView(dim,new FrameLayout.LayoutParams(-1,-1));
-  PopupWindow popup=new PopupWindow(overlay,-1,-1,true);popup.setClippingEnabled(false);popup.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));popup.setOutsideTouchable(true);
+  AnimatedPopup popup=new AnimatedPopup(overlay);popup.setClippingEnabled(false);popup.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));popup.setOutsideTouchable(true);
   LinearLayout list=new LinearLayout(a);list.setOrientation(1);list.setPadding(dp(8),dp(8),dp(8),dp(8));
   ScrollView scroll=new ScrollView(a);scroll.addView(list);scroll.setBackground(round(a.light?0xfffafafa:0xf2302e3a,14));scroll.setElevation(dp(12));scroll.setClipToOutline(true);
   final boolean[] closing={false};
-  Runnable close=()->{if(closing[0])return;closing[0]=true;dim.animate().alpha(0).setDuration(HomeMotionRules.MENU_MS).start();scroll.animate().alpha(0).scaleX(HomeMotionRules.menuScale(0)).scaleY(HomeMotionRules.menuScale(0)).setDuration(HomeMotionRules.MENU_MS).setInterpolator(new android.view.animation.AccelerateInterpolator()).withEndAction(()->{if(popup.isShowing())popup.dismiss();}).start();};
+  final Runnable[] after={null};
+  Runnable close=()->{if(closing[0])return;closing[0]=true;if(a.isFinishing()||a.isDestroyed()){popup.finish();if(after[0]!=null)after[0].run();return;}dim.animate().alpha(0).setDuration(HomeMotionRules.MENU_MS).start();scroll.animate().alpha(0).scaleX(HomeMotionRules.menuScale(0)).scaleY(HomeMotionRules.menuScale(0)).setDuration(HomeMotionRules.MENU_MS).setInterpolator(new android.view.animation.AccelerateInterpolator()).withEndAction(()->{popup.finish();if(after[0]!=null&&!a.isFinishing())after[0].run();}).start();};
+  // 返回键、点外面、选完片源都经由 dismiss() → 先播放收起动画再真正关闭
+  popup.closing=close;
   dim.setOnClickListener(v->close.run());
-  for(int i=0;i<options.length();i++){JSONObject item=options.optJSONObject(i);if(item==null)continue;final JSONObject choice=item;TextView row=a.text((current.equals(item.optString("id"))?"◉  ":"○  ")+item.optString("label"),14,a.ink());row.setPadding(dp(10),dp(12),dp(10),dp(12));row.setOnClickListener(v->{String[] applied=HomeRules.apply(choice.optString("id"));a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();a.fusionSession=null;popup.dismiss();a.home();});list.addView(row);}
+  for(int i=0;i<options.length();i++){JSONObject item=options.optJSONObject(i);if(item==null)continue;final JSONObject choice=item;TextView row=a.text((current.equals(item.optString("id"))?"◉  ":"○  ")+item.optString("label"),14,a.ink());row.setPadding(dp(10),dp(12),dp(10),dp(12));row.setOnClickListener(v->{String[] applied=HomeRules.apply(choice.optString("id"));a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();a.fusionSession=null;after[0]=()->a.home();close.run();});list.addView(row);}
   int[] at=new int[2];anchor.getLocationOnScreen(at);
   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(dp(230),Math.min(dp(340),dp(16+options.length()*48)),Gravity.TOP|Gravity.LEFT);lp.leftMargin=at[0];lp.topMargin=at[1]+anchor.getHeight()+dp(4);overlay.addView(scroll,lp);
   scroll.setPivotX(dp(24));scroll.setPivotY(0);scroll.setAlpha(0);scroll.setScaleX(HomeMotionRules.menuScale(0));scroll.setScaleY(HomeMotionRules.menuScale(0));
@@ -34,6 +37,13 @@ final class HomeChrome {
   scroll.animate().alpha(1).scaleX(1).scaleY(1).setDuration(HomeMotionRules.MENU_MS).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
  }
  /** 继续观看横滑行，带底部蓝色进度条与集数文案。 */
+ /** dismiss() 改为先播放收起动画；finish() 才真正关闭。 */
+ static final class AnimatedPopup extends PopupWindow {
+  Runnable closing;boolean finished;
+  AnimatedPopup(View content){super(content,-1,-1,true);}
+  @Override public void dismiss(){if(closing==null||finished){finish();return;}closing.run();}
+  void finish(){if(finished)return;finished=true;try{if(isShowing())super.dismiss();}catch(Exception ignored){}}
+ }
  void continueWatching(JSONArray history){
   if(history==null||history.length()==0)return;
   a.body.addView(a.heading("继续观看"));

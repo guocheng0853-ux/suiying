@@ -107,7 +107,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
     out.write(p,n)
  out.write(root/'RUNTIME-LICENSE.md','assets/Fusion-runtime-license.txt')
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.57-source-card-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.58-motion-polish-arm64.apk'
 run(bt/'apksigner','sign','--ks',Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks'))),'--ks-pass','pass:android','--key-pass','pass:android','--out',apk,work/'aligned.apk')
 run(bt/'apksigner','verify',apk)
 with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
@@ -117,5 +117,5 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
   if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
    if n in final_dex:continue
    assert base.read(n)==updated.read(n),n;preserved.append(n)
- (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.57','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
+ (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.58','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
 print(subprocess.check_output([str(bt/'aapt2'),'dump','badging',str(apk)]).decode().splitlines()[0]);print(apk)
