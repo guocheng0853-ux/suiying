@@ -14,18 +14,13 @@ final class HomeChrome {
   TextView t=a.text(HomeRules.labelFor(options,id)+"  ▾",16,0xffffffff);t.setTypeface(null,1);
   t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
   t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(0,dp(6),dp(8),dp(6));t.setContentDescription("切换片源");
-  final JSONArray opts=options;t.setOnClickListener(v->pickSource(opts,id));return t;
+  final JSONArray opts=options;t.setOnClickListener(v->pickSource(opts,id,t));return t;
  }
- void pickSource(JSONArray options,String current){
+ void pickSource(JSONArray options,String current,View anchor){
   if(options==null||options.length()==0)return;
-  String[] labels=new String[options.length()];int checked=0;
-  for(int i=0;i<options.length();i++){JSONObject o=options.optJSONObject(i);labels[i]=o==null?"":o.optString("label");if(o!=null&&current.equals(o.optString("id")))checked=i;}
-  new AlertDialog.Builder(a).setTitle("选择片源").setSingleChoiceItems(labels,checked,(d,n)->{
-   JSONObject o=options.optJSONObject(n);if(o==null){d.dismiss();return;}
-   String[] applied=HomeRules.apply(o.optString("id"));
-   a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();
-   a.fusionSession=null;d.dismiss();a.home();
-  }).show();
+  PopupWindow popup=new PopupWindow(a);LinearLayout list=new LinearLayout(a);list.setOrientation(1);list.setPadding(dp(8),dp(8),dp(8),dp(8));list.setBackground(round(a.light?0xfffafafa:0xee302e3a,14));
+  for(int i=0;i<options.length();i++){JSONObject item=options.optJSONObject(i);if(item==null)continue;final JSONObject choice=item;TextView row=a.text((current.equals(item.optString("id"))?"◉  ":"○  ")+item.optString("label"),14,a.ink());row.setPadding(dp(10),dp(12),dp(10),dp(12));row.setOnClickListener(v->{String[] applied=HomeRules.apply(choice.optString("id"));a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();a.fusionSession=null;popup.dismiss();a.home();});list.addView(row);}
+  ScrollView scroll=new ScrollView(a);scroll.addView(list);popup.setContentView(scroll);popup.setWidth(dp(230));popup.setHeight(Math.min(dp(340),dp(16+options.length()*48)));popup.setBackgroundDrawable(round(a.card(),14));popup.setElevation(dp(12));popup.setFocusable(true);popup.setOutsideTouchable(true);popup.showAsDropDown(anchor,0,dp(4));
  }
  /** 继续观看横滑行，带底部蓝色进度条与集数文案。 */
  void continueWatching(JSONArray history){
