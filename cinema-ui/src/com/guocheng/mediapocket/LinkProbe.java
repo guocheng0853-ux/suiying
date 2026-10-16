@@ -8,6 +8,7 @@ import java.util.concurrent.*;
  */
 public final class LinkProbe {
  static final ScheduledExecutorService TIMER=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"link-probe-budget");t.setDaemon(true);return t;});
+ static final ExecutorService WORK=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"link-probe-work");t.setDaemon(true);return t;});
  public static final class Result {
   public final boolean media;      // 读到了可识别的视频/音频数据（含 HLS 首分片）
   public final boolean definitive; // 明确不是视频：HTTP 错误、网页、JSON、空响应
@@ -21,13 +22,22 @@ public final class LinkProbe {
  private LinkProbe(){}
 
  public static Result probe(String url,Map<String,String> headers,int budgetMs){
-  long deadline=System.currentTimeMillis()+Math.max(1000,budgetMs);
+  int budget=Math.max(1000,budgetMs);
+  long deadline=System.currentTimeMillis()+budget;
   Map<String,String> h=headers==null?new LinkedHashMap<>():HeaderRoute.canonical(headers);
   try{
    String scheme=URI.create(url.trim()).getScheme();
    if(scheme==null||!(scheme.equalsIgnoreCase("http")||scheme.equalsIgnoreCase("https")))return new Result(false,false,"非 HTTP 地址","交给播放器处理："+scheme);
-   return follow(url.trim(),h,deadline,0);
   }catch(Exception e){return new Result(false,false,"检查未完成",reason(e));}
+  final String target=url.trim();
+  Future<Result> future=WORK.submit(()->{
+   try{return follow(target,h,deadline,0);}
+   catch(Exception e){return new Result(false,false,"检查未完成",reason(e));}
+  });
+  try{return future.get(budget,TimeUnit.MILLISECONDS);}
+  catch(TimeoutException e){future.cancel(true);return new Result(false,false,"检查未完成","超时");}
+  catch(InterruptedException e){Thread.currentThread().interrupt();future.cancel(true);return new Result(false,false,"检查未完成","超时");}
+  catch(ExecutionException e){Throwable c=e.getCause()==null?e:e.getCause();return new Result(false,false,"检查未完成",reason(c));}
  }
  static Result follow(String url,Map<String,String> h,long deadline,int depth)throws IOException{
   Response r=fetcher.get(url,h,512*1024,left(deadline));
@@ -75,21 +85,24 @@ public final class LinkProbe {
   String current=url;
   long deadline=System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(timeoutMs);
   for(int hop=0;hop<6;hop++){
-   long remaining=TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime());if(remaining<=0)throw new SocketTimeoutException("检查超时");
+   long remaining=TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime());if(remaining<=0||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时");
    URL u=new URL(current);if(!(u.getProtocol().equals("http")||u.getProtocol().equals("https")))throw new IOException("跳转到不支持的协议");
-   HttpURLConnection c=(HttpURLConnection)u.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout((int)Math.min(remaining,10000));c.setReadTimeout((int)Math.max(1,remaining));
-   ScheduledFuture<?> kill=TIMER.schedule(c::disconnect,remaining,TimeUnit.MILLISECONDS);
+   HttpURLConnection c=(HttpURLConnection)u.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout((int)Math.min(remaining,10000));
+   // Slice read timeouts so a slow drip cannot stretch past the hard budget between disconnect checks.
+   c.setReadTimeout((int)Math.min(Math.max(1,remaining),250));
+   final HttpURLConnection conn=c;final Thread reader=Thread.currentThread();
+   ScheduledFuture<?> kill=TIMER.schedule(()->{try{conn.disconnect();}catch(Exception ignored){}reader.interrupt();},remaining,TimeUnit.MILLISECONDS);
    if(!headers.containsKey("User-Agent"))c.setRequestProperty("User-Agent","Mozilla/5.0");
    for(Map.Entry<String,String> e:headers.entrySet())c.setRequestProperty(e.getKey(),e.getValue());
    c.setRequestProperty("Accept-Encoding","identity");
    try{
-    int code=c.getResponseCode();
+    int code;try{code=c.getResponseCode();}catch(SocketTimeoutException ste){if(System.nanoTime()>=deadline||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时");throw ste;}
     if(code>=300&&code<400&&c.getHeaderField("Location")!=null){current=new URL(u,c.getHeaderField("Location")).toString();continue;}
     InputStream in=code>=400?c.getErrorStream():c.getInputStream();ByteArrayOutputStream b=new ByteArrayOutputStream();
     // 非播放列表只需首 4KB 判断容器；m3u8 需要完整读到 limit 内
-    if(in!=null)try(InputStream s=in){byte[] buf=new byte[8192];int r,cap=limit;while(b.size()<cap&&(r=s.read(buf,0,Math.min(buf.length,cap-b.size())))!=-1){if(System.nanoTime()>=deadline||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时或已取消");b.write(buf,0,r);if(b.size()>=16&&cap>4096&&!HeaderRoute.Sniff.isPlaylist(b.toByteArray(),16))cap=4096;}}
+    if(in!=null)try(InputStream s=in){byte[] buf=new byte[8192];int r,cap=limit;while(b.size()<cap){long leftMs=TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime());if(leftMs<=0||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时或已取消");try{r=s.read(buf,0,Math.min(buf.length,cap-b.size()));}catch(SocketTimeoutException ste){if(System.nanoTime()>=deadline||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时或已取消");continue;}if(r==-1)break;b.write(buf,0,r);if(b.size()>=16&&cap>4096&&!HeaderRoute.Sniff.isPlaylist(b.toByteArray(),16))cap=4096;}}
     return new Response(code,c.getContentType(),c.getURL().toString(),b.toByteArray());
-   }finally{kill.cancel(false);c.disconnect();}
+   }finally{kill.cancel(false);try{c.disconnect();}catch(Exception ignored){}Thread.interrupted();}
   }
   throw new IOException("跳转次数过多");
  }
