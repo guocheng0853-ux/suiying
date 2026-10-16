@@ -13,7 +13,7 @@ final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
  static void install(Activity a){try{if(ALL.containsKey(a))return;PlayerChrome c=new PlayerChrome(a);if(!c.build())return;ALL.put(a,c);a.getApplication().registerActivityLifecycleCallbacks(c);c.monitor.post(c.pulse);}catch(Exception ignored){}}
  static void refresh(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.update();}
  static void tick(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.poll();}
- /** 0.1.61：顶栏只加「画中画」；倍速统一由底栏按钮负责，比例/缩放在底栏「比例」菜单（双指缩放保留），不再加重复按钮和右侧缩放条。 */
+ /** 0.1.61：顶栏只加「画中画」；倍速统一由底栏按钮负责。底栏「比例」每次点击循环下一种画面比例（双指缩放保留），不再加重复按钮和右侧缩放条。 */
  boolean build(){Object top=OnlineSubtitleSearch.field(a,"top"),root=OnlineSubtitleSearch.field(a,"root");if(!(top instanceof LinearLayout)||!(root instanceof FrameLayout))return false;LinearLayout t=(LinearLayout)top;
   if(Build.VERSION.SDK_INT>=26&&a.getPackageManager().hasSystemFeature("android.software.picture_in_picture")){pip=button("","画中画",v->enterPip());t.addView(pip,new LinearLayout.LayoutParams(-2,dp(48)));}
   PlayerRedesign.apply(a);update();poll();return true;}

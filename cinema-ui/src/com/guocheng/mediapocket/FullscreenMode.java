@@ -19,7 +19,8 @@ public final class FullscreenMode {
  public static boolean doubleTap(Object listener,MotionEvent e){try{Object owner=OnlineSubtitleSearch.field(listener,"this$0");if(!(owner instanceof Activity)||e==null)return false;Activity a=(Activity)owner;int w=a.getWindow().getDecorView().getWidth();if(w>0&&(e.getX()<w/3f||e.getX()>w*2f/3f))return false;return doubleTapCenter(a);}catch(Exception ex){return false;}}
  /** 中间三分之一双击：已缩放时恢复当前比例模式。 */
  static boolean doubleTapCenter(Activity a){try{SharedPreferences p=prefs(a);if(p.getFloat("zoomX",1f)==1f&&p.getFloat("zoomY",1f)==1f)return false;String mode=p.getString("aspectMode","fit");apply(a,mode,true);PlayerChrome.refresh(a);hud(a,"已恢复 · "+FullscreenRules.LABELS[FullscreenRules.index(mode)]);return true;}catch(Exception ex){return false;}}
- /** 供后续循环按钮调用：切到下一模式并记住，返回模式名（未接入界面）。 */
+ /** 比例按钮：切到下一模式、记住，并恢复 100% 缩放。顺序见 FullscreenRules.next。 */
  public static String cycle(Activity a)throws Exception{String mode=FullscreenRules.next(prefs(a).getString("aspectMode","fit"));apply(a,mode,true);PlayerChrome.refresh(a);return FullscreenRules.LABELS[FullscreenRules.index(mode)];}
- public static void choose(Object owner){if(!(owner instanceof Activity))return;Activity a=(Activity)owner;String[] labels=FullscreenRules.LABELS,modes=FullscreenRules.MODES;int index=FullscreenRules.index(prefs(a).getString("aspectMode","fit"));new AlertDialog.Builder(a).setTitle("画面比例 · 选择后恢复100%缩放").setSingleChoiceItems(labels,index,(d,n)->{try{apply(a,modes[n],true);PlayerChrome.refresh(a);d.dismiss();OnlineSubtitleSearch.call(a,"controls",new Class<?>[]{boolean.class},true);hud(a,labels[n]);}catch(Exception e){OnlineSubtitleSearch.message(a,"比例设置失败："+e.getClass().getSimpleName());}}).setNegativeButton("关闭",null).show();}
+ /** GesturePlayerActivity.aspect：点一下立刻切到下一种画面比例，不弹菜单。 */
+ public static void choose(Object owner){if(!(owner instanceof Activity))return;Activity a=(Activity)owner;try{hud(a,cycle(a));}catch(Exception e){OnlineSubtitleSearch.message(a,"比例设置失败："+e.getClass().getSimpleName());}}
 }
