@@ -1,3 +1,28 @@
+# 随影 0.1.51 补丁审查合入
+
+合入 grokbot-combined.patch 的四组改动，基于 0.1.50 分片读取修复分支：分片截止时间重设、字幕凭据隔离、六种画面比例与双轴缩放、画中画、详情与播放源筛选、首页和四栏导航。
+
+审查后额外修复：
+- 同一种子的截止时间设置串行化，避免并发晚写覆盖更紧急请求；原生调用失败清除账本，后续允许重试。
+- 字幕 Cookie/Authorization 限制在原主机、协议、端口；拒绝 HTTPS 到 HTTP 的重定向降级。
+- 在实际 PlayerSession.start 增加字幕关闭偏好检查，保留原字幕恢复方法体；修正音轨列表长度不一致的越界。
+- 画中画进入时恢复原后台暂停的播放，保持进入前的暂停状态；独立轮询控件显隐，并在 Activity 销毁时注销广播和生命周期回调、移除计时任务。
+- GiB/MiB 使用二进制单位换算；版本升级为 0.1.51 / code 52。
+
+验证：30 个 JVM 回归测试（包含 FFmpeg 播放代理解码、并发截止时间和失败重试、跨主机和跨端口字幕凭据测试）；编译、DEX 补丁原指令保留检查、签名校验、APK 类与资源检查。未进行 Android 真机 UI、画中画或真实来源播放测试。
+
+正式构建仍使用原包名 com.guocheng.mediapocket.next，需要原签名密钥 cinema-ui/signing.jks。
+本轮未取得原密钥，交付包使用独立包名 com.guocheng.mediapocket.review、名称“随影测试版”，与旧版共存，不继承旧版接口、收藏和进度。
+
+测试构建示例（测试密钥路径由环境传入，不提交密钥）：
+```
+MEDIAPOCKET_REVIEW=1 MEDIAPOCKET_KEYSTORE=/absolute/path/review-signing.jks python3 cinema-ui/build_ui.py
+python3 cinema-ui/verify_apk.py
+sh scripts/run_tests.sh
+```
+
+---
+
 # 随影 0.1.49 播放修复与私用 Stremio 源
 
 - 修复新版 TVBox 播放解析丢失 `subt/subtitles`：保留字幕语言、单独请求头，解析相对地址并去重；直接播放、网页解析及播放器内换源共用。

@@ -16,14 +16,28 @@ public final class TorrentBoost {
   "udp://tracker.opentrackr.com:6969/announce","http://tracker.opentrackr.org:1337/announce"};
  public static final int UPLOAD_LIMIT=512*1024;
  private TorrentBoost(){}
- private static final Map<TorrentHandle,PieceDeadlines> DEADLINES=new WeakHashMap<TorrentHandle,PieceDeadlines>();
- public static void deadline(TorrentHandle handle,int piece,int delay){
+ /** 按 info-hash 记账（TorrentHandle 对象未必身份稳定）；取不到 info-hash 时退回对象身份。 */
+ private static final Map<Object,PieceDeadlines> DEADLINES=new LinkedHashMap<Object,PieceDeadlines>(16,0.75f,true);
+ static Object key(TorrentHandle handle){
+  try{Object h=handle.getClass().getMethod("infoHash").invoke(handle);if(h!=null){String s=h.toString();if(!s.isEmpty())return "ih:"+s.toLowerCase(Locale.ROOT);}}catch(Throwable ignored){}
+  try{Object h=handle.getClass().getMethod("infoHashes").invoke(handle);if(h!=null){Object b=h.getClass().getMethod("getBest").invoke(h);if(b!=null)return "ih:"+b.toString().toLowerCase(Locale.ROOT);}}catch(Throwable ignored){}
+  return handle;
+ }
+ private static PieceDeadlines book(TorrentHandle handle){
+  Object k=key(handle);
   synchronized(DEADLINES){
-   PieceDeadlines book=DEADLINES.get(handle);
-   if(book==null){book=new PieceDeadlines();DEADLINES.put(handle,book);}
-   if(book.advance(piece,delay,System.nanoTime()/1000000))handle.setPieceDeadline(piece,delay);
+   PieceDeadlines b=DEADLINES.get(k);
+   if(b==null){b=new PieceDeadlines();DEADLINES.put(k,b);if(DEADLINES.size()>64)DEADLINES.remove(DEADLINES.keySet().iterator().next());}
+   return b;
   }
  }
+ public static void deadline(TorrentHandle handle,int piece,int delay){
+  if(handle==null)return;
+  PieceDeadlines b=book(handle);synchronized(b){if(b.advance(piece,delay,System.nanoTime()/1000000))try{handle.setPieceDeadline(piece,delay);}catch(RuntimeException e){b.clear(piece);throw e;}} // 仅锁当前种子，避免并发晚写覆盖更紧急截止时间
+ }
+ /** 拖动进度、换片或分片需重新下载时调用，让后续请求重新设置截止时间。 */
+ public static void clearDeadline(TorrentHandle handle,int piece){if(handle!=null)book(handle).clear(piece);}
+ public static void resetDeadlines(TorrentHandle handle){if(handle!=null)book(handle).reset();}
 
  public static void tune(SessionManager s){
   if(!enabled||s==null)return;

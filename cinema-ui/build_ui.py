@@ -1,6 +1,6 @@
 """Compile a UI overlay while retaining the exact stable APK engines/native code."""
 from pathlib import Path
-import subprocess,zipfile,hashlib,shutil,json,struct
+import subprocess,zipfile,hashlib,shutil,json,struct,os
 
 root=Path(__file__).resolve().parent;tools=root.parent/'build-tools';bt=tools/'android-15';sdk=tools/'android-35/android.jar';work=root/'build';work.mkdir(exist_ok=True)
 def run(*args):
@@ -73,7 +73,9 @@ assert final_dex[torrent_name][:4]==b'dex\n'
 # 真实默认配置含个人令牌，不入库；缺失时用脱敏样例（打包名仍为 fusion-default.json）
 if not (root/'assets/fusion-default.json').exists():
  shutil.copy(root/'assets/fusion-default.example.json',root/'assets/fusion-default.json');print('WARNING: assets/fusion-default.json missing, using sanitized example')
-manifest=(root/'AndroidManifest.xml').read_text();(work/'AndroidManifest.xml').write_text(manifest)
+manifest=(root/'AndroidManifest.xml').read_text();
+if os.environ.get('MEDIAPOCKET_REVIEW')=='1':manifest=manifest.replace('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review').replace('android:label="随影新版"','android:label="随影测试版"')
+(work/'AndroidManifest.xml').write_text(manifest)
 for folder in ['res/drawable','res/values']:(work/folder).mkdir(parents=True,exist_ok=True)
 (work/'res/drawable/icon.xml').write_text('<shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="#315f76"/></shape>')
 (work/'res/values/styles.xml').write_text('<resources><style name="AppTheme" parent="android:style/Theme.Material.NoActionBar"/></resources>')
@@ -105,8 +107,8 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
     out.write(p,n)
  out.write(root/'RUNTIME-LICENSE.md','assets/Fusion-runtime-license.txt')
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.50-p2p-buffer-arm64.apk'
-run(bt/'apksigner','sign','--ks',root/'signing.jks','--ks-pass','pass:android','--key-pass','pass:android','--out',apk,work/'aligned.apk')
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.51-reviewed-ui-arm64.apk'
+run(bt/'apksigner','sign','--ks',Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks'))),'--ks-pass','pass:android','--key-pass','pass:android','--out',apk,work/'aligned.apk')
 run(bt/'apksigner','verify',apk)
 with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
  assert updated.testzip() is None
@@ -115,5 +117,5 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
   if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
    if n in final_dex:continue
    assert base.read(n)==updated.read(n),n;preserved.append(n)
- (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.50','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
+ (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.51','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
 print(subprocess.check_output([str(bt/'aapt2'),'dump','badging',str(apk)]).decode().splitlines()[0]);print(apk)

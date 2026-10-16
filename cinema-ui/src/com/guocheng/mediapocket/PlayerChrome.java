@@ -1,0 +1,42 @@
+package com.guocheng.mediapocket;
+import android.app.*;import android.content.*;import android.graphics.drawable.Icon;import android.os.*;import android.util.Rational;import android.view.*;import android.widget.*;import java.util.*;
+/** 播放页附加控件：顶栏「比例循环」「画中画」，右侧缩放条 + / 1.0x / −。 */
+final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
+ static final String ACTION="com.guocheng.mediapocket.PIP_CONTROL";
+ static final Map<Activity,PlayerChrome> ALL=new WeakHashMap<>();
+ final Activity a;Button aspect,pip;LinearLayout zoomBar;TextView zoomLabel;BroadcastReceiver receiver;boolean inPip, pipWasPlaying;final Handler monitor=new Handler(Looper.getMainLooper());
+ final Runnable pulse=new Runnable(){public void run(){if(a.isDestroyed()){dispose();return;}poll();monitor.postDelayed(this,250);}};
+ PlayerChrome(Activity a){this.a=a;}
+ int dp(int v){return Math.round(v*a.getResources().getDisplayMetrics().density);}
+ static SharedPreferences prefs(Activity a){return a.getSharedPreferences("data",0);}
+ Button button(String text,String desc,View.OnClickListener l){Button b=new Button(a);b.setText(text);b.setTextColor(0xffffffff);b.setTextSize(15);b.setAllCaps(false);b.setBackgroundColor(0);b.setMinWidth(0);b.setMinimumWidth(0);b.setPadding(dp(8),0,dp(8),0);b.setContentDescription(desc);b.setOnClickListener(l);return b;}
+ static void install(Activity a){try{if(ALL.containsKey(a))return;PlayerChrome c=new PlayerChrome(a);c.build();if(c.aspect==null)return;ALL.put(a,c);a.getApplication().registerActivityLifecycleCallbacks(c);c.monitor.post(c.pulse);}catch(Exception ignored){}}
+ static void refresh(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.update();}
+ static void tick(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.poll();}
+ void build(){Object top=OnlineSubtitleSearch.field(a,"top"),root=OnlineSubtitleSearch.field(a,"root");if(!(top instanceof LinearLayout)||!(root instanceof FrameLayout))return;LinearLayout t=(LinearLayout)top;
+  aspect=button("▣","画面比例",v->{try{String label=FullscreenMode.cycle(a);toast(label.split(" · ")[0]);}catch(Exception ignored){}});t.addView(aspect,new LinearLayout.LayoutParams(-2,dp(48)));
+  if(Build.VERSION.SDK_INT>=26&&a.getPackageManager().hasSystemFeature("android.software.picture_in_picture")){pip=button("⧉","画中画",v->enterPip());t.addView(pip,new LinearLayout.LayoutParams(-2,dp(48)));}
+  zoomBar=new LinearLayout(a);zoomBar.setOrientation(LinearLayout.VERTICAL);zoomBar.setGravity(Gravity.CENTER);zoomBar.setBackgroundColor(0x66000000);
+  zoomBar.addView(button("+","放大",v->step(1.1f)),new LinearLayout.LayoutParams(dp(52),dp(44)));
+  zoomLabel=button("1.0x","恢复缩放",v->reset());zoomLabel.setTextSize(12);zoomBar.addView(zoomLabel,new LinearLayout.LayoutParams(dp(52),dp(40)));
+  zoomBar.addView(button("−","缩小",v->step(1/1.1f)),new LinearLayout.LayoutParams(dp(52),dp(44)));
+  FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2,Gravity.END|Gravity.CENTER_VERTICAL);lp.rightMargin=dp(12);((FrameLayout)root).addView(zoomBar,lp);update();poll();}
+ void step(float f){SharedPreferences p=prefs(a);p.edit().putFloat("zoomX",FullscreenRules.clamp(p.getFloat("zoomX",1f)*f)).putFloat("zoomY",FullscreenRules.clamp(p.getFloat("zoomY",1f)*f)).apply();FullscreenMode.applyZoom(a);update();}
+ void reset(){try{FullscreenMode.apply(a,prefs(a).getString("aspectMode","fit"),true);update();toast("已恢复 1.0x");}catch(Exception ignored){}}
+ void update(){SharedPreferences p=prefs(a);if(aspect!=null)aspect.setText(FullscreenRules.ICONS[FullscreenRules.index(p.getString("aspectMode","fit"))]);if(zoomLabel!=null)zoomLabel.setText(FullscreenRules.zoomLabel(p.getFloat("zoomX",1f),p.getFloat("zoomY",1f)));}
+ /** 1 秒中央提示。 */
+ void toast(String text){Object root=OnlineSubtitleSearch.field(a,"root");if(!(root instanceof FrameLayout))return;TextView v=new TextView(a);v.setText(text);v.setTextColor(0xffffffff);v.setTextSize(18);v.setPadding(dp(18),dp(10),dp(18),dp(10));v.setBackgroundColor(0xb0000000);((FrameLayout)root).addView(v,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));v.postDelayed(()->((FrameLayout)root).removeView(v),1000);}
+ /** 每 500ms 随 applyZoom 调用：缩放条跟随顶栏显隐；画中画内隐藏全部控件；退出时注销广播。 */
+ void poll(){Object top=OnlineSubtitleSearch.field(a,"top");boolean p=Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode();if(p&&!inPip){try{OnlineSubtitleSearch.call(a,"controls",new Class<?>[]{boolean.class},false);}catch(Exception ignored){}}if(inPip&&!p)update();inPip=p;if(zoomBar!=null)zoomBar.setVisibility(!p&&top instanceof View&&((View)top).getVisibility()==View.VISIBLE?View.VISIBLE:View.GONE);if(p)updatePipActions();if(a.isDestroyed())dispose();}
+ boolean playing(){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"isPlaying",new Class<?>[0]);return Boolean.TRUE.equals(r);}catch(Exception e){return false;}}
+ Boolean shownPlaying;
+ PictureInPictureParams params(){int[] size=videoSize();PictureInPictureParams.Builder b=new PictureInPictureParams.Builder();float r=FullscreenRules.pipRatio(size[0],size[1]);b.setAspectRatio(new Rational(Math.round(r*1000),1000));boolean on=playing();shownPlaying=on;List<RemoteAction> actions=new ArrayList<>();actions.add(action(on?android.R.drawable.ic_media_pause:android.R.drawable.ic_media_play,on?"暂停":"播放",1));actions.add(action(android.R.drawable.ic_menu_close_clear_cancel,"关闭",2));b.setActions(actions);return b.build();}
+ int[] videoSize(){Object video=OnlineSubtitleSearch.field(a,"video");Object w=video==null?null:OnlineSubtitleSearch.field(video,"vw"),h=video==null?null:OnlineSubtitleSearch.field(video,"vh");return new int[]{w instanceof Integer?(Integer)w:0,h instanceof Integer?(Integer)h:0};}
+ RemoteAction action(int icon,String title,int code){Intent i=new Intent(ACTION).setPackage(a.getPackageName()).putExtra("code",code);PendingIntent pi=PendingIntent.getBroadcast(a,code,i,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);return new RemoteAction(Icon.createWithResource(a,icon),title,title,pi);}
+ void updatePipActions(){if(Build.VERSION.SDK_INT<26)return;if(shownPlaying!=null&&shownPlaying==playing())return;try{a.setPictureInPictureParams(params());}catch(Exception ignored){}}
+ void dispose(){monitor.removeCallbacksAndMessages(null);if(receiver!=null){try{a.unregisterReceiver(receiver);}catch(Exception ignored){}receiver=null;}a.getApplication().unregisterActivityLifecycleCallbacks(this);ALL.remove(a);}
+ public void onActivityPaused(Activity owner){if(owner!=a||!a.isInPictureInPictureMode())return;try{SourceSubtitleLoader.set(a,"active",true);Object v=OnlineSubtitleSearch.field(a,"video");if(v!=null&&pipWasPlaying)OnlineSubtitleSearch.call(v,"foreground",new Class<?>[0]);OnlineSubtitleSearch.call(a,"controls",new Class<?>[]{boolean.class},false);}catch(Exception ignored){}}
+ public void onActivityDestroyed(Activity owner){if(owner==a)dispose();}
+ public void onActivityCreated(Activity owner,Bundle b){}public void onActivityStarted(Activity owner){}public void onActivityResumed(Activity owner){}public void onActivityStopped(Activity owner){}public void onActivitySaveInstanceState(Activity owner,Bundle b){}
+ void enterPip(){if(Build.VERSION.SDK_INT<26)return;try{pipWasPlaying=playing();if(receiver==null){receiver=new BroadcastReceiver(){@Override public void onReceive(Context c,Intent i){if(!ACTION.equals(i.getAction()))return;int code=i.getIntExtra("code",0);if(code!=1&&code!=2)return;if(code==2){a.finish();return;}Object b=OnlineSubtitleSearch.field(a,"pauseButton");if(b instanceof View)((View)b).performClick();shownPlaying=null;updatePipActions();}};IntentFilter f=new IntentFilter(ACTION);if(Build.VERSION.SDK_INT>=33)a.registerReceiver(receiver,f,4);else a.registerReceiver(receiver,f);}OnlineSubtitleSearch.call(a,"controls",new Class<?>[]{boolean.class},false);if(!a.enterPictureInPictureMode(params()))toast("当前无法进入画中画");}catch(Exception e){toast("画中画不可用");}}
+}

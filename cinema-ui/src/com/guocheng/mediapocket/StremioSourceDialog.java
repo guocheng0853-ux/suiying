@@ -9,6 +9,8 @@ final class StremioSourceDialog {
  interface Play {void play(JSONObject stream,JSONArray all);}
  final Activity a;final JSONArray addons;final String id,type;final Play host;final Runnable addAddon;final boolean light;final int ink,muted,bg,accent;
  final ExecutorService pool=Executors.newFixedThreadPool(3);final ArrayList<Group> groups=new ArrayList<>();final Dialog dialog;final TextView summary;boolean closed;int generation;
+ String quality="all",hdr="all",fps="all",kind="all";int minutes;LinearLayout empty;TextView emptyText;final ArrayList<Button> chips=new ArrayList<>();
+ static final String[][] FILTERS={{"画质","all","全部","4k","4K","1080","1080p","720","720p 及以下"},{"HDR","all","全部","hdr","HDR","dv","杜比视界","sdr","SDR"},{"帧率","all","全部","60","60fps"},{"类型","all","全部","direct","直链","p2p","P2P"}};
  final class Group {JSONObject addon;String name;TextView header;LinearLayout content;JSONArray streams=new JSONArray();String status="等待查询";boolean expanded;int request;Future<?> task;}
  int dp(int n){return (int)(n*a.getResources().getDisplayMetrics().density+.5f);}
  TextView text(String s,int size,int color){TextView t=new TextView(a);t.setText(s);t.setTextSize(size);t.setTextColor(color);t.setPadding(dp(12),dp(8),dp(12),dp(8));return t;}
@@ -22,7 +24,9 @@ final class StremioSourceDialog {
   TextView handle=text("━━",14,muted);handle.setGravity(Gravity.CENTER);root.addView(handle);
   LinearLayout top=new LinearLayout(a);top.setGravity(Gravity.CENTER_VERTICAL);TextView heading=text("播放来源",22,ink);heading.setTypeface(null,1);top.addView(heading,new LinearLayout.LayoutParams(0,-2,1));top.addView(button("全部重试",()->start()));top.addView(button("关闭",()->dialog.dismiss()));root.addView(top);
   String name=meta==null?"":meta.optString("name");String ep=StremioStreams.episodeLabel(id);TextView sub=text(name+(ep.isEmpty()?"":"  ·  "+ep),13,ink);root.addView(sub);
-  summary=text("正在准备插件…",12,muted);root.addView(summary);
+  summary=text("正在准备插件…",12,muted);root.addView(summary);minutes=meta==null?0:StreamInfo.minutes(meta.optString("runtime"));
+  HorizontalScrollView chipScroll=new HorizontalScrollView(a);chipScroll.setHorizontalScrollBarEnabled(false);LinearLayout chipRow=new LinearLayout(a);chipRow.setPadding(dp(6),0,dp(6),dp(4));for(int f=0;f<FILTERS.length;f++){final int which=f;Button c=chip("");c.setOnClickListener(v->{cycle(which);});chips.add(c);LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-2,dp(34));cp.rightMargin=dp(6);chipRow.addView(c,cp);}chipScroll.addView(chipRow);root.addView(chipScroll);updateChips();
+  empty=new LinearLayout(a);empty.setOrientation(1);empty.setGravity(Gravity.CENTER);empty.setVisibility(View.GONE);emptyText=text("",14,muted);emptyText.setGravity(Gravity.CENTER);empty.addView(emptyText);Button clear=chip("清除筛选");clear.setOnClickListener(v->{quality=hdr=fps=kind="all";updateChips();renderAll();});empty.addView(clear,new LinearLayout.LayoutParams(-2,dp(36)));root.addView(empty,new LinearLayout.LayoutParams(-1,-2));
   ScrollView scroll=new ScrollView(a);LinearLayout list=new LinearLayout(a);list.setOrientation(1);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   if(addons.length()==0){TextView none=text("还没有支持此影片的视频源插件（需要声明 stream 资源）。",14,muted);list.addView(none);if(addAddon!=null)list.addView(button("添加插件",()->{dialog.dismiss();addAddon.run();}));summary.setText("0 个插件");}
   for(int i=0;i<addons.length();i++){
@@ -35,6 +39,12 @@ final class StremioSourceDialog {
   Window w=dialog.getWindow();if(w!=null){w.setBackgroundDrawableResource(android.R.color.transparent);int width=a.getResources().getDisplayMetrics().widthPixels,height=a.getResources().getDisplayMetrics().heightPixels;w.setLayout(Math.min(width-dp(16),dp(640)),(int)(height*.84));w.setGravity(width<dp(600)?Gravity.BOTTOM:Gravity.CENTER);w.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);WindowManager.LayoutParams lp=w.getAttributes();lp.dimAmount=.5f;w.setAttributes(lp);}
   start();
  }
+ Button chip(String label){Button b=new Button(a);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(14),0,dp(14),0);return b;}
+ String value(int f){return f==0?quality:f==1?hdr:f==2?fps:kind;}
+ void cycle(int f){String[] o=FILTERS[f];int at=1;for(int i=1;i<o.length;i+=2)if(o[i].equals(value(f)))at=i;String next=o[at+2<o.length?at+2:1];if(f==0)quality=next;else if(f==1)hdr=next;else if(f==2)fps=next;else kind=next;updateChips();renderAll();}
+ void updateChips(){for(int f=0;f<chips.size();f++){String[] o=FILTERS[f];String label=o[2];for(int i=1;i<o.length;i+=2)if(o[i].equals(value(f)))label=o[i+1];boolean on=!value(f).equals("all");Button c=chips.get(f);c.setText(o[0]+" · "+label);c.setTextColor(on?(light?0xffffffff:0xff10343e):ink);GradientDrawable g=new GradientDrawable();g.setCornerRadius(dp(17));if(on)g.setColor(accent);else{g.setColor(0);g.setStroke(dp(1),light?0xffc9d3da:0xff3d5f6b);}c.setBackground(g);}}
+ boolean visible(JSONObject s){return StreamInfo.parse(s).matches(quality,hdr,fps,kind);}
+ void renderAll(){for(Group g:groups)render(g);}
  boolean valid(int token){return !closed&&!a.isFinishing()&&!a.isDestroyed()&&generation==token;}
  void start(){if(closed)return;int token=++generation;for(Group g:groups)query(g,token);}
  void query(Group g,int token){
@@ -54,18 +64,20 @@ final class StremioSourceDialog {
   String state=g.status.startsWith("查询失败")?"查询失败":g.status;
   g.header.setText(g.name+"\n"+state+"  "+(g.expanded?"⌃":"⌄"));g.content.removeAllViews();
   if(g.expanded){
-   for(int i=0;i<Math.min(100,g.streams.length());i++){
-    JSONObject s=g.streams.optJSONObject(i);if(s==null)continue;String kind=StremioStreams.kind(s);boolean playable=StremioStreams.playable(s);
+   int shown=0;for(int i=0;i<Math.min(100,g.streams.length());i++){
+    JSONObject s=g.streams.optJSONObject(i);if(s==null||!visible(s))continue;shown++;StreamInfo info=StreamInfo.parse(s);String kind=StremioStreams.kind(s);boolean playable=StremioStreams.playable(s);
     LinearLayout item=new LinearLayout(a);item.setOrientation(1);item.setPadding(dp(10),dp(6),dp(10),dp(6));
     String title=s.optString("name",kind).replace('\n',' ').trim();TextView t=text((playable?"▶  ":"·  ")+title,15,playable?ink:muted);t.setTypeface(null,1);t.setPadding(dp(4),dp(2),dp(4),dp(2));item.addView(t);
-    TextView k=text(kind,11,accent);k.setPadding(dp(4),0,dp(4),0);item.addView(k);
+    List<String> tags=info.tags(minutes);TextView k=text(kind+(tags.isEmpty()?"":"  ·  "+String.join(" · ",tags)),11,accent);k.setPadding(dp(4),0,dp(4),0);item.addView(k);
     String desc=s.optString("title",s.optString("description","")).trim();if(!desc.isEmpty()){TextView d=text(desc,12,muted);d.setMaxLines(4);d.setPadding(dp(4),dp(2),dp(4),dp(2));item.addView(d);}
     item.setOnClickListener(v->choose(g,s));g.content.addView(item,new LinearLayout.LayoutParams(-1,-2));
    }
-   if(g.streams.length()==0){TextView status=text(g.status,12,muted);g.content.addView(status);}
+   if(g.streams.length()==0){TextView status=text(g.status,12,muted);g.content.addView(status);}else if(shown==0){g.content.addView(text(g.streams.length()+" 个条目不符合当前筛选",12,muted));}
   }
-  int count=0,done=0;for(Group x:groups){count+=x.streams.length();if(!x.status.equals("等待查询")&&!x.status.equals("查询中…"))done++;}
-  summary.setText(groups.size()+" 个插件 · "+count+" 个条目 · 已完成 "+done+"/"+groups.size());
+  int count=0,done=0,match=0;for(Group x:groups){count+=x.streams.length();for(int i=0;i<x.streams.length();i++)if(visible(x.streams.optJSONObject(i)))match++;if(!x.status.equals("等待查询")&&!x.status.equals("查询中…"))done++;}
+  boolean filtered=!(quality+hdr+fps+kind).equals("allallallall");
+  summary.setText((done<groups.size()?"查询中 · ":"")+"已返回 "+done+"/"+groups.size()+" 个插件 · "+(filtered?"符合筛选 "+match+"/":"")+count+" 个条目");
+  if(empty!=null){boolean finished=done==groups.size()&&!groups.isEmpty();boolean none=finished&&count==0,hidden=count>0&&match==0;empty.setVisibility(none||hidden?View.VISIBLE:View.GONE);emptyText.setText(none?"所有插件都没有返回播放源":"没有符合筛选的播放源");if(empty.getChildCount()>1)empty.getChildAt(1).setVisibility(hidden?View.VISIBLE:View.GONE);}
  }
  void choose(Group g,JSONObject s){
   if(!StremioStreams.playable(s)){new AlertDialog.Builder(a).setTitle(g.name).setMessage(StremioStreams.kind(s)+"\n\n这个条目没有本应用能播放的地址。").setPositiveButton("知道了",null).show();return;}

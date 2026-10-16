@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.guocheng.mediapocket.next" android:versionCode="51" android:versionName="0.1.50">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.guocheng.mediapocket.next" android:versionCode="52" android:versionName="0.1.51">
  <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
  <uses-permission android:name="android.permission.INTERNET"/>
  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -8,7 +8,7 @@
   <activity android:name="com.guocheng.mediapocket.FusionLibraryActivity" android:exported="false"/>
   <activity android:name="com.guocheng.mediapocket.AddonMarketActivity" android:exported="false"/>
   <activity android:name="com.guocheng.mediapocket.TvBoxActivity" android:exported="false"/>
-  <activity android:name="com.guocheng.mediapocket.GesturePlayerActivity" android:exported="false" android:configChanges="orientation|screenSize"/>
+  <activity android:name="com.guocheng.mediapocket.GesturePlayerActivity" android:exported="false" android:supportsPictureInPicture="true" android:resizeableActivity="true" android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout"/>
   <activity-alias android:enabled="true" android:name="com.guocheng.mediapocket.PlayerActivity" android:targetActivity="com.guocheng.mediapocket.GesturePlayerActivity" android:exported="false"/>
  </application>
 </manifest>

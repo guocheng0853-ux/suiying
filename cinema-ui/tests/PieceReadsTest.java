@@ -24,7 +24,7 @@ public class PieceReadsTest {
    check(r.read(37,16,b)==3,"EOF bounded");check(b[0]==37&&b[2]==39,"tail bytes exact");check(r.read(40,16,b)==0,"EOF");
    p.active=false;boolean closed=false;try{r.read(0,1,b);}catch(IOException e){closed=true;}check(closed,"stop cancels reads");
    p.active=true;Thread.currentThread().interrupt();p.ready.clear();boolean interrupted=false;try{r.read(0,1,b);}catch(IOException e){interrupted=Thread.currentThread().isInterrupted();}finally{Thread.interrupted();}check(interrupted,"interrupt preserved");
-   PieceDeadlines d=new PieceDeadlines();check(d.advance(4,500,1000),"first deadline");check(!d.advance(4,500,1100),"overlapping read does not postpone");check(d.advance(4,100,1100),"urgent read advances deadline");check(!d.advance(4,100,10000),"expired urgent deadline stays urgent");check(d.advance(5,500,1100),"independent next piece");
+   PieceDeadlines d=new PieceDeadlines();check(d.advance(4,500,1000),"first deadline");check(!d.advance(4,500,1100),"overlapping read does not postpone");check(d.advance(4,100,1100),"urgent read advances deadline");check(!d.advance(4,500,1150),"pending urgent deadline not postponed");check(d.advance(4,500,10000),"expired deadline can be re-armed");check(!d.advance(4,500,10100),"re-armed deadline suppresses overlap");d.clear(4);check(d.advance(4,800,10100),"cleared piece can be re-armed");d.reset();check(d.advance(4,800,10100),"reset re-arms");check(d.advance(5,500,1100),"independent next piece");
    System.out.println("PASS: verified short reads, unaligned file offsets, timeout recovery, EOF, cancellation, interrupt, earliest deadline scheduling");
   }finally{f.delete();}
  }
