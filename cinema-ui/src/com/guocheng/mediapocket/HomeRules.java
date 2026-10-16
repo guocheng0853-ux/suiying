@@ -25,6 +25,8 @@ final class HomeRules {
   if(f<0.02f)return 0.02f;
   return f>0.98f?0.98f:f;
  }
+ /** 片长可信（≥ 10 秒）且与已存值相差超过 1 秒时才写入，避免每帧写 prefs。 */
+ static boolean shouldStoreDuration(int durationMs,int storedMs){return durationMs>=10000&&Math.abs(durationMs-storedMs)>1000;}
  static int runtimeMinutes(JSONObject meta){
   if(meta==null)return 0;
   int m=StreamInfo.minutes(meta.optString("runtime"));
