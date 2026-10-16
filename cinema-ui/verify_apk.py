@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json,subprocess,re
 root=Path(__file__).resolve().parent
-apk=root.parent/'deliverables/MediaPocket-0.1.61-player-redesign-arm64.apk'
+apk=root.parent/'deliverables/MediaPocket-0.1.62-hero-blend-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]
@@ -23,7 +23,7 @@ def dex(d):
  return classes,methods
 badging=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','badging',str(apk)],text=True).splitlines()[0]
 match=re.search(r"name='([^']+)' versionCode='([^']+)' versionName='([^']+)'",badging)
-assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='62' and match.group(3)=='0.1.61',badging
+assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='63' and match.group(3)=='0.1.62',badging
 seen=set();refs=[];count=0
 with zipfile.ZipFile(apk) as z:
  for n in z.namelist():
@@ -41,7 +41,7 @@ with zipfile.ZipFile(root/'base.apk') as z:
  for api in [('Lorg/videolan/libvlc/LibVLC;','<init>','(Landroid/content/Context;Ljava/util/List;)V'),('Lorg/videolan/libvlc/Media;','<init>','(Lorg/videolan/libvlc/interfaces/ILibVLC;Landroid/net/Uri;)V'),('Lorg/videolan/libvlc/Media;','parseAsync','(II)Z'),('Lorg/videolan/libvlc/Media;','isParsed','()Z'),('Lorg/videolan/libvlc/Media;','getTrackCount','()I'),('Lorg/videolan/libvlc/Media;','getTrack','(I)Lorg/videolan/libvlc/interfaces/IMedia$Track;')]:assert api in methods,('Missing track probe API',api)
  for name,method,proto in [('TvBoxNet','fetch','(Ljava/lang/String;Lorg/json/JSONObject;Ljava/lang/String;)Ljava/lang/String;'),('TvBoxRules','resolve','(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;'),('UiImages','<init>','()V'),('UiImages','load','(Landroid/widget/ImageView;Ljava/lang/String;I)V')]:
   assert ('Lcom/guocheng/mediapocket/'+name+';',method,proto) in methods,(name,method,proto)
-validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':62,'application_id':match.group(1),'review_build':match.group(1).endswith('.review'),'default_home_provider':'stremio','android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
+validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':63,'application_id':match.group(1),'review_build':match.group(1).endswith('.review'),'default_home_provider':'stremio','android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
  'header_route_patch':'VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)',
  'jvm_playback_chain_test':'HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.',
  'real_source_playback_tested':False,'real_source_note':'cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build',
