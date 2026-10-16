@@ -17,7 +17,7 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 5957,
+  "unique_classes": 5964,
   "dex_files": 3,
   "main_version_code": 56,
   "application_id": "com.guocheng.mediapocket.next",
@@ -39,8 +39,8 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "jvm_regression_tests": 37,
-  "jvm_regression_tests_passed": 37,
+  "jvm_regression_tests": 38,
+  "jvm_regression_tests_passed": 38,
   "detail_metadata_parallel_lookup_tested": true,
   "detail_metadata_placeholder_rejected": true,
   "detail_metadata_cache_merge_tested": true,
@@ -64,5 +64,9 @@
   "scene_caption_translation": "fixed horizontal anchor; opacity crossfade; two-line description baseline",
   "scene_ambient_background": "artwork-sampled tone interpolation and cached tiny-image backdrop; RenderEffect on API31+",
   "scene_android_visual_tested": false,
-  "scene_android_frame_rate_measured": false
+  "scene_android_frame_rate_measured": false,
+  "external_player_headers_sanitized": true,
+  "link_probe_hard_deadline": true,
+  "dlna_busy_cleared_on_dismiss": true,
+  "home_atmosphere_off_ui_sampling": true
 }
