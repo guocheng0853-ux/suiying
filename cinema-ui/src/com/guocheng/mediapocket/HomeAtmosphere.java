@@ -1,0 +1,16 @@
+package com.guocheng.mediapocket;
+import android.graphics.*;import android.graphics.drawable.*;import android.view.*;import android.widget.*;import java.util.*;
+/** Full-screen soft artwork backdrop, with tiny cached thumbnails and no per-frame bitmap allocations. */
+final class HomeAtmosphere extends FrameLayout {
+ final ScrapedMainActivity a;final ImageView before,after;final WeakHashMap<Bitmap,Visual> cache=new WeakHashMap<>();Visual shownBefore,shownAfter;int generation;int currentTone;
+ static final class Blur31 {static void apply(View view,int radius){view.setRenderEffect(RenderEffect.createBlurEffect(radius,radius,Shader.TileMode.CLAMP));}}
+ static final class Visual {final Bitmap thumb;final int tone;Visual(Bitmap thumb,int tone){this.thumb=thumb;this.tone=tone;}}
+ HomeAtmosphere(ScrapedMainActivity a){super(a);this.a=a;currentTone=a.surface();setBackgroundColor(currentTone);before=new ImageView(a);after=new ImageView(a);for(ImageView view:new ImageView[]{before,after}){view.setScaleType(ImageView.ScaleType.CENTER_CROP);view.setAlpha(0f);addView(view,new LayoutParams(-1,-1));if(android.os.Build.VERSION.SDK_INT>=31)Blur31.apply(view,a.dp(24));}}
+ Visual visual(ImageView view){if(view==null||!(view.getDrawable() instanceof BitmapDrawable))return null;Bitmap source=((BitmapDrawable)view.getDrawable()).getBitmap();if(source==null||source.isRecycled())return null;Visual cached=cache.get(source);if(cached!=null)return cached;try{long r=0,g=0,b=0;int count=0,w=source.getWidth(),h=source.getHeight();for(int y=1;y<12;y++)for(int x=1;x<12;x++){int pixel=source.getPixel(x*w/12,y*h/12);r+=(pixel>>16)&255;g+=(pixel>>8)&255;b+=pixel&255;count++;}int average=0xff000000|((int)(r/count)<<16)|((int)(g/count)<<8)|(int)(b/count);float scale=32f/Math.max(w,h);Bitmap thumb=Bitmap.createScaledBitmap(source,Math.max(1,Math.round(w*scale)),Math.max(1,Math.round(h*scale)),true);Visual result=new Visual(thumb,SceneRules.tone(average,a.light));cache.put(source,result);return result;}catch(RuntimeException e){return null;}}
+ void blend(ImageView outgoing,ImageView incoming,float progress){if(!a.homeCanvas)return;Visual old=visual(outgoing),next=visual(incoming);if(old==null)old=shownBefore;if(next==null)next=old;if(old==null){paint(a.surface());return;}if(shownBefore!=old){shownBefore=old;before.setImageBitmap(old.thumb);}if(next!=null&&shownAfter!=next){shownAfter=next;after.setImageBitmap(next.thumb);}float t=SceneRules.fade(progress);before.setAlpha(.16f*(1-t));after.setAlpha(.16f*t);paint(SceneRules.blend(old.tone,next==null?old.tone:next.tone,t));}
+ void paint(int color){if(color!=currentTone){currentTone=color;setBackgroundColor(color);}if(a.heroShadeDrawable!=null)a.heroShadeDrawable.setColors(new int[]{0x00000000,color&0x00ffffff,(color&0x00ffffff)|0xd9000000,color});}
+ void sync(ImageView image){final int ticket=++generation;poll(image,ticket,0);}
+ void poll(ImageView image,int ticket,int attempts){if(ticket!=generation||!a.homeCanvas||a.isFinishing())return;if(a.heroSwipe!=null&&a.heroSwipe.busy()){if(attempts<100)postDelayed(()->poll(image,ticket,attempts+1),200);return;}if(visual(image)!=null){blend(image,null,0);return;}if(attempts<80)postDelayed(()->poll(image,ticket,attempts+1),200);}
+ void stop(){generation++;}
+ @Override protected void onDetachedFromWindow(){stop();super.onDetachedFromWindow();}
+}
