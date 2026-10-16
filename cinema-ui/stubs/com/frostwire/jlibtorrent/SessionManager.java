@@ -1,1 +1,1 @@
-package com.frostwire.jlibtorrent;public class SessionManager{public void applySettings(SettingsPack p){} public SettingsPack settings(){return null;}}
+package com.frostwire.jlibtorrent;public class SessionManager{public void applySettings(SettingsPack p){} public SettingsPack settings(){return null;} public byte[] fetchMagnet(String uri,int timeout,java.io.File tempDir){return null;}}

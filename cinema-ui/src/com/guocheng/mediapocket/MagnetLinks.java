@@ -8,7 +8,8 @@ final class MagnetLinks {
  static final Pattern HASH=Pattern.compile("(?i)(?:^|[?&])xt(?:\\.\\d+)?=urn:btih:([0-9a-z]{32,40})");
  static final Pattern TRACKER=Pattern.compile("(?i)(?:^|[?&])tr=([^&#]*)");
  static final String BASE32="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
- static final class Info {final String infoHash;final JSONArray trackers;Info(String h,JSONArray t){infoHash=h;trackers=t;}}
+ static final class Info {final String infoHash,name;final JSONArray trackers;Info(String h,JSONArray t){this(h,t,"");}Info(String h,JSONArray t,String n){infoHash=h;trackers=t;name=n==null?"":n;}}
+ static final Pattern NAME=Pattern.compile("(?i)(?:^|[?&])dn=([^&#]*)");
  private MagnetLinks(){}
  static String normalize(String raw){
   if(raw==null)return "";
@@ -25,7 +26,8 @@ final class MagnetLinks {
   JSONArray trackers=new JSONArray();LinkedHashSet<String> seen=new LinkedHashSet<>();
   Matcher m=TRACKER.matcher(v);
   while(m.find()){String t=m.group(1);try{t=URLDecoder.decode(t,"UTF-8");}catch(Exception ignored){}t=t.trim();if(t.isEmpty()||!seen.add(t))continue;trackers.put("tracker:"+t);}
-  return new Info(hash,trackers);
+  String name="";Matcher d=NAME.matcher(v);if(d.find()){name=d.group(1);try{name=URLDecoder.decode(name,"UTF-8");}catch(Exception ignored){}}
+  return new Info(hash,trackers,name.trim());
  }
  static String hash(String magnet){
   Matcher m=HASH.matcher(magnet);String base32=null;

@@ -1,0 +1,1 @@
+package com.frostwire.jlibtorrent;/** Compile-only ABI from base.apk; never packaged. */public class FileStorage{public int numFiles(){return 0;} public String filePath(int i){return null;} public long fileSize(int i){return 0;}}

@@ -1,0 +1,1 @@
+package com.frostwire.jlibtorrent;/** Compile-only ABI from base.apk; never packaged. */public class TorrentInfo{public static TorrentInfo bdecode(byte[] data){return null;} public FileStorage files(){return null;}}

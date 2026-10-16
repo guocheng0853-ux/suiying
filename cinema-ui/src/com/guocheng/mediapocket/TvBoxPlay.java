@@ -43,7 +43,7 @@ final class TvBoxPlay {
   return direct;
  }
  static Resolved torrent(FusionCatalog.Session s,String flag,MagnetLinks.Info magnet,JSONObject h){
-  try{JSONObject stream=new JSONObject().put("url","").put("infoHash",magnet.infoHash).put("sources",magnet.trackers).put("name",s.site.optString("name")+(flag==null||flag.isEmpty()?"":" · "+flag)).put("behaviorHints",new JSONObject().put("proxyHeaders",new JSONObject().put("request",h))).put("mediapocket.via","磁力 / P2P").put("mediapocket.check","磁力 · 交给 P2P 引擎");return new Resolved(stream,new LinkProbe.Result(false,false,"磁力","交给 P2P 引擎"),"磁力 / P2P");}catch(JSONException e){throw new RuntimeException(e);}
+  try{JSONObject stream=new JSONObject().put("url","").put("infoHash",magnet.infoHash).put("sources",magnet.trackers).put("name",s.site.optString("name")+(flag==null||flag.isEmpty()?"":" · "+flag)).put("behaviorHints",new JSONObject().put("proxyHeaders",new JSONObject().put("request",h))).put("mp.magnetName",magnet.name).put("mediapocket.via","磁力 / P2P").put("mediapocket.check","磁力 · 交给 P2P 引擎");return new Resolved(stream,new LinkProbe.Result(false,false,"磁力","交给 P2P 引擎"),"磁力 / P2P");}catch(JSONException e){throw new RuntimeException(e);}
  }
  /** 爬虫没把磁力原样返回时，选集值本身已是 magnet 就直接交给 P2P，不再当成 HTTP 读取失败。 */
  static JSONObject orMagnet(JSONObject response,String value)throws JSONException{if(response!=null&&!response.optString("url").isEmpty())return response;if(!MagnetLinks.isMagnet(value))return response==null?new JSONObject():response;return new JSONObject().put("parse",0).put("jx",0).put("url",value.trim());}
