@@ -12,6 +12,8 @@ final class PlayerGestureRules {
  /** 一次手势只锁定一个方向；夹角不明确（比值 < 1.2）时继续等待。 */
  static int axis(float dx,float dy,float slop){float ax=Math.abs(dx),ay=Math.abs(dy);if(ax>=slop&&ax>=ay*1.2f)return HORIZONTAL;if(ay>=slop&&ay>=ax*1.2f)return VERTICAL;return NONE;}
  static int tapDelta(int third){return third==LEFT?-TAP_SEEK_MS:third==RIGHT?TAP_SEEK_MS:0;}
+ /** 双击左右后的短暂提示。左右按钮不出现，只显示这一行。 */
+ static String tapHint(int deltaMs){return deltaMs<0?"-10s":"+10s";}
  /** 横向滑满整个屏幕对应的时长：片长 / 20，限制在 60 秒～3 分钟，且不超过片长。 */
  static int seekSpan(int durationMs){if(durationMs<=0)return 0;return Math.min(durationMs,Math.max(60000,Math.min(180000,durationMs/20)));}
  static int clampSeek(long target,int durationMs){if(durationMs<=0)return (int)Math.max(0,target);long max=Math.max(0,durationMs-1000L);return (int)Math.max(0,Math.min(max,target));}
