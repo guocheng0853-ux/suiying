@@ -31,6 +31,6 @@ final class FusionCatalog {
    String rating=v.optString("vod_douban_score");try{double score=Double.parseDouble(rating);if(score>0&&score<=10)m.put("imdbRating",rating);}catch(Exception ignored){}out.put(m);
   }return out;
  }
- static String plain(String html){return android.text.Html.fromHtml(html,android.text.Html.FROM_HTML_MODE_LEGACY).toString().trim();}
+ static String plain(String html){return SynopsisText.plain(html);}
  static void open(Context c,JSONObject m){Intent in=new Intent(c,FusionLibraryActivity.class);in.putExtra("config",m.optString("fusion.config"));in.putExtra("site",m.optString("fusion.site"));in.putExtra("id",m.optString("id"));in.putExtra("category",m.optString("fusion.category"));c.startActivity(in);}
 }

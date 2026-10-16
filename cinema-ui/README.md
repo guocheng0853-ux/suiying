@@ -1,3 +1,13 @@
+# 随影 0.1.64 影视仓磁力选集与简介实体
+
+详情页状态行「读取失败：仅支持 HTTP / HTTPS 地址」不是详情接口失败。选集点下去之后，`FusionLibraryActivity.play` 把爬虫返回的播放地址交给 `TvBoxPlay`，而 `TvBoxPlay` 对所有地址都调用 `TvBoxRules.resolve`。这个检查是给配置、jar 和直播列表用的，只接受 HTTP/HTTPS。磁力选集（`magnet:?xt=urn:btih:…`，页面上显示成「此磁力源是边下载边播」）因此在详情页被记成读取失败，到不了播放器。
+
+原播放器在 `stream` 带 40 位 `infoHash` 时会调用 `TorrentEngine.start`，由 jlibtorrent 边下边播；没有 `infoHash` 才把 `url` 交给 HTTP/VLC。磁力现在抽出 v1 哈希（十六进制或 Base32）和原始 tracker，放进这条已有的 P2P 路径，不再做 HTTP 探测。配置和 jar 地址仍然拒绝非 HTTP。只有 v2 哈希时说明当前引擎不支持，而不是报「仅支持 HTTP」。
+
+简介里的 `vod_content` 会把 `&mdash;`、缺了 `&` 的 `mdash;`、`&amp;`、`&nbsp;` 和数字实体解码后再去掉 HTML 标签，所以「mdash;mdash;」显示成 ——。
+
+版本 0.1.64 / code 65。构建、签名、DEX 补丁自检与 46 个测试通过。没有在真机上播放这路磁力。
+
 # 随影 0.1.63 进入播放页立即横屏
 
 播放页原来不锁方向：清单里没有 `screenOrientation`，铺满屏幕只改画面比例和沉浸式。顶栏「旋转」才会调用 `setRequestedOrientation`，在当前横屏和竖屏之间切换。
