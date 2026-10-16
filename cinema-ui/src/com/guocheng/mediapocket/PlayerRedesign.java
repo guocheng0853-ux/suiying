@@ -4,7 +4,7 @@ import android.app.Activity;import android.content.res.ColorStateList;import and
  * 0.1.61 播放页重新排版（在原播放器控件上整理，不重建播放逻辑）：
  *  顶栏：‹ 片名 …… 画中画 · 旋转（只留图标）；去掉与底栏重复的「视频」（同「播放器」菜单）。
  *  中间：只留播放/暂停。左右「后退 / 前进 10 秒」按钮不显示，双击左右三分之一直接跳转。
- *  底栏：状态 → 进度条 → 胶囊按钮行；「倍速」是唯一的调速入口并显示当前倍速。
+ *  底栏：状态 → 进度条 → 胶囊按钮行。倍速改到画面右侧，底栏不再留一颗。
  * 幂等：可反复调用（补齐后加入的按钮、横竖屏切换后重新定位）。
  */
 final class PlayerRedesign {
@@ -60,7 +60,7 @@ final class PlayerRedesign {
    LinearLayout row=(LinearLayout)inner;row.setGravity(Gravity.CENTER);row.setPadding(0,dp(a,6),0,0);
    for(int n=0;n<row.getChildCount();n++){
     View v=row.getChildAt(n);if(!(v instanceof Button))continue;Button btn=(Button)v;
-    if(desc(btn).equals("倍速")||btn.getTag()=="mp-speed"){btn.setTag("mp-speed");btn.setOnClickListener(x->PlayerChrome.chooseSpeed(a));speedLabel(a,btn);}
+    if(desc(btn).equals("倍速")||"mp-speed".equals(btn.getTag())){btn.setTag("mp-speed");btn.setVisibility(View.GONE);continue;}
     if(STYLED.containsKey(v))continue;
     btn.setTextSize(13);btn.setBackground(pill(a,0x29ffffff));btn.setPadding(dp(a,14),0,dp(a,16),0);btn.setMinHeight(0);btn.setMinimumHeight(0);
     LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-2,dp(a,38));lp.leftMargin=dp(a,4);lp.rightMargin=dp(a,4);btn.setLayoutParams(lp);
@@ -70,5 +70,5 @@ final class PlayerRedesign {
  }
  /** 倍速按钮文字：1.0× 时显示「倍速」，否则直接显示当前倍速。 */
  static void speedLabel(Activity a,Button b){float s=PlaybackPrefs.speed(PlayerChrome.prefs(a));b.setText(Math.abs(s-1f)<0.01f?"倍速":PlaybackPrefs.speedLabel(s));b.setContentDescription("倍速");}
- static void refreshSpeed(Activity a){Object b=OnlineSubtitleSearch.field(a,"bottom");if(!(b instanceof View))return;View v=((View)b).findViewWithTag("mp-speed");if(v instanceof Button)speedLabel(a,(Button)v);}
+ static void refreshSpeed(Activity a){PlayerChrome c=PlayerChrome.ALL.get(a);if(c!=null&&c.speed!=null)speedLabel(a,c.speed);}
 }

@@ -17,7 +17,7 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 5998,
+  "unique_classes": 5999,
   "dex_files": 3,
   "main_version_code": 64,
   "application_id": "com.guocheng.mediapocket.next",

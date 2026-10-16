@@ -1,6 +1,6 @@
 package com.guocheng.mediapocket;
 import android.app.*;import android.content.*;import android.graphics.drawable.Icon;import android.os.*;import android.util.Rational;import android.view.*;import android.widget.*;import java.util.*;
-/** 播放页附加控件：顶栏「比例循环」「画中画」，右侧缩放条 + / 1.0x / −。 */
+/** 播放页附加控件：顶栏「画中画」，画面右侧「倍速」（点按循环，长按列表）。 */
 final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
  static final String ACTION="com.guocheng.mediapocket.PIP_CONTROL";
  static final Map<Activity,PlayerChrome> ALL=new WeakHashMap<>();
@@ -13,9 +13,11 @@ final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
  static void install(Activity a){try{if(ALL.containsKey(a))return;PlayerChrome c=new PlayerChrome(a);if(!c.build())return;ALL.put(a,c);a.getApplication().registerActivityLifecycleCallbacks(c);c.monitor.post(c.pulse);}catch(Exception ignored){}}
  static void refresh(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.update();}
  static void tick(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.poll();}
- /** 0.1.61：顶栏只加「画中画」；倍速统一由底栏按钮负责。底栏「比例」每次点击循环下一种画面比例（双指缩放保留），不再加重复按钮和右侧缩放条。 */
+ /** 顶栏只加「画中画」。倍速在画面右侧：点一下循环，长按打开列表。底栏「比例」每次点击循环画面比例。 */
  boolean build(){Object top=OnlineSubtitleSearch.field(a,"top"),root=OnlineSubtitleSearch.field(a,"root");if(!(top instanceof LinearLayout)||!(root instanceof FrameLayout))return false;LinearLayout t=(LinearLayout)top;
   if(Build.VERSION.SDK_INT>=26&&a.getPackageManager().hasSystemFeature("android.software.picture_in_picture")){pip=button("","画中画",v->enterPip());t.addView(pip,new LinearLayout.LayoutParams(-2,dp(48)));}
+  speed=button("倍速","倍速",v->cycleSpeed());speed.setOnLongClickListener(v->{chooseSpeed();return true;});speed.setTextSize(13);speed.setSingleLine(true);speed.setBackground(PlayerRedesign.circle(0x59000000));speed.setMinWidth(dp(72));speed.setMinimumWidth(dp(72));speed.setPadding(dp(12),0,dp(12),0);PlayerRedesign.speedLabel(a,speed);speed.setVisibility(View.GONE);
+  FrameLayout.LayoutParams side=new FrameLayout.LayoutParams(-2,dp(44),Gravity.END|Gravity.CENTER_VERTICAL);side.rightMargin=dp(16);side.topMargin=dp(56);side.bottomMargin=dp(96);((FrameLayout)root).addView(speed,side);
   PlayerRedesign.apply(a);update();poll();return true;}
  static void chooseSpeed(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.chooseSpeed();}
  void step(float f){SharedPreferences p=prefs(a);p.edit().putFloat("zoomX",FullscreenRules.clamp(p.getFloat("zoomX",1f)*f)).putFloat("zoomY",FullscreenRules.clamp(p.getFloat("zoomY",1f)*f)).apply();FullscreenMode.applyZoom(a);update();}
@@ -31,7 +33,7 @@ final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
  /** 1 秒中央提示。 */
  void toast(String text){Object root=OnlineSubtitleSearch.field(a,"root");if(!(root instanceof FrameLayout))return;TextView v=new TextView(a);v.setText(text);v.setTextColor(0xffffffff);v.setTextSize(18);v.setPadding(dp(18),dp(10),dp(18),dp(10));v.setBackgroundColor(0xb0000000);((FrameLayout)root).addView(v,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));v.postDelayed(()->((FrameLayout)root).removeView(v),1000);}
  /** 每 500ms 随 applyZoom 调用：缩放条跟随顶栏显隐；画中画内隐藏全部控件；退出时注销广播。 */
- void poll(){Object top=OnlineSubtitleSearch.field(a,"top");boolean p=Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode();if(p)pipWait=0;else if(pipWait>0&&--pipWait==0)PlaybackOrientation.resumeAfterPip(a);if(p&&!inPip){try{OnlineSubtitleSearch.call(a,"controls",new Class<?>[]{boolean.class},false);}catch(Exception ignored){}}if(inPip&&!p){PlaybackOrientation.resumeAfterPip(a);update();}inPip=p;if(zoomBar!=null)zoomBar.setVisibility(!p&&!PlayerGestures.locked(a)&&top instanceof View&&((View)top).getVisibility()==View.VISIBLE?View.VISIBLE:View.GONE);if(p)updatePipActions();PlayerGestures.tick(a,p);if(++ticks%8==0){recordDuration();PlayerRedesign.apply(a);}AutoNext.tick(a,p);if(a.isDestroyed())dispose();}
+ void poll(){Object top=OnlineSubtitleSearch.field(a,"top");boolean p=Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode();if(p)pipWait=0;else if(pipWait>0&&--pipWait==0)PlaybackOrientation.resumeAfterPip(a);if(p&&!inPip){try{OnlineSubtitleSearch.call(a,"controls",new Class<?>[]{boolean.class},false);}catch(Exception ignored){}}if(inPip&&!p){PlaybackOrientation.resumeAfterPip(a);update();}inPip=p;boolean chrome=!p&&!PlayerGestures.locked(a)&&top instanceof View&&((View)top).getVisibility()==View.VISIBLE;if(zoomBar!=null)zoomBar.setVisibility(chrome?View.VISIBLE:View.GONE);if(speed!=null)speed.setVisibility(chrome?View.VISIBLE:View.GONE);if(p)updatePipActions();PlayerGestures.tick(a,p);if(++ticks%8==0){recordDuration();PlayerRedesign.apply(a);}AutoNext.tick(a,p);if(a.isDestroyed())dispose();}
  boolean playing(){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"isPlaying",new Class<?>[0]);return Boolean.TRUE.equals(r);}catch(Exception e){return false;}}
  Boolean shownPlaying;int ticks;
  PictureInPictureParams params(){int[] size=videoSize();PictureInPictureParams.Builder b=new PictureInPictureParams.Builder();float r=FullscreenRules.pipRatio(size[0],size[1]);b.setAspectRatio(new Rational(Math.round(r*1000),1000));boolean on=playing();shownPlaying=on;List<RemoteAction> actions=new ArrayList<>();actions.add(action(on?android.R.drawable.ic_media_pause:android.R.drawable.ic_media_play,on?"暂停":"播放",1));actions.add(action(android.R.drawable.ic_menu_close_clear_cancel,"关闭",2));b.setActions(actions);return b.build();}
