@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.52",
+  "ui_version": "0.1.53",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -17,9 +17,9 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 5904,
+  "unique_classes": 5908,
   "dex_files": 3,
-  "main_version_code": 53,
+  "main_version_code": 54,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",
@@ -39,8 +39,8 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "jvm_regression_tests": 32,
-  "jvm_regression_tests_passed": 32,
+  "jvm_regression_tests": 33,
+  "jvm_regression_tests_passed": 33,
   "detail_metadata_parallel_lookup_tested": true,
   "detail_metadata_placeholder_rejected": true,
   "detail_metadata_cache_merge_tested": true,
@@ -50,5 +50,9 @@
   "reference_ui_android_tested": false,
   "casting_implemented": false,
   "chapters_implemented": false,
-  "signature_certificate_sha256": "87a44d822580215fff01d604b1fedb31e52d69b42eb85ffbcd8b65aea21783d1"
+  "signature_certificate_sha256": "87a44d822580215fff01d604b1fedb31e52d69b42eb85ffbcd8b65aea21783d1",
+  "carousel_swipe_policy_tested": true,
+  "carousel_android_gesture_tested": false,
+  "carousel_android_frame_rate_measured": false,
+  "carousel_transition": "native ValueAnimator; continuous adjacent-page translation; velocity/distance settling; cancel/rebound; background preloading; lifecycle cleanup"
 }
