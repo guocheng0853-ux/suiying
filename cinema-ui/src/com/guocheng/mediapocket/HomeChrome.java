@@ -10,6 +10,7 @@ final class HomeChrome {
  TextView sourceSwitcher(){
   String provider=a.prefs.getString("fusion.homeProvider","stremio"),sourceId=a.prefs.getString("home.source.v1","current");
   JSONArray options;try{options=HomeRules.sourceOptions(HomeSources.list(a));}catch(Exception e){try{options=HomeRules.sourceOptions(new JSONArray());}catch(Exception x){options=new JSONArray();}}
+  try{JSONArray servers=EmbyStore.list(a);for(int i=0;i<servers.length();i++){JSONObject s=servers.optJSONObject(i);if(s!=null&&!s.optString("id").isEmpty())options.put(HomeRules.opt("provider:emby:"+s.optString("id"),s.optString("name","Emby")+" · Emby","emby"));}}catch(Exception ignored){}
   String id=HomeRules.selectedId(provider,sourceId);
   TextView t=a.text(HomeRules.labelFor(options,id)+"  ▾",16,0xffffffff);t.setTypeface(null,1);
   t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
@@ -44,9 +45,10 @@ final class HomeChrome {
   @Override public void dismiss(){if(closing==null||finished){finish();return;}closing.run();}
   void finish(){if(finished)return;finished=true;try{if(isShowing())super.dismiss();}catch(Exception ignored){}}
  }
- void continueWatching(JSONArray history){
-  if(history==null||history.length()==0)return;
-  a.body.addView(a.heading("继续观看"));
+ void continueWatching(JSONArray history){continueWatching(a.body,history,"继续观看");}
+ void continueWatching(LinearLayout parent,JSONArray history,String heading){
+  if(history==null||history.length()==0||parent==null)return;
+  parent.addView(a.heading(heading));
   HorizontalScrollView scroller=new HorizontalScrollView(a);scroller.setHorizontalScrollBarEnabled(false);scroller.setClipToPadding(false);
   LinearLayout row=new LinearLayout(a);row.setGravity(Gravity.TOP);
   int available=a.getResources().getDisplayMetrics().widthPixels-dp(32),width=Math.min((available-dp(10))/2,dp(220));
@@ -55,7 +57,7 @@ final class HomeChrome {
    LinearLayout card=continueCard(m,width);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(width,-2);lp.rightMargin=dp(10);row.addView(card,lp);
   }
-  scroller.addView(row);a.body.addView(scroller);
+  scroller.addView(row);parent.addView(scroller);
  }
  LinearLayout continueCard(JSONObject meta,int width){
   LinearLayout c=new LinearLayout(a);c.setOrientation(1);c.setPadding(0,0,0,dp(6));
@@ -66,6 +68,7 @@ final class HomeChrome {
   TvPosterImages.load(a,img,art,width);
   String epId=meta.optString("lastEpisode",meta.optString("id"));
   int pos=a.prefs.getInt("pos:"+epId,0),dur=a.prefs.getInt("dur:"+epId,0);
+  if(pos<=0&&meta.optLong("emby.resumeMs")>0)pos=(int)Math.min(Integer.MAX_VALUE,meta.optLong("emby.resumeMs"));
   float frac=HomeRules.progress(pos,dur,HomeRules.runtimeMinutes(meta));
   if(frac>0){
    FrameLayout barHost=new FrameLayout(a);barHost.setBackgroundColor(0x66000000);
@@ -76,8 +79,8 @@ final class HomeChrome {
   }
   c.addView(frame,new LinearLayout.LayoutParams(width,(int)(width/1.72f)));
   TextView title=a.text(meta.optString("name","影片"),12,a.ink());title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
-  TextView sub=a.text(HomeRules.episodeLabel(epId),10,a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
-  c.setOnClickListener(v->a.openItem(meta));
+  String line=meta.optString("emby.line");TextView sub=a.text(line.isEmpty()?HomeRules.episodeLabel(epId):line,10,a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
+  c.setOnClickListener(v->{if(meta.optBoolean("emby.directPlay"))EmbyPlayback.play(a,meta);else a.openItem(meta);});
   return c;
  }
  /** 媒体库分类瓦片（电影/剧集/动画…），可附带缓存海报拼贴。 */
