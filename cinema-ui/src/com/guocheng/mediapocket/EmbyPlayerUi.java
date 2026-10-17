@@ -18,7 +18,8 @@ final class EmbyPlayerUi {
   int pos=EmbyPlayback.position(a),dur=duration();
   String mode=EmbyCue.skipMode(a.getSharedPreferences("data",0).getString("emby.skip",EmbyCue.ASK));
   String text=EmbyCue.skipText(span,pos,dur);Long target=EmbyCue.skipTo(span,pos,dur,mode);
-  if(EmbyCue.AUTO.equals(mode)&&target!=null&&text!=null){if("跳过片头".equals(text)&&!"intro".equals(skipLabel)){skipLabel="intro";EmbyPlayback.seek(a,target.intValue());}else if("跳过片尾".equals(text)&&!"credits".equals(skipLabel)){skipLabel="credits";EmbyPlayback.seek(a,target.intValue());}}
+  boolean handoff=EmbyCue.nextDue(PlaybackPrefs.autoNext(a.getSharedPreferences("data",0)),seriesNext()!=null,cancelledNext,pos,dur,span.creditsStart);
+  if(EmbyCue.AUTO.equals(mode)&&target!=null&&text!=null&&!("跳过片尾".equals(text)&&handoff)){if("跳过片头".equals(text)&&!"intro".equals(skipLabel)){skipLabel="intro";EmbyPlayback.seek(a,target.intValue());}else if("跳过片尾".equals(text)&&!"credits".equals(skipLabel)){skipLabel="credits";EmbyPlayback.seek(a,target.intValue());}}
   if(text==null||!text.equals(skipLabel)){if(text!=null&&!EmbyCue.AUTO.equals(mode)){skipLabel=text;skipShownAt=SystemClock.elapsedRealtime();}else if(!EmbyCue.AUTO.equals(mode))skipLabel=null;}
   boolean show=EmbyCue.showSkipButton(mode,text,chrome,skipShownAt<0?-1:SystemClock.elapsedRealtime()-skipShownAt);
   if(show)showSkip(text,target);else hideSkip();
