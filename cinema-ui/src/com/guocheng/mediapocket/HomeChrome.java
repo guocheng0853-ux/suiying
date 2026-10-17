@@ -1,5 +1,5 @@
 package com.guocheng.mediapocket;
-import android.app.*;import android.content.*;import android.content.res.ColorStateList;import android.graphics.drawable.GradientDrawable;import android.view.*;import android.widget.*;import org.json.*;
+import android.app.*;import android.content.*;import android.content.res.ColorStateList;import android.graphics.drawable.GradientDrawable;import android.os.Build;import android.view.*;import android.widget.*;import org.json.*;
 /** Hills/Emby 风格首页：顶栏片源下拉、续播进度条、媒体库瓦片、海报角标；底栏由 ScrapedMainActivity 组装。 */
 final class HomeChrome {
  final ScrapedMainActivity a;
@@ -130,10 +130,28 @@ final class HomeChrome {
   t.setBackground(round(badge.startsWith("★")?0xd0173b4b:0xd03a7ca8,badge.startsWith("★")?6:10));
   FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.RIGHT);p.setMargins(0,dp(6),dp(6),0);frame.addView(t,p);
  }
- /** 绑定 Hero 文案（评分·年份·类型 + 简介）。 */
+ /** 绑定 Hero 文案。影视仓只留标题，有简介才显示简介。 */
  void bindHeroText(JSONObject m){
-  if(a.heroFacts!=null)a.heroFacts.setText(HomeRules.heroFacts(m));
-  if(a.heroDescription!=null)a.heroDescription.setText(HomeRules.heroDescription(m));
+  String facts=HomeRules.heroFacts(m),desc=HomeRules.heroDescription(m);
+  if(a.heroFacts!=null){a.heroFacts.setText(facts);a.heroFacts.setVisibility(facts.isEmpty()?View.GONE:View.VISIBLE);}
+  if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(desc.isEmpty()?View.GONE:View.VISIBLE);}
   if(a.heroTitle!=null){String logo=m.optString("logo");a.heroTitle.setText(m.optString("name","影片"));a.heroTitle.setTextSize(logo.isEmpty()?26:16);}
+ }
+ /** 竖版海报：模糊放大的同一张图当底，上面放一张完整竖图。横版背景只铺满。 */
+ void dressHero(FrameLayout slide,ImageView backdrop,JSONObject m){
+  if(slide==null||backdrop==null)return;
+  for(int i=slide.getChildCount()-1;i>=0;i--){View child=slide.getChildAt(i);if("mp-hero-extra".equals(child.getTag()))slide.removeViewAt(i);}
+  boolean portrait=HomeHeroRules.portraitHero(m);
+  if(Build.VERSION.SDK_INT>=31){if(portrait)HomeAtmosphere.Blur31.apply(backdrop,a.dp(28));else HomeAtmosphere.Flat31.apply(backdrop);}
+  backdrop.setImageDrawable(null);
+  String bg=HomeHeroRules.backdropOf(m);
+  if(!bg.isEmpty())TvPosterImages.load(a,backdrop,bg,a.getResources().getDisplayMetrics().widthPixels);
+  if(!portrait)return;
+  View dim=new View(a);dim.setTag("mp-hero-extra");dim.setBackgroundColor(0x66000000);slide.addView(dim,new FrameLayout.LayoutParams(-1,-1));
+  int screen=a.getResources().getDisplayMetrics().widthPixels,cw=HomeHeroRules.posterWidth(screen),ch=HomeHeroRules.posterHeight(cw);
+  FrameLayout card=new FrameLayout(a);card.setTag("mp-hero-extra");GradientDrawable shape=new GradientDrawable();shape.setColor(a.card());shape.setCornerRadius(a.dp(16));card.setBackground(shape);card.setClipToOutline(true);card.setElevation(a.dp(10));
+  ImageView poster=new ImageView(a);poster.setScaleType(ImageView.ScaleType.CENTER_CROP);card.addView(poster,new FrameLayout.LayoutParams(-1,-1));
+  FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(cw,ch,Gravity.TOP|Gravity.CENTER_HORIZONTAL);lp.topMargin=a.safeTop+a.dp(72);slide.addView(card,lp);
+  String pic=HomeHeroRules.posterOf(m);if(!pic.isEmpty())TvPosterImages.load(a,poster,pic,cw);
  }
 }

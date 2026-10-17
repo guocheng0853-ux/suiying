@@ -63,9 +63,9 @@ final class HomeRules {
   if(last.length()==4){int y=Integer.parseInt(last);if(y>=1900&&y<=2100)return "";}
   return last;
  }
- /** Hero 信息行：★ 评分 · 年份 · 类型。 */
+ /** Hero 信息行：★ 评分 · 年份 · 类型。影视仓不写站点、清晰度、年份和类型。 */
  static String heroFacts(JSONObject m){
-  if(m==null)return "";
+  if(m==null||HomeHeroRules.tvboxHero(m))return "";
   ArrayList<String> parts=new ArrayList<>();
   String score=m.optString("imdbRating","").trim();
   if(!score.isEmpty()&&!score.equals("null"))parts.add("★ "+score);
@@ -73,7 +73,6 @@ final class HomeRules {
   if(!year.isEmpty())parts.add(year.split("[–-]")[0].trim());
   String g=genresJoined(m,"/");
   if(!g.isEmpty())parts.add(g);
-  if(m.has("fusion.site"))parts.add(0,"影视仓 · "+m.optString("fusion.source"));
   return String.join("  ·  ",parts);
  }
  static String genresJoined(JSONObject m,String sep){
@@ -89,7 +88,7 @@ final class HomeRules {
  static String heroDescription(JSONObject m){
   if(m==null)return "";
   String d=m.optString("description",m.optString("vod_content","")).trim();
-  if(d.isEmpty())return "点开影片，查看简介与选集";
+  if(d.isEmpty())return HomeHeroRules.tvboxHero(m)?"":"点开影片，查看简介与选集";
   d=d.replaceAll("<[^>]+>","").replace("&nbsp;"," ").replaceAll("\\s+"," ").trim();
   return d.length()>90?d.substring(0,90)+"…":d;
  }
