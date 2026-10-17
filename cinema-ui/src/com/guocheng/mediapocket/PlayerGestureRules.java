@@ -11,7 +11,8 @@ final class PlayerGestureRules {
  static boolean brightnessSide(float x,float width){return width<=0||x<width/2f;}
  /** 一次手势只锁定一个方向；夹角不明确（比值 < 1.2）时继续等待。 */
  static int axis(float dx,float dy,float slop){float ax=Math.abs(dx),ay=Math.abs(dy);if(ax>=slop&&ax>=ay*1.2f)return HORIZONTAL;if(ay>=slop&&ay>=ax*1.2f)return VERTICAL;return NONE;}
- static int tapDelta(int third){return third==LEFT?-TAP_SEEK_MS:third==RIGHT?TAP_SEEK_MS:0;}
+ static int tapDelta(int third){return tapDelta(third,TAP_SEEK_MS);}
+ static int tapDelta(int third,int stepMs){int step=stepMs<=0?TAP_SEEK_MS:stepMs;return third==LEFT?-step:third==RIGHT?step:0;}
  /** 双击之后继续点的累计窗口。 */
  static final long BURST_MS=1300L;
  /** 锁屏后单击、双击、拖动、长按都不再生效。 */
@@ -22,8 +23,9 @@ final class PlayerGestureRules {
   * 同一侧在 1.3 秒内继续点就累加 10 秒。中间区域、过期或换边都重新从这一下开始。
   * previousDelta 为 0 表示当前没有在累计。
   */
- static int burstDelta(int zone,int previousZone,int previousDelta,long elapsedMs){
-  int step=tapDelta(zone);if(step==0)return 0;
+ static int burstDelta(int zone,int previousZone,int previousDelta,long elapsedMs){return burstDelta(zone,previousZone,previousDelta,elapsedMs,TAP_SEEK_MS);}
+ static int burstDelta(int zone,int previousZone,int previousDelta,long elapsedMs,int stepMs){
+  int step=tapDelta(zone,stepMs);if(step==0)return 0;
   boolean live=previousDelta!=0&&zone==previousZone&&elapsedMs>=0&&elapsedMs<=BURST_MS;
   return live?previousDelta+step:step;
  }
