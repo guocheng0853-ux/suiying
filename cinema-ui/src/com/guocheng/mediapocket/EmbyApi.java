@@ -49,12 +49,41 @@ final class EmbyApi {
  static int port(URI u){if(u.getPort()>0)return u.getPort();return "https".equalsIgnoreCase(u.getScheme())?443:80;}
  /** 只给本服务器地址加 api_key。 */
  static String keyed(String base,String url,String token){return sameServer(base,url)?withKey(url,token):url;}
- static String imageUrl(String base,String itemId,String kind,String token,int maxWidth,String tag){
+ /** 宽高向上取整到 100 的倍数，同一张图更容易命中缓存。0 或负数按 100。 */
+ static int roundUp100(int px){if(px<=0)return 100;int m=px%100;return m==0?px:px+(100-m);}
+ static String imageUrl(String base,String itemId,String kind,String token,int maxWidth,String tag){return imageUrl(base,itemId,kind,token,maxWidth,0,tag);}
+ static String imageUrl(String base,String itemId,String kind,String token,int maxWidth,int maxHeight,String tag){
   String k=kind==null||kind.isEmpty()?"Primary":kind;
-  String q="/Items/"+enc(itemId)+"/Images/"+enc(k)+"?maxWidth="+Math.max(80,maxWidth)+"&quality=90";
+  String q="/Items/"+enc(itemId)+"/Images/"+enc(k)+"?maxWidth="+roundUp100(Math.max(100,maxWidth))+"&quality=90";
+  if(maxHeight>0)q+="&maxHeight="+roundUp100(maxHeight);
   if(tag!=null&&!tag.isEmpty())q+="&tag="+enc(tag);
   return withKey(join(server(base),q),token);
  }
+ /** 缺图时换条目或换类型。Primary → SeriesPrimary → PrimaryImageItemId；Backdrop → ParentBackdrop；Logo → ParentLogo。 */
+ static final class ImageRef {final String itemId,kind,tag;ImageRef(String itemId,String kind,String tag){this.itemId=itemId==null?"":itemId;this.kind=kind==null?"Primary":kind;this.tag=tag==null?"":tag;}}
+ static ImageRef fallbackImage(JSONObject item,String kind){
+  String id=item==null?"":item.optString("Id");JSONObject tags=item==null?null:item.optJSONObject("ImageTags");String want=kind==null||kind.isEmpty()?"Primary":kind;
+  if("Primary".equals(want)){String tag=tags==null?"":tags.optString("Primary");if(!tag.isEmpty())return new ImageRef(id,"Primary",tag);String series=tags==null?"":tags.optString("SeriesPrimary");if(!series.isEmpty())return new ImageRef(id,"SeriesPrimary",series);String pid=item==null?"":item.optString("PrimaryImageItemId");if(!pid.isEmpty())return new ImageRef(pid,"Primary",item.optString("PrimaryImageTag"));return new ImageRef(id,"Primary","");}
+  if("Backdrop".equals(want)){String tag=backdropTag(item);if(!tag.isEmpty())return new ImageRef(id,"Backdrop",tag);String parent=item==null?"":item.optString("ParentBackdropItemId");if(!parent.isEmpty())return new ImageRef(parent,"Backdrop",item.optString("ParentBackdropImageTag"));return new ImageRef(id,"Backdrop","");}
+  if("Logo".equals(want)){String tag=tags==null?"":tags.optString("Logo");if(!tag.isEmpty())return new ImageRef(id,"Logo",tag);String parent=item==null?"":item.optString("ParentLogoItemId");if(!parent.isEmpty())return new ImageRef(parent,"Logo",item.optString("ParentLogoImageTag"));return new ImageRef(id,"Logo","");}
+  return new ImageRef(id,want,tags==null?"":tags.optString(want));
+ }
+ static String thumbnailSetPath(String itemId,String mediaSourceId,int width){String q="/Items/"+enc(itemId)+"/ThumbnailSet?Width="+roundUp100(Math.max(100,width));if(mediaSourceId!=null&&!mediaSourceId.isEmpty())q+="&MediaSourceId="+enc(mediaSourceId);return q;}
+ static long[] thumbnailTicks(JSONArray items){if(items==null||items.length()==0)return new long[0];long[] raw=new long[items.length()];int n=0;for(int i=0;i<items.length();i++){JSONObject o=items.optJSONObject(i);if(o==null||!o.has("PositionTicks"))continue;raw[n++]=o.optLong("PositionTicks");}if(n==raw.length)return raw;long[] out=new long[n];System.arraycopy(raw,0,out,0,n);return out;}
+ static String[] thumbnailTags(JSONArray items){if(items==null||items.length()==0)return new String[0];ArrayList<String> list=new ArrayList<>();for(int i=0;i<items.length();i++){JSONObject o=items.optJSONObject(i);if(o==null||!o.has("PositionTicks"))continue;list.add(o.optString("ImageTag"));}return list.toArray(new String[0]);}
+ /** 二分查找不超过目标时刻的最后一张。没有则 -1。调用方应传入按时间升序的刻度。 */
+ static int thumbnailIndex(long[] ticks,long target){if(ticks==null||ticks.length==0)return -1;int lo=0,hi=ticks.length-1,ans=-1;while(lo<=hi){int mid=(lo+hi)>>>1;if(ticks[mid]<=target){ans=mid;lo=mid+1;}else hi=mid-1;}return ans;}
+ static String thumbnailImageUrl(String base,String itemId,String token,long positionTicks,String mediaSourceId,String tag){
+  String q="/Items/"+enc(itemId)+"/Images/Thumbnail?quality=90&PositionTicks="+Math.max(0L,positionTicks);
+  if(mediaSourceId!=null&&!mediaSourceId.isEmpty())q+="&MediaSourceId="+enc(mediaSourceId);
+  if(tag!=null&&!tag.isEmpty())q+="&tag="+enc(tag);
+  return withKey(join(server(base),q),token);
+ }
+ /** 进度上报去重键：会话、是否暂停、位置刻度。三者都相同就不再发。 */
+ static String progressKey(String session,boolean paused,long positionTicks){return (session==null?"":session)+"|"+paused+"|"+Math.max(0L,positionTicks);}
+ static boolean sameProgress(String previous,String next){return next!=null&&next.equals(previous);}
+ static String hideResumePath(String userId,String itemId){return hideResumePath(userId,itemId,true);}
+ static String hideResumePath(String userId,String itemId,boolean hide){return "/Users/"+enc(userId)+"/Items/"+enc(itemId)+"/HideFromResume?Hide="+(hide?"true":"false");}
  static String chapterImage(String base,String itemId,int index,String token,String tag){
   String q="/Items/"+enc(itemId)+"/Images/Chapter/"+Math.max(0,index)+"?maxWidth=320&quality=80";
   if(tag!=null&&!tag.isEmpty())q+="&tag="+enc(tag);
@@ -128,14 +157,16 @@ final class EmbyApi {
   return out;
  }
  static JSONObject playbackInfoBody(String userId,long startTicks)throws JSONException{return playbackInfoBody(userId,startTicks,null,-1,-1);}
- static JSONObject playbackInfoBody(String userId,long startTicks,String mediaSourceId,int audioIndex,int subtitleIndex)throws JSONException{
+ static JSONObject playbackInfoBody(String userId,long startTicks,String mediaSourceId,int audioIndex,int subtitleIndex)throws JSONException{return playbackInfoBody(userId,startTicks,mediaSourceId,audioIndex,subtitleIndex,140000000L);}
+ static JSONObject playbackInfoBody(String userId,long startTicks,String mediaSourceId,int audioIndex,int subtitleIndex,long maxBitrate)throws JSONException{
+  long rate=maxBitrate>0?maxBitrate:140000000L;
   JSONArray containers=new JSONArray();
   for(String c:new String[]{"mkv","mp4","m4v","mov","avi","ts","m2ts","wmv","flv","webm","mpg","mpeg","3gp","iso"})containers.put(new JSONObject().put("Container",c).put("Type","Video").put("VideoCodec","h264,hevc,mpeg4,mpeg2video,vp8,vp9,av1").put("AudioCodec","aac,mp3,ac3,eac3,dts,truehd,flac,opus,vorbis"));
   JSONObject trans=new JSONObject().put("Container","ts").put("Type","Video").put("VideoCodec","h264").put("AudioCodec","aac,mp3,ac3").put("Protocol","hls").put("Context","Streaming");
   JSONArray subs=new JSONArray();
   for(String f:new String[]{"srt","ass","ssa","vtt","subrip","pgs","pgssub","sub"}){subs.put(new JSONObject().put("Format",f).put("Method","External"));subs.put(new JSONObject().put("Format",f).put("Method","Embed"));}
-  JSONObject profile=new JSONObject().put("MaxStreamingBitrate",140000000).put("DirectPlayProfiles",containers).put("TranscodingProfiles",new JSONArray().put(trans)).put("SubtitleProfiles",subs);
-  JSONObject body=new JSONObject().put("UserId",userId==null?"":userId).put("MaxStreamingBitrate",140000000).put("StartTimeTicks",0L).put("AutoOpenLiveStream",true).put("DeviceProfile",profile);
+  JSONObject profile=new JSONObject().put("MaxStreamingBitrate",rate).put("DirectPlayProfiles",containers).put("TranscodingProfiles",new JSONArray().put(trans)).put("SubtitleProfiles",subs);
+  JSONObject body=new JSONObject().put("UserId",userId==null?"":userId).put("MaxStreamingBitrate",rate).put("StartTimeTicks",0L).put("AutoOpenLiveStream",true).put("DeviceProfile",profile);
   if(mediaSourceId!=null&&!mediaSourceId.isEmpty())body.put("MediaSourceId",mediaSourceId);
   if(audioIndex>=0)body.put("AudioStreamIndex",audioIndex);
   if(subtitleIndex>=0)body.put("SubtitleStreamIndex",subtitleIndex);
@@ -155,9 +186,9 @@ final class EmbyApi {
  static JSONObject meta(JSONObject server,JSONObject item)throws JSONException{
   String base=server.optString("url"),token=server.optString("token"),sid=server.optString("id"),itemId=item.optString("Id");
   String type=item.optString("Type"),media="Episode".equals(type)||"Series".equals(type)||"Season".equals(type)?"series":"movie";
-  String poster=imageUrl(base,itemId,"Primary",token,480,primaryTag(item));
-  String backdropTag=backdropTag(item);String background=backdropTag.isEmpty()?poster:imageUrl(base,itemId,"Backdrop",token,1280,backdropTag);
-  JSONObject tags=item.optJSONObject("ImageTags");String logoTag=tags==null?"":tags.optString("Logo");String logo=logoTag.isEmpty()?"":imageUrl(base,itemId,"Logo",token,640,logoTag);
+  ImageRef primary=fallbackImage(item,"Primary");String poster=imageUrl(base,primary.itemId.isEmpty()?itemId:primary.itemId,primary.kind,token,480,primary.tag);
+  ImageRef backdrop=fallbackImage(item,"Backdrop");String background=backdrop.tag.isEmpty()?poster:imageUrl(base,backdrop.itemId.isEmpty()?itemId:backdrop.itemId,backdrop.kind,token,1280,backdrop.tag);
+  ImageRef logoRef=fallbackImage(item,"Logo");String logo=logoRef.tag.isEmpty()?"":imageUrl(base,logoRef.itemId.isEmpty()?itemId:logoRef.itemId,logoRef.kind,token,640,logoRef.tag);
   JSONArray genres=new JSONArray();JSONArray raw=item.optJSONArray("Genres");for(int i=0;raw!=null&&i<raw.length()&&i<4;i++)if(!raw.optString(i).isEmpty())genres.put(raw.optString(i));
   String name=item.optString("Name","影片");
   JSONObject m=new JSONObject().put("id",watchId(sid,itemId)).put("type",media).put("name",name).put("poster",poster).put("background",background).put("logo",logo)

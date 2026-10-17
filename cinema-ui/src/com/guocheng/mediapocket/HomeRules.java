@@ -157,6 +157,27 @@ final class HomeRules {
   if(optionId.startsWith("source:"))return new String[]{"tvbox",optionId.substring(7)};
   return new String[]{"stremio","current"};
  }
+ /** 首页分区默认都显示。hidden 是逗号分隔的分区 id，出现就隐藏。 */
+ static boolean sectionShown(String hidden,String key){if(key==null||key.isEmpty()||hidden==null||hidden.isEmpty())return true;for(String part:hidden.split(","))if(key.equals(part))return false;return true;}
+ static String toggleSection(String hidden,String key){
+  if(key==null||key.isEmpty())return hidden==null?"":hidden;
+  java.util.LinkedHashSet<String> set=new java.util.LinkedHashSet<>();
+  if(hidden!=null)for(String part:hidden.split(","))if(!part.isEmpty())set.add(part);
+  if(!set.add(key))set.remove(key);
+  StringBuilder s=new StringBuilder();for(String part:set){if(s.length()>0)s.append(',');s.append(part);}return s.toString();
+ }
+ /** 从继续观看里去掉的 id。store 是 JSON 数组字符串。 */
+ static String hideResume(String store,String id){
+  JSONArray out=new JSONArray();if(id==null||id.isEmpty())return store==null?"[]":store;
+  try{JSONArray old=store==null||store.isEmpty()?new JSONArray():new JSONArray(store);for(int i=0;i<old.length();i++){String v=old.optString(i);if(!v.isEmpty()&&!v.equals(id))out.put(v);}}catch(Exception ignored){}
+  out.put(id);return out.toString();
+ }
+ static boolean resumeHidden(String store,String id){if(id==null||id.isEmpty()||store==null||store.isEmpty())return false;try{JSONArray old=new JSONArray(store);for(int i=0;i<old.length();i++)if(id.equals(old.optString(i)))return true;}catch(Exception ignored){}return false;}
+ static JSONArray withoutHidden(JSONArray items,String store){
+  JSONArray out=new JSONArray();if(items==null)return out;
+  for(int i=0;i<items.length();i++){JSONObject m=items.optJSONObject(i);if(m==null)continue;String id=m.optString("id");if(id.isEmpty())id=m.optString("Id");if(resumeHidden(store,id))continue;out.put(m);}
+  return out;
+ }
  /** 媒体库分类瓦片定义：title, type, genre。 */
  static String[][] libraryTiles(){
   return new String[][]{

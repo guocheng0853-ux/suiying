@@ -21,6 +21,8 @@ public final class FullscreenMode {
  static boolean doubleTapCenter(Activity a){try{SharedPreferences p=prefs(a);if(p.getFloat("zoomX",1f)==1f&&p.getFloat("zoomY",1f)==1f)return false;String mode=p.getString("aspectMode","fit");apply(a,mode,true);PlayerChrome.refresh(a);hud(a,"已恢复 · "+FullscreenRules.LABELS[FullscreenRules.index(mode)]);return true;}catch(Exception ex){return false;}}
  /** 比例按钮：切到下一模式、记住，并恢复 100% 缩放。顺序见 FullscreenRules.next。 */
  public static String cycle(Activity a)throws Exception{String mode=FullscreenRules.next(prefs(a).getString("aspectMode","fit"));apply(a,mode,true);PlayerChrome.refresh(a);return FullscreenRules.LABELS[FullscreenRules.index(mode)];}
+ /** 顶栏单击：适应 → 拉伸 → 裁切。 */
+ public static String quick(Activity a)throws Exception{String mode=FullscreenRules.quickNext(prefs(a).getString("aspectMode","fit"));apply(a,mode,true);PlayerChrome.refresh(a);return FullscreenRules.LABELS[FullscreenRules.index(mode)];}
  /** GesturePlayerActivity.aspect：点一下立刻切到下一种画面比例，不弹菜单，也不显示模式名。 */
  public static void choose(Object owner){if(!(owner instanceof Activity))return;Activity a=(Activity)owner;try{String label=cycle(a);String announce=FullscreenRules.cycleHud(label);if(announce!=null)hud(a,announce);}catch(Exception e){OnlineSubtitleSearch.message(a,"比例设置失败："+e.getClass().getSimpleName());}}
 }

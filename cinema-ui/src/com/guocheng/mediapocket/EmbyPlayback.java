@@ -4,21 +4,23 @@ import android.app.*;import android.content.Intent;import android.os.SystemClock
 final class EmbyPlayback {
  static final ExecutorService IO=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"emby-play");t.setDaemon(true);return t;});
  static final Map<Activity,State> ALL=new WeakHashMap<>();
- static final class State {String serverId,item,media,session;boolean direct,started,paused,marked,seeked,stopped;long resumeMs,runtimeTicks,lastReport,lastPos,maxPos;}
+ static final class State {String serverId,item,media,session;boolean direct,started,paused,marked,seeked,stopped;long resumeMs,runtimeTicks,lastReport,lastPos,maxPos;String lastProgress;}
  private EmbyPlayback(){}
- static int pendingAudio=-1,pendingSub=-1;
+ static int pendingAudio=-1,pendingSub=-1;static long pendingBitrate=-1;
  static void play(Activity a,JSONObject meta){if(meta==null)return;JSONObject server=EmbyStore.get(a,meta.optString("emby.server"));String item=meta.optString("emby.item");if(item.isEmpty())item=EmbyApi.itemOf(meta.optString("id"));if(server==null||item.isEmpty()){Toast.makeText(a,"找不到这个 Emby 服务器",Toast.LENGTH_LONG).show();return;}playItem(a,server,item,null,false);}
  static void playItem(Activity a,JSONObject server,String itemId){playItem(a,server,itemId,null,false);}
  static void replay(Activity a,int audioIndex,int subtitleIndex){JSONObject stream=TrackSelection.stream(a);JSONObject server=EmbyStore.get(a,stream.optString("emby.server"));if(server==null||stream.optString("emby.item").isEmpty())return;pendingAudio=audioIndex;pendingSub=subtitleIndex;playItem(a,server,stream.optString("emby.item"),stream.optString("emby.mediaSource"),true);}
+ /** 按新的 MaxStreamingBitrate 重新向 Emby 要一次播放地址。 */
+ static void replayBitrate(Activity a,long bitrate){pendingBitrate=bitrate;replay(a,-1,-1);}
  static void playItem(Activity a,JSONObject server,String itemId,String mediaSourceId,boolean replace){
   if(a==null||a.isFinishing()||server==null||itemId==null||itemId.isEmpty())return;ProgressDialog wait=ProgressDialog.show(a,"正在准备播放","正在向 Emby 请求播放信息…",true,true);final boolean[] cancel={false};wait.setOnCancelListener(d->cancel[0]=true);
-  final int audio=pendingAudio,sub=pendingSub,keep=replace?position(a):-1;pendingAudio=-1;pendingSub=-1;
+  final int audio=pendingAudio,sub=pendingSub,keep=replace?position(a):-1;final long bitrate=pendingBitrate;pendingAudio=-1;pendingSub=-1;pendingBitrate=-1;
   IO.execute(()->{try{
    String[] bases=EmbyCue.bases(server.optString("url"),server.optJSONArray("backups"));if(bases.length==0)bases=new String[]{server.optString("url")};
    Exception last=null;JSONObject working=null,item=null,info=null;EmbyApi.Choice choice=null;
    for(String base:bases){JSONObject attempt=new JSONObject(server.toString());attempt.put("url",base);attempt.remove("backups");try{
      item=EmbyClient.item(a,attempt,itemId);JSONObject user=item.optJSONObject("UserData");long resume=keep>10000?keep:EmbyApi.ticksToMs(user==null?0:user.optLong("PlaybackPositionTicks"));
-     info=EmbyClient.playbackInfo(a,attempt,itemId,EmbyApi.msToTicks(resume),mediaSourceId,audio,sub);
+     info=EmbyClient.playbackInfo(a,attempt,itemId,EmbyApi.msToTicks(resume),mediaSourceId,audio,sub,bitrate);
      JSONArray versions=EmbyCue.versions(info.optJSONArray("MediaSources"));
      if((mediaSourceId==null||mediaSourceId.isEmpty())&&versions.length()>1){JSONObject chosenItem=item,chosenInfo=info,route=attempt;a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(cancel[0]||a.isFinishing())return;pickVersion(a,route,itemId,versions,replace);});return;}
      choice=EmbyApi.select(attempt.optString("url"),itemId,attempt.optString("token"),info,mediaSourceId);working=attempt;break;
@@ -44,7 +46,7 @@ final class EmbyPlayback {
    if(!s.marked&&EmbyApi.played(EmbyApi.msToTicks(s.maxPos),s.runtimeTicks)){s.marked=true;mark(a,s);}}
  }catch(Exception ignored){}}
  static void stop(Activity a){State s;synchronized(ALL){s=ALL.remove(a);}if(s==null||s.stopped||!s.started)return;s.stopped=true;long pos=s.maxPos<5000&&s.resumeMs>15000?s.resumeMs:s.lastPos;send(a,s,"stop",Math.max(0,pos),true);if(!s.marked&&EmbyApi.played(EmbyApi.msToTicks(s.maxPos),s.runtimeTicks))mark(a,s);}
- static void send(Activity a,State s,String kind,long posMs,boolean paused){final long ticks=EmbyApi.msToTicks(posMs);s.lastReport=SystemClock.elapsedRealtime();IO.execute(()->{try{JSONObject server=EmbyStore.get(a,s.serverId);if(server==null)return;JSONObject body=EmbyApi.sessionBody(s.item,s.media,s.session,ticks,paused,s.direct);if("start".equals(kind))EmbyClient.playing(a,server,body);else if("stop".equals(kind))EmbyClient.stopped(a,server,body);else{body.put("EventName","pause".equals(kind)?"Pause":"unpause".equals(kind)?"Unpause":"TimeUpdate");EmbyClient.progress(a,server,body);}}catch(Exception ignored){}});}
+ static void send(Activity a,State s,String kind,long posMs,boolean paused){final long ticks=EmbyApi.msToTicks(posMs);if(!"start".equals(kind)&&!"stop".equals(kind)){String key=EmbyApi.progressKey(s.session,paused,ticks);if(EmbyApi.sameProgress(s.lastProgress,key))return;s.lastProgress=key;}s.lastReport=SystemClock.elapsedRealtime();IO.execute(()->{try{JSONObject server=EmbyStore.get(a,s.serverId);if(server==null)return;JSONObject body=EmbyApi.sessionBody(s.item,s.media,s.session,ticks,paused,s.direct);if("start".equals(kind))EmbyClient.playing(a,server,body);else if("stop".equals(kind))EmbyClient.stopped(a,server,body);else{body.put("EventName","pause".equals(kind)?"Pause":"unpause".equals(kind)?"Unpause":"TimeUpdate");EmbyClient.progress(a,server,body);}}catch(Exception ignored){}});}
  static void mark(Activity a,State s){IO.execute(()->{try{JSONObject server=EmbyStore.get(a,s.serverId);if(server!=null)EmbyClient.played(a,server,s.item);}catch(Exception ignored){}});}
  static int position(Activity a){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"getCurrentPosition",new Class<?>[0]);return r instanceof Integer?(Integer)r:-1;}catch(Exception e){return -1;}}
  static boolean playing(Activity a){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"isPlaying",new Class<?>[0]);return Boolean.TRUE.equals(r);}catch(Exception e){return false;}}

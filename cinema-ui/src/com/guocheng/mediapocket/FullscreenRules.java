@@ -7,8 +7,10 @@ final class FullscreenRules {
  static float zoom(String mode,float saved){return "stretch".equals(mode)?1f:saved;}
  /** VLC 布局只认识 fit/crop/stretch/16:9/4:3；原始尺寸在适应屏幕基础上再缩放。 */
  static String layoutMode(String mode){return "original".equals(mode)?"fit":mode;}
- /** 单按钮循环：适应→填满→拉伸→16:9→4:3→原始→适应。 */
+ /** 单按钮循环：适应→填满→拉伸→16:9→4:3→原始→适应。长按比例面板仍用这一套。 */
  static String next(String mode){return MODES[(index(mode)+1)%MODES.length];}
+ /** 顶栏比例按钮单击：适应 → 拉伸 → 裁切 → 适应。16:9 等其它模式点一下回到适应。 */
+ static String quickNext(String mode){if("fit".equals(mode))return "stretch";if("stretch".equals(mode))return "crop";return "fit";}
  /** 点比例按钮只切换模式，不在画面上写名称。null 表示静默。快进、亮度、双击恢复不走这里。 */
  static String cycleHud(String label){return null;}
  static int index(String mode){for(int i=0;i<MODES.length;i++)if(MODES[i].equals(mode))return i;return 0;}

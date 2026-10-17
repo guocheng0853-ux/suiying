@@ -7,6 +7,7 @@ import org.json.*;import java.util.*;
 final class EmbyCue {
  static final String ASK="ask",AUTO="auto",OFF="off";
  static final long BUTTON_MS=4000L,NEXT_COUNTDOWN_MS=10000L,NEXT_FALLBACK_MS=30000L;
+ static final int INTRO_COUNTDOWN_S=5;
  private EmbyCue(){}
  static final class Span {final long introStart,introEnd,creditsStart;Span(long a,long b,long c){introStart=a;introEnd=b;creditsStart=c;}boolean any(){return introStart>=0||creditsStart>=0;}}
  static String skipMode(String raw){if(AUTO.equals(raw)||"自动".equals(raw))return AUTO;if(OFF.equals(raw)||"关闭".equals(raw))return OFF;return ASK;}
@@ -24,6 +25,39 @@ final class EmbyCue {
   return out;
  }
  static boolean isMarker(String marker){return "IntroStart".equalsIgnoreCase(marker)||"IntroEnd".equalsIgnoreCase(marker)||"CreditsStart".equalsIgnoreCase(marker);}
+ /** 章节里已经有片头就用章节。没有才用这部剧本地记下的开始/结束。片尾标记保留。 */
+ static Span prefer(Span chapters,long manualStart,long manualEnd){
+  long credits=chapters==null?-1:chapters.creditsStart;
+  if(chapters!=null&&chapters.introStart>=0&&chapters.introEnd>chapters.introStart)return chapters;
+  if(manualStart>=0&&manualEnd>manualStart)return new Span(manualStart,manualEnd,credits);
+  return chapters==null?new Span(-1,-1,credits):chapters;
+ }
+ static String seriesKey(JSONObject meta,String name){
+  if(meta!=null){String series=meta.optString("emby.series");if(!series.isEmpty())return "emby:"+series;String title=meta.optString("fusion.title");if(!title.isEmpty())return "title:"+title;}
+  String series=PlayerOverlayRules.seriesTitle(name,meta);return series==null||series.isEmpty()?"":"title:"+series;
+ }
+ /** 本地片头表。start 或 end 传 null 表示这一项保持原值。系列 id 为空时原样返回。 */
+ static String writeIntro(String json,String seriesId,Long start,Long end){
+  if(seriesId==null||seriesId.isEmpty())return json==null?"{}":json;
+  JSONObject all;try{all=json==null||json.isEmpty()?new JSONObject():new JSONObject(json);}catch(Exception e){all=new JSONObject();}
+  JSONObject row=all.optJSONObject(seriesId);if(row==null)row=new JSONObject();
+  try{if(start!=null)row.put("start",start.longValue());if(end!=null)row.put("end",end.longValue());all.put(seriesId,row);}catch(Exception ignored){}
+  return all.toString();
+ }
+ static String clearIntro(String json,String seriesId){
+  if(seriesId==null||seriesId.isEmpty())return json==null?"{}":json;
+  JSONObject all;try{all=json==null||json.isEmpty()?new JSONObject():new JSONObject(json);}catch(Exception e){return "{}";}
+  all.remove(seriesId);return all.toString();
+ }
+ /** 没有记录时返回 {-1,-1}。 */
+ static long[] readIntro(String json,String seriesId){
+  if(json==null||seriesId==null||seriesId.isEmpty())return new long[]{-1,-1};
+  try{JSONObject row=new JSONObject(json).optJSONObject(seriesId);if(row==null)return new long[]{-1,-1};return new long[]{row.has("start")?row.optLong("start",-1):-1,row.has("end")?row.optLong("end",-1):-1};}catch(Exception e){return new long[]{-1,-1};}
+ }
+ static int introLeft(long shownAtMs,long nowMs){if(shownAtMs<0)return INTRO_COUNTDOWN_S;int gone=(int)Math.max(0L,(nowMs-shownAtMs)/1000L);int left=INTRO_COUNTDOWN_S-gone;return left<0?0:left;}
+ static String introCountdown(int seconds){return Math.max(0,seconds)+" 秒后跳过片头，点击取消";}
+ /** 字幕同步，一步 100 毫秒，停在 ±5 秒。 */
+ static int stepSubtitleOffset(int currentMs,int direction){int n=currentMs+(direction<0?-100:100);if(n<-5000)n=-5000;if(n>5000)n=5000;return n;}
  /** 当前进度若落在片头或片尾，返回要跳到的毫秒；否则 null。关闭模式永远不跳。 */
  static Long skipTo(Span span,long posMs,long durMs,String mode){
   if(span==null||OFF.equals(skipMode(mode))||posMs<0)return null;

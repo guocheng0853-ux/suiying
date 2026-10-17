@@ -48,7 +48,7 @@ public final class EmbyFeaturesTest {
   check(index!=null&&index.size()==2&&index.nearest(0)==0&&index.nearest(9999)==0&&index.nearest(10000)==1,"bif timestamps");
   byte[] jpeg=index.jpeg(1);check(jpeg!=null&&jpeg[0]==(byte)0xff&&jpeg[1]==(byte)0xd8&&jpeg[jpeg.length-2]==(byte)0xff,"bif frame is the jpeg slice");
   check(BifIndex.parse(new byte[]{1,2,3,4})==null&&BifIndex.parse(null)==null,"bad bif is ignored");
-  check(SpeedHold.tuned(0,1000)==2f&&SpeedHold.tuned(-180,1000)==1.5f&&SpeedHold.tuned(-360,1000)==1.25f&&SpeedHold.tuned(400,1000)==2f,"hold speed snaps to the existing steps");
+  check(SpeedHold.tuned(0,1000)==2f&&Math.abs(SpeedHold.tuned(-180,1000)-(2f-1.44f))<0.001f&&SpeedHold.tuned(-360,1000)==0.1f&&Math.abs(SpeedHold.tuned(400,1000)-5.2f)<0.001f&&SpeedHold.tuned(10,1000,32f)==2f,"hold speed stays at 2 inside the dead zone and scales across the screen");
   if(failures>0)throw new RuntimeException(failures+" failed");
   System.out.println("PASS: Emby markers, BIF, NextUp, tracks, backup urls, home sections.");
  }
