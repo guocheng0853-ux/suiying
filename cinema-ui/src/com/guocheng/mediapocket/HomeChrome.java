@@ -137,7 +137,7 @@ final class HomeChrome {
   if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(desc.isEmpty()?View.GONE:View.VISIBLE);}
   if(a.heroTitle!=null){String logo=m.optString("logo");a.heroTitle.setText(m.optString("name","影片"));a.heroTitle.setTextSize(logo.isEmpty()?26:16);}
  }
- /** 竖版海报：模糊放大的同一张图当底，上面放一张完整竖图。横版背景只铺满。 */
+ /** 竖版海报：模糊放大的同一张图当底，上面放一张完整竖图。横版背景只铺满。这些都画在 FadeFrame 里，跟大图一起在底部渐隐到透明。 */
  void dressHero(FrameLayout slide,ImageView backdrop,JSONObject m){
   if(slide==null||backdrop==null)return;
   for(int i=slide.getChildCount()-1;i>=0;i--){View child=slide.getChildAt(i);if("mp-hero-extra".equals(child.getTag()))slide.removeViewAt(i);}

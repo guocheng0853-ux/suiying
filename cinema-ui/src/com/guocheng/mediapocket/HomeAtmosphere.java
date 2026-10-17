@@ -16,7 +16,7 @@ final class HomeAtmosphere extends FrameLayout {
  void ensure(ImageView view){Bitmap source=bitmap(view);if(source==null||cache.get(source)!=null)return;synchronized(pending){if(!pending.add(source))return;}final Bitmap target=source;final boolean light=a.light;final int ticket=generation;colorWorker.execute(()->{Visual result=null;try{result=compute(target,light);}catch(RuntimeException ignored){}final Visual ready=result;post(()->{synchronized(pending){pending.remove(target);}if(ready!=null)cache.put(target,ready);if(ticket!=generation||!a.homeCanvas||a.isFinishing())return;if(ready!=null&&(shownBefore==null||bitmap(a.heroImage)==target))blend(a.heroImage,null,0);});});}
  void blend(ImageView outgoing,ImageView incoming,float progress){if(!a.homeCanvas)return;ensure(outgoing);ensure(incoming);Visual old=peek(outgoing),next=peek(incoming);if(old==null)old=shownBefore;if(next==null)next=old;if(old==null){paint(a.surface());return;}if(shownBefore!=old){shownBefore=old;before.setImageBitmap(old.thumb);}if(next!=null&&shownAfter!=next){shownAfter=next;after.setImageBitmap(next.thumb);}float t=SceneRules.fade(progress);before.setAlpha(.16f*(1-t));after.setAlpha(.16f*t);paint(SceneRules.blend(old.tone,next==null?old.tone:next.tone,t));}
  void paint(int color){if(color!=currentTone){currentTone=color;setBackgroundColor(color);}retint();}
- /** 底边渐变跟当前氛围色走。竖版海报用更早的遮罩，横版海报上半段保持通透。 */
+ /** 底边渐变只跟着氛围色改色值，透明度到底边回到 0。竖版海报遮罩更早。 */
  void retint(){if(a.heroShadeDrawable!=null)a.heroShadeDrawable.setColors(HomeHeroRules.blendStops(currentTone,a.heroScrimStrong));}
  static final class Flat31 {static void apply(View view){view.setRenderEffect(null);}}
  void sync(ImageView image){final int ticket=++generation;poll(image,ticket,0);}
