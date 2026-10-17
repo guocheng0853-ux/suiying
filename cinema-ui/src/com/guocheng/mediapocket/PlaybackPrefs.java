@@ -20,6 +20,9 @@ public final class PlaybackPrefs {
  static final float[] SPEEDS={0.5f,0.75f,1f,1.25f,1.5f,2f};
  static float normalizeSpeed(float v){float best=1f,gap=Float.MAX_VALUE;if(Float.isNaN(v)||v<=0)return 1f;for(float s:SPEEDS){float d=Math.abs(s-v);if(d<gap){gap=d;best=s;}}return best;}
  static float nextSpeed(float v){float n=normalizeSpeed(v);for(int i=0;i<SPEEDS.length;i++)if(SPEEDS[i]==n)return SPEEDS[(i+1)%SPEEDS.length];return 1f;}
+ /** 右侧竖条：最上最快、最下最慢。y 从条顶算起，落在哪一格就是哪一档。无效坐标返回 -1。 */
+ static int indexFromTrack(float y,float height){int n=SPEEDS.length;if(n==0||!(height>0f)||Float.isNaN(y)||Float.isInfinite(y))return -1;if(y<0f)return n-1;if(y>=height)return 0;int fromTop=(int)(y/height*n);if(fromTop<0)fromTop=0;if(fromTop>=n)fromTop=n-1;return n-1-fromTop;}
+ static float speedFromTrack(float y,float height){int i=indexFromTrack(y,height);return i<0?Float.NaN:SPEEDS[i];}
  static String speedLabel(float v){float n=normalizeSpeed(v);return (n==(int)n?String.valueOf((int)n):String.valueOf(n))+"×";}
  static float speed(SharedPreferences p){return normalizeSpeed(p.getFloat("playbackSpeed",1f));}
  static void setSpeed(SharedPreferences p,float v){p.edit().putFloat("playbackSpeed",normalizeSpeed(v)).apply();}

@@ -69,7 +69,5 @@ final class PlayerRedesign {
    }
   }
  }
- /** 倍速按钮文字：1.0× 时显示「倍速」，否则直接显示当前倍速。 */
- static void speedLabel(Activity a,Button b){float s=PlaybackPrefs.speed(PlayerChrome.prefs(a));b.setText(Math.abs(s-1f)<0.01f?"倍速":PlaybackPrefs.speedLabel(s));b.setContentDescription("倍速");}
- static void refreshSpeed(Activity a){PlayerChrome c=PlayerChrome.ALL.get(a);if(c!=null&&c.speed!=null)speedLabel(a,c.speed);}
+ static void refreshSpeed(Activity a){PlayerChrome c=PlayerChrome.ALL.get(a);if(c!=null)c.paintSpeed();}
 }
