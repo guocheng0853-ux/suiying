@@ -16,7 +16,7 @@ final class PlayerIcons extends Drawable {
  }
  void drawShape(Canvas c,PlayerIconPaths.Shape shape,float x0,float y0,float u,float align){
   float[] p=shape.p;if(p==null)return;
-  if(shape.kind==PlayerIconPaths.TEXT){fill.setTextAlign(Paint.Align.CENTER);fill.setTextSize(p[2]*u);fill.setTypeface(Typeface.create(Typeface.DEFAULT,Typeface.BOLD));c.drawText(shape.text,snap(x0+p[0]*u,align),snap(y0+p[1]*u,align),fill);return;}
+  if(shape.kind==PlayerIconPaths.TEXT){fill.setTextAlign(Paint.Align.CENTER);fill.setTextSize(p[2]*u);fill.setTypeface(Typeface.DEFAULT);c.drawText(shape.text,snap(x0+p[0]*u,align),snap(y0+p[1]*u,align),fill);return;}
   if(shape.kind==PlayerIconPaths.OVAL||shape.kind==PlayerIconPaths.FILL_OVAL){c.drawCircle(snap(x0+p[0]*u,align),snap(y0+p[1]*u,align),Math.max(1f,p[2]*u),shape.kind==PlayerIconPaths.FILL_OVAL?fill:stroke);return;}
   if(shape.kind==PlayerIconPaths.ROUND||shape.kind==PlayerIconPaths.FILL_ROUND){RectF r=new RectF(snap(x0+p[0]*u,align),snap(y0+p[1]*u,align),snap(x0+(p[0]+p[2])*u,align),snap(y0+(p[1]+p[3])*u,align));float rad=p[4]*u;c.drawRoundRect(r,rad,rad,shape.kind==PlayerIconPaths.FILL_ROUND?fill:stroke);return;}
   Path path=new Path();path.moveTo(snap(x0+p[0]*u,align),snap(y0+p[1]*u,align));

@@ -31,6 +31,27 @@ final class PlayerOverlayRules {
  static String decodeChoiceLabel(String mode){return decoderLabel(mode,false,false);}
  static boolean canToggleDecode(boolean hasVideo,boolean hasUrl){return hasVideo&&hasUrl;}
  /**
+  * 底座 GesturePlayerActivity.buttonAt 只把 Button 和 SeekBar 交给控件。
+  * TextView 上的点击会被当成画面手势直接吃掉，所以解码芯片必须是有尺寸、可点、可聚焦的 Button。
+  */
+ static boolean chipReceivesTap(boolean button,int width,int height,boolean clickable,boolean focusable){return button&&width>0&&height>0&&clickable&&focusable;}
+ /** 点一下之后中间那行字。 */
+ static String decodeHud(String tier){if("software".equals(tier))return "SW 软解";if("hw".equals(tier))return "HW 硬解（兼容）";return "HW+ 硬解";}
+ /** setHWDecoderEnabled 的两个参数：HW+ 是 (true, true)，HW 是 (true, false)，SW 是 (false, false)。 */
+ static boolean hwEnabled(String tier){return !"software".equals(tier);}
+ static boolean directRendering(String tier){return hwEnabled(tier)&&!"hw".equals(tier);}
+ /** setHWDecoderEnabled 之外还要写上的选项。HW 关掉直接渲染；SW 跟底座一样强制 avcodec。 */
+ static java.util.List<String> decodeOptions(String tier,boolean file,java.util.Map<String,String> headers){
+  java.util.ArrayList<String> o=new java.util.ArrayList<>();
+  if("hw".equals(tier))o.add(":no-mediacodec-dr");
+  if("software".equals(tier)){o.add(":codec=avcodec");o.add(":avcodec-hw=none");}
+  o.add(file?":file-caching=1500":":network-caching=1500");
+  o.add(":audio-language=eng,en");
+  if(!file){String ua=header(headers,"User-Agent");o.add(":http-user-agent="+(ua.isEmpty()?"MediaPocket/0.1.3":ua));if(headers!=null)for(java.util.Map.Entry<String,String> e:headers.entrySet()){String k=e.getKey();if(k==null||k.equalsIgnoreCase("User-Agent"))continue;String v=e.getValue()==null?"":e.getValue();o.add(k.equalsIgnoreCase("Referer")?":http-referrer="+v:":http-header="+k+": "+v);}}
+  return o;
+ }
+ static String header(java.util.Map<String,String> headers,String name){if(headers==null)return "";for(java.util.Map.Entry<String,String> e:headers.entrySet())if(e.getKey()!=null&&e.getKey().equalsIgnoreCase(name)&&e.getValue()!=null)return e.getValue();return "";}
+ /**
   * 药丸 + / −。低于 1 时每格 0.1，1 及以上每格 0.25，停在 0.1 和 8.0。
   * 从 0.9 往上先到 1.0，再往上才是 1.25；从 1.25 往下先回到 1.0。
   */

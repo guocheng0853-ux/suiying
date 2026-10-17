@@ -32,47 +32,92 @@ public class PlayerMotionRulesTest {
   check(PlayerIconPaths.direction(PlayerIcons.PREV)==-1&&PlayerIconPaths.direction(PlayerIcons.NEXT)==1&&PlayerIconPaths.direction(PlayerIcons.PLAY)==1,"skip icons point the right way and play points right");
   check(!PlayerIconPaths.externalArrow(PlayerIcons.ASPECT)&&PlayerIconPaths.STROKE==2f,"aspect icon is a frame, stroke is 2");
   for(int type=PlayerIcons.PIP;type<=PlayerIcons.LIST;type++)check(PlayerIconPaths.insideBox(type)&&!PlayerIconPaths.of(type).isEmpty(),"icon "+type+" stays inside the 24 box");
+  boolean listBox=false,ccOutline=false,ccText=false,playFill=false,pauseFill=false;
+  for(PlayerIconPaths.Shape s:PlayerIconPaths.of(PlayerIcons.LIST))if(s.kind==PlayerIconPaths.ROUND||s.kind==PlayerIconPaths.FILL_ROUND)listBox=true;
+  for(PlayerIconPaths.Shape s:PlayerIconPaths.of(PlayerIcons.CC)){if(s.kind==PlayerIconPaths.ROUND)ccOutline=true;if(s.kind==PlayerIconPaths.TEXT&&"CC".equals(s.text))ccText=true;}
+  for(PlayerIconPaths.Shape s:PlayerIconPaths.of(PlayerIcons.PLAY))if(s.kind==PlayerIconPaths.FILL)playFill=true;
+  for(PlayerIconPaths.Shape s:PlayerIconPaths.of(PlayerIcons.PAUSE))if(s.kind==PlayerIconPaths.FILL||s.kind==PlayerIconPaths.FILL_ROUND)pauseFill=true;
+  check(!listBox&&ccOutline&&ccText&&!playFill&&!pauseFill,"list is plain lines, CC is an outlined badge, play and pause are strokes");
   float density=3f;int cut=dp(density,20);
-  PlayerLayoutMetrics.Overlay laid=PlayerLayoutMetrics.measure(1920,1080,density,cut,0,cut,0,true,true,true,false,dp(density,56),1080-dp(density,160));
+  String title="仙逆",decoder="HW+",episode="第161集 · 名称",speed=PlayerOverlayRules.speedPill(1f);
+  String status=PlayerStatus.line(true,true,true,PlayerStatus.clock(21,4),PlayerStatus.net(120L*1024L),PlayerStatus.battery(80,false));
+  String time=PlayerOverlayRules.clock(12*60000+34*1000,45*60000);
+  int timePx=textWidth(PlayerLayoutMetrics.TIME_SP*density,Font.PLAIN,time);
+  int statusPx=textWidth(PlayerLayoutMetrics.STATUS_SP*density,Font.PLAIN,status);
+  int decoderPx=textWidth(PlayerLayoutMetrics.DECODER_SP*density,Font.BOLD,decoder)+dp(density,PlayerLayoutMetrics.DECODER_PAD_DP)*2;
+  int topBottom=PlayerLayoutMetrics.topBarBottom(density,0),bottomTop=PlayerLayoutMetrics.bottomBarTop(1080,density,0);
+  PlayerLayoutMetrics.Overlay laid=PlayerLayoutMetrics.measure(1920,1080,density,cut,0,cut,0,true,true,true,false,topBottom,bottomTop,timePx,statusPx,decoderPx);
   check(laid.camera.cx()==laid.lock.cx()&&laid.camera.w==laid.lock.w&&laid.camera.w==laid.touch,"camera and lock share a center and a size");
-  int gapMid=(laid.camera.y+laid.lock.bottom())/2,spaceMid=(dp(density,56)+(1080-dp(density,160)))/2;check(Math.abs(gapMid-spaceMid)<=1,"side buttons are centered as a group");
+  int gapMid=(laid.camera.y+laid.lock.bottom())/2;check(Math.abs(gapMid-(topBottom+bottomTop)/2)<=1,"side buttons are centered as a group");
+  check(Math.abs(gapMid-laid.speed.cy())<=1,"left column and speed pill share one center line");
+  check(laid.speed.w==dp(density,44)&&laid.speed.h==dp(density,132)&&PlayerLayoutMetrics.PILL_COLOR==0x73000000,"speed pill is 44 by 132 dp and black at 45 percent");
+  check(PlayerLayoutMetrics.SPEED_BTN_SP==18&&PlayerLayoutMetrics.SPEED_SP==14&&PlayerLayoutMetrics.EPISODE_SP==14,"speed text is 18 and 14 sp, episode line is 14 sp");
   check(laid.camera.x==laid.margin&&1920-(laid.speed.right())==laid.margin,"speed pill uses the same margin as the left column");
   check(laid.prev.cy()==laid.play.cy()&&laid.play.cy()==laid.next.cy()&&laid.play.x-(laid.prev.right())==laid.next.x-(laid.play.right()),"transport sits on one baseline with even gaps");
   PlayerLayoutMetrics.Overlay hidden=PlayerLayoutMetrics.measure(1920,1080,density,0,0,0,0,false,false,false,true,0,0);
   check(hidden.prev==null&&hidden.next==null&&hidden.play.x==hidden.margin,"missing neighbors are not given a slot");
-  check(laid.back.h==laid.aspect.h&&laid.aspect.h==laid.pip.h&&laid.pip.h==laid.more.h&&laid.aspect.y==laid.more.y,"top slots share one height");
+  check(laid.back.h==laid.aspect.h&&laid.aspect.h==laid.pip.h&&laid.pip.h==laid.more.h&&laid.aspect.y==laid.more.y&&laid.title.y==laid.back.y&&laid.topStatus.y==laid.back.y&&laid.decoder.y==laid.back.y,"top slots share one height");
   check(laid.pip.x-(laid.aspect.right())==laid.more.x-(laid.pip.right()),"top icons are evenly spaced");
+  check(laid.title.x-laid.back.right()==dp(density,PlayerLayoutMetrics.TITLE_GAP_DP)&&laid.title.w>dp(density,80),"title sits beside the back arrow");
+  check(laid.topStatus.w==statusPx&&laid.topStatus.right()<=laid.decoder.x&&laid.decoder.w==decoderPx,"status line and HW+ sit in the top bar");
+  check(laid.time.w==timePx&&laid.seek.x==laid.time.right()+dp(density,8)&&laid.seek.right()==1920-laid.margin&&laid.seek.w>1920/2,"time text leads a seek bar that reaches the right safe margin");
+  check(hidden.seek.right()==1920-hidden.margin,"seek still ends on the safe margin when neighbors are hidden");
   check(laid.seekTrack==dp(density,3)&&hidden.seekTrack==dp(density,4)&&laid.thumb==dp(density,12),"seek track is 3dp, 4dp while dragging, thumb 12dp");
-  check(laid.status.cx()==960&&laid.status.y>laid.back.bottom(),"loading status is centered, not in the title row");
-  render(laid);
+  check(laid.status.cx()==960&&laid.status.y>laid.back.bottom()&&laid.topStatus.bottom()<=topBottom,"loading status is centered, the clock line stays in the title row");
+  check(time.indexOf(" / ")>0&&status.contains("KB/s"),"picture uses the runtime time and status strings");
+  render(laid,density,title,decoder,status,episode,time,speed);
   System.out.println("PASS: speed steps, double-tap accumulation, seek mapping, thumbnail search, image rounding, progress dedupe, intro storage, overlay alignment.");
  }
  static int dp(float density,int v){return PlayerLayoutMetrics.dp(density,v);}
- static void render(PlayerLayoutMetrics.Overlay o)throws Exception{
-  int w=1280,h=720;BufferedImage image=new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();
-  g.setColor(Color.BLACK);g.fillRect(0,0,w,h);g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-  float sx=w/1920f,sy=h/1080f;
-  box(g,o.back,sx,sy,PlayerIcons.BACK);box(g,o.decoder,sx,sy,-1);box(g,o.aspect,sx,sy,PlayerIcons.ASPECT);box(g,o.pip,sx,sy,PlayerIcons.PIP);box(g,o.more,sx,sy,PlayerIcons.MORE);
-  box(g,o.camera,sx,sy,PlayerIcons.CAMERA);box(g,o.lock,sx,sy,PlayerIcons.LOCK);
-  g.setColor(new Color(0xC8,0xC8,0xD0,128));round(g,o.speed,sx,sy);g.setColor(Color.WHITE);center(g,"+",o.speed.x,o.speed.y,o.speed.w,o.speed.h/3,sx,sy);center(g,"1.0x",o.speed.x,o.speed.y+o.speed.h/3,o.speed.w,o.speed.h/3,sx,sy);center(g,"−",o.speed.x,o.speed.y+2*o.speed.h/3,o.speed.w,o.speed.h/3,sx,sy);
-  g.setColor(Color.WHITE);g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,16));g.drawString("第161集 · 名称",(int)(o.margin*sx),(int)(860*sy));
-  int trackY=(int)(900*sy);g.setColor(new Color(0x33,0x33,0x33));g.fillRoundRect((int)(220*sx),trackY,(int)(900*sx),Math.max(2,o.seekTrack),4,4);g.setColor(new Color(255,255,255,120));g.fillRoundRect((int)(220*sx),trackY,(int)(700*sx),Math.max(2,o.seekTrack),4,4);g.setColor(Color.WHITE);g.fillRoundRect((int)(220*sx),trackY,(int)(500*sx),Math.max(2,o.seekTrack),4,4);g.fillOval((int)(710*sx)-o.thumb/2,trackY-o.thumb/2,o.thumb,o.thumb);
-  box(g,o.prev,sx,sy,PlayerIcons.PREV);box(g,o.play,sx,sy,PlayerIcons.PAUSE);box(g,o.next,sx,sy,PlayerIcons.NEXT);box(g,o.audio,sx,sy,PlayerIcons.NOTE);box(g,o.cc,sx,sy,PlayerIcons.CC);box(g,o.episodes,sx,sy,PlayerIcons.LIST);
-  g.setColor(new Color(0x1C,0x1B,0x22));g.fillRoundRect(o.status.x*w/1920,o.status.y*h/1080,o.status.w*w/1920,o.status.h*h/1080,16,16);g.setColor(Color.WHITE);center(g,"播放源 1/1 · 准备连接……",o.status.x,o.status.y,o.status.w,o.status.h,sx,sy);
+ static Font uiFont(int style,float px)throws Exception{Font base;File ttc=new File("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc");try{base=ttc.isFile()?Font.createFont(Font.TRUETYPE_FONT,ttc):new Font("WenQuanYi Micro Hei",Font.PLAIN,12);}catch(Exception e){base=new Font("WenQuanYi Micro Hei",Font.PLAIN,12);}return base.deriveFont(style,px);}
+ static void hints(Graphics2D g){g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,RenderingHints.VALUE_FRACTIONALMETRICS_ON);}
+ static int textWidth(float px,int style,String text)throws Exception{BufferedImage image=new BufferedImage(4,4,BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();hints(g);g.setFont(uiFont(style,px));int w=g.getFontMetrics().stringWidth(text);g.dispose();return Math.max(1,w);}
+ static void render(PlayerLayoutMetrics.Overlay o,float density,String title,String decoder,String status,String episode,String time,String speed)throws Exception{
+  int w=1280,h=720;BufferedImage image=new BufferedImage(w,h,BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();hints(g);
+  GradientPaint backdrop=new GradientPaint(0,0,new Color(0x1A2744),0,h,new Color(0x12303A));g.setPaint(backdrop);g.fillRect(0,0,w,h);
+  float sx=w/1920f,sy=h/1080f;g.scale(sx,sy);
+  g.setPaint(new GradientPaint(0,0,new Color(0x99,0,0,0),0,o.back.bottom()+dp(density,6),new Color(0,0,0,0)));g.fillRect(0,0,1920,o.back.bottom()+dp(density,6));
+  g.setPaint(new GradientPaint(0,o.episode.y-dp(density,12),new Color(0,0,0,0),0,1080,new Color(0xC0,0,0,0)));g.fillRect(0,o.episode.y-dp(density,12),1920,1080);
+  icon(g,o.back,PlayerIcons.BACK);textIn(g,title,uiFont(Font.BOLD,PlayerLayoutMetrics.TITLE_SP*density),o.title,false);
+  textIn(g,status,uiFont(Font.PLAIN,PlayerLayoutMetrics.STATUS_SP*density),o.topStatus,false);
+  textIn(g,decoder,uiFont(Font.BOLD,PlayerLayoutMetrics.DECODER_SP*density),o.decoder,true);
+  icon(g,o.aspect,PlayerIcons.ASPECT);icon(g,o.pip,PlayerIcons.PIP);icon(g,o.more,PlayerIcons.MORE);
+  icon(g,o.camera,PlayerIcons.CAMERA);icon(g,o.lock,PlayerIcons.LOCK);
+  int argb=PlayerLayoutMetrics.PILL_COLOR;g.setColor(new Color((argb>>16)&255,(argb>>8)&255,argb&255,(argb>>>24)&255));
+  int rad=dp(density,PlayerLayoutMetrics.PILL_RADIUS_DP)*2;g.fillRoundRect(o.speed.x,o.speed.y,o.speed.w,o.speed.h,rad,rad);
+  g.setColor(Color.WHITE);int row=o.speed.h/3;
+  textIn(g,"+",uiFont(Font.BOLD,PlayerLayoutMetrics.SPEED_BTN_SP*density),new PlayerLayoutMetrics.Box(o.speed.x,o.speed.y,o.speed.w,row),true);
+  textIn(g,speed,uiFont(Font.BOLD,PlayerLayoutMetrics.SPEED_SP*density),new PlayerLayoutMetrics.Box(o.speed.x,o.speed.y+row,o.speed.w,row),true);
+  textIn(g,"−",uiFont(Font.BOLD,PlayerLayoutMetrics.SPEED_BTN_SP*density),new PlayerLayoutMetrics.Box(o.speed.x,o.speed.y+row*2,o.speed.w,row),true);
+  textIn(g,episode,uiFont(Font.BOLD,PlayerLayoutMetrics.EPISODE_SP*density),o.episode,false);
+  textIn(g,time,uiFont(Font.PLAIN,PlayerLayoutMetrics.TIME_SP*density),o.time,false);
+  int track=Math.max(2,o.seekTrack),ty=o.seek.y+(o.seek.h-track)/2,played=Math.round(o.seek.w*0.38f),buffered=Math.round(o.seek.w*0.72f);
+  g.setColor(new Color(255,255,255,0x33));g.fillRoundRect(o.seek.x,ty,o.seek.w,track,track,track);
+  g.setColor(new Color(255,255,255,0x66));g.fillRoundRect(o.seek.x,ty,buffered,track,track,track);
+  g.setColor(Color.WHITE);g.fillRoundRect(o.seek.x,ty,played,track,track,track);
+  g.fillOval(o.seek.x+played-o.thumb/2,ty+track/2-o.thumb/2,o.thumb,o.thumb);
+  icon(g,o.prev,PlayerIcons.PREV);icon(g,o.play,PlayerIcons.PAUSE);icon(g,o.next,PlayerIcons.NEXT);icon(g,o.audio,PlayerIcons.NOTE);icon(g,o.cc,PlayerIcons.CC);icon(g,o.episodes,PlayerIcons.LIST);
   g.dispose();
   File out=new File("build/overlay-layout.png");out.getParentFile().mkdirs();ImageIO.write(image,"png",out);
   File art=new File("/opt/cursor/artifacts/overlay-layout.png");if(art.getParentFile()!=null&&(art.getParentFile().isDirectory()||art.getParentFile().mkdirs()))ImageIO.write(image,"png",art);
   check(out.isFile()&&out.length()>1000,"layout harness wrote a picture");
-  int pill=image.getRGB((int)((o.speed.x+8)*sx),(int)((o.speed.y+8)*sy));check((pill&0xffffff)!=0,"speed pill background is visible on black");
+  check(bright(image,o.title,sx,sy)&&bright(image,o.decoder,sx,sy)&&bright(image,o.topStatus,sx,sy)&&bright(image,o.time,sx,sy)&&bright(image,o.episode,sx,sy),"title, HW+, status, time and episode text are actually drawn");
+  int trackX=Math.round((o.seek.right()-8)*sx),trackY=Math.round((ty+track/2f)*sy);
+  int gapX=Math.round((o.time.right()+o.seek.x)/2f*sx);
+  check(lum(image.getRGB(trackX,trackY))>lum(image.getRGB(gapX,trackY))+12,"seek track continues to the right safe margin");
+  int pill=image.getRGB(Math.round((o.speed.x+14)*sx),Math.round((o.speed.y+18)*sy));
+  int outside=image.getRGB(Math.max(0,Math.round((o.speed.x-12)*sx)),Math.round((o.speed.y+18)*sy));
+  check(lum(pill)<lum(outside)-8&&((pill>>16)&255)<0x90,"speed pill is a dark translucent patch, not light grey");
  }
- static void box(Graphics2D g,PlayerLayoutMetrics.Box b,float sx,float sy,int icon){if(b==null)return;int x=Math.round(b.x*sx),y=Math.round(b.y*sy),w=Math.max(1,Math.round(b.w*sx)),h=Math.max(1,Math.round(b.h*sy));if(icon>=0){int s=Math.min(w,h);int ix=x+(w-s)/2,iy=y+(h-s)/2;drawIcon(g,icon,ix,iy,s);} }
- static void round(Graphics2D g,PlayerLayoutMetrics.Box b,float sx,float sy){g.fillRoundRect(Math.round(b.x*sx),Math.round(b.y*sy),Math.max(1,Math.round(b.w*sx)),Math.max(1,Math.round(b.h*sy)),12,12);}
- static void center(Graphics2D g,String text,int x,int y,int w,int h,float sx,float sy){FontMetrics fm=g.getFontMetrics();int tx=Math.round(x*sx)+(Math.round(w*sx)-fm.stringWidth(text))/2;int ty=Math.round(y*sy)+(Math.round(h*sy)+fm.getAscent())/2-2;g.drawString(text,tx,ty);}
+ static void icon(Graphics2D g,PlayerLayoutMetrics.Box b,int type){if(b==null)return;int box=Math.min(b.w,b.h);int size=Math.round(box*(float)PlayerLayoutMetrics.ICON_DP/PlayerLayoutMetrics.TOUCH_DP);int x=b.x+(b.w-size)/2,y=b.y+(b.h-size)/2;drawIcon(g,type,x,y,size);}
+ static void textIn(Graphics2D g,String text,Font font,PlayerLayoutMetrics.Box b,boolean center){if(b==null||text==null)return;g.setFont(font);FontMetrics fm=g.getFontMetrics();int tx=center?b.x+(b.w-fm.stringWidth(text))/2:b.x;int ty=b.y+(b.h-fm.getHeight())/2+fm.getAscent();Shape old=g.getClip();g.setClip(b.x,b.y,Math.max(1,b.w),Math.max(1,b.h));g.setColor(Color.WHITE);g.drawString(text,tx,ty);g.setClip(old);}
+ static boolean bright(BufferedImage image,PlayerLayoutMetrics.Box b,float sx,float sy){int x0=Math.max(0,Math.round(b.x*sx)),y0=Math.max(0,Math.round(b.y*sy)),x1=Math.min(image.getWidth()-1,Math.round(b.right()*sx)),y1=Math.min(image.getHeight()-1,Math.round(b.bottom()*sy));for(int y=y0;y<=y1;y+=2)for(int x=x0;x<=x1;x+=2)if(lum(image.getRGB(x,y))>170)return true;return false;}
+ static int lum(int rgb){int r=(rgb>>16)&255,g=(rgb>>8)&255,b=rgb&255;return (r*3+g*6+b)/10;}
  static void drawIcon(Graphics2D g,int type,int x,int y,int size){
   float u=size/PlayerIconPaths.BOX;g.setStroke(new BasicStroke(Math.max(1f,PlayerIconPaths.STROKE*u),BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));g.setColor(Color.WHITE);
   for(PlayerIconPaths.Shape s:PlayerIconPaths.of(type)){
    float[] p=s.p;if(p==null)continue;
-   if(s.kind==PlayerIconPaths.TEXT){g.setFont(new Font(Font.SANS_SERIF,Font.BOLD,Math.max(8,Math.round(p[2]*u))));FontMetrics fm=g.getFontMetrics();g.drawString(s.text,x+p[0]*u-fm.stringWidth(s.text)/2f,y+p[1]*u);continue;}
+   if(s.kind==PlayerIconPaths.TEXT){Font font;try{font=uiFont(Font.PLAIN,Math.max(8f,p[2]*u));}catch(Exception e){font=new Font(Font.SANS_SERIF,Font.PLAIN,Math.max(8,Math.round(p[2]*u)));}g.setFont(font);FontMetrics fm=g.getFontMetrics();g.setColor(Color.WHITE);g.drawString(s.text,x+p[0]*u-fm.stringWidth(s.text)/2f,y+p[1]*u);continue;}
    if(s.kind==PlayerIconPaths.OVAL){g.drawOval(Math.round(x+(p[0]-p[2])*u),Math.round(y+(p[1]-p[2])*u),Math.round(p[2]*2*u),Math.round(p[2]*2*u));continue;}
    if(s.kind==PlayerIconPaths.FILL_OVAL){g.fillOval(Math.round(x+(p[0]-p[2])*u),Math.round(y+(p[1]-p[2])*u),Math.max(1,Math.round(p[2]*2*u)),Math.max(1,Math.round(p[2]*2*u)));continue;}
    if(s.kind==PlayerIconPaths.ROUND||s.kind==PlayerIconPaths.FILL_ROUND){if(s.kind==PlayerIconPaths.FILL_ROUND)g.fillRoundRect(Math.round(x+p[0]*u),Math.round(y+p[1]*u),Math.round(p[2]*u),Math.round(p[3]*u),Math.round(p[4]*u),Math.round(p[4]*u));else g.drawRoundRect(Math.round(x+p[0]*u),Math.round(y+p[1]*u),Math.round(p[2]*u),Math.round(p[3]*u),Math.round(p[4]*u),Math.round(p[4]*u));continue;}
