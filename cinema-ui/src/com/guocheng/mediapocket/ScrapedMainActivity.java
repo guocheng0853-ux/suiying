@@ -4,7 +4,7 @@ import android.app.*;import android.os.*;import android.content.*;import android
 
 /** UI-only overlay on the stable 0.1.20 APK. Player, media engines and native libraries stay in that base. */
 public final class ScrapedMainActivity extends MainActivity {
- boolean light,homeCanvas,resumed,detailPage,heroScrimStrong;String detailId="",detailType="",detailError="";JSONObject openingMeta;String homeProvider="fusion";FusionCatalog.Session fusionSession;String appearance;int epoch,safeTop,safeBottom,heroIndex,heroPriority=-1;
+ boolean light,homeCanvas,keepHome,resumed,detailPage,heroScrimStrong;int pendingScroll=-1;String detailId="",detailType="",detailError="";JSONObject openingMeta;String homeProvider="fusion";FusionCatalog.Session fusionSession;String appearance;int epoch,safeTop,safeBottom,heroIndex,heroPriority=-1;
  FrostedBar frost;FrameLayout stage,hero,heroPage;HomeAtmosphere homeAtmosphere;final java.util.Set<String> pendingHeroMetadata=java.util.Collections.synchronizedSet(new java.util.HashSet<>());HeroSwipe heroSwipe;View appBarScrim;GradientDrawable topGradient;LinearLayout topBar,heroInfo,dots;ImageView heroImage,heroLogo;TextView heroTitle,heroFacts,heroDescription,heroPlay;NavIcon[] navIcons;
  JSONArray heroes=new JSONArray();String heroType="series";final Handler carousel=new Handler(Looper.getMainLooper());
  final String[] tabs=HomeRules.TABS;HomeChrome homeChrome;
@@ -13,7 +13,7 @@ public final class ScrapedMainActivity extends MainActivity {
   light=appearance.equals("light")||(appearance.equals("system")&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)!=Configuration.UI_MODE_NIGHT_YES);
   p.edit().putString("themeMode",light?"light":"dark").apply();
   getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);UiImages.configure(getCacheDir());
-  HomeSources.seed(this);String imported=ConfigImport.consume(this);super.onCreate(saved);try{addons=PrivateTorrentAddons.sync(this,addons,false);}catch(Exception e){say("私用播放源初始化失败："+e.getClass().getSimpleName());}if(imported!=null)android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();
+  HomeSources.seed(this);String imported=ConfigImport.consume(this);if(saved!=null)pendingScroll=saved.getInt("home.scrollY",-1);super.onCreate(saved);try{addons=PrivateTorrentAddons.sync(this,addons,false);}catch(Exception e){say("私用播放源初始化失败："+e.getClass().getSimpleName());}if(imported!=null)android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();
  }
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String imported=ConfigImport.consume(this);if(imported!=null){homeProvider="tvbox";android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();home();}}
  int surface(){return light?0xffedf5f5:0xff1c1b21;}int card(){return light?0xffffffff:0xff27252e;}int ink(){return light?0xff173740:0xfff5fafb;}int muted(){return light?0xff52757c:0xffafcbd2;}int accent(){return light?0xff67549c:0xffd0bfff;}
@@ -53,10 +53,11 @@ public final class ScrapedMainActivity extends MainActivity {
  @Override void browse(){super.browse();if(body!=null)body.post(()->{if(!isFinishing())EmbySearch.attach(this);});}
  @Override void selectNav(String selected){String alias=HomeRules.navAlias(selected);super.selectNav(alias);if(navIcons==null)return;for(int i=0;i<tabs.length;i++){boolean yes=tabs[i].equals(alias);navItems.get(i).setTextColor(yes?accent():muted());navItems.get(i).setBackground(rounded(yes?(light?0xffdeedf4:0xff315c7a):0,28));navIcons[i].tint(yes?accent():muted());}}
  @Override void clear(String title){if(heroSwipe!=null){heroSwipe.dispose();heroSwipe=null;}epoch++;carousel.removeCallbacks(tick);homeCanvas=false;detailPage=false;detailId="";detailChrome=null;super.clear(title);updateInsets();}
- @Override void home(){
+ @Override public void onConfigurationChanged(Configuration c){super.onConfigurationChanged(c);updateInsets();}
+ @Override void home(){if(keepHome)return;
   homeProvider=prefs.getString("fusion.homeProvider","stremio");selectNav("首页");clear("");homeCanvas=true;body.removeAllViews();updateInsets();createHero();
   if(homeChrome==null)homeChrome=new HomeChrome(this);
-  if("emby".equals(homeProvider)){EmbyHome.show(this);return;}
+  if("emby".equals(homeProvider)){EmbyHome.show(this);restoreScroll();return;}
   homeChrome.continueWatching(array("history"));
   if(!homeProvider.equals("stremio")&&sectionOn("fusion"))fusionHome();
   if(!homeProvider.equals("tvbox")){
@@ -64,8 +65,9 @@ public final class ScrapedMainActivity extends MainActivity {
   section("hot-series","热门剧集","series");section("hot-movie","热门电影","movie");
   genreSection("anime-series","动画剧集","series","Animation");genreSection("anime-movie","动画电影","movie","Animation");genreSection("documentary","纪录片","movie","Documentary");
   tcHomeRows(screen);}
-  EmbyHome.supplement(this);
+  EmbyHome.supplement(this);restoreScroll();
  }
+ void restoreScroll(){if(pendingScroll<0||scroll==null)return;final int y=pendingScroll;pendingScroll=-1;scroll.post(()->{if(homeCanvas)scroll.scrollTo(0,y);});scroll.postDelayed(()->{if(homeCanvas)scroll.scrollTo(0,y);},500);}
  void genreBrowse(String type,String genre){selectNav("搜索");clear(genre.isEmpty()?(type.equals("movie")?"电影":"剧集"):genre);mode=type;LinearLayout target=new LinearLayout(this);target.setOrientation(1);body.addView(target);catalog(target,type,genre);}
  View libraryCard(String name,String subtitle,String type){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(10),dp(8));c.setGravity(Gravity.CENTER_VERTICAL);c.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,type.equals("movie")?new int[]{0xff875e64,0xff3d4a65}:new int[]{0xff425f87,0xff365b64}));((GradientDrawable)c.getBackground()).setCornerRadius(dp(12));TextView a=text(name,17,0xffffffff);a.setTypeface(null,1);a.setPadding(0,0,0,dp(6));TextView b=text(subtitle,10,0xffe0edf2);b.setPadding(0,0,0,0);c.addView(a);c.addView(b);c.setOnClickListener(v->{mode=type;browse();});return c;}
  boolean sectionOn(String key){return HomeRules.sectionShown(prefs.getString("home.hiddenSections",""),key);}
@@ -239,8 +241,8 @@ public final class ScrapedMainActivity extends MainActivity {
 
 
  void recolor(View view){if(view instanceof TextView){TextView t=(TextView)view;int c=t.getCurrentTextColor();if(map(c)!=c)t.setTextColor(map(c));}Drawable d=view.getBackground();if(d instanceof ColorDrawable){int c=((ColorDrawable)d).getColor();if(map(c)!=c)((ColorDrawable)d).setColor(map(c));}else if(d instanceof GradientDrawable){ColorStateList c=((GradientDrawable)d).getColor();if(c!=null&&map(c.getDefaultColor())!=c.getDefaultColor())((GradientDrawable)d).setColor(map(c.getDefaultColor()));}if(view instanceof ViewGroup)for(int i=0;i<((ViewGroup)view).getChildCount();i++)recolor(((ViewGroup)view).getChildAt(i));}
- @Override protected void onResume(){PlaybackOrientation.releaseHost(this);super.onResume();resumed=true;Object[] next=AutoNext.consume();if(next!=null){final Object[] n=next;scroll.post(()->{if(isFinishing())return;if(EmbyPlayback.openNext(this,n))return;selectSource((String)n[0],(String)n[1],(JSONObject)n[2],true);});}if(homeCanvas&&prefs.getString("home.source.v1","fty").equals("current")&&fusionSession!=null&&!fusionSession.url.equals(prefs.getString("tvbox.active",fusionSession.url))){fusionSession=null;home();}carousel.removeCallbacks(tick);if(homeCanvas&&heroes.length()>1)carousel.postDelayed(tick,7000);}
+ @Override protected void onResume(){keepHome=HomeRules.keepOnResume(homeCanvas,body==null?0:body.getChildCount());PlaybackOrientation.releaseHost(this);super.onResume();keepHome=false;resumed=true;Object[] next=AutoNext.consume();if(next!=null){final Object[] n=next;scroll.post(()->{if(isFinishing())return;if(EmbyPlayback.openNext(this,n))return;selectSource((String)n[0],(String)n[1],(JSONObject)n[2],true);});}if(homeCanvas&&prefs.getString("home.source.v1","fty").equals("current")&&fusionSession!=null&&!fusionSession.url.equals(prefs.getString("tvbox.active",fusionSession.url))){fusionSession=null;home();}carousel.removeCallbacks(tick);if(homeCanvas&&heroes.length()>1)carousel.postDelayed(tick,7000);}
  @Override protected void onPause(){if(heroSwipe!=null)heroSwipe.cancel();resumed=false;carousel.removeCallbacks(tick);super.onPause();}
  @Override public void onDestroy(){if(heroSwipe!=null)heroSwipe.dispose();carousel.removeCallbacksAndMessages(null);super.onDestroy();}
- @Override public void onSaveInstanceState(Bundle b){b.putBoolean("cinema.settings","我的".equals(HomeRules.navAlias(selectedTab))||"设置".equals(selectedTab));super.onSaveInstanceState(b);}
+ @Override public void onSaveInstanceState(Bundle b){b.putBoolean("cinema.settings","我的".equals(HomeRules.navAlias(selectedTab))||"设置".equals(selectedTab));if(scroll!=null)b.putInt("home.scrollY",scroll.getScrollY());super.onSaveInstanceState(b);}
 }

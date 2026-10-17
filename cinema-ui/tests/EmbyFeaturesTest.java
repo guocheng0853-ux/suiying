@@ -49,6 +49,9 @@ public final class EmbyFeaturesTest {
   byte[] jpeg=index.jpeg(1);check(jpeg!=null&&jpeg[0]==(byte)0xff&&jpeg[1]==(byte)0xd8&&jpeg[jpeg.length-2]==(byte)0xff,"bif frame is the jpeg slice");
   check(BifIndex.parse(new byte[]{1,2,3,4})==null&&BifIndex.parse(null)==null,"bad bif is ignored");
   check(SpeedHold.tuned(0,1000)==2f&&Math.abs(SpeedHold.tuned(-180,1000)-(2f-1.44f))<0.001f&&SpeedHold.tuned(-360,1000)==0.1f&&Math.abs(SpeedHold.tuned(400,1000)-5.2f)<0.001f&&SpeedHold.tuned(10,1000,32f)==2f,"hold speed stays at 2 inside the dead zone and scales across the screen");
+  check(SpeedHold.tuned(0,1000,0,3f)==3f&&SpeedHold.capsule(2f).equals("加速 2.0×"),"hold base is configurable and the hud is chinese");
+  check(!EmbyCue.episodePageDone(0,100,100,161)&&EmbyCue.episodePageDone(100,61,100,161)&&EmbyCue.episodePageDone(0,7,100,-1)&&!EmbyCue.episodePageDone(0,100,100,-1),"episode pages stop on a short page or the reported total");
+  String episodes=EmbyCue.episodesPath("u","series","",0,100);check(episodes.contains("StartIndex=0")&&episodes.contains("Limit=100"),"episode query is paged");
   if(failures>0)throw new RuntimeException(failures+" failed");
   System.out.println("PASS: Emby markers, BIF, NextUp, tracks, backup urls, home sections.");
  }

@@ -1,6 +1,6 @@
 package com.guocheng.mediapocket;
 import android.app.*;import android.content.*;import android.graphics.drawable.Icon;import android.os.*;import android.util.Rational;import android.view.*;import android.widget.*;import java.util.*;
-/** 播放页附加控件：顶栏「画中画」，画面右侧倍速竖条（拖或点选档位，越上越快）。 */
+ /** 播放页附加控件：顶栏「画中画」。画面上不再放倍速药丸，长按加速仍由 PlayerGestures 临时改速。 */
 final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
  static final String ACTION="com.guocheng.mediapocket.PIP_CONTROL";
  static final Map<Activity,PlayerChrome> ALL=new WeakHashMap<>();
@@ -13,12 +13,11 @@ final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
  static void install(Activity a){try{DebugLog.install(a);if(ALL.containsKey(a))return;DebugLog.event("播放器","打开 · "+String.valueOf(OnlineSubtitleSearch.field(a,"name")));PlayerChrome c=new PlayerChrome(a);if(!c.build())return;ALL.put(a,c);a.getApplication().registerActivityLifecycleCallbacks(c);c.monitor.post(c.pulse);}catch(Exception ignored){}}
  static void refresh(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.update();}
  static void tick(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.poll();}
- /** 顶栏只加「画中画」。倍速是画面右侧竖条，夹在顶栏和底栏中间。底栏「比例」每次点击循环画面比例。缩放条已不创建，避免和倍速条叠在一起。 */
+ /** 顶栏只加「画中画」。倍速药丸已去掉。底栏「比例」每次点击循环画面比例。缩放条已不创建。 */
  boolean build(){Object top=OnlineSubtitleSearch.field(a,"top"),root=OnlineSubtitleSearch.field(a,"root");if(!(top instanceof LinearLayout)||!(root instanceof FrameLayout))return false;LinearLayout t=(LinearLayout)top;
   if(Build.VERSION.SDK_INT>=26&&a.getPackageManager().hasSystemFeature("android.software.picture_in_picture")){pip=button("","画中画",v->enterPip());t.addView(pip,new LinearLayout.LayoutParams(-2,dp(48)));}
-  speed=speedBar();speed.setVisibility(View.GONE);
-  FrameLayout.LayoutParams side=new FrameLayout.LayoutParams(dp(PlayerLayoutMetrics.PILL_W_DP),dp(PlayerLayoutMetrics.PILL_H_DP),Gravity.END|Gravity.TOP);side.rightMargin=dp(PlayerLayoutMetrics.MARGIN_DP);((FrameLayout)root).addView(speed,side);
-  PlayerRedesign.apply(a);update();paintSpeed();poll();speed.post(()->placeSpeed());return true;}
+  speed=null;
+  PlayerRedesign.apply(a);update();poll();return true;}
  /** 右侧倍速药丸：44×132dp，黑底约 45% 透明，8dp 圆角。上 +（18sp）、中倍速（14sp）、下 −。按住 +/− 连续调节。点中间打开常用档位。 */
  LinearLayout speedBar(){LinearLayout bar=new LinearLayout(a);bar.setOrientation(LinearLayout.VERTICAL);bar.setGravity(Gravity.CENTER);android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(PlayerLayoutMetrics.PILL_COLOR);bg.setCornerRadius(dp(PlayerLayoutMetrics.PILL_RADIUS_DP));bar.setBackground(bg);bar.setClipToOutline(true);bar.setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND);bar.setContentDescription("倍速");
   bar.addView(speedButton("+",1));TextView label=speedMark("1.0x");label.setTag("mp-speed-label");label.setOnClickListener(v->speedPresets());bar.addView(label);bar.addView(speedButton("−",-1));return bar;}

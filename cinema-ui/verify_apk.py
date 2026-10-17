@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json,subprocess,re
 root=Path(__file__).resolve().parent
-apk=root.parent/'deliverables/MediaPocket-0.1.80-player-p0-arm64.apk'
+apk=root.parent/'deliverables/MediaPocket-0.1.81-player-p0-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]
@@ -23,7 +23,7 @@ def dex(d):
  return classes,methods
 badging=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','badging',str(apk)],text=True).splitlines()[0]
 match=re.search(r"name='([^']+)' versionCode='([^']+)' versionName='([^']+)'",badging)
-assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='81' and match.group(3)=='0.1.80',badging
+assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='82' and match.group(3)=='0.1.81',badging
 xml=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','xmltree',str(apk),'--file','AndroidManifest.xml'],text=True)
 assert 'ExternalPlayActivity' in xml and '随影 (VLC)' in xml and 'suiying' in xml, 'external player or import link missing'
 seen=set();refs=[];count=0

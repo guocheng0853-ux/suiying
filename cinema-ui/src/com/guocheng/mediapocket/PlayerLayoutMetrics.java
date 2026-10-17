@@ -3,9 +3,10 @@ package com.guocheng.mediapocket;
  * 横屏控件的位置，和 PlayerOverlay / PlayerChrome 用同一套 dp、sp。
  * 顶栏：返回、标题、时间/网速/电量、解码、比例、画中画、更多。
  * 底栏：集标题、时间文字、进度条拉到右侧安全边距、传输键。
- * 左侧截图和锁屏成组，和右侧倍速药丸落在同一条中线上。
+ * 左侧截图和锁屏成组，落在顶栏和底栏之间的中线上。画面上不再放倍速药丸。
  */
 final class PlayerLayoutMetrics {
+ static final boolean SHOW_SPEED_PILL=false;
  static final int TOUCH_DP=40,ICON_DP=24,PILL_W_DP=44,PILL_H_DP=132,PILL_RADIUS_DP=8;
  static final int SEEK_DP=3,SEEK_DRAG_DP=4,THUMB_DP=12,TIME_ROW_DP=24,TIME_GAP_DP=8;
  static final int TRANSPORT_GAP_DP=12,SIDE_GAP_DP=16,MARGIN_DP=16,TOP_H_DP=40,TOP_GAP_DP=4;
@@ -59,7 +60,7 @@ final class PlayerLayoutMetrics {
   Box lock=new Box(margin,stackTop+touch+sideGap,touch,touch);
   int pillW=dp(density,PILL_W_DP),pillH=dp(density,PILL_H_DP);
   int speedY=gapTop+Math.max(0,(contentBottom-gapTop-pillH)/2);
-  Box speed=new Box(width-margin-pillW,speedY,pillW,pillH);
+  Box speed=SHOW_SPEED_PILL?new Box(width-margin-pillW,speedY,pillW,pillH):null;
   int buttonY=height-bottomPad(density,cutB)-touch;
   int x=margin;
   Box prev=prevOn?new Box(x,buttonY,touch,touch):null;if(prevOn)x+=touch+gap;

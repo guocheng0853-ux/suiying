@@ -49,10 +49,9 @@ public class PlayerMotionRulesTest {
   PlayerLayoutMetrics.Overlay laid=PlayerLayoutMetrics.measure(1920,1080,density,cut,0,cut,0,true,true,true,false,topBottom,bottomTop,timePx,statusPx,decoderPx);
   check(laid.camera.cx()==laid.lock.cx()&&laid.camera.w==laid.lock.w&&laid.camera.w==laid.touch,"camera and lock share a center and a size");
   int gapMid=(laid.camera.y+laid.lock.bottom())/2;check(Math.abs(gapMid-(topBottom+bottomTop)/2)<=1,"side buttons are centered as a group");
-  check(Math.abs(gapMid-laid.speed.cy())<=1,"left column and speed pill share one center line");
-  check(laid.speed.w==dp(density,44)&&laid.speed.h==dp(density,132)&&PlayerLayoutMetrics.PILL_COLOR==0x73000000,"speed pill is 44 by 132 dp and black at 45 percent");
+  check(laid.speed==null&&!PlayerLayoutMetrics.SHOW_SPEED_PILL,"on-screen speed pill is not laid out");
   check(PlayerLayoutMetrics.SPEED_BTN_SP==18&&PlayerLayoutMetrics.SPEED_SP==14&&PlayerLayoutMetrics.EPISODE_SP==14,"speed text is 18 and 14 sp, episode line is 14 sp");
-  check(laid.camera.x==laid.margin&&1920-(laid.speed.right())==laid.margin,"speed pill uses the same margin as the left column");
+  check(laid.camera.x==laid.margin,"left column uses the safe margin");
   check(laid.prev.cy()==laid.play.cy()&&laid.play.cy()==laid.next.cy()&&laid.play.x-(laid.prev.right())==laid.next.x-(laid.play.right()),"transport sits on one baseline with even gaps");
   PlayerLayoutMetrics.Overlay hidden=PlayerLayoutMetrics.measure(1920,1080,density,0,0,0,0,false,false,false,true,0,0);
   check(hidden.prev==null&&hidden.next==null&&hidden.play.x==hidden.margin,"missing neighbors are not given a slot");
@@ -83,12 +82,7 @@ public class PlayerMotionRulesTest {
   textIn(g,decoder,uiFont(Font.BOLD,PlayerLayoutMetrics.DECODER_SP*density),o.decoder,true);
   icon(g,o.aspect,PlayerIcons.ASPECT);icon(g,o.pip,PlayerIcons.PIP);icon(g,o.more,PlayerIcons.MORE);
   icon(g,o.camera,PlayerIcons.CAMERA);icon(g,o.lock,PlayerIcons.LOCK);
-  int argb=PlayerLayoutMetrics.PILL_COLOR;g.setColor(new Color((argb>>16)&255,(argb>>8)&255,argb&255,(argb>>>24)&255));
-  int rad=dp(density,PlayerLayoutMetrics.PILL_RADIUS_DP)*2;g.fillRoundRect(o.speed.x,o.speed.y,o.speed.w,o.speed.h,rad,rad);
-  g.setColor(Color.WHITE);int row=o.speed.h/3;
-  textIn(g,"+",uiFont(Font.BOLD,PlayerLayoutMetrics.SPEED_BTN_SP*density),new PlayerLayoutMetrics.Box(o.speed.x,o.speed.y,o.speed.w,row),true);
-  textIn(g,speed,uiFont(Font.BOLD,PlayerLayoutMetrics.SPEED_SP*density),new PlayerLayoutMetrics.Box(o.speed.x,o.speed.y+row,o.speed.w,row),true);
-  textIn(g,"−",uiFont(Font.BOLD,PlayerLayoutMetrics.SPEED_BTN_SP*density),new PlayerLayoutMetrics.Box(o.speed.x,o.speed.y+row*2,o.speed.w,row),true);
+  g.setColor(Color.WHITE);
   textIn(g,episode,uiFont(Font.BOLD,PlayerLayoutMetrics.EPISODE_SP*density),o.episode,false);
   textIn(g,time,uiFont(Font.PLAIN,PlayerLayoutMetrics.TIME_SP*density),o.time,false);
   int track=Math.max(2,o.seekTrack),ty=o.seek.y+(o.seek.h-track)/2,played=Math.round(o.seek.w*0.38f),buffered=Math.round(o.seek.w*0.72f);
@@ -105,9 +99,6 @@ public class PlayerMotionRulesTest {
   int trackX=Math.round((o.seek.right()-8)*sx),trackY=Math.round((ty+track/2f)*sy);
   int gapX=Math.round((o.time.right()+o.seek.x)/2f*sx);
   check(lum(image.getRGB(trackX,trackY))>lum(image.getRGB(gapX,trackY))+12,"seek track continues to the right safe margin");
-  int pill=image.getRGB(Math.round((o.speed.x+14)*sx),Math.round((o.speed.y+18)*sy));
-  int outside=image.getRGB(Math.max(0,Math.round((o.speed.x-12)*sx)),Math.round((o.speed.y+18)*sy));
-  check(lum(pill)<lum(outside)-8&&((pill>>16)&255)<0x90,"speed pill is a dark translucent patch, not light grey");
  }
  static void icon(Graphics2D g,PlayerLayoutMetrics.Box b,int type){if(b==null)return;int box=Math.min(b.w,b.h);int size=Math.round(box*(float)PlayerLayoutMetrics.ICON_DP/PlayerLayoutMetrics.TOUCH_DP);int x=b.x+(b.w-size)/2,y=b.y+(b.h-size)/2;drawIcon(g,type,x,y,size);}
  static void textIn(Graphics2D g,String text,Font font,PlayerLayoutMetrics.Box b,boolean center){if(b==null||text==null)return;g.setFont(font);FontMetrics fm=g.getFontMetrics();int tx=center?b.x+(b.w-fm.stringWidth(text))/2:b.x;int ty=b.y+(b.h-fm.getHeight())/2+fm.getAscent();Shape old=g.getClip();g.setClip(b.x,b.y,Math.max(1,b.w),Math.max(1,b.h));g.setColor(Color.WHITE);g.drawString(text,tx,ty);g.setClip(old);}

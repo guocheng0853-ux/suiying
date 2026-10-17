@@ -34,6 +34,7 @@ public class HomeRulesTest {
   check(HomeRules.labelFor(opts,"provider:stremio").equals("Stremio 目录"),"label");
   check(HomeRules.libraryTiles().length==4&&HomeRules.libraryTiles()[0][0].equals("电影"),"tiles");
   check(HomeRules.runtimeMinutes(new JSONObject().put("runtime","1h 13m"))==73,"runtime");
+  check(HomeRules.keepOnResume(true,3)&&!HomeRules.keepOnResume(true,0)&&!HomeRules.keepOnResume(false,3),"resume keeps a filled home");
   System.out.println("PASS: home nav aliases, progress fraction, episode labels, badges, hero facts, source options, library tiles.");
  }
 }
