@@ -6,18 +6,35 @@ final class EmbyPlayback {
  static final Map<Activity,State> ALL=new WeakHashMap<>();
  static final class State {String serverId,item,media,session;boolean direct,started,paused,marked,seeked,stopped;long resumeMs,runtimeTicks,lastReport,lastPos,maxPos;}
  private EmbyPlayback(){}
- static void play(Activity a,JSONObject meta){if(meta==null)return;JSONObject server=EmbyStore.get(a,meta.optString("emby.server"));String item=meta.optString("emby.item");if(item.isEmpty())item=EmbyApi.itemOf(meta.optString("id"));if(server==null||item.isEmpty()){Toast.makeText(a,"找不到这个 Emby 服务器",Toast.LENGTH_LONG).show();return;}playItem(a,server,item);}
- static void playItem(Activity a,JSONObject server,String itemId){
-  if(a.isFinishing())return;ProgressDialog wait=ProgressDialog.show(a,"正在准备播放","正在向 Emby 请求播放信息…",true,true);final boolean[] cancel={false};wait.setOnCancelListener(d->cancel[0]=true);
-  IO.execute(()->{try{JSONObject item=EmbyClient.item(a,server,itemId);JSONObject user=item.optJSONObject("UserData");long resume=EmbyApi.ticksToMs(user==null?0:user.optLong("PlaybackPositionTicks"));
-   JSONObject info=EmbyClient.playbackInfo(a,server,itemId,EmbyApi.msToTicks(resume));EmbyApi.Choice choice=EmbyApi.select(server.optString("url"),itemId,server.optString("token"),info);
-   JSONObject meta=EmbyApi.meta(server,item);String type=item.optString("Type");
-   if("Episode".equals(type)&&!item.optString("SeriesId").isEmpty()){JSONArray episodes=EmbyClient.episodes(a,server,item.optString("SeriesId"),"").optJSONArray("Items");meta.put("videos",EmbyApi.videos(server,episodes));meta.put("type","series");String line=EmbyApi.line(item);if(!line.isEmpty())meta.put("name",meta.optString("name")+" · "+line);}
-   JSONObject stream=EmbyApi.stream(server,itemId,choice,resume).put("emby.runtimeTicks",item.optLong("RunTimeTicks"));
-   String watch=meta.optString("id");int pos=(int)Math.min(Integer.MAX_VALUE,resume),dur=(int)Math.min(Integer.MAX_VALUE,EmbyApi.ticksToMs(item.optLong("RunTimeTicks")));
+ static int pendingAudio=-1,pendingSub=-1;
+ static void play(Activity a,JSONObject meta){if(meta==null)return;JSONObject server=EmbyStore.get(a,meta.optString("emby.server"));String item=meta.optString("emby.item");if(item.isEmpty())item=EmbyApi.itemOf(meta.optString("id"));if(server==null||item.isEmpty()){Toast.makeText(a,"找不到这个 Emby 服务器",Toast.LENGTH_LONG).show();return;}playItem(a,server,item,null,false);}
+ static void playItem(Activity a,JSONObject server,String itemId){playItem(a,server,itemId,null,false);}
+ static void replay(Activity a,int audioIndex,int subtitleIndex){JSONObject stream=TrackSelection.stream(a);JSONObject server=EmbyStore.get(a,stream.optString("emby.server"));if(server==null||stream.optString("emby.item").isEmpty())return;pendingAudio=audioIndex;pendingSub=subtitleIndex;playItem(a,server,stream.optString("emby.item"),stream.optString("emby.mediaSource"),true);}
+ static void playItem(Activity a,JSONObject server,String itemId,String mediaSourceId,boolean replace){
+  if(a==null||a.isFinishing()||server==null||itemId==null||itemId.isEmpty())return;ProgressDialog wait=ProgressDialog.show(a,"正在准备播放","正在向 Emby 请求播放信息…",true,true);final boolean[] cancel={false};wait.setOnCancelListener(d->cancel[0]=true);
+  final int audio=pendingAudio,sub=pendingSub,keep=replace?position(a):-1;pendingAudio=-1;pendingSub=-1;
+  IO.execute(()->{try{
+   String[] bases=EmbyCue.bases(server.optString("url"),server.optJSONArray("backups"));if(bases.length==0)bases=new String[]{server.optString("url")};
+   Exception last=null;JSONObject working=null,item=null,info=null;EmbyApi.Choice choice=null;
+   for(String base:bases){JSONObject attempt=new JSONObject(server.toString());attempt.put("url",base);attempt.remove("backups");try{
+     item=EmbyClient.item(a,attempt,itemId);JSONObject user=item.optJSONObject("UserData");long resume=keep>10000?keep:EmbyApi.ticksToMs(user==null?0:user.optLong("PlaybackPositionTicks"));
+     info=EmbyClient.playbackInfo(a,attempt,itemId,EmbyApi.msToTicks(resume),mediaSourceId,audio,sub);
+     JSONArray versions=EmbyCue.versions(info.optJSONArray("MediaSources"));
+     if((mediaSourceId==null||mediaSourceId.isEmpty())&&versions.length()>1){JSONObject chosenItem=item,chosenInfo=info,route=attempt;a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(cancel[0]||a.isFinishing())return;pickVersion(a,route,itemId,versions,replace);});return;}
+     choice=EmbyApi.select(attempt.optString("url"),itemId,attempt.optString("token"),info,mediaSourceId);working=attempt;break;
+    }catch(Exception e){last=e;if(!EmbyCue.retryable(e))break;}}
+   if(choice==null)throw last==null?new java.io.IOException("无法播放"):last;
+   final JSONObject route=working,detail=item,playback=info;final EmbyApi.Choice chosen=choice;JSONObject user=detail.optJSONObject("UserData");long resume=keep>10000?keep:EmbyApi.ticksToMs(user==null?0:user.optLong("PlaybackPositionTicks"));
+   JSONObject meta=EmbyApi.meta(route,detail);String type=detail.optString("Type");
+   if("Episode".equals(type)&&!detail.optString("SeriesId").isEmpty()){JSONArray episodes=EmbyClient.episodes(a,route,detail.optString("SeriesId"),"").optJSONArray("Items");meta.put("videos",EmbyApi.videos(route,episodes));meta.put("type","series");String line=EmbyApi.line(detail);if(!line.isEmpty())meta.put("name",meta.optString("name")+" · "+line);}
+   JSONObject stream=EmbyApi.stream(route,itemId,chosen,resume).put("emby.runtimeTicks",detail.optLong("RunTimeTicks"));
+   if(detail.optJSONArray("Chapters")!=null)stream.put("emby.chapters",detail.optJSONArray("Chapters"));
+   JSONArray versions=EmbyCue.versions(playback.optJSONArray("MediaSources"));if(versions.length()>1)stream.put("emby.versions",versions);
+   String watch=meta.optString("id");int pos=(int)Math.min(Integer.MAX_VALUE,resume),dur=(int)Math.min(Integer.MAX_VALUE,EmbyApi.ticksToMs(detail.optLong("RunTimeTicks")));
    a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(cancel[0]||a.isFinishing())return;if(pos>10000)a.getSharedPreferences("data",0).edit().putInt("pos:"+watch,pos).putInt("dur:"+watch,dur).apply();
-    Intent in=new Intent(a,PlayerActivity.class);in.putExtra("stream",stream.toString());in.putExtra("sources",new JSONArray().put(stream).toString());in.putExtra("id",watch);in.putExtra("type",meta.optString("type","movie"));in.putExtra("meta",meta.toString());in.putExtra("addons",a.getSharedPreferences("data",0).getString("addons","[]"));a.startActivity(in);});
+    Intent in=new Intent(a,PlayerActivity.class);in.putExtra("stream",stream.toString());in.putExtra("sources",new JSONArray().put(stream).toString());in.putExtra("id",watch);in.putExtra("type",meta.optString("type","movie"));in.putExtra("meta",meta.toString());in.putExtra("addons",a.getSharedPreferences("data",0).getString("addons","[]"));a.startActivity(in);if(replace)a.finish();});
   }catch(Exception e){a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(!a.isFinishing())Toast.makeText(a,EmbyApi.explain(e),Toast.LENGTH_LONG).show();});}});}
+ static void pickVersion(Activity a,JSONObject server,String itemId,JSONArray versions,boolean replace){String[] labels=new String[versions.length()];for(int i=0;i<versions.length();i++)labels[i]=versions.optJSONObject(i).optString("name","版本");new AlertDialog.Builder(a).setTitle("选择版本").setItems(labels,(d,i)->{JSONObject v=versions.optJSONObject(i);if(v!=null)playItem(a,server,itemId,v.optString("id"),replace);}).setNegativeButton("取消",null).show();}
  static boolean openNext(Activity a,Object[] next){if(next==null||next.length<1||!(next[0] instanceof String)||!EmbyApi.isEmbyId((String)next[0]))return false;String id=(String)next[0];JSONObject server=EmbyStore.get(a,EmbyApi.serverOf(id));if(server==null){Toast.makeText(a,"找不到这个 Emby 服务器，无法播放下一集",Toast.LENGTH_LONG).show();return true;}playItem(a,server,EmbyApi.itemOf(id));return true;}
  static void tick(Activity a){try{JSONObject stream=TrackSelection.stream(a);if(stream==null||stream.optString("emby.item").isEmpty())return;State s;synchronized(ALL){s=ALL.get(a);if(s==null){s=new State();s.serverId=stream.optString("emby.server");s.item=stream.optString("emby.item");s.media=stream.optString("emby.mediaSource");s.session=stream.optString("emby.playSession");s.direct=stream.optBoolean("emby.direct",true);s.resumeMs=stream.optLong("emby.resumeMs");s.runtimeTicks=stream.optLong("emby.runtimeTicks");s.paused=true;ALL.put(a,s);}}
   int pos=position(a);boolean playing=playing(a);if(pos>s.maxPos)s.maxPos=pos;if(pos>=0)s.lastPos=pos;

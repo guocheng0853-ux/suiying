@@ -51,6 +51,12 @@ final class EmbyApi {
   if(tag!=null&&!tag.isEmpty())q+="&tag="+enc(tag);
   return withKey(join(server(base),q),token);
  }
+ static String chapterImage(String base,String itemId,int index,String token,String tag){
+  String q="/Items/"+enc(itemId)+"/Images/Chapter/"+Math.max(0,index)+"?maxWidth=320&quality=80";
+  if(tag!=null&&!tag.isEmpty())q+="&tag="+enc(tag);
+  return withKey(join(server(base),q),token);
+ }
+ static String bifPath(String itemId,String mediaSourceId){String q="/Videos/"+enc(itemId)+"/index.bif?width=320";if(mediaSourceId!=null&&!mediaSourceId.isEmpty())q+="&mediaSourceId="+enc(mediaSourceId);return q;}
  static long msToTicks(long ms){if(ms<=0)return 0L;if(ms>Long.MAX_VALUE/TICKS_PER_MS)return Long.MAX_VALUE;return ms*TICKS_PER_MS;}
  static long ticksToMs(long ticks){if(ticks<=0)return 0L;return ticks/TICKS_PER_MS;}
  static boolean played(long positionTicks,long runtimeTicks){if(positionTicks<=0||runtimeTicks<=0)return false;if(runtimeTicks-positionTicks<=PLAYED_TAIL_TICKS)return true;return positionTicks*100L>=runtimeTicks*90L;}
@@ -61,13 +67,14 @@ final class EmbyApi {
   return withKey(join(server(base),q.toString()),token);
  }
  static boolean staticUrl(String url){return url!=null&&url.toLowerCase(Locale.ROOT).contains("static=true");}
- /** 优先 static=true 直连；没有可直连的源时用服务器给的转码地址。 */
- static Choice select(String base,String itemId,String token,JSONObject info)throws JSONException{
+ /** 优先 static=true 直连；没有可直连的源时用服务器给的转码地址。mediaSourceId 非空时只使用这一版。 */
+ static Choice select(String base,String itemId,String token,JSONObject info)throws JSONException{return select(base,itemId,token,info,null);}
+ static Choice select(String base,String itemId,String token,JSONObject info,String mediaSourceId)throws JSONException{
   if(info==null)throw new IllegalArgumentException("服务器没有返回播放信息");
   String play=info.optString("PlaySessionId");JSONArray sources=info.optJSONArray("MediaSources");
   if(sources==null||sources.length()==0)throw new IllegalArgumentException("服务器没有返回可播放的媒体");
   JSONObject directSource=null,transSource=null;String direct=null,trans=null;
-  for(int i=0;i<sources.length();i++){JSONObject s=sources.optJSONObject(i);if(s==null)continue;
+  for(int i=0;i<sources.length();i++){JSONObject s=sources.optJSONObject(i);if(s==null)continue;if(mediaSourceId!=null&&!mediaSourceId.isEmpty()&&!mediaSourceId.equals(s.optString("Id")))continue;
    String explicit=explicitStatic(base,s,token,play);
    boolean can=explicit!=null||s.optBoolean("SupportsDirectStream")||s.optBoolean("SupportsDirectPlay");
    if(directSource==null&&can){directSource=s;direct=explicit!=null?explicit:directUrl(base,itemId,s.optString("Id"),play,token);}
@@ -103,7 +110,7 @@ final class EmbyApi {
    boolean external=s.optBoolean("IsExternal")||"External".equalsIgnoreCase(s.optString("DeliveryMethod"));
    String name=s.optString("DisplayTitle",s.optString("Language","字幕"));if(name.isEmpty())name=external?"外挂字幕":"内嵌字幕";
    name=name+(external?" · 外挂":" · 内嵌");
-   out.put(new JSONObject().put("url",url).put("lang",s.optString("Language")).put("name",name).put("external",external));
+   out.put(new JSONObject().put("url",url).put("lang",s.optString("Language")).put("name",name).put("external",external).put("index",index).put("codec",s.optString("Codec")).put("forced",s.optBoolean("IsForced")).put("isDefault",s.optBoolean("IsDefault")));
   }
   return out;
  }
@@ -112,18 +119,23 @@ final class EmbyApi {
   for(int i=0;streams!=null&&i<streams.length();i++){JSONObject s=streams.optJSONObject(i);if(s==null||!"Audio".equalsIgnoreCase(s.optString("Type")))continue;
    String label=s.optString("DisplayTitle",s.optString("Language","音轨"));int ch=s.optInt("Channels",0);if(ch>0)label=label+" · "+ch+"声道";
    String codec=s.optString("Codec");if(!codec.isEmpty())label=label+" · "+codec.toUpperCase(Locale.ROOT);
-   out.put(new JSONObject().put("id",s.optInt("Index",i)).put("index",s.optInt("Index",i)).put("label",label).put("language",s.optString("Language")));
+   out.put(new JSONObject().put("id",s.optInt("Index",i)).put("index",s.optInt("Index",i)).put("label",label).put("language",s.optString("Language")).put("codec",codec).put("channels",ch).put("isDefault",s.optBoolean("IsDefault")).put("ordinal",out.length()));
   }
   return out;
  }
- static JSONObject playbackInfoBody(String userId,long startTicks)throws JSONException{
+ static JSONObject playbackInfoBody(String userId,long startTicks)throws JSONException{return playbackInfoBody(userId,startTicks,null,-1,-1);}
+ static JSONObject playbackInfoBody(String userId,long startTicks,String mediaSourceId,int audioIndex,int subtitleIndex)throws JSONException{
   JSONArray containers=new JSONArray();
   for(String c:new String[]{"mkv","mp4","m4v","mov","avi","ts","m2ts","wmv","flv","webm","mpg","mpeg","3gp","iso"})containers.put(new JSONObject().put("Container",c).put("Type","Video").put("VideoCodec","h264,hevc,mpeg4,mpeg2video,vp8,vp9,av1").put("AudioCodec","aac,mp3,ac3,eac3,dts,truehd,flac,opus,vorbis"));
   JSONObject trans=new JSONObject().put("Container","ts").put("Type","Video").put("VideoCodec","h264").put("AudioCodec","aac,mp3,ac3").put("Protocol","hls").put("Context","Streaming");
   JSONArray subs=new JSONArray();
   for(String f:new String[]{"srt","ass","ssa","vtt","subrip","pgs","pgssub","sub"}){subs.put(new JSONObject().put("Format",f).put("Method","External"));subs.put(new JSONObject().put("Format",f).put("Method","Embed"));}
   JSONObject profile=new JSONObject().put("MaxStreamingBitrate",140000000).put("DirectPlayProfiles",containers).put("TranscodingProfiles",new JSONArray().put(trans)).put("SubtitleProfiles",subs);
-  return new JSONObject().put("UserId",userId==null?"":userId).put("MaxStreamingBitrate",140000000).put("StartTimeTicks",0L).put("AutoOpenLiveStream",true).put("DeviceProfile",profile);
+  JSONObject body=new JSONObject().put("UserId",userId==null?"":userId).put("MaxStreamingBitrate",140000000).put("StartTimeTicks",0L).put("AutoOpenLiveStream",true).put("DeviceProfile",profile);
+  if(mediaSourceId!=null&&!mediaSourceId.isEmpty())body.put("MediaSourceId",mediaSourceId);
+  if(audioIndex>=0)body.put("AudioStreamIndex",audioIndex);
+  if(subtitleIndex>=0)body.put("SubtitleStreamIndex",subtitleIndex);
+  return body;
  }
  static JSONObject sessionBody(String itemId,String mediaSourceId,String playSessionId,long positionTicks,boolean paused,boolean direct)throws JSONException{
   return new JSONObject().put("ItemId",itemId).put("MediaSourceId",mediaSourceId==null?"":mediaSourceId).put("PlaySessionId",playSessionId==null?"":playSessionId).put("PositionTicks",Math.max(0L,positionTicks)).put("IsPaused",paused).put("CanSeek",true).put("PlayMethod",direct?"DirectStream":"Transcode");
@@ -141,20 +153,21 @@ final class EmbyApi {
   String type=item.optString("Type"),media="Episode".equals(type)||"Series".equals(type)||"Season".equals(type)?"series":"movie";
   String poster=imageUrl(base,itemId,"Primary",token,480,primaryTag(item));
   String backdropTag=backdropTag(item);String background=backdropTag.isEmpty()?poster:imageUrl(base,itemId,"Backdrop",token,1280,backdropTag);
+  JSONObject tags=item.optJSONObject("ImageTags");String logoTag=tags==null?"":tags.optString("Logo");String logo=logoTag.isEmpty()?"":imageUrl(base,itemId,"Logo",token,640,logoTag);
   JSONArray genres=new JSONArray();JSONArray raw=item.optJSONArray("Genres");for(int i=0;raw!=null&&i<raw.length()&&i<4;i++)if(!raw.optString(i).isEmpty())genres.put(raw.optString(i));
   String name=item.optString("Name","影片");
-  JSONObject m=new JSONObject().put("id",watchId(sid,itemId)).put("type",media).put("name",name).put("poster",poster).put("background",background).put("logo","")
+  JSONObject m=new JSONObject().put("id",watchId(sid,itemId)).put("type",media).put("name",name).put("poster",poster).put("background",background).put("logo",logo)
    .put("description",item.optString("Overview")).put("releaseInfo",item.optInt("ProductionYear",0)>0?String.valueOf(item.optInt("ProductionYear")):"").put("imdbRating",rating(item))
    .put("runtime",runtimeLabel(item.optLong("RunTimeTicks"))).put("genres",genres).put("emby.server",sid).put("emby.item",itemId).put("emby.type",type).put("emby.line",line(item));
   if("Episode".equals(type)){m.put("emby.series",item.optString("SeriesId"));if(!item.optString("SeriesName").isEmpty())m.put("name",item.optString("SeriesName"));}
-  JSONObject user=item.optJSONObject("UserData");if(user!=null)m.put("emby.resumeMs",ticksToMs(user.optLong("PlaybackPositionTicks")));
+  JSONObject user=item.optJSONObject("UserData");long resume=user==null?0:ticksToMs(user.optLong("PlaybackPositionTicks"));if(resume>0)m.put("emby.resumeMs",resume);m.put("emby.play",EmbyCue.playLabel(resume));
   return m;
  }
  static String line(JSONObject item){if(item==null)return "";if("Episode".equals(item.optString("Type"))){int s=item.optInt("ParentIndexNumber",0),e=item.optInt("IndexNumber",0);String ep=s>0&&e>0?"S"+s+"E"+e:"";String title=item.optString("Name");String series=item.optString("SeriesName");if(!ep.isEmpty()&&!title.isEmpty())return ep+" · "+title;if(!ep.isEmpty())return ep;if(!series.isEmpty())return series;}JSONObject user=item.optJSONObject("UserData");if(user!=null&&user.optLong("PlaybackPositionTicks")>0)return "续播";return "";}
  static JSONArray videos(JSONObject server,JSONArray episodes)throws JSONException{
   JSONArray out=new JSONArray();
   for(int i=0;episodes!=null&&i<episodes.length()&&i<3000;i++){JSONObject ep=episodes.optJSONObject(i);if(ep==null||ep.optString("Id").isEmpty())continue;
-   out.put(new JSONObject().put("id",watchId(server.optString("id"),ep.optString("Id"))).put("title",ep.optString("Name")).put("season",ep.optInt("ParentIndexNumber",ep.optInt("SeasonNumber",0))).put("episode",ep.optInt("IndexNumber",0)).put("overview",ep.optString("Overview")));
+   out.put(new JSONObject().put("id",watchId(server.optString("id"),ep.optString("Id"))).put("title",ep.optString("Name")).put("season",ep.optInt("ParentIndexNumber",ep.optInt("SeasonNumber",0))).put("episode",ep.optInt("IndexNumber",0)).put("overview",ep.optString("Overview")).put("poster",imageUrl(server.optString("url"),ep.optString("Id"),"Primary",server.optString("token"),320,primaryTag(ep))));
   }
   return out;
  }
@@ -162,7 +175,7 @@ final class EmbyApi {
   // 令牌只放在本服务器地址的 api_key 里。不放进请求头：本地代理跟随 302 时会把请求头一起带到网盘/CDN 主机。
   JSONObject headers=new JSONObject();
   JSONArray audio=new JSONArray();for(int i=0;i<choice.audio.length();i++){JSONObject a=choice.audio.optJSONObject(i);if(a!=null)audio.put(new JSONObject().put("id",a.optInt("id")).put("label",a.optString("label")));}
-  return new JSONObject().put("url",choice.url).put("name","Emby").put("title",choice.direct?"Emby 直接串流":"Emby 转码").put("subtitles",choice.subtitles)
+  return new JSONObject().put("url",choice.url).put("name","Emby").put("title",choice.direct?"Emby 直接串流":"Emby 转码").put("subtitles",choice.subtitles).put("emby.audio",choice.audio).put("emby.subs",choice.subtitles)
    .put("behaviorHints",new JSONObject().put("proxyHeaders",new JSONObject().put("request",headers)))
    .put("mp.tracks",new JSONObject().put("audio",audio).put("subtitles",new JSONArray()))
    .put("emby.server",server.optString("id")).put("emby.item",itemId).put("emby.mediaSource",choice.mediaSourceId).put("emby.playSession",choice.playSessionId).put("emby.direct",choice.direct).put("emby.resumeMs",Math.max(0L,resumeMs));

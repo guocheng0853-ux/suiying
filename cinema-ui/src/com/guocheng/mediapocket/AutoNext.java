@@ -10,7 +10,7 @@ final class AutoNext {
  static void tick(Activity a,boolean pip){try{AutoNext n=ALL.get(a);if(n==null){n=new AutoNext(a);ALL.put(a,n);}n.poll(pip);}catch(Exception ignored){}}
  int dp(int v){return Math.round(v*a.getResources().getDisplayMetrics().density);}
  int intCall(Object v,String name){try{Object r=v==null?null:OnlineSubtitleSearch.call(v,name,new Class<?>[0]);return r instanceof Integer?(Integer)r:-1;}catch(Exception e){return -1;}}
- void poll(boolean pip){if(a.isFinishing())return;Object idv=OnlineSubtitleSearch.field(a,"id"),type=OnlineSubtitleSearch.field(a,"type"),meta=OnlineSubtitleSearch.field(a,"meta");String id=idv==null?"":idv.toString();
+ void poll(boolean pip){if(a.isFinishing())return;if(EmbyPlayerUi.ownsNext(a)){hide();return;}Object idv=OnlineSubtitleSearch.field(a,"id"),type=OnlineSubtitleSearch.field(a,"type"),meta=OnlineSubtitleSearch.field(a,"meta");String id=idv==null?"":idv.toString();
   if(!id.equals(forId)){forId=id;cancelled=false;hide();nextId=meta instanceof JSONObject&&!id.startsWith("tvbox:")?AutoNextRules.next((JSONObject)meta,id):null;}
   SharedPreferences p=a.getSharedPreferences("data",0);Object video=OnlineSubtitleSearch.field(a,"video");boolean ended=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal"));
   boolean want=!pip&&AutoNextRules.offer(PlaybackPrefs.autoNext(p),"series".equals(type),nextId!=null,cancelled,ended,intCall(video,"getCurrentPosition"),intCall(video,"getDuration"),PlaybackPrefs.autoNextLead(p));
@@ -21,6 +21,7 @@ final class AutoNext {
  void show(JSONObject meta){Object root=OnlineSubtitleSearch.field(a,"root");if(!(root instanceof FrameLayout))return;card=new LinearLayout(a);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(dp(16),dp(12),dp(16),dp(12));card.setBackgroundColor(0xd0101820);text=new TextView(a);text.setTextColor(0xffffffff);text.setTextSize(15);card.addView(text);LinearLayout row=new LinearLayout(a);row.addView(button("取消",v->{cancelled=true;hide();}));LinearLayout.LayoutParams gap=new LinearLayout.LayoutParams(-2,-2);gap.leftMargin=dp(10);row.addView(button("立即播放",v->go(meta,String.valueOf(OnlineSubtitleSearch.field(a,"type")))),gap);card.addView(row);FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2,Gravity.END|Gravity.BOTTOM);lp.rightMargin=dp(24);lp.bottomMargin=dp(96);((FrameLayout)root).addView(card,lp);}
  void hide(){if(card!=null&&card.getParent() instanceof ViewGroup)((ViewGroup)card.getParent()).removeView(card);card=null;}
  void go(JSONObject meta,String type){if(nextId==null||a.isFinishing())return;pendingMeta=meta;pendingId=nextId;pendingType=type;cancelled=true;hide();a.finish();}
+ static void handoff(Activity a,JSONObject meta,String nextId,String type){if(nextId==null||a==null||a.isFinishing())return;pendingMeta=meta;pendingId=nextId;pendingType=type;AutoNext n=ALL.get(a);if(n!=null){n.cancelled=true;n.hide();}a.finish();}
  /** 主界面 onResume 调用：取出请求，返回 [id,type] 与 meta。 */
  static Object[] consume(){if(pendingId==null)return null;Object[] r={pendingId,pendingType,pendingMeta};pendingId=null;pendingType=null;pendingMeta=null;return r;}
 }
