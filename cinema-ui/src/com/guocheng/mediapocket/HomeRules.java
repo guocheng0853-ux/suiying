@@ -110,6 +110,7 @@ final class HomeRules {
  }
  /** 当前选中项 id。 */
  static String selectedId(String provider,String sourceId){
+  if("emby".equals(provider))return "provider:emby:"+(sourceId==null||sourceId.isEmpty()?"current":sourceId);
   if(sourceId!=null&&!sourceId.isEmpty()&&!sourceId.equals("current")&&("tvbox".equals(provider)||"fusion".equals(provider)))
    return "source:"+sourceId;
   if("tvbox".equals(provider))return "provider:tvbox";
@@ -128,6 +129,7 @@ final class HomeRules {
  /** 解析选项 → [provider, sourceId]。source 选项落到 tvbox。 */
  static String[] apply(String optionId){
   if(optionId==null||optionId.isEmpty())return new String[]{"stremio","current"};
+  if(optionId.startsWith("provider:emby:")){String id=optionId.substring("provider:emby:".length());return new String[]{"emby",id.isEmpty()?"current":id};}
   if(optionId.startsWith("provider:")){
    String p=optionId.substring(9);
    if(!p.equals("stremio")&&!p.equals("tvbox")&&!p.equals("fusion"))p="stremio";
