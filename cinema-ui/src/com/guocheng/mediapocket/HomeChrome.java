@@ -137,21 +137,14 @@ final class HomeChrome {
   if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(desc.isEmpty()?View.GONE:View.VISIBLE);}
   if(a.heroTitle!=null){String logo=m.optString("logo");a.heroTitle.setText(m.optString("name","影片"));a.heroTitle.setTextSize(logo.isEmpty()?26:16);}
  }
- /** 竖版海报：模糊放大的同一张图当底，上面放一张完整竖图。横版背景只铺满。这些都画在 FadeFrame 里，跟大图一起在底部渐隐到透明。 */
+ /** Both providers use the same edge-to-edge artwork and caption layout. */
  void dressHero(FrameLayout slide,ImageView backdrop,JSONObject m){
   if(slide==null||backdrop==null)return;
   for(int i=slide.getChildCount()-1;i>=0;i--){View child=slide.getChildAt(i);if("mp-hero-extra".equals(child.getTag()))slide.removeViewAt(i);}
-  boolean portrait=HomeHeroRules.portraitHero(m);
-  if(Build.VERSION.SDK_INT>=31){if(portrait)HomeAtmosphere.Blur31.apply(backdrop,a.dp(28));else HomeAtmosphere.Flat31.apply(backdrop);}
+  if(Build.VERSION.SDK_INT>=31)HomeAtmosphere.Flat31.apply(backdrop);
+  backdrop.setScaleType(ImageView.ScaleType.CENTER_CROP);
   backdrop.setImageDrawable(null);
   String bg=HomeHeroRules.backdropOf(m);
   if(!bg.isEmpty())TvPosterImages.load(a,backdrop,bg,a.getResources().getDisplayMetrics().widthPixels);
-  if(!portrait)return;
-  View dim=new View(a);dim.setTag("mp-hero-extra");dim.setBackgroundColor(0x66000000);slide.addView(dim,new FrameLayout.LayoutParams(-1,-1));
-  int screen=a.getResources().getDisplayMetrics().widthPixels,cw=HomeHeroRules.posterWidth(screen),ch=HomeHeroRules.posterHeight(cw);
-  FrameLayout card=new FrameLayout(a);card.setTag("mp-hero-extra");GradientDrawable shape=new GradientDrawable();shape.setColor(a.card());shape.setCornerRadius(a.dp(16));card.setBackground(shape);card.setClipToOutline(true);card.setElevation(a.dp(10));
-  ImageView poster=new ImageView(a);poster.setScaleType(ImageView.ScaleType.CENTER_CROP);card.addView(poster,new FrameLayout.LayoutParams(-1,-1));
-  FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(cw,ch,Gravity.TOP|Gravity.CENTER_HORIZONTAL);lp.topMargin=a.safeTop+a.dp(72);slide.addView(card,lp);
-  String pic=HomeHeroRules.posterOf(m);if(!pic.isEmpty())TvPosterImages.load(a,poster,pic,cw);
  }
 }

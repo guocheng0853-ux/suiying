@@ -47,8 +47,11 @@ public class HomeHeroRulesTest {
   int clearImage=HomeHeroRules.ink(HomeHeroRules.sampleAlpha(mask,at,1f),0x336655);
   check(HomeHeroRules.over(clearScrim,HomeHeroRules.over(clearImage,blurredPage))==blurredPage,"bottom pixel is the real page in front of the hero");
   check(HomeHeroRules.over(HomeHeroRules.ink(0,dark),0xff203040)==0xff203040,"a clear dark scrim does not recolor the page");
+  check(HomeHeroRules.captionFadeEnd(1000,650)==650,"fade ends at measured caption top");
+  check(HomeHeroRules.captionFadeEnd(1000,420)==420,"larger text moves fade earlier");
+  check(HomeHeroRules.captionFadeEnd(1000,-1)==640,"pre-layout fallback");
   int tuck=HomeHeroRules.underlap(1000),fade=Math.round(1000*HomeHeroRules.FADE);
-  check(HomeHeroRules.underlap(0)==0&&tuck==130&&tuck<fade,"underlap tucks the clear tail under the next section");
+  check(HomeHeroRules.underlap(0)==0&&tuck==0&&tuck<fade,"captions and following sections never overlap");
   check(HomeHeroRules.posterWidth(1000)==320&&HomeHeroRules.posterHeight(320)==480,"portrait card is 2:3, not a full-bleed crop");
   System.out.println("PASS: hero dissolves to transparent over the real page, portrait card, tvbox title without meta or hint.");
  }
