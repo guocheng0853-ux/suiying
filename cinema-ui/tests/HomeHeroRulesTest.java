@@ -19,18 +19,20 @@ public class HomeHeroRulesTest {
   check(HomeRules.heroDescription(new JSONObject()).contains("点开"),"stremio empty hint stays");
   String synopsis=HomeRules.heroDescription(new JSONObject().put("fusion.site","s").put("vod_content","<p>一段简介</p>"));
   check(synopsis.equals("一段简介"),"tvbox synopsis kept, tags stripped");
-  int page=0xffedf5f5;
-  int[] plain=HomeHeroRules.blendStops(page,false),strong=HomeHeroRules.blendStops(0x00edf5f5,true);
-  check(plain.length==HomeHeroRules.STOPS&&strong.length==HomeHeroRules.STOPS,"nine stops");
-  check(HomeHeroRules.alpha(plain[0])==0&&HomeHeroRules.alpha(plain[4])==0,"upper half of a wide hero stays clear");
-  check(HomeHeroRules.alpha(plain[5])>0&&HomeHeroRules.alpha(plain[6])>HomeHeroRules.alpha(plain[5])&&HomeHeroRules.alpha(plain[7])>HomeHeroRules.alpha(plain[6]),"tall ramp");
-  check(plain[plain.length-1]==page&&strong[strong.length-1]==page,"bottom is the opaque page color");
-  check(HomeHeroRules.alpha(strong[3])>HomeHeroRules.alpha(plain[3])&&HomeHeroRules.alpha(strong[5])>HomeHeroRules.alpha(plain[5]),"portrait scrim covers the title sooner");
-  check(HomeHeroRules.alpha(strong[0])==0&&HomeHeroRules.alpha(strong[2])==0,"portrait card is above the scrim");
-  int tint=0xff2a3140;
-  check(HomeHeroRules.blendStops(tint,false)[8]==tint,"atmosphere tint is the bottom stop");
-  check(HomeHeroRules.underlap(0)==0&&HomeHeroRules.underlap(1000)==40&&HomeHeroRules.underlap(1000)<1000/8,"underlap tucks the seam under the next section");
+  int[] mask=HomeHeroRules.artworkMask();
+  for(boolean portrait:new boolean[]{false,true}){
+   float[] positions=HomeHeroRules.fadePositions(portrait);
+   check(mask.length==positions.length,"mask stops align");
+   check(positions[0]==0&&positions[positions.length-1]==1,"full height");
+   for(int i=1;i<mask.length;i++){
+    check(positions[i]>positions[i-1],"ordered positions");
+    check((mask[i]>>>24)<=(mask[i-1]>>>24),"artwork fades monotonically");
+   }
+   check((mask[0]>>>24)==255,"top artwork stays opaque");
+   check(mask[mask.length-2]==0&&mask[mask.length-1]==0,"clear tail cannot introduce a colour seam");
+   check(positions[positions.length-2]<=.92f,"fade completes before the physical edge");
+  }
   check(HomeHeroRules.posterWidth(1000)==320&&HomeHeroRules.posterHeight(320)==480,"portrait card is 2:3, not a full-bleed crop");
-  System.out.println("PASS: hero blend reaches the page color, portrait card, tvbox title without meta or hint.");
+  System.out.println("PASS: hero alpha mask, clear tail, portrait card and TVBox captions.");
  }
 }

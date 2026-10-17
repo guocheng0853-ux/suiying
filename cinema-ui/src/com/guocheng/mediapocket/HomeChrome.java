@@ -142,6 +142,7 @@ final class HomeChrome {
   if(slide==null||backdrop==null)return;
   for(int i=slide.getChildCount()-1;i>=0;i--){View child=slide.getChildAt(i);if("mp-hero-extra".equals(child.getTag()))slide.removeViewAt(i);}
   boolean portrait=HomeHeroRules.portraitHero(m);
+  if(slide instanceof FadeFrame)((FadeFrame)slide).setPortraitFade(portrait);
   if(Build.VERSION.SDK_INT>=31){if(portrait)HomeAtmosphere.Blur31.apply(backdrop,a.dp(28));else HomeAtmosphere.Flat31.apply(backdrop);}
   backdrop.setImageDrawable(null);
   String bg=HomeHeroRules.backdropOf(m);
