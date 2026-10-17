@@ -9,6 +9,8 @@ final class FullscreenRules {
  static String layoutMode(String mode){return "original".equals(mode)?"fit":mode;}
  /** 单按钮循环：适应→填满→拉伸→16:9→4:3→原始→适应。 */
  static String next(String mode){return MODES[(index(mode)+1)%MODES.length];}
+ /** 点比例按钮只切换模式，不在画面上写名称。null 表示静默。快进、亮度、双击恢复不走这里。 */
+ static String cycleHud(String label){return null;}
  static int index(String mode){for(int i=0;i<MODES.length;i++)if(MODES[i].equals(mode))return i;return 0;}
  static float clamp(float v){if(Float.isNaN(v)||Float.isInfinite(v))return 1f;return Math.max(MIN,Math.min(MAX,v));}
  /** 原始像素：视频宽 / 适应屏幕后的宽，最多 1（不超出屏幕）。 */
