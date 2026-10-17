@@ -35,4 +35,10 @@ public final class PlaybackPrefs {
  static boolean statusBattery(SharedPreferences p){return p.getBoolean("pref.statusBattery",true);}
  static boolean autoNext(SharedPreferences p){return p.getBoolean("pref.autoNext",true);}
  static int autoNextLead(SharedPreferences p){return AutoNextRules.lead(p.getInt("pref.autoNextLead",AutoNextRules.DEFAULT_LEAD));}
+ static boolean rememberAspect(SharedPreferences p){return p.getBoolean("pref.rememberAspect",true);}
+ static boolean rememberBrightness(SharedPreferences p){return p.getBoolean("pref.rememberBrightness",false);}
+ static boolean forceHighRefresh(SharedPreferences p){return p.getBoolean("pref.forceHighRefresh",false);}
+ static boolean showBufferSpeed(SharedPreferences p){return p.getBoolean("pref.showBufferSpeed",false);}
+ static int seekSeconds(SharedPreferences p){return PlayerSwitchRules.seekSeconds(p.getInt("pref.seekSeconds",15));}
+ static int seekMs(SharedPreferences p){return PlayerSwitchRules.seekMs(seekSeconds(p));}
 }

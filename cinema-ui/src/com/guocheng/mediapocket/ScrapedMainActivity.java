@@ -13,8 +13,9 @@ public final class ScrapedMainActivity extends MainActivity {
   light=appearance.equals("light")||(appearance.equals("system")&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)!=Configuration.UI_MODE_NIGHT_YES);
   p.edit().putString("themeMode",light?"light":"dark").apply();
   getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);UiImages.configure(getCacheDir());
-  HomeSources.seed(this);super.onCreate(saved);try{addons=PrivateTorrentAddons.sync(this,addons,false);}catch(Exception e){say("私用播放源初始化失败："+e.getClass().getSimpleName());}if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();
+  HomeSources.seed(this);String imported=ConfigImport.consume(this);super.onCreate(saved);try{addons=PrivateTorrentAddons.sync(this,addons,false);}catch(Exception e){say("私用播放源初始化失败："+e.getClass().getSimpleName());}if(imported!=null)android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();
  }
+ @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String imported=ConfigImport.consume(this);if(imported!=null){homeProvider="tvbox";android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();home();}}
  int surface(){return light?0xffedf5f5:0xff1c1b21;}int card(){return light?0xffffffff:0xff27252e;}int ink(){return light?0xff173740:0xfff5fafb;}int muted(){return light?0xff52757c:0xffafcbd2;}int accent(){return light?0xff67549c:0xffd0bfff;}
  int map(int c){if(c==0xff0b0b12||c==0xff101018||c==0xff10101c)return surface();if(c==0xff1b1b29||c==0xff11111c)return card();if(c==0xfff4f3fa)return ink();if(c==0xff9693aa)return muted();if(c==0xff8d68f5||c==0xff6844ce)return accent();return c;}
  GradientDrawable rounded(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
@@ -194,6 +195,7 @@ public final class ScrapedMainActivity extends MainActivity {
   body.addView(button(PlaybackPrefs.statusNet(prefs)?"状态栏网速：开":"状态栏网速：关",()->{prefs.edit().putBoolean("pref.statusNet",!PlaybackPrefs.statusNet(prefs)).apply();preferences();}));
   body.addView(button(PlaybackPrefs.statusBattery(prefs)?"状态栏电量：开":"状态栏电量：关",()->{prefs.edit().putBoolean("pref.statusBattery",!PlaybackPrefs.statusBattery(prefs)).apply();preferences();}));
   body.addView(button(PlaybackPrefs.doubleTapCenter(prefs)?"双击中间播放暂停：开":"双击中间播放暂停：关",()->{prefs.edit().putBoolean("pref.doubleTapCenter",!PlaybackPrefs.doubleTapCenter(prefs)).apply();preferences();}));
+  PlayerFeatureSettings.add(this);
   body.addView(button("恢复已隐藏的首页分区",()->{String hidden=prefs.getString("home.hiddenResume","[]");prefs.edit().putString("home.hiddenSections","").putString("home.hiddenResume","[]").apply();EmbyPlayback.IO.execute(()->{try{JSONArray ids=new JSONArray(hidden);for(int i=0;i<ids.length();i++){String id=ids.optString(i);if(!EmbyApi.isEmbyId(id))continue;JSONObject server=EmbyStore.get(this,EmbyApi.serverOf(id));if(server!=null)EmbyClient.hideFromResume(this,server,EmbyApi.itemOf(id),false);}}catch(Exception ignored){}});Toast.makeText(this,"已恢复本机隐藏的分区。Emby 上隐藏的条目也已请求重新显示",0).show();}));
  }
  String embySkipLabel(){String m=EmbyCue.skipMode(prefs.getString("emby.skip",EmbyCue.ASK));return "跳过片头片尾："+(EmbyCue.AUTO.equals(m)?"自动":EmbyCue.OFF.equals(m)?"关闭":"询问");}
