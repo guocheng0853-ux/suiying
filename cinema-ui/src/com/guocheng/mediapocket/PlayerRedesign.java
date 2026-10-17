@@ -15,7 +15,7 @@ final class PlayerRedesign {
  static Drawable circle(int color){ShapeDrawable d=new ShapeDrawable(new android.graphics.drawable.shapes.OvalShape());d.getPaint().setColor(color);return new RippleDrawable(ColorStateList.valueOf(0x40ffffff),d,null);}
  static Drawable pill(Activity a,int color){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(a,19));return new RippleDrawable(ColorStateList.valueOf(0x40ffffff),g,null);}
 
- static void apply(Activity a){try{top(a);center(a);bottom(a);}catch(Exception ignored){}}
+ static void apply(Activity a){try{hideSeekButtons(a);PlayerOverlay.layout(a);}catch(Exception ignored){}}
 
  /** 图标按钮：去掉文字，图标居中，44dp 圆形点击区。 */
  static void iconOnly(Activity a,Button b,Drawable icon){

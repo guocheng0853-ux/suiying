@@ -25,6 +25,7 @@ final class EmbyPlayerUi {
   if(show)showSkip(text,target);else hideSkip();
   next(stream,chrome,pos,dur);
   if(chrome){showTools();}else{hideTools();}
+  lift(skip,true);lift(nextCard,true);lift(preview,false);lift(chapterHost,false);
   placeMarks(dur);
   if(!appliedPref&&pos>=0)applyPreferred(stream);
  }
@@ -52,9 +53,18 @@ final class EmbyPlayerUi {
   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2,Gravity.END|Gravity.BOTTOM);lp.rightMargin=dp(16);lp.bottomMargin=dp(96);host.addView(nextCard,lp);}
  String posterOf(JSONObject meta,String id){if(meta==null)return "";JSONArray videos=meta.optJSONArray("videos");if(videos==null)return "";for(int i=0;i<videos.length();i++){JSONObject v=videos.optJSONObject(i);if(v!=null&&id.equals(v.optString("id")))return v.optString("poster");}return "";}
  void hideNext(){if(nextCard!=null&&nextCard.getParent() instanceof ViewGroup)((ViewGroup)nextCard.getParent()).removeView(nextCard);nextCard=null;nextText=null;}
- void showTools(){FrameLayout host=(FrameLayout)root();if(chapters.length()>0&&chaptersButton==null){chaptersButton=button("章节",v->toggleChapters());host.addView(chaptersButton,corner(Gravity.START|Gravity.BOTTOM,dp(168)));}if(chaptersButton!=null)chaptersButton.setVisibility(View.VISIBLE);
-  if((audio.length()+subs.length())>0&&audioButton==null){audioButton=button("音轨字幕",v->tracks());FrameLayout.LayoutParams lp=corner(Gravity.START|Gravity.BOTTOM,dp(112));host.addView(audioButton,lp);}if(audioButton!=null)audioButton.setVisibility(View.VISIBLE);
-  if(versions.length()>1){/* 版本在开播前已经选过，播放中从音轨面板里切换 */}}
+ /** 章节、音轨、字幕改由横屏底栏和「更多」打开，不再在画面上叠文字按钮。 */
+ void showTools(){}
+ static boolean hasChapters(Activity a){EmbyPlayerUi ui=ALL.get(a);return ui!=null&&ui.chapters.length()>0;}
+ static boolean hasVersions(Activity a){EmbyPlayerUi ui=ALL.get(a);return ui!=null&&ui.versions.length()>1;}
+ static boolean hasAudio(Activity a){EmbyPlayerUi ui=ALL.get(a);return ui!=null&&ui.audio.length()>0;}
+ static boolean hasSubs(Activity a){EmbyPlayerUi ui=ALL.get(a);return ui!=null&&ui.subs.length()>0;}
+ static void openChapters(Activity a){EmbyPlayerUi ui=ALL.get(a);if(ui!=null)ui.toggleChapters();}
+ static void openVersions(Activity a){EmbyPlayerUi ui=ALL.get(a);if(ui!=null)ui.versionDialog();}
+ static void openAudio(Activity a){EmbyPlayerUi ui=ALL.get(a);if(ui!=null&&ui.audio.length()>0)ui.audioDialog();else fallback(a,"audio");}
+ static void openSubtitles(Activity a){EmbyPlayerUi ui=ALL.get(a);if(ui!=null&&ui.subs.length()>0)ui.subtitleDialog();else fallback(a,"subtitles");}
+ static void fallback(Activity a,String method){try{OnlineSubtitleSearch.call(a,method,new Class<?>[0]);}catch(Exception ignored){}}
+ void lift(View v,boolean clearRight){if(v==null||!(v.getLayoutParams() instanceof FrameLayout.LayoutParams))return;Object bottom=OnlineSubtitleSearch.field(a,"bottom");int h=bottom instanceof View&&((View)bottom).getVisibility()==View.VISIBLE?((View)bottom).getHeight():0;if(h<dp(120))h=dp(168);FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)v.getLayoutParams();int want=h+dp(12),right=clearRight?dp(76):lp.rightMargin;if(lp.bottomMargin==want&&lp.rightMargin==right)return;lp.bottomMargin=want;lp.rightMargin=right;v.setLayoutParams(lp);}
  void hideTools(){if(chaptersButton!=null)chaptersButton.setVisibility(View.GONE);if(audioButton!=null)audioButton.setVisibility(View.GONE);if(chapterHost!=null)chapterHost.setVisibility(View.GONE);}
  void toggleChapters(){FrameLayout host=(FrameLayout)root();if(chapterHost!=null){host.removeView(chapterHost);chapterHost=null;chapterStrip=null;return;}JSONObject stream=TrackSelection.stream(a);JSONObject server=EmbyStore.get(a,stream.optString("emby.server"));chapterStrip=new LinearLayout(a);chapterStrip.setOrientation(LinearLayout.HORIZONTAL);HorizontalScrollView scroller=new HorizontalScrollView(a);scroller.setHorizontalScrollBarEnabled(false);scroller.addView(chapterStrip);scroller.setBackgroundColor(0xcc101820);chapterHost=scroller;
   String base=server==null?"":server.optString("url"),token=server==null?"":server.optString("token");
@@ -66,6 +76,9 @@ final class EmbyPlayerUi {
  }
  void addMark(float f,int color){if(f<0||marks.getLayoutParams()==null)return;View tick=new View(a);tick.setBackgroundColor(color);int w=Math.max(1,marks.getLayoutParams().width);FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(2),-1);p.leftMargin=Math.max(0,Math.min(w-dp(2),(int)(w*f)));marks.addView(tick,p);}
  SeekBar findSeek(View v){if(v instanceof SeekBar)return (SeekBar)v;if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++){SeekBar found=findSeek(g.getChildAt(i));if(found!=null)return found;}}return null;}
+ void audioDialog(){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();JSONObject stream=TrackSelection.stream(a);boolean direct=stream!=null&&stream.optBoolean("emby.direct",true);for(int i=0;i<audio.length();i++){JSONObject t=audio.optJSONObject(i);if(t==null)continue;labels.add(describe(t,true));int index=t.optInt("index",-1),ordinal=t.optInt("ordinal",i);String lang=t.optString("language"),codec=t.optString("codec");actions.add(()->chooseAudio(direct,index,ordinal,lang,codec));}if(labels.isEmpty()){fallback(a,"audio");return;}new AlertDialog.Builder(a).setTitle("音轨").setItems(labels.toArray(new String[0]),(d,which)->actions.get(which).run()).setNegativeButton("关闭",null).show();}
+ void subtitleDialog(){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();JSONObject stream=TrackSelection.stream(a);boolean direct=stream!=null&&stream.optBoolean("emby.direct",true);labels.add("关闭");actions.add(()->chooseSub(direct,-1,"off"));for(int i=0;i<subs.length();i++){JSONObject t=subs.optJSONObject(i);if(t==null)continue;labels.add(describe(t,false));int index=t.optInt("index",-1);String lang=t.optString("lang");actions.add(()->chooseSub(direct,index,lang));}labels.add("更多字幕来源");actions.add(()->fallback(a,"subtitles"));new AlertDialog.Builder(a).setTitle("字幕").setItems(labels.toArray(new String[0]),(d,which)->actions.get(which).run()).setNegativeButton("关闭",null).show();}
+ void versionDialog(){JSONObject stream=TrackSelection.stream(a);if(stream==null)return;String server=stream.optString("emby.server"),item=stream.optString("emby.item");ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();for(int i=0;i<versions.length();i++){JSONObject v=versions.optJSONObject(i);if(v==null)continue;labels.add(v.optString("name"));String id=v.optString("id");actions.add(()->EmbyPlayback.playItem(a,EmbyStore.get(a,server),item,id,true));}if(labels.isEmpty())return;new AlertDialog.Builder(a).setTitle("切换版本").setItems(labels.toArray(new String[0]),(d,which)->actions.get(which).run()).setNegativeButton("关闭",null).show();}
  void tracks(){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();JSONObject stream=TrackSelection.stream(a);boolean direct=stream.optBoolean("emby.direct",true);
   for(int i=0;i<audio.length();i++){JSONObject t=audio.optJSONObject(i);if(t==null)continue;labels.add("音轨 · "+describe(t,true));int index=t.optInt("index",-1),ordinal=t.optInt("ordinal",i);String lang=t.optString("language"),codec=t.optString("codec");actions.add(()->chooseAudio(direct,index,ordinal,lang,codec));}
   labels.add("字幕 · 关闭");actions.add(()->chooseSub(direct,-1,"off"));
