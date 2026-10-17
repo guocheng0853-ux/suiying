@@ -9,7 +9,7 @@ final class HeroSwipe implements View.OnTouchListener {
  boolean active(){return !disposed&&a.homeCanvas&&a.hero==host&&!a.isFinishing();}
  void stopTimer(){a.carousel.removeCallbacks(a.tick);}
  void resumeTimer(){stopTimer();if(active()&&a.resumed&&a.heroes.length()>1)a.carousel.postDelayed(a.tick,7000);}
- void front(){host.bringChildToFront(page);if(a.heroShadeView!=null)host.bringChildToFront(a.heroShadeView);host.bringChildToFront(a.heroInfo);if(previousText!=null)host.bringChildToFront(previousText);if(nextText!=null)host.bringChildToFront(nextText);}
+ void front(){host.bringChildToFront(page);host.bringChildToFront(a.heroInfo);if(previousText!=null)host.bringChildToFront(previousText);if(nextText!=null)host.bringChildToFront(nextText);}
  void refresh(){if(disposed)return;cancel();removeNeighbors();if(a.heroes.length()<2)return;install(false,CarouselRules.index(a.heroIndex,-1,a.heroes.length()));install(true,CarouselRules.index(a.heroIndex,1,a.heroes.length()));front();place(0);}
  void install(boolean forward,int index){FrameLayout image=forward?next:previous;LinearLayout text=forward?nextText:previousText;if(image!=null)host.removeView(image);if(text!=null)host.removeView(text);JSONObject m=metadata(index);image=picture(m);text=caption(m,index);text.setAlpha(0);host.addView(image,new FrameLayout.LayoutParams(-1,-1));host.addView(text,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));if(forward){next=image;nextText=text;}else{previous=image;previousText=text;}}
  void removeNeighbors(){for(View v:new View[]{previous,next,previousText,nextText})if(v!=null)host.removeView(v);previous=next=null;previousText=nextText=null;}
