@@ -157,6 +157,8 @@ final class HomeRules {
   if(optionId.startsWith("source:"))return new String[]{"tvbox",optionId.substring(7)};
   return new String[]{"stremio","current"};
  }
+ /** 从播放页回到已经画好的首页时，不要再走 home() 重拉整页。 */
+ static boolean keepOnResume(boolean homeVisible,int childCount){return homeVisible&&childCount>0;}
  /** 首页分区默认都显示。hidden 是逗号分隔的分区 id，出现就隐藏。 */
  static boolean sectionShown(String hidden,String key){if(key==null||key.isEmpty()||hidden==null||hidden.isEmpty())return true;for(String part:hidden.split(","))if(key.equals(part))return false;return true;}
  static String toggleSection(String hidden,String key){

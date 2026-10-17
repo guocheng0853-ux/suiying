@@ -28,6 +28,11 @@ public final class PlaybackPrefs {
  static float clampRate(float v){if(Float.isNaN(v)||Float.isInfinite(v))return 1f;if(v<0.1f)v=0.1f;if(v>8f)v=8f;return Math.round(v*100f)/100f;}
  static float speed(SharedPreferences p){return clampRate(p.getFloat("playbackSpeed",1f));}
  static void setSpeed(SharedPreferences p,float v){p.edit().putFloat("playbackSpeed",clampRate(v)).apply();}
+ /** 长按加速的基准倍率。默认 2，可选 1.5 / 2 / 2.5 / 3，不写入 playbackSpeed。 */
+ static final float[] HOLD_RATES={1.5f,2f,2.5f,3f};
+ static float holdRate(SharedPreferences p){return clampRate(p.getFloat("pref.holdRate",2f));}
+ static void setHoldRate(SharedPreferences p,float v){p.edit().putFloat("pref.holdRate",clampRate(v)).apply();}
+ static String holdLabel(float v){return String.format(java.util.Locale.ROOT,"长按加速：%.1f×",clampRate(v));}
  /** 双击中间播放/暂停。默认关，左右快进快退不受这个开关影响。 */
  static boolean doubleTapCenter(SharedPreferences p){return p.getBoolean("pref.doubleTapCenter",false);}
  static boolean statusTime(SharedPreferences p){return p.getBoolean("pref.statusTime",true);}

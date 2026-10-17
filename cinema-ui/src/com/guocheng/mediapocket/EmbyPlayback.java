@@ -28,7 +28,7 @@ final class EmbyPlayback {
    if(choice==null)throw last==null?new java.io.IOException("无法播放"):last;
    final JSONObject route=working,detail=item,playback=info;final EmbyApi.Choice chosen=choice;JSONObject user=detail.optJSONObject("UserData");long resume=keep>10000?keep:EmbyApi.ticksToMs(user==null?0:user.optLong("PlaybackPositionTicks"));
    JSONObject meta=EmbyApi.meta(route,detail);String type=detail.optString("Type");
-   if("Episode".equals(type)&&!detail.optString("SeriesId").isEmpty()){JSONArray episodes=EmbyClient.episodes(a,route,detail.optString("SeriesId"),"").optJSONArray("Items");meta.put("videos",EmbyApi.videos(route,episodes));meta.put("type","series");String line=EmbyApi.line(detail);if(!line.isEmpty())meta.put("name",meta.optString("name")+" · "+line);}
+   if("Episode".equals(type)&&!detail.optString("SeriesId").isEmpty()){JSONArray episodes=EmbyClient.episodesAll(a,route,detail.optString("SeriesId"),"");meta.put("videos",EmbyApi.videos(route,episodes));meta.put("type","series");String line=EmbyApi.line(detail);if(!line.isEmpty())meta.put("name",meta.optString("name")+" · "+line);}
    JSONObject stream=EmbyApi.stream(route,itemId,chosen,resume).put("emby.runtimeTicks",detail.optLong("RunTimeTicks"));
    if(detail.optJSONArray("Chapters")!=null)stream.put("emby.chapters",detail.optJSONArray("Chapters"));
    JSONArray versions=EmbyCue.versions(playback.optJSONArray("MediaSources"));if(versions.length()>1)stream.put("emby.versions",versions);

@@ -167,6 +167,10 @@ final class EmbyCue {
   return -1;
  }
  static boolean containsLang(String name,String lang){if(lang.length()<=2)return PlaybackPrefs.has(name,lang);return name.contains(lang);}
+ /** 剧集按页拉取。有的服务器不带 Limit 只回第一页。 */
+ static String episodesPath(String userId,String seriesId,String seasonId,int start,int limit){String q="/Shows/"+EmbyApi.enc(seriesId)+"/Episodes?UserId="+EmbyApi.enc(userId)+"&Fields=Overview,RunTimeTicks,UserData&StartIndex="+Math.max(0,start)+"&Limit="+Math.max(1,limit);if(seasonId!=null&&!seasonId.isEmpty())q+="&SeasonId="+EmbyApi.enc(seasonId);return q;}
+ /** 空页、不满一页，或已经盖住 TotalRecordCount 就停。总数未知且这一页是满的，继续下一页。 */
+ static boolean episodePageDone(int start,int pageCount,int limit,int total){if(pageCount<=0||pageCount<limit)return true;return total>=0&&start+pageCount>=total;}
  static String libraryPath(String userId,String parentId,String types,int start,String genre,boolean favorite){
   String q="/Users/"+EmbyApi.enc(userId)+"/Items?ParentId="+EmbyApi.enc(parentId)+"&Recursive=true&IncludeItemTypes="+EmbyApi.enc(types)+"&SortBy=SortName&SortOrder=Ascending&StartIndex="+Math.max(0,start)+"&Limit="+EmbyClient.PAGE+"&Fields=Overview,ProductionYear,CommunityRating,RunTimeTicks,Genres,UserData";
   if(genre!=null&&!genre.isEmpty())q+="&Genres="+EmbyApi.enc(genre);
