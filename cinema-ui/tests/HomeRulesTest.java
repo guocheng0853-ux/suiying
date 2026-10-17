@@ -21,10 +21,16 @@ public class HomeRulesTest {
   check(HomeRules.heroDescription(new JSONObject().put("description","短")).equals("短"),"desc");
   check(HomeRules.heroDescription(new JSONObject()).contains("点开"),"desc empty");
   JSONArray opts=HomeRules.sourceOptions(new JSONArray().put(new JSONObject().put("id","fty").put("name","公开源")));
-  check(opts.length()==4&&HomeRules.selectedId("stremio","current").equals("provider:stremio"),"sources");
+  check(opts.length()==5&&opts.getJSONObject(3).getString("id").equals("source:fty")&&opts.getJSONObject(4).getString("label").equals("添加 Emby 服务器")&&opts.getJSONObject(4).getString("id").equals(HomeRules.EMBY_MANAGE),"add emby when none");
+  check(HomeRules.selectedId("stremio","current").equals("provider:stremio"),"sources");
   check(HomeRules.selectedId("tvbox","fty").equals("source:fty"),"source selected");
   String[] ap=HomeRules.apply("source:fty");check(ap[0].equals("tvbox")&&ap[1].equals("fty"),"apply source");
   check(HomeRules.apply("provider:fusion")[0].equals("fusion"),"apply fusion");
+  check(HomeRules.apply(HomeRules.EMBY_MANAGE)==null&&HomeRules.keepsHomeProvider(HomeRules.EMBY_MANAGE)&&!HomeRules.keepsHomeProvider("provider:emby:a"),"manage keeps provider");
+  JSONArray servers=new JSONArray().put(new JSONObject().put("id","a").put("name","客厅")).put(new JSONObject().put("name","无编号")).put(new JSONObject().put("id","b").put("name","卧室"));
+  JSONArray with=HomeRules.sourceOptions(new JSONArray(),servers);
+  check(with.length()==6&&with.getJSONObject(3).getString("id").equals("provider:emby:a")&&with.getJSONObject(3).getString("label").equals("客厅 · Emby")&&with.getJSONObject(4).getString("id").equals("provider:emby:b")&&with.getJSONObject(5).getString("label").equals("管理 Emby 服务器"),"servers then manage");
+  check(HomeRules.embyServersLabel(null).equals("Emby 服务器 · 未添加")&&HomeRules.embyServersLabel(new JSONArray()).equals("Emby 服务器 · 未添加")&&HomeRules.embyServersLabel(servers).equals("Emby 服务器 · 2 个"),"emby count label");
   check(HomeRules.labelFor(opts,"provider:stremio").equals("Stremio 目录"),"label");
   check(HomeRules.libraryTiles().length==4&&HomeRules.libraryTiles()[0][0].equals("电影"),"tiles");
   check(HomeRules.runtimeMinutes(new JSONObject().put("runtime","1h 13m"))==73,"runtime");

@@ -9,8 +9,8 @@ final class HomeChrome {
  /** 顶栏左侧片源下拉（替代「随影」品牌）。 */
  TextView sourceSwitcher(){
   String provider=a.prefs.getString("fusion.homeProvider","stremio"),sourceId=a.prefs.getString("home.source.v1","current");
-  JSONArray options;try{options=HomeRules.sourceOptions(HomeSources.list(a));}catch(Exception e){try{options=HomeRules.sourceOptions(new JSONArray());}catch(Exception x){options=new JSONArray();}}
-  try{JSONArray servers=EmbyStore.list(a);for(int i=0;i<servers.length();i++){JSONObject s=servers.optJSONObject(i);if(s!=null&&!s.optString("id").isEmpty())options.put(HomeRules.opt("provider:emby:"+s.optString("id"),s.optString("name","Emby")+" · Emby","emby"));}}catch(Exception ignored){}
+  JSONArray servers;try{servers=EmbyStore.list(a);}catch(Exception e){servers=new JSONArray();}
+  JSONArray options;try{options=HomeRules.sourceOptions(HomeSources.list(a),servers);}catch(Exception e){try{options=HomeRules.sourceOptions(new JSONArray(),servers);}catch(Exception x){options=new JSONArray();}}
   String id=HomeRules.selectedId(provider,sourceId);
   TextView t=a.text(HomeRules.labelFor(options,id)+"  ▾",16,0xffffffff);t.setTypeface(null,1);
   t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
@@ -29,7 +29,7 @@ final class HomeChrome {
   // 返回键、点外面、选完片源都经由 dismiss() → 先播放收起动画再真正关闭
   popup.closing=close;
   dim.setOnClickListener(v->close.run());
-  for(int i=0;i<options.length();i++){JSONObject item=options.optJSONObject(i);if(item==null)continue;final JSONObject choice=item;TextView row=a.text((current.equals(item.optString("id"))?"◉  ":"○  ")+item.optString("label"),14,a.ink());row.setPadding(dp(10),dp(12),dp(10),dp(12));row.setOnClickListener(v->{String[] applied=HomeRules.apply(choice.optString("id"));a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();a.fusionSession=null;after[0]=()->a.home();close.run();});list.addView(row);}
+  for(int i=0;i<options.length();i++){JSONObject item=options.optJSONObject(i);if(item==null)continue;final JSONObject choice=item;TextView row=a.text((current.equals(item.optString("id"))?"◉  ":"○  ")+item.optString("label"),14,a.ink());row.setPadding(dp(10),dp(12),dp(10),dp(12));row.setOnClickListener(v->{String optionId=choice.optString("id");if(HomeRules.keepsHomeProvider(optionId)){after[0]=()->EmbyLibraryActivity.manage(a);close.run();return;}String[] applied=HomeRules.apply(optionId);if(applied==null){close.run();return;}a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();a.fusionSession=null;after[0]=()->a.home();close.run();});list.addView(row);}
   int[] at=new int[2];anchor.getLocationOnScreen(at);
   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(dp(230),Math.min(dp(340),dp(16+options.length()*48)),Gravity.TOP|Gravity.LEFT);lp.leftMargin=at[0];lp.topMargin=at[1]+anchor.getHeight()+dp(4);overlay.addView(scroll,lp);
   scroll.setPivotX(dp(24));scroll.setPivotY(0);scroll.setAlpha(0);scroll.setScaleX(HomeMotionRules.menuScale(0));scroll.setScaleY(HomeMotionRules.menuScale(0));

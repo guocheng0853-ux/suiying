@@ -172,8 +172,10 @@ public final class ScrapedMainActivity extends MainActivity {
  @Override public void onBackPressed(){if(detailPage){home();return;}super.onBackPressed();}
  @Override void preferences(){
   super.preferences();
-  for(int i=body.getChildCount()-1;i>=0;i--){View v=body.getChildAt(i);if(v instanceof TextView){String label=((TextView)v).getText().toString();if(label.equals("管理插件")||label.equals("最近观看")||label.startsWith("播放时点击画面"))body.removeViewAt(i);}}
-  body.addView(button("Emby 服务器",()->EmbyLibraryActivity.manage(this)));
+  for(int i=body.getChildCount()-1;i>=0;i--){View v=body.getChildAt(i);if(v instanceof TextView){String label=((TextView)v).getText().toString();if(label.equals("管理插件")||label.equals("最近观看")||label.startsWith("播放时点击画面")||label.startsWith("Emby 服务器"))body.removeViewAt(i);}}
+  Button emby=button(HomeRules.embyServersLabel(EmbyStore.list(this)),()->EmbyLibraryActivity.manage(this));
+  LinearLayout.LayoutParams embyLp=null;for(int i=0;i<body.getChildCount();i++){View child=body.getChildAt(i);if(!(child instanceof Button))continue;ViewGroup.LayoutParams p=child.getLayoutParams();if(p instanceof LinearLayout.LayoutParams){embyLp=new LinearLayout.LayoutParams((LinearLayout.LayoutParams)p);break;}}
+  body.addView(emby,0,embyLp!=null?embyLp:new LinearLayout.LayoutParams(-1,-2));
   body.addView(button("外观："+(light?"日间":"深青色"),()->new AlertDialog.Builder(this).setTitle("影院外观").setSingleChoiceItems(new String[]{"深青色影院","日间模式","跟随系统"},appearance.equals("dark")?0:appearance.equals("light")?1:2,(d,i)->{prefs.edit().putString("cinemaAppearance",new String[]{"dark","light","system"}[i]).apply();d.dismiss();recreate();}).show()));
   body.addView(button("清理封面缓存 · "+(UiImages.diskSize()+TvPosterImages.diskSize(this))/1024/1024+" MB",()->clearPosterCache()));
   Button[] accel=new Button[1];accel[0]=button(accelLabel(),()->{boolean on=!prefs.getBoolean("accelerate.v1",true);prefs.edit().putBoolean("accelerate.v1",on).apply();HeaderRoute.accelerate=on;accel[0].setText(accelLabel());Toast.makeText(this,on?"多线程加速已开启，下次开播生效":"多线程加速已关闭，下次开播生效",Toast.LENGTH_SHORT).show();});body.addView(accel[0]);

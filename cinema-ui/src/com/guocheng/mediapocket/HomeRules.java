@@ -92,8 +92,11 @@ final class HomeRules {
   d=d.replaceAll("<[^>]+>","").replace("&nbsp;"," ").replaceAll("\\s+"," ").trim();
   return d.length()>90?d.substring(0,90)+"…":d;
  }
- /** 片源下拉选项：Stremio / 影视仓 / 融合 + 公开影视仓来源。 */
- static JSONArray sourceOptions(JSONArray homeSources)throws Exception{
+ /** 添加或管理 Emby。选中它不改已保存的首页片源。 */
+ static final String EMBY_MANAGE="action:emby";
+ /** 片源下拉：Stremio / 影视仓 / 融合 + 公开来源，并始终带上 Emby。没有服务器时是「添加」，有服务器时每个服务器一条，末尾再加「管理」。 */
+ static JSONArray sourceOptions(JSONArray homeSources)throws Exception{return sourceOptions(homeSources,null);}
+ static JSONArray sourceOptions(JSONArray homeSources,JSONArray embyServers)throws Exception{
   JSONArray out=new JSONArray();
   out.put(opt("provider:stremio","Stremio 目录","provider"));
   out.put(opt("provider:tvbox","影视仓","provider"));
@@ -103,8 +106,23 @@ final class HomeRules {
    String id=s.optString("id");if(id.isEmpty())continue;
    out.put(opt("source:"+id,s.optString("name",id),"tvbox"));
   }
+  int emby=0;
+  if(embyServers!=null)for(int i=0;i<embyServers.length();i++){
+   JSONObject s=embyServers.optJSONObject(i);if(s==null)continue;
+   String id=s.optString("id");if(id.isEmpty())continue;
+   out.put(opt("provider:emby:"+id,s.optString("name","Emby")+" · Emby","emby"));
+   emby++;
+  }
+  out.put(opt(EMBY_MANAGE,emby==0?"添加 Emby 服务器":"管理 Emby 服务器","action"));
   return out;
  }
+ /** 「我的」第一项：没有服务器写未添加，有则写个数。只数带 id 的服务器。 */
+ static String embyServersLabel(JSONArray servers){
+  int n=0;
+  if(servers!=null)for(int i=0;i<servers.length();i++){JSONObject s=servers.optJSONObject(i);if(s!=null&&!s.optString("id").isEmpty())n++;}
+  return n<=0?"Emby 服务器 · 未添加":"Emby 服务器 · "+n+" 个";
+ }
+ static boolean keepsHomeProvider(String optionId){return optionId!=null&&optionId.startsWith("action:");}
  static JSONObject opt(String id,String label,String kind)throws Exception{
   return new JSONObject().put("id",id).put("label",label).put("kind",kind);
  }
@@ -126,9 +144,10 @@ final class HomeRules {
   if(id.startsWith("source:"))return id.substring(7);
   return "片源";
  }
- /** 解析选项 → [provider, sourceId]。source 选项落到 tvbox。 */
+ /** 解析选项 → [provider, sourceId]。添加/管理返回 null，调用方不得写入片源。source 选项落到 tvbox。 */
  static String[] apply(String optionId){
   if(optionId==null||optionId.isEmpty())return new String[]{"stremio","current"};
+  if(keepsHomeProvider(optionId))return null;
   if(optionId.startsWith("provider:emby:")){String id=optionId.substring("provider:emby:".length());return new String[]{"emby",id.isEmpty()?"current":id};}
   if(optionId.startsWith("provider:")){
    String p=optionId.substring(9);
