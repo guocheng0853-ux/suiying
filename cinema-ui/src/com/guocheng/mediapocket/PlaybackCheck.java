@@ -3,7 +3,7 @@ import android.app.*;import android.content.*;import org.json.*;import java.text
 /** 播放前地址检查的界面与记录（最近 30 条，只记主机名，不记完整地址和请求头）。 */
 final class PlaybackCheck {
  static final String KEY="playback.check.log.v1";
- static void log(Context c,String source,String url,String via,LinkProbe.Result r,String decision){
+ static void log(Context c,String source,String url,String via,LinkProbe.Result r,String decision){DebugLog.event("地址检查",source+" · "+LinkProbe.host(url)+" · "+(via==null?"":via+" · ")+r.summary()+" · "+decision);
   try{SharedPreferences p=c.getSharedPreferences("data",0);JSONArray old=new JSONArray(p.getString(KEY,"[]")),out=new JSONArray();
    out.put(new JSONObject().put("t",System.currentTimeMillis()).put("source",source).put("host",LinkProbe.host(url)).put("via",via==null?"":via).put("result",r.summary()).put("media",r.media).put("decision",decision));
    for(int i=0;i<old.length()&&out.length()<30;i++)out.put(old.get(i));p.edit().putString(KEY,out.toString()).apply();}catch(Exception ignored){}

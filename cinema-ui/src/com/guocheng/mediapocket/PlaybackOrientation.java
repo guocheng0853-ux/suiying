@@ -39,7 +39,7 @@ public final class PlaybackOrientation {
  /** 0.1.65：竖屏视频（高明显大于宽，如 9:16 短剧）用传感器竖屏，其余横屏。尺寸未知返回 NONE。 */
  static int forVideo(int w,int h){if(w<=0||h<=0)return NONE;return h>w*1.05f?SENSOR_PORTRAIT:SENSOR_LANDSCAPE;}
  /** 播放器报告视频尺寸后调用（PlayerChrome 每 250ms）。只在尺寸变化（换了视频）时判断一次，手动「旋转」后本集不再改回；画中画期间不动。 */
- static void fitVideo(Activity a,int w,int h){if(a==null||a.isFinishing())return;State s=ALL.get(a);if(s==null||s.restore==NONE||s.pip!=NONE)return;if(w<=0||h<=0||(w==s.videoW&&h==s.videoH))return;s.videoW=w;s.videoH=h;int want=forVideo(w,h);if(want!=NONE)apply(a,want);}
+ static void fitVideo(Activity a,int w,int h){if(a==null||a.isFinishing())return;State s=ALL.get(a);if(s==null||s.restore==NONE||s.pip!=NONE)return;if(w<=0||h<=0||(w==s.videoW&&h==s.videoH))return;s.videoW=w;s.videoH=h;int want=forVideo(w,h);if(want!=NONE){DebugLog.event("方向","视频 "+w+"x"+h+" → "+(want==SENSOR_PORTRAIT?"竖屏":"横屏"));apply(a,want);}}
  static Activity activity(Object owner){return owner instanceof Activity?(Activity)owner:null;}
  static State state(Activity a){State s=ALL.get(a);if(s==null)ALL.put(a,s=new State());return s;}
  static void apply(Activity a,int orientation){try{if(a.getRequestedOrientation()!=orientation)a.setRequestedOrientation(orientation);}catch(Exception ignored){}}
