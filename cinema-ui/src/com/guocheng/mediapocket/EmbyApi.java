@@ -22,7 +22,7 @@ final class EmbyApi {
   return h.toString();
  }
  static String clean(String v){return v==null?"":v.replace("\"","").replace("\r","").replace("\n","").replace(",","").trim();}
- /** 保留 http/https、端口和路径前缀，去掉末尾斜杠、账号和片段。 */
+ /** 保留 http/https、端口和路径前缀，去掉末尾斜杠、账号和片段。没写端口时 https 用 443、http 用 80。 */
  static String server(String raw){
   if(raw==null||raw.trim().isEmpty())throw new IllegalArgumentException("请填写服务器地址");
   String s=raw.trim();while(s.endsWith("/"))s=s.substring(0,s.length()-1);
@@ -38,6 +38,10 @@ final class EmbyApi {
  static String join(String base,String path){if(path==null||path.isEmpty())return base;if(path.startsWith("http://")||path.startsWith("https://"))return path;return base+(path.startsWith("/")?path:"/"+path);}
  static String authenticateUrl(String base){return join(server(base),"/Users/AuthenticateByName");}
  static JSONObject authenticateBody(String username,String password)throws JSONException{String pw=password==null?"":password;return new JSONObject().put("Username",username==null?"":username).put("Pw",pw).put("Password",pw);}
+ /** 新服务器允许空密码，原样放进 Pw。编辑时输入为空则沿用已保存的密码。 */
+ static String loginPassword(boolean editing,String typed,String saved){String pw=typed==null?"":typed;if(editing&&pw.isEmpty())return saved==null?"":saved;return pw;}
+ static String passwordHint(boolean editing){return editing?"密码（留空则不修改）":"密码（没有可留空）";}
+ static String serverHint(){return "服务器地址，含 http:// 或 https://，端口可省略";}
  static String enc(String s){try{return URLEncoder.encode(s==null?"":s,"UTF-8");}catch(Exception e){return "";}}
  static String withKey(String url,String token){if(url==null||url.isEmpty()||token==null||token.isEmpty())return url==null?"":url;if(url.toLowerCase(Locale.ROOT).contains("api_key="))return url;return url+(url.contains("?")?"&":"?")+"api_key="+enc(token);}
  /** 地址指向 Emby 服务器本身吗？外部主机（.strm 远程地址、网盘直链）不能带 api_key，否则令牌会发给别人。 */

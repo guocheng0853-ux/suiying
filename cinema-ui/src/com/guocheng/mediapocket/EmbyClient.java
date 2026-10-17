@@ -55,7 +55,7 @@ final class EmbyClient {
   byte[] bytes=body==null?null:body.getBytes(StandardCharsets.UTF_8);IOException last=new IOException("无法连接服务器");
   for(int i=0;i<bases.length;i++){
    try{HttpResult r=exchange(method,EmbyApi.join(bases[i],path),EmbyApi.authorization("Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"),bytes,true);
-    if(r.code==401&&retry&&!server.optString("password").isEmpty()){authenticate(c,server,server.optString("username"),server.optString("password"));EmbyStore.save(c,server);return call(c,server,method,path,body,false);}
+    if(r.code==401&&retry){authenticate(c,server,server.optString("username"),server.optString("password"));EmbyStore.save(c,server);return call(c,server,method,path,body,false);}
     if(r.code==401)throw new IOException("HTTP 401");
     if(r.code>=500&&i+1<bases.length){last=new IOException("HTTP "+r.code);continue;}
     if(r.code<200||r.code>=300)throw new IOException("HTTP "+r.code);

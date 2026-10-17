@@ -10,8 +10,21 @@ public class EmbyApiTest {
   check(authed.endsWith(", Token=\"abc\"")&&authed.contains("Version=\"0.1.72\""),"token appended and default version");
   check(EmbyApi.server("http://192.168.1.8:8096/").equals("http://192.168.1.8:8096"),"port kept, slash trimmed");
   check(EmbyApi.server("https://media.example:8920/emby/").equals("https://media.example:8920/emby"),"https path prefix kept");
+  check(EmbyApi.server("https://media.example/emby/").equals("https://media.example/emby"),"https host without port");
+  check(EmbyApi.server("http://192.168.1.10/").equals("http://192.168.1.10"),"http host without port");
+  check(EmbyApi.port(new URI(EmbyApi.server("https://media.example")))==443,"omitted https port is 443");
+  check(EmbyApi.port(new URI(EmbyApi.server("http://192.168.1.10")))==80,"omitted http port is 80");
+  check(EmbyApi.sameServer("https://media.example","https://media.example:443")&&EmbyApi.sameServer("http://192.168.1.10","http://192.168.1.10:80"),"default ports match an omitted port");
+  check(!EmbyApi.sameServer("https://media.example","https://media.example:8920"),"explicit non-default port stays different");
+  check(EmbyApi.serverHint().contains("端口可省略"),"url hint says the port may be omitted");
   check(EmbyApi.authenticateUrl("http://10.0.0.2:8096").equals("http://10.0.0.2:8096/Users/AuthenticateByName"),"authenticate path");
+  check(EmbyApi.authenticateUrl("https://media.example").equals("https://media.example/Users/AuthenticateByName"),"authenticate without port");
   JSONObject body=EmbyApi.authenticateBody("ada","p@ss");check(body.getString("Username").equals("ada")&&body.getString("Pw").equals("p@ss")&&body.getString("Password").equals("p@ss"),"Pw and Password");
+  JSONObject blank=EmbyApi.authenticateBody("guest","");check(blank.getString("Pw").equals("")&&blank.getString("Password").equals("")&&blank.toString().contains("\"Pw\":\"\""),"empty password sends Pw");
+  check(EmbyApi.authenticateBody("guest",null).getString("Pw").equals(""),"null password sends empty Pw");
+  check("".equals(EmbyApi.loginPassword(false,"","saved"))&&"next".equals(EmbyApi.loginPassword(false,"next","saved")),"adding keeps an empty password");
+  check("saved".equals(EmbyApi.loginPassword(true,"","saved"))&&"next".equals(EmbyApi.loginPassword(true,"next","saved")),"editing blank keeps the saved password");
+  check("密码（没有可留空）".equals(EmbyApi.passwordHint(false))&&"密码（留空则不修改）".equals(EmbyApi.passwordHint(true)),"password placeholders");
   for(String bad:new String[]{"ftp://host/a","http://user:pw@host:8096","notaurl","http://","  "}){boolean rejected=false;try{EmbyApi.server(bad);}catch(IllegalArgumentException e){rejected=e.getMessage()!=null&&(e.getMessage().contains("http")||e.getMessage().contains("地址")||e.getMessage().contains("账号")||e.getMessage().contains("填写"));}check(rejected,"rejected "+bad);}
   String image=EmbyApi.imageUrl("http://h:8096","item 1","Primary","tok en",400,"tag/1");
   check(image.startsWith("http://h:8096/Items/")&&image.contains("/Images/Primary")&&image.contains("api_key=")&&image.contains("tag="),"image url");
