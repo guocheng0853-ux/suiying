@@ -48,6 +48,14 @@ public class EmbyApiTest {
   check(HomeRules.apply("provider:fusion")[0].equals("fusion")&&HomeRules.selectedId("stremio","current").equals("provider:stremio"),"existing providers unchanged");
   check(HomeRules.selectedId("emby","srv-1").equals("provider:emby:srv-1"),"selected emby");
   check(EmbyApi.isEmbyId("emby:srv:item")&&EmbyApi.itemOf("emby:srv:item").equals("item")&&EmbyApi.serverOf("emby:srv:item").equals("srv"),"watch id");
+  JSONObject strm=new JSONObject().put("Id","ms9").put("SupportsDirectStream",true).put("Path","https://cdn.other.example/a.mkv?sig=1").put("MediaStreams",new JSONArray().put(new JSONObject().put("Index",4).put("Type","Subtitle").put("IsExternal",true).put("DeliveryUrl","https://subs.other.example/x.srt")));
+  EmbyApi.Choice remote=EmbyApi.select("http://h:8096","it9","secret",new JSONObject().put("PlaySessionId","p9").put("MediaSources",new JSONArray().put(strm)));
+  check(remote.url.startsWith("http://h:8096/Videos/it9/stream?static=true")&&remote.url.contains("api_key=secret"),"remote .strm path goes through the server stream endpoint: "+remote.url);
+  check(remote.subtitles.getJSONObject(0).getString("url").equals("https://subs.other.example/x.srt"),"external-host subtitle gets no api_key");
+  check(!EmbyApi.keyed("http://h:8096","http://h:9000/x","t").contains("api_key")&&EmbyApi.keyed("http://h:8096","http://H:8096/x","t").contains("api_key=t"),"api_key only for same host and port");
+  JSONObject st=EmbyApi.stream(new JSONObject().put("token","secret").put("id","s"),"it9",remote,0);
+  check(st.getJSONObject("behaviorHints").getJSONObject("proxyHeaders").getJSONObject("request").length()==0,"token not sent as header (would follow redirects to other hosts)");
+  check(EmbyApi.playbackInfoBody("u",EmbyApi.msToTicks(600000)).getLong("StartTimeTicks")==0L,"transcode not pre-shifted; player seeks to resume");
   System.out.println("PASS: Emby auth header, server URL, ticks, PlaybackInfo direct-or-transcode selection, subtitles and audio.");
  }
  static String messageOf(String url){try{EmbyApi.server(url);return "";}catch(IllegalArgumentException e){return e.getMessage();}}

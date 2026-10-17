@@ -40,6 +40,11 @@ final class EmbyApi {
  static JSONObject authenticateBody(String username,String password)throws JSONException{String pw=password==null?"":password;return new JSONObject().put("Username",username==null?"":username).put("Pw",pw).put("Password",pw);}
  static String enc(String s){try{return URLEncoder.encode(s==null?"":s,"UTF-8");}catch(Exception e){return "";}}
  static String withKey(String url,String token){if(url==null||url.isEmpty()||token==null||token.isEmpty())return url==null?"":url;if(url.toLowerCase(Locale.ROOT).contains("api_key="))return url;return url+(url.contains("?")?"&":"?")+"api_key="+enc(token);}
+ /** 地址指向 Emby 服务器本身吗？外部主机（.strm 远程地址、网盘直链）不能带 api_key，否则令牌会发给别人。 */
+ static boolean sameServer(String base,String url){try{URI b=new URI(server(base)),u=new URI(url);if(u.getHost()==null)return true;return u.getHost().equalsIgnoreCase(b.getHost())&&port(u)==port(b);}catch(Exception e){return false;}}
+ static int port(URI u){if(u.getPort()>0)return u.getPort();return "https".equalsIgnoreCase(u.getScheme())?443:80;}
+ /** 只给本服务器地址加 api_key。 */
+ static String keyed(String base,String url,String token){return sameServer(base,url)?withKey(url,token):url;}
  static String imageUrl(String base,String itemId,String kind,String token,int maxWidth,String tag){
   String k=kind==null||kind.isEmpty()?"Primary":kind;
   String q="/Items/"+enc(itemId)+"/Images/"+enc(k)+"?maxWidth="+Math.max(80,maxWidth)+"&quality=90";
@@ -67,7 +72,7 @@ final class EmbyApi {
    boolean can=explicit!=null||s.optBoolean("SupportsDirectStream")||s.optBoolean("SupportsDirectPlay");
    if(directSource==null&&can){directSource=s;direct=explicit!=null?explicit:directUrl(base,itemId,s.optString("Id"),play,token);}
    String t=s.optString("TranscodingUrl");
-   if(transSource==null&&!t.isEmpty()){transSource=s;trans=withKey(join(server(base),t),token);}
+   if(transSource==null&&!t.isEmpty()){transSource=s;trans=keyed(base,join(server(base),t),token);}
   }
   JSONObject chosen;String url;boolean isDirect;
   if(direct!=null){chosen=directSource;url=direct;isDirect=true;}
@@ -79,7 +84,8 @@ final class EmbyApi {
   String raw=source.optString("DirectStreamUrl");
   if(raw.isEmpty()){String path=source.optString("Path");if(path.startsWith("http://")||path.startsWith("https://"))raw=path;}
   if(raw.isEmpty())return null;
-  String url=withKey(join(server(base),raw),token);
+  String abs=join(server(base),raw);if(!sameServer(base,abs))return null;
+  String url=withKey(abs,token);
   if(!staticUrl(url))url+=(url.contains("?")?"&":"?")+"static=true";
   if(playSessionId!=null&&!playSessionId.isEmpty()&&!url.toLowerCase(Locale.ROOT).contains("playsessionid="))url+="&PlaySessionId="+enc(playSessionId);
   return url;
@@ -91,8 +97,9 @@ final class EmbyApi {
    int index=s.optInt("Index",-1);String delivery=s.optString("DeliveryUrl");
    if(delivery.isEmpty()&&index>=0&&!media.isEmpty())delivery="/Videos/"+enc(itemId)+"/"+enc(media)+"/Subtitles/"+index+"/Stream."+subtitleExt(s.optString("Codec"));
    if(delivery.isEmpty())continue;
-   String url=withKey(join(server(base),delivery),token);
-   if(play!=null&&!play.isEmpty()&&!url.toLowerCase(Locale.ROOT).contains("playsessionid="))url+="&PlaySessionId="+enc(play);
+   String abs=join(server(base),delivery);boolean own=sameServer(base,abs);
+   String url=own?withKey(abs,token):abs;
+   if(own&&play!=null&&!play.isEmpty()&&!url.toLowerCase(Locale.ROOT).contains("playsessionid="))url+=(url.contains("?")?"&":"?")+"PlaySessionId="+enc(play);
    boolean external=s.optBoolean("IsExternal")||"External".equalsIgnoreCase(s.optString("DeliveryMethod"));
    String name=s.optString("DisplayTitle",s.optString("Language","字幕"));if(name.isEmpty())name=external?"外挂字幕":"内嵌字幕";
    name=name+(external?" · 外挂":" · 内嵌");
@@ -116,7 +123,7 @@ final class EmbyApi {
   JSONArray subs=new JSONArray();
   for(String f:new String[]{"srt","ass","ssa","vtt","subrip","pgs","pgssub","sub"}){subs.put(new JSONObject().put("Format",f).put("Method","External"));subs.put(new JSONObject().put("Format",f).put("Method","Embed"));}
   JSONObject profile=new JSONObject().put("MaxStreamingBitrate",140000000).put("DirectPlayProfiles",containers).put("TranscodingProfiles",new JSONArray().put(trans)).put("SubtitleProfiles",subs);
-  return new JSONObject().put("UserId",userId==null?"":userId).put("MaxStreamingBitrate",140000000).put("StartTimeTicks",Math.max(0L,startTicks)).put("AutoOpenLiveStream",true).put("DeviceProfile",profile);
+  return new JSONObject().put("UserId",userId==null?"":userId).put("MaxStreamingBitrate",140000000).put("StartTimeTicks",0L).put("AutoOpenLiveStream",true).put("DeviceProfile",profile);
  }
  static JSONObject sessionBody(String itemId,String mediaSourceId,String playSessionId,long positionTicks,boolean paused,boolean direct)throws JSONException{
   return new JSONObject().put("ItemId",itemId).put("MediaSourceId",mediaSourceId==null?"":mediaSourceId).put("PlaySessionId",playSessionId==null?"":playSessionId).put("PositionTicks",Math.max(0L,positionTicks)).put("IsPaused",paused).put("CanSeek",true).put("PlayMethod",direct?"DirectStream":"Transcode");
@@ -152,7 +159,8 @@ final class EmbyApi {
   return out;
  }
  static JSONObject stream(JSONObject server,String itemId,Choice choice,long resumeMs)throws JSONException{
-  JSONObject headers=new JSONObject().put("X-Emby-Token",server.optString("token"));
+  // 令牌只放在本服务器地址的 api_key 里。不放进请求头：本地代理跟随 302 时会把请求头一起带到网盘/CDN 主机。
+  JSONObject headers=new JSONObject();
   JSONArray audio=new JSONArray();for(int i=0;i<choice.audio.length();i++){JSONObject a=choice.audio.optJSONObject(i);if(a!=null)audio.put(new JSONObject().put("id",a.optInt("id")).put("label",a.optString("label")));}
   return new JSONObject().put("url",choice.url).put("name","Emby").put("title",choice.direct?"Emby 直接串流":"Emby 转码").put("subtitles",choice.subtitles)
    .put("behaviorHints",new JSONObject().put("proxyHeaders",new JSONObject().put("request",headers)))
