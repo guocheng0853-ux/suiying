@@ -20,8 +20,9 @@ final class HomeHeroRules {
  }
  static String backdropOf(JSONObject m){if(m==null)return "";String bg=m.optString("background","");return bg.isEmpty()?m.optString("poster",""):bg;}
  static String posterOf(JSONObject m){if(m==null)return "";String poster=m.optString("poster","");return poster.isEmpty()?m.optString("background",""):poster;}
- /** 海报底部伸进下一节的高度。必须落在渐隐段里面，接缝处已经是透明的。 */
- static int underlap(int heroHeight){if(heroHeight<=0)return 0;int tuck=Math.round(heroHeight*.13f),fade=Math.round(heroHeight*FADE);if(tuck>=fade)tuck=Math.max(1,fade/2);return Math.max(1,tuck);}
+ /** No negative margin: the next section must start below the caption and dots. */
+ static int underlap(int heroHeight){return 0;}
+ static int captionFadeEnd(int height,int captionTop){return Math.max(1,Math.min(height,captionTop<0?Math.round(height*.64f):captionTop));}
  static int posterWidth(int screenWidth){if(screenWidth<=0)return 0;return Math.round(screenWidth*.32f);}
  static int posterHeight(int posterWidth){return Math.round(posterWidth*1.5f);}
  /**
