@@ -52,6 +52,7 @@ final class PlayerSidePanel {
   String keys=OnlineSubtitleRules.missing(OnlineSubtitleController.assrt(a.getSharedPreferences("data",0)),OnlineSubtitleController.openKey(a.getSharedPreferences("data",0)));
   note(box,"迅雷源免密钥，直接搜。"+(keys==null?"已启用射手与 OpenSubtitles。":"配密钥可加搜射手与 OpenSubtitles："+keys)+"下载到本机后只显示这一条。");
   row(box,"搜索在线字幕",false,()->{dismiss();OnlineSubtitleController.open(a);});
+  row(box,"Whisper 生成字幕",false,()->{dismiss();PlayerFeatureSettings.whisper(a);});
   row(box,"用已安装的字幕插件搜索",false,()->{dismiss();Object session=OnlineSubtitleSearch.field(a,"session");if(session!=null)OnlineSubtitleSearch.start(session);});
  }
  void offsetBy(int direction){int next=EmbyCue.stepSubtitleOffset(a.getSharedPreferences("data",0).getInt("sub.offsetMs",0),direction);a.getSharedPreferences("data",0).edit().putInt("sub.offsetMs",next).apply();applyOffset(next);fill();}
