@@ -8,18 +8,20 @@ package com.guocheng.mediapocket;
 final class PlayerLayoutMetrics {
  static final boolean SHOW_SPEED_PILL=false;
  static final int TOUCH_DP=40,ICON_DP=24,PILL_W_DP=44,PILL_H_DP=132,PILL_RADIUS_DP=8;
- static final int SEEK_DP=3,SEEK_DRAG_DP=4,THUMB_DP=12,TIME_ROW_DP=24,TIME_GAP_DP=8;
+ static final int SEEK_DP=3,SEEK_DRAG_DP=4,THUMB_DP=18,TIME_ROW_DP=26,TIME_GAP_DP=10;
  static final int TRANSPORT_GAP_DP=12,SIDE_GAP_DP=16,MARGIN_DP=16,TOP_H_DP=40,TOP_GAP_DP=4;
  static final int TOP_PAD_DP=8,TOP_CUT_PAD_DP=4,TOP_BOTTOM_PAD_DP=6,TITLE_GAP_DP=4,DECODER_PAD_DP=6;
  static final int BOTTOM_TOP_PAD_DP=12,BOTTOM_PAD_DP=8,TRANSPORT_PAD_DP=4;
- static final int TITLE_SP=16,STATUS_SP=11,DECODER_SP=13,EPISODE_SP=14,TIME_SP=13,SPEED_SP=14,SPEED_BTN_SP=18;
+ static final int TITLE_SP=16,STATUS_SP=11,DECODER_SP=13,EPISODE_SP=20,TIME_SP=15,SPEED_SP=14,SPEED_BTN_SP=18,STATUS_ROW_DP=26,STATUS_TOP_PAD_DP=4,STATUS_NET_MAX_DP=200,STATUS_TIME_HALF_DP=120;
  /** 黑、约 45% 不透明。不是浅灰。 */
  static final int PILL_COLOR=0x73000000;
  static final float EPISODE_LINE_EM=1.35f;
  private PlayerLayoutMetrics(){}
  static int dp(float density,int v){float d=density<=0f?1f:density;return Math.round(v*d);}
  static int episodeLinePx(float density){float d=density<=0f?1f:density;return Math.max(1,Math.round(EPISODE_SP*d*EPISODE_LINE_EM));}
- static int topY(float density,int cutT){return Math.max(dp(density,TOP_PAD_DP),Math.max(0,cutT)+dp(density,TOP_CUT_PAD_DP));}
+ static int statusY(float density,int cutT){return Math.max(dp(density,STATUS_TOP_PAD_DP),Math.max(0,cutT));}
+ static int statusH(float density){return dp(density,STATUS_ROW_DP);}
+ static int topY(float density,int cutT){return statusY(density,cutT)+statusH(density)+dp(density,2);}
  static int topBarBottom(float density,int cutT){return topY(density,cutT)+dp(density,TOP_H_DP)+dp(density,TOP_BOTTOM_PAD_DP);}
  static int bottomPad(float density,int cutB){return Math.max(dp(density,BOTTOM_PAD_DP),Math.max(0,cutB)+dp(density,BOTTOM_PAD_DP));}
  /** 底栏上沿：上内边距 + 集标题 + 时间行 + 传输行，再加底部安全边距。 */
@@ -36,9 +38,9 @@ final class PlayerLayoutMetrics {
  }
  static final class Overlay {
   final int margin,touch,gap,seekTrack,thumb;
-  final Box camera,lock,speed,prev,play,next,audio,cc,episodes,back,title,topStatus,decoder,aspect,pip,more,episode,time,seek,status;
-  Overlay(int margin,int touch,int gap,int seekTrack,int thumb,Box camera,Box lock,Box speed,Box prev,Box play,Box next,Box audio,Box cc,Box episodes,Box back,Box title,Box topStatus,Box decoder,Box aspect,Box pip,Box more,Box episode,Box time,Box seek,Box status){
-   this.margin=margin;this.touch=touch;this.gap=gap;this.seekTrack=seekTrack;this.thumb=thumb;this.camera=camera;this.lock=lock;this.speed=speed;this.prev=prev;this.play=play;this.next=next;this.audio=audio;this.cc=cc;this.episodes=episodes;this.back=back;this.title=title;this.topStatus=topStatus;this.decoder=decoder;this.aspect=aspect;this.pip=pip;this.more=more;this.episode=episode;this.time=time;this.seek=seek;this.status=status;
+  final Box camera,lock,speed,prev,play,next,audio,cc,episodes,back,title,topStatus,decoder,aspect,pip,more,episode,time,seek,status,statusTime,statusNet;
+  Overlay(int margin,int touch,int gap,int seekTrack,int thumb,Box camera,Box lock,Box speed,Box prev,Box play,Box next,Box audio,Box cc,Box episodes,Box back,Box title,Box topStatus,Box decoder,Box aspect,Box pip,Box more,Box episode,Box time,Box seek,Box status,Box statusTime,Box statusNet){
+   this.margin=margin;this.touch=touch;this.gap=gap;this.seekTrack=seekTrack;this.thumb=thumb;this.camera=camera;this.lock=lock;this.speed=speed;this.prev=prev;this.play=play;this.next=next;this.audio=audio;this.cc=cc;this.episodes=episodes;this.back=back;this.title=title;this.topStatus=topStatus;this.decoder=decoder;this.aspect=aspect;this.pip=pip;this.more=more;this.episode=episode;this.time=time;this.seek=seek;this.status=status;this.statusTime=statusTime;this.statusNet=statusNet;
   }
  }
  static Overlay measure(int width,int height,float density,int cutL,int cutT,int cutR,int cutB,boolean prevOn,boolean nextOn,boolean episodesOn,boolean dragging,int topBottom,int bottomTop){
@@ -55,7 +57,7 @@ final class PlayerLayoutMetrics {
   int contentBottom=bottomTop>0?bottomTop:bottomBarTop(height,density,cutB);
   if(contentBottom<gapTop+touch)contentBottom=Math.min(height,gapTop+touch*3);
   int stack=touch*2+sideGap;
-  int stackTop=gapTop+Math.max(0,(contentBottom-gapTop-stack)/2);
+  int stackTop=gapTop+Math.round(Math.max(0,(contentBottom-gapTop)-stack)*0.30f);
   Box camera=new Box(margin,stackTop,touch,touch);
   Box lock=new Box(margin,stackTop+touch+sideGap,touch,touch);
   int pillW=dp(density,PILL_W_DP),pillH=dp(density,PILL_H_DP);
@@ -92,6 +94,10 @@ final class PlayerLayoutMetrics {
   Box episode=new Box(margin,timeY-epH,Math.max(0,width-margin*2),epH);
   int sw=dp(density,180),sh=dp(density,32);
   Box status=new Box((width-sw)/2,(height-sh)/2,sw,sh);
-  return new Overlay(margin,touch,gap,dp(density,dragging?SEEK_DRAG_DP:SEEK_DP),dp(density,THUMB_DP),camera,lock,speed,prev,play,next,audio,cc,episodes,back,title,topStatus,decoder,aspect,pip,more,episode,time,seek,status);
+  int stY=statusY(density,cutT),stH=statusH(density);
+  Box statusTime=new Box(width/2-dp(density,STATUS_TIME_HALF_DP),stY,dp(density,STATUS_TIME_HALF_DP)*2,stH);
+  int netW=dp(density,STATUS_NET_MAX_DP);
+  Box statusNet=new Box(Math.max(0,width-margin-netW),stY,netW,stH);
+  return new Overlay(margin,touch,gap,dp(density,dragging?SEEK_DRAG_DP:SEEK_DP),dp(density,THUMB_DP),camera,lock,speed,prev,play,next,audio,cc,episodes,back,title,topStatus,decoder,aspect,pip,more,episode,time,seek,status,statusTime,statusNet);
  }
 }

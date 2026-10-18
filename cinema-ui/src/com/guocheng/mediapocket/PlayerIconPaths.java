@@ -14,7 +14,7 @@ final class PlayerIconPaths {
   Shape(int kind,float[] p){this.kind=kind;this.p=p;this.text=null;}
   Shape(String text,float[] p){this.kind=TEXT;this.p=p;this.text=text;}
  }
- private static final List<Shape>[] CACHE=new List[15];
+ private static final List<Shape>[] CACHE=new List[18];
  private PlayerIconPaths(){}
  static List<Shape> of(int type){if(type>0&&type<CACHE.length&&CACHE[type]!=null)return CACHE[type];List<Shape> built=build(type);if(type>0&&type<CACHE.length)CACHE[type]=built;return built;}
  /** 三角尖朝哪边：-1 向左，1 向右，0 不是这种三角。闭合三角会把起点再写一遍，仍然只看前三个顶点。 */
@@ -37,6 +37,7 @@ final class PlayerIconPaths {
   else if(type==PlayerIcons.NOTE){s.add(new Shape(OVAL,new float[]{8,16.5f,2.4f}));s.add(new Shape(POLY,new float[]{10.4f,16.5f,10.4f,6}));s.add(new Shape(POLY,new float[]{10.4f,6,17.5f,8,17.5f,11,10.4f,9.5f}));}
   else if(type==PlayerIcons.CC){s.add(new Shape(ROUND,new float[]{3.2f,6.4f,17.6f,11.2f,2.4f}));s.add(new Shape("CC",new float[]{12,14.4f,7.2f}));}
   else if(type==PlayerIcons.LIST){s.add(new Shape(POLY,new float[]{5,8,19,8}));s.add(new Shape(POLY,new float[]{5,12,19,12}));s.add(new Shape(POLY,new float[]{5,16,19,16}));}
+  else if(type==PlayerIcons.BATTERY){s.add(new Shape(ROUND,new float[]{3,8,16,9,2}));s.add(new Shape(ROUND,new float[]{19.6f,10.4f,1.6f,4.2f,0.7f}));s.add(new Shape(FILL,new float[]{12.6f,9.2f,10.2f,13,12.2f,13,11.2f,16.2f,13.6f,12.4f,11.9f,12.4f,12.9f,9.2f}));}
   return Collections.unmodifiableList(s);
  }
 }

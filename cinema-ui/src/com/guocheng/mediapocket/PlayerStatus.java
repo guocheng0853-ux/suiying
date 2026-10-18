@@ -12,6 +12,7 @@ final class PlayerStatus {
   String[] bars={"▁","▂","▃","▄","▅","▆","▇","█","⚡"};
   return bars[level]+p+"%";
  }
+ static String batteryPercent(int percent){int p=percent<0?0:percent>100?100:percent;return p+"%";}
  static String line(boolean time,boolean net,boolean battery,String clock,String speed,String batt){
   StringBuilder s=new StringBuilder();
   if(time&&clock!=null&&!clock.isEmpty())s.append(clock);

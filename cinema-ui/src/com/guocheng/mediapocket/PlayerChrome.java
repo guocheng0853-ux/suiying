@@ -34,11 +34,11 @@ final class PlayerChrome implements Application.ActivityLifecycleCallbacks {
  void update(){SharedPreferences p=prefs(a);if(aspect!=null)aspect.setText(FullscreenRules.ICONS[FullscreenRules.index(p.getString("aspectMode","fit"))]);if(zoomLabel!=null)zoomLabel.setText(FullscreenRules.zoomLabel(p.getFloat("zoomX",1f),p.getFloat("zoomY",1f)));}
  /** VlcPlayback.speed → LibVLC setRate；系统播放器走 PlaybackParams。暂停状态保持暂停。松手才提示，拖动时只改高亮。 */
  void applySpeed(float f,boolean announce){float n=PlaybackPrefs.clampRate(f);boolean changed=Float.compare(n,PlaybackPrefs.speed(prefs(a)))!=0;if(changed){PlaybackPrefs.setSpeed(prefs(a),n);rate(n);}paintSpeed();if(announce&&Float.compare(n,dragFrom)!=0)toast("倍速 "+PlayerOverlayRules.speedPill(n));}
- static void bump(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.hideAt=android.os.SystemClock.elapsedRealtime()+4000;}
+ static void bump(Activity a){PlayerChrome c=ALL.get(a);if(c!=null)c.hideAt=android.os.SystemClock.elapsedRealtime()+PlayerMotionRules.CONTROLS_TIMEOUT_MS;}
  /** 控件只做淡入淡出。隐藏先淡出，再交给原来的 controls(false)。 */
  static void reveal(Activity a,boolean on){PlayerChrome c=ALL.get(a);if(c!=null)c.fade(on);}
- void fade(boolean on){Object top=OnlineSubtitleSearch.field(a,"top"),bottom=OnlineSubtitleSearch.field(a,"bottom");fadeView(top instanceof View?(View)top:null,on);fadeView(bottom instanceof View?(View)bottom:null,on);if(on)hideAt=android.os.SystemClock.elapsedRealtime()+4000;}
- void fadeView(View v,boolean on){if(v==null)return;v.animate().cancel();if(on){v.setAlpha(0f);v.animate().alpha(1f).setDuration(280).start();}else v.animate().alpha(0f).setDuration(260).start();}
+ void fade(boolean on){Object top=OnlineSubtitleSearch.field(a,"top"),bottom=OnlineSubtitleSearch.field(a,"bottom");fadeView(top instanceof View?(View)top:null,on);fadeView(bottom instanceof View?(View)bottom:null,on);if(on)hideAt=android.os.SystemClock.elapsedRealtime()+PlayerMotionRules.CONTROLS_TIMEOUT_MS;}
+ void fadeView(View v,boolean on){if(v==null)return;v.animate().cancel();if(on){v.setAlpha(0f);v.animate().alpha(1f).setDuration(PlayerMotionRules.CHROME_IN_MS).start();}else v.animate().alpha(0f).setDuration(PlayerMotionRules.CHROME_OUT_MS).start();}
  /** 长按临时倍速：只改播放器，不写入已保存的档位。 */
  static void temporarySpeed(Activity a,float rate){PlayerChrome c=ALL.get(a);if(c!=null)c.rate(rate);}
  void rate(float n){Object video=OnlineSubtitleSearch.field(a,"video");boolean wasPlaying=playing();try{if(video!=null){OnlineSubtitleSearch.call(video,"speed",new Class<?>[]{float.class},n);if(!wasPlaying)OnlineSubtitleSearch.call(video,"pause",new Class<?>[0]);}}catch(Exception ignored){}}
