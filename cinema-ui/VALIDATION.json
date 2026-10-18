@@ -1,8 +1,8 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.83",
+  "ui_version": "0.1.84",
   "android_device_tested": true,
-  "android_device_note": "0.1.83: player redesigned to the Hills baseline (status row at top with centered clock and right-aligned network+battery icon, 30% side stack, 20sp episode line, 18dp thumb, CinemaMenu dark menus replacing system AlertDialogs, rounded next-episode/skip cards); adb install -r on ColorOS arm64, external play smoke clean",
+  "android_device_note": "0.1.84: hero caption moved below the backdrop Hills-style (star rating/year/genres line + centered 2-line description + dots on the page background), certification badge, play transition smoothed with fade via PlayerChrome install/finish + overlay launch sites; adb install -r smoke clean on ColorOS arm64",
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -20,7 +20,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6297,
   "dex_files": 3,
-  "main_version_code": 84,
+  "main_version_code": 85,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",

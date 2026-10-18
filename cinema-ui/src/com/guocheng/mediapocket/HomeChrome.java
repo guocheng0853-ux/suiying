@@ -140,9 +140,11 @@ final class HomeChrome {
  }
  /** 绑定 Hero 文案。影视仓只留标题，有简介才显示简介。 */
  void bindHeroText(JSONObject m){
-  String facts=HomeRules.heroFacts(m),desc=HomeRules.heroDescription(m);
+  String facts=HomeRules.heroFacts(m),desc=HomeRules.heroDescription(m),cert=HomeRules.heroCert(m);
   if(a.heroFacts!=null){a.heroFacts.setText(facts);a.heroFacts.setVisibility(facts.isEmpty()?View.GONE:View.VISIBLE);}
-  if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(desc.isEmpty()?View.GONE:View.VISIBLE);}
+  if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(desc.isEmpty()?View.GONE:View.VISIBLE);a.heroDescription.setTextColor(a.light?a.muted():0xffd6e8eb);}
+  if(a.heroFacts!=null)a.heroFacts.setTextColor(a.light?a.muted():0xffd6e8eb);
+  if(a.heroCert!=null){a.heroCert.setText(cert);a.heroCert.setVisibility(cert.isEmpty()?View.GONE:View.VISIBLE);}
   if(a.heroTitle!=null){String logo=m.optString("logo");a.heroTitle.setText(m.optString("name","影片"));a.heroTitle.setTextSize(logo.isEmpty()?26:16);}
  }
  /** Both providers use the same edge-to-edge artwork and caption layout. */

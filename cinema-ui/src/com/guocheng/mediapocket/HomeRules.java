@@ -85,6 +85,13 @@ final class HomeRules {
   for(int i=0;i<genres.length()&&i<4;i++){String s=genres.optString(i);if(!s.isEmpty())g.add(s);}
   return String.join(sep,g);
  }
+ /** 官方分级徽章：Emby 的 OfficialRating 或 Stremio 的 certification，tvbox 没有。 */
+ static String heroCert(JSONObject m){
+  if(m==null||HomeHeroRules.tvboxHero(m))return "";
+  String cert=m.optString("certification",m.optString("OfficialRating","")).trim();
+  if(cert.isEmpty()||cert.equalsIgnoreCase("null"))return "";
+  return cert;
+ }
  static String heroDescription(JSONObject m){
   if(m==null)return "";
   String d=m.optString("description",m.optString("vod_content","")).trim();

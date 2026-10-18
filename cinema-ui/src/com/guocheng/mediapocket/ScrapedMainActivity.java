@@ -5,7 +5,7 @@ import android.app.*;import android.os.*;import android.content.*;import android
 /** UI-only overlay on the stable 0.1.20 APK. Player, media engines and native libraries stay in that base. */
 public final class ScrapedMainActivity extends MainActivity {
  boolean light,homeCanvas,keepHome,resumed,detailPage,heroScrimStrong;int pendingScroll=-1;String detailId="",detailType="",detailError="";JSONObject openingMeta;String homeProvider="fusion";FusionCatalog.Session fusionSession;String appearance;int epoch,safeTop,safeBottom,heroIndex,heroPriority=-1;
- FrostedBar frost;FrameLayout stage,hero,heroPage;HomeAtmosphere homeAtmosphere;final java.util.Set<String> pendingHeroMetadata=java.util.Collections.synchronizedSet(new java.util.HashSet<>());HeroSwipe heroSwipe;View appBarScrim;GradientDrawable topGradient;LinearLayout topBar,heroInfo,dots;ImageView heroImage,heroLogo;TextView heroTitle,heroFacts,heroDescription,heroPlay;NavIcon[] navIcons;
+ FrostedBar frost;FrameLayout stage,hero,heroPage;LinearLayout heroMetaRow,heroCaption;TextView heroCert;HomeAtmosphere homeAtmosphere;final java.util.Set<String> pendingHeroMetadata=java.util.Collections.synchronizedSet(new java.util.HashSet<>());HeroSwipe heroSwipe;View appBarScrim;GradientDrawable topGradient;LinearLayout topBar,heroInfo,dots;ImageView heroImage,heroLogo;TextView heroTitle,heroFacts,heroDescription,heroPlay;NavIcon[] navIcons;
  JSONArray heroes=new JSONArray();String heroType="series";final Handler carousel=new Handler(Looper.getMainLooper());
  final String[] tabs=HomeRules.TABS;HomeChrome homeChrome;
  @Override public void onCreate(Bundle saved){
@@ -113,12 +113,16 @@ public final class ScrapedMainActivity extends MainActivity {
   heroInfo=new LinearLayout(this);heroInfo.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->syncHeroFade());heroInfo.setOrientation(1);heroInfo.setGravity(Gravity.CENTER);heroInfo.setPadding(dp(24),0,dp(24),dp(14));hero.addView(heroInfo,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
   heroLogo=new ImageView(this);heroLogo.setScaleType(ImageView.ScaleType.FIT_CENTER);heroLogo.setVisibility(View.GONE);heroInfo.addView(heroLogo,new LinearLayout.LayoutParams(dp(270),dp(76)));
   heroTitle=text("今晚，走进故事",29,0xffffffff);heroTitle.setGravity(Gravity.CENTER);heroTitle.setTypeface(null,1);heroTitle.setMaxLines(2);heroTitle.setEllipsize(TextUtils.TruncateAt.END);heroInfo.addView(heroTitle);
-  heroFacts=text("电影 · 剧集 · 你的片库",11,0xffe0edf0);heroFacts.setGravity(Gravity.CENTER);heroInfo.addView(heroFacts);
-  heroDescription=text("",11,0xffd6e8eb);heroDescription.setGravity(Gravity.CENTER);heroDescription.setLines(2);heroDescription.setEllipsize(TextUtils.TruncateAt.END);heroDescription.setLineSpacing(dp(2),1);heroInfo.addView(heroDescription);
-  dots=new LinearLayout(this);dots.setGravity(Gravity.CENTER);dots.setPadding(0,dp(10),0,0);heroInfo.addView(dots);
+  heroFacts=text("电影 · 剧集 · 你的片库",11,0xffd6e8eb);heroFacts.setGravity(Gravity.CENTER);
+  heroCert=text("",10,light?ink():0xffe8f2f5);heroCert.setGravity(Gravity.CENTER);heroCert.setPadding(dp(7),dp(2),dp(7),dp(3));heroCert.setBackground(rounded(light?0x3352757c:0x66e8f2f5,6));heroCert.setVisibility(View.GONE);
+  heroDescription=text("",13,light?muted():0xffd6e8eb);heroDescription.setGravity(Gravity.CENTER);heroDescription.setLines(2);heroDescription.setEllipsize(TextUtils.TruncateAt.END);heroDescription.setLineSpacing(dp(3),1);
+  dots=new LinearLayout(this);dots.setGravity(Gravity.CENTER);dots.setPadding(0,dp(10),0,0);
   heroPlay=text("播放",15,0xffffffff);heroPlay.setGravity(Gravity.CENTER);heroPlay.setBackground(rounded(0xcc173b4b,18));heroPlay.setPadding(dp(18),dp(8),dp(18),dp(8));heroPlay.setVisibility(View.GONE);LinearLayout.LayoutParams playLp=new LinearLayout.LayoutParams(-2,-2);playLp.topMargin=dp(8);playLp.gravity=Gravity.CENTER_HORIZONTAL;heroInfo.addView(heroPlay,playLp);
   hero.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->syncHeroFade());
   heroSwipe=new HeroSwipe(this,hero,heroPage);hero.setOnClickListener(v->{JSONObject m=heroes.optJSONObject(heroIndex);if(m!=null)openItem(m);});
+  heroMetaRow=new LinearLayout(this);heroMetaRow.setGravity(Gravity.CENTER);heroMetaRow.setPadding(dp(24),dp(2),dp(24),0);heroMetaRow.addView(heroFacts);LinearLayout.LayoutParams certLp=new LinearLayout.LayoutParams(-2,-2);certLp.leftMargin=dp(8);heroMetaRow.addView(heroCert,certLp);
+  heroCaption=new LinearLayout(this);heroCaption.setOrientation(LinearLayout.VERTICAL);heroCaption.setGravity(Gravity.CENTER);heroCaption.setPadding(dp(24),dp(10),dp(24),dp(4));heroCaption.addView(heroMetaRow);heroCaption.addView(heroDescription);heroCaption.addView(dots);
+  body.addView(heroCaption,new LinearLayout.LayoutParams(-1,-2));
   heroes=new JSONArray();heroIndex=0;heroType="";heroPriority=-1;placeHero(dp(200));heroTitle.setText("正在加载片库");heroFacts.setText("选择左上角片源，或稍后重试");heroFacts.setVisibility(View.VISIBLE);
   try{JSONObject cached=new JSONObject(prefs.getString(heroCacheKey(),""));JSONArray items=cached.optJSONArray("items");if(items!=null&&items.length()>0)setHeroes(items,cached.optString("type","series"));}catch(Exception ignored){}
   final int ticket=epoch;hero.postDelayed(()->{if(ticket!=epoch||!homeCanvas||heroes.length()>0)return;heroTitle.setText("片库暂时无法加载");heroFacts.setText("点击重试，或从左上角切换片源");hero.setOnClickListener(v->home());},25000);
@@ -136,13 +140,9 @@ public final class ScrapedMainActivity extends MainActivity {
  }
  void bindHero(JSONObject m){if(heroSwipe!=null&&heroSwipe.busy()){final int token=epoch;final String id=m.optString("id");carousel.postDelayed(()->{JSONObject current=heroes.optJSONObject(heroIndex);if(token==epoch&&homeCanvas&&current!=null&&id.equals(current.optString("id")))bindHero(m);},360);return;}boolean artwork=!HomeHeroRules.backdropOf(m).isEmpty();placeHero(artwork?heroSceneHeight():dp(220));heroScrimStrong=HomeHeroRules.portraitHero(m);String logo=m.optString("logo");heroLogo.setImageDrawable(null);heroLogo.setVisibility(logo.isEmpty()?View.GONE:View.VISIBLE);heroTitle.setVisibility(View.VISIBLE);if(!logo.isEmpty())TvPosterImages.load(this,heroLogo,logo,dp(320));if(homeChrome==null)homeChrome=new HomeChrome(this);homeChrome.dressHero(heroPage,heroImage,m);homeChrome.bindHeroText(m);heroTitle.setTextColor(light?ink():0xffffffff);heroFacts.setTextColor(light?muted():0xffe0edf0);heroDescription.setTextColor(light?muted():0xffd6e8eb);layoutHeroCaption(artwork);if(homeAtmosphere!=null){homeAtmosphere.sync(heroImage);}bindEmbyPlay(m);}
  void bindEmbyPlay(JSONObject m){if(heroPlay==null)return;boolean emby=m!=null&&m.has("emby.server");if(emby&&!m.optString("logo").isEmpty())heroTitle.setVisibility(View.GONE);if(!emby){heroPlay.setVisibility(View.GONE);return;}heroPlay.setVisibility(View.VISIBLE);heroPlay.setText(m.optString("emby.play","播放"));heroPlay.setOnClickListener(v->openItem(m));}
- /** Reserve the caption in normal flow; shelves begin after the dots, never behind them. */
+ /** 图只占画面区；评分与简介挪到了图下的 heroCaption，正文分区自然接在它后面。 */
  void layoutHeroCaption(boolean artwork){
-  int width=getResources().getDisplayMetrics().widthPixels;
-  heroInfo.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
-  int caption=heroInfo.getMeasuredHeight();
-  int picture=safeTop+dp(210);
-  placeHero(artwork?Math.max(heroSceneHeight(),picture+caption):Math.max(dp(220),caption+safeTop+dp(64)));
+  placeHero(artwork?Math.max(heroSceneHeight(),safeTop+dp(210)):Math.max(dp(220),safeTop+dp(64)));
  }
  /** All preloaded pages fade before the earliest caption, including during a swipe. */
  void syncHeroFade(){

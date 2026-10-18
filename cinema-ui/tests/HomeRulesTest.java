@@ -35,6 +35,10 @@ public class HomeRulesTest {
   check(HomeRules.libraryTiles().length==4&&HomeRules.libraryTiles()[0][0].equals("电影"),"tiles");
   check(HomeRules.runtimeMinutes(new JSONObject().put("runtime","1h 13m"))==73,"runtime");
   check(HomeRules.keepOnResume(true,3)&&!HomeRules.keepOnResume(true,0)&&!HomeRules.keepOnResume(false,3),"resume keeps a filled home");
-  System.out.println("PASS: home nav aliases, progress fraction, episode labels, badges, hero facts, source options, library tiles.");
+  org.json.JSONObject cap=new org.json.JSONObject().put("imdbRating","8.7").put("releaseInfo","2022").put("genres",new org.json.JSONArray().put("剧情").put("喜剧")).put("certification","SG-PG");
+  check(HomeRules.heroCert(cap).equals("SG-PG")&&HomeRules.heroCert(new org.json.JSONObject()).isEmpty()&&HomeRules.heroCert(null).isEmpty(),"hero cert badge");
+  org.json.JSONObject emby=new org.json.JSONObject().put("CommunityRating",8.633).put("ProductionYear",2024).put("OfficialRating","PG-13");
+  check(HomeRules.heroCert(emby).equals("PG-13"),"emby official rating feeds the badge");
+  System.out.println("PASS: home nav aliases, progress fraction, episode labels, badges, hero facts, source options, library tiles, hero caption.");
  }
 }
