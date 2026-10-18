@@ -1,8 +1,8 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.84",
+  "ui_version": "0.1.85",
   "android_device_tested": true,
-  "android_device_note": "0.1.84: hero caption moved below the backdrop Hills-style (star rating/year/genres line + centered 2-line description + dots on the page background), certification badge, play transition smoothed with fade via PlayerChrome install/finish + overlay launch sites; adb install -r smoke clean on ColorOS arm64",
+  "android_device_note": "0.1.85: CinemaMenu wraps the panel in a ScrollView capped at 78% of screen height - long menus (19-item More) scroll instead of overflowing past the bottom edge; install smoke clean",
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -20,7 +20,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6297,
   "dex_files": 3,
-  "main_version_code": 85,
+  "main_version_code": 86,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",

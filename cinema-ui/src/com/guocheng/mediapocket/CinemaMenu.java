@@ -28,7 +28,13 @@ final class CinemaMenu {
   panel.setPadding(dp(a,10),dp(a,8),dp(a,10),dp(a,10));
   int screen=host.getWidth()>0?host.getWidth():a.getResources().getDisplayMetrics().widthPixels;
   int width=Math.min(dp(a,PlayerTheme.MENU_WIDTH_MAX_DP),screen-dp(a,40));
-  FrameLayout center=new FrameLayout(a);center.addView(panel,new FrameLayout.LayoutParams(width,-2,Gravity.CENTER));
+  // 先量面板实际高度，超过屏幕 78% 就套 ScrollView，长菜单（如「更多」19 项）可滚动。
+  panel.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+  float vh=host.getHeight()>0?host.getHeight():a.getResources().getDisplayMetrics().heightPixels;
+  int menuH=Math.min(panel.getMeasuredHeight(),Math.round(vh*0.78f));
+  FrameLayout center=new FrameLayout(a);
+  ScrollView scroll=new ScrollView(a);scroll.setVerticalScrollBarEnabled(false);scroll.addView(panel,new FrameLayout.LayoutParams(width,-2));
+  center.addView(scroll,new FrameLayout.LayoutParams(width,menuH,Gravity.CENTER));
   scrim.addView(center,new FrameLayout.LayoutParams(-1,-1));
   if(title!=null&&!title.isEmpty()){
    TextView head=new TextView(a);head.setText(title);head.setTextColor(0xffffffff);head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);head.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
