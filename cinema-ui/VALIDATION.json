@@ -1,8 +1,8 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.86",
+  "ui_version": "0.1.87",
   "android_device_tested": true,
-  "android_device_note": "0.1.86: OpenSubtitles/Assrt API error JSON now surfaces a readable reason in the search dialog instead of silently looking like zero results; OpenSubtitles download endpoint corrected to /api/v1/downloads; 403 You-cannot-consume reproduced from PC against the live API",
+  "android_device_note": "0.1.87: Xunlei keyless subtitle source integrated as the third provider (api-shoulei-ssl.xunlei.com/oracle/subtitle, name search, direct .srt links, simple_name labels); online search now always runs (Xunlei without keys, Assrt/OpenSubtitles when configured); endpoint verified live from PC with zh+en queries",
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -20,7 +20,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6297,
   "dex_files": 3,
-  "main_version_code": 87,
+  "main_version_code": 88,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",

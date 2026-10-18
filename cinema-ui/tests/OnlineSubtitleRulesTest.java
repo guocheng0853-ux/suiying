@@ -27,6 +27,10 @@ public class OnlineSubtitleRulesTest {
   check(OnlineSubtitleRules.OPEN_DOWNLOAD.endsWith("/downloads"),"download endpoint is the plural downloads");
   boolean assrtThrew=false;try{OnlineSubtitleRules.assrt(new JSONObject().put("status",1).put("msg","token 无效"));}catch(Exception e){assrtThrew=e.getMessage().contains("token 无效");}
   check(assrtThrew,"assrt error msg surfaces");
+  org.json.JSONObject xl=new org.json.JSONObject().put("code",0).put("result","ok").put("data",new org.json.JSONArray().put(new org.json.JSONObject().put("url","https://subtitle.v.example/a.srt").put("simple_name","中文[SRT]蜘蛛侠(2007)")).put(new org.json.JSONObject().put("name","x.srt").put("languages",new org.json.JSONArray().put("简体"))).put(new org.json.JSONObject().put("name","bad").put("url","ftp://nope")));
+  java.util.List<OnlineSubtitleRules.Hit> xlHits=OnlineSubtitleRules.xunlei(xl);
+  check(xlHits.size()==1&&xlHits.get(0).label().startsWith("迅雷")&&xlHits.get(0).name.contains("蜘蛛侠")&&xlHits.get(0).url.startsWith("https://"),"xunlei keyless hits parse with simple names");
+  check(OnlineSubtitleRules.xunleiSearch("海贼王").contains("name="),"xunlei query built");
   System.out.println("PASS: Assrt and OpenSubtitles parsing, empty keys, subtitle folder, extension sniffing.");
  }
 }

@@ -6,6 +6,8 @@ final class OnlineSubtitleRules {
  static final String ASSRT_DETAIL="https://api.assrt.net/v1/sub/detail";
  static final String OPEN="https://api.opensubtitles.com/api/v1/subtitles";
  static final String OPEN_DOWNLOAD="https://api.opensubtitles.com/api/v1/downloads";
+ /** 迅雷开放字幕匹配：免密钥，按片名搜，data[].url 是 .srt 直链。 */
+ static final String XUNLEI="https://api-shoulei-ssl.xunlei.com/oracle/subtitle";
  static final String UA="suiying/0.1.81";
  private OnlineSubtitleRules(){}
  static boolean assrtReady(String token){return token!=null&&!token.trim().isEmpty();}
@@ -14,9 +16,14 @@ final class OnlineSubtitleRules {
  static String assrtSearch(String token,String query){return ASSRT+"?token="+enc(token.trim())+"&q="+enc(query==null?"":query)+"&cnt=20";}
  static String assrtDetail(String token,long id){return ASSRT_DETAIL+"?token="+enc(token.trim())+"&id="+id;}
  static String openSearch(String query){return OPEN+"?query="+enc(query==null?"":query)+"&languages=zh-cn,zh,en";}
+ static String xunleiSearch(String name){return XUNLEI+"?name="+enc(name==null?"":name);}
+ static String joinLangs(JSONArray a,String sep){if(a==null)return "";StringBuilder s=new StringBuilder();for(int i=0;i<a.length();i++){String t=a.optString(i);if(t==null||t.isEmpty())continue;if(s.length()>0)s.append(sep);s.append(t);}return s.toString();}
+ /** 迅雷结果：code==0 且 result==ok 才算成功；simple_name 最可读，否则语言+文件名。 */
+ static List<Hit> xunlei(JSONObject json){ArrayList<Hit> out=new ArrayList<>();if(json==null)return out;if(json.optInt("code",-1)!=0||!"ok".equals(json.optString("result")))return out;JSONArray data=json.optJSONArray("data");if(data==null)return out;
+  for(int i=0;i<data.length()&&out.size()<30;i++){JSONObject d=data.optJSONObject(i);if(d==null)continue;String url=d.optString("url");if(!url.startsWith("http"))continue;String simple=d.optString("simple_name","");String name=simple.isEmpty()?d.optString("name","字幕"):simple;String langs=joinLangs(d.optJSONArray("languages"),"+");if(simple.isEmpty()&&!langs.isEmpty())name=langs+" · "+name;out.add(new Hit("xunlei",name,0,0,url));}return out;}
  static String enc(String raw){try{return java.net.URLEncoder.encode(raw,"UTF-8");}catch(Exception e){return "";}}
  static final class Hit {final String source,name,url;final long id,fileId;Hit(String source,String name,long id,long fileId,String url){this.source=source;this.name=name==null?source:name;this.id=id;this.fileId=fileId;this.url=url==null?"":url;}
-  String label(){return ("assrt".equals(source)?"射手":"OpenSubtitles")+" · "+name;}}
+  String label(){return ("assrt".equals(source)?"射手":"xunlei".equals(source)?"迅雷":"OpenSubtitles")+" · "+name;}}
  static List<Hit> assrt(JSONObject json){ArrayList<Hit> out=new ArrayList<>();if(json==null)return out;if(json.optInt("status",0)!=0){String m=json.optString("msg","");if(!m.isEmpty())throw new IllegalArgumentException("射手接口："+m);return out;}JSONObject sub=json.optJSONObject("sub");JSONArray subs=sub==null?null:sub.optJSONArray("subs");if(subs==null)return out;for(int i=0;i<subs.length()&&out.size()<30;i++){JSONObject s=subs.optJSONObject(i);if(s==null)continue;long id=s.optLong("id");if(id<=0)continue;JSONObject lang=s.optJSONObject("lang");String desc=lang==null?"":lang.optString("desc");String name=s.optString("native_name",s.optString("videoname","字幕"));if(!desc.isEmpty())name=desc+" · "+name;out.add(new Hit("assrt",name,id,0,""));}return out;}
  static String assrtFile(JSONObject json){if(json==null||json.optInt("status",0)!=0)return "";JSONObject sub=json.optJSONObject("sub");JSONArray subs=sub==null?null:sub.optJSONArray("subs");if(subs==null)return "";for(int i=0;i<subs.length();i++){JSONObject s=subs.optJSONObject(i);if(s==null)continue;JSONArray files=s.optJSONArray("filelist");if(files==null)continue;for(int j=0;j<files.length();j++){JSONObject f=files.optJSONObject(j);if(f==null)continue;String url=f.optString("url");if(url.startsWith("https://")||url.startsWith("http://"))return url;}}return "";}
  static List<Hit> opensubtitles(JSONObject json){ArrayList<Hit> out=new ArrayList<>();if(json==null)return out;JSONArray data=json.optJSONArray("data");

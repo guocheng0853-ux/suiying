@@ -50,7 +50,7 @@ final class PlayerSidePanel {
   sync.addView(chip("−100ms",()->offsetBy(-1)));sync.addView(chip("归零",()->{a.getSharedPreferences("data",0).edit().putInt("sub.offsetMs",0).apply();applyOffset(0);fill();}));sync.addView(chip("+100ms",()->offsetBy(1)));
   box.addView(sync);
   String keys=OnlineSubtitleRules.missing(OnlineSubtitleController.assrt(a.getSharedPreferences("data",0)),OnlineSubtitleController.openKey(a.getSharedPreferences("data",0)));
-  note(box,keys==null?"在线字幕会下载到本机，并只显示这一条。":keys);
+  note(box,"迅雷源免密钥，直接搜。"+(keys==null?"已启用射手与 OpenSubtitles。":"配密钥可加搜射手与 OpenSubtitles："+keys)+"下载到本机后只显示这一条。");
   row(box,"搜索在线字幕",false,()->{dismiss();OnlineSubtitleController.open(a);});
   row(box,"用已安装的字幕插件搜索",false,()->{dismiss();Object session=OnlineSubtitleSearch.field(a,"session");if(session!=null)OnlineSubtitleSearch.start(session);});
  }

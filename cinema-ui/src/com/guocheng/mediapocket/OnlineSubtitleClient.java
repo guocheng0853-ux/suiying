@@ -4,6 +4,7 @@ import org.json.*;import java.io.*;import java.net.*;import java.nio.charset.Sta
 final class OnlineSubtitleClient {
  private OnlineSubtitleClient(){}
  static JSONObject assrt(String url)throws Exception{return get(url,null);}
+ static JSONObject xunlei(String url)throws Exception{return get(url,null);}
  static JSONObject opensubtitles(String url,String apiKey)throws Exception{return get(url,apiKey);}
  static JSONObject openDownload(String apiKey,long fileId)throws Exception{
   HttpURLConnection c=(HttpURLConnection)new URL(OnlineSubtitleRules.OPEN_DOWNLOAD).openConnection();
