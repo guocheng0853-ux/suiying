@@ -10,6 +10,12 @@ public class EpisodeActionsTest {
   check(EpisodeActions.label(a).contains("第 2 季 · 第 3 集")&&EpisodeActions.label(a).contains("第三集"),"action UI identifies selected episode");check(!EpisodeActions.key("series","show").equals(EpisodeActions.key("series","other")),"selection isolated per detail");
   JSONObject only=new JSONObject().put("id","e161").put("episode",161).put("title","离乡");check(EpisodeActions.label(only).startsWith("第 161 集")&&!EpisodeActions.label(only).contains("季"),"episode without a season");
   ArrayList<JSONObject> ordered=EpisodeActions.list(meta);check(EpisodeActions.indexOf(ordered,"custom-ep-A")==0&&EpisodeActions.seasons(ordered).size()==2&&EpisodeActions.inSeason(b,1)&&!EpisodeActions.inSeason(a,1)&&EpisodeActions.inSeason(a,-1),"season filter and current index");
+  JSONObject dup=new JSONObject().put("id","e100").put("season",1).put("episode",100).put("title","第100集");check(EpisodeActions.label(dup).equals("第 1 季 · 第 100 集"),"duplicate episode title shown once");
+  JSONObject spaced=new JSONObject().put("id","e100b").put("season",1).put("episode",100).put("title","第 100 集");check(EpisodeActions.label(spaced).equals("第 1 季 · 第 100 集"),"spaced duplicate episode title shown once");
+  check(EpisodeActions.segments(30).isEmpty()&&EpisodeActions.segments(7).isEmpty(),"thirty or fewer episodes stay in one list");
+  ArrayList<int[]> ranges=EpisodeActions.segments(161);check(ranges.size()==6&&ranges.get(0)[0]==0&&ranges.get(0)[1]==30&&ranges.get(5)[0]==150&&ranges.get(5)[1]==161,"segments of thirty end on the last episode");
+  check(EpisodeActions.segmentLabel(0,30).equals("1-30")&&EpisodeActions.segmentLabel(90,120).equals("91-120")&&EpisodeActions.segmentLabel(150,161).equals("151-161"),"segment labels");
+  check(EpisodeActions.segmentAt(161,104)==3&&EpisodeActions.segmentAt(161,0)==0&&EpisodeActions.segmentAt(30,4)==-1&&EpisodeActions.segmentAt(161,-1)==-1,"current episode picks its segment");
   System.out.println("PASS: exact episode ownership, provider-specific IDs, series-ID rejection, dedup/order, selected-episode labels and detail isolation.");
  }
 }

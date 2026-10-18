@@ -6,7 +6,7 @@ final class OnlineSubtitleRules {
  static final String ASSRT_DETAIL="https://api.assrt.net/v1/sub/detail";
  static final String OPEN="https://api.opensubtitles.com/api/v1/subtitles";
  static final String OPEN_DOWNLOAD="https://api.opensubtitles.com/api/v1/download";
- static final String UA="suiying/0.1.81";
+ static final String UA="suiying/0.1.82";
  private OnlineSubtitleRules(){}
  static boolean assrtReady(String token){return token!=null&&!token.trim().isEmpty();}
  static boolean openReady(String key){return key!=null&&!key.trim().isEmpty();}
