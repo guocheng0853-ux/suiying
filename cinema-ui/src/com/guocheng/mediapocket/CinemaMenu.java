@@ -55,14 +55,20 @@ final class CinemaMenu {
   scrim.addView(center,new FrameLayout.LayoutParams(-1,-1));
   scrim.setOnClickListener(v->dismiss(a,scrim));
   host.addView(scrim,new FrameLayout.LayoutParams(-1,-1));
+  scrim.bringToFront();
+  OPEN.put(a,scrim);
   scrim.setAlpha(0f);panel.setScaleX(0.92f);panel.setScaleY(0.92f);
   scrim.animate().alpha(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
   panel.animate().scaleX(1f).scaleY(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
  }
  static void dismiss(final Activity a,final FrameLayout scrim){
+  OPEN.remove(a);
   scrim.animate().alpha(0f).setDuration(PlayerMotionRules.MENU_OUT_MS).withEndAction(()->{
    if(scrim.getParent() instanceof ViewGroup)((ViewGroup)scrim.getParent()).removeView(scrim);
   }).start();
  }
+ static final java.util.Map<Activity,FrameLayout> OPEN=new java.util.WeakHashMap<>();
+ /** 播放器根视图可能被视频面重建挤到最上层，菜单打开期间持续把自己顶回最前。 */
+ static void front(Activity a){FrameLayout s=OPEN.get(a);if(s!=null&&s.getParent()!=null)s.bringToFront();}
  static int dp(Activity a,int v){return Math.round(v*a.getResources().getDisplayMetrics().density);}
 }
