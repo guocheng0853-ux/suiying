@@ -17,6 +17,11 @@ public class OnlineSubtitleRulesTest {
   ByteArrayOutputStream raw=new ByteArrayOutputStream();try(ZipOutputStream zip=new ZipOutputStream(raw)){zip.putNextEntry(new ZipEntry("note.txt"));zip.write("no".getBytes("UTF-8"));zip.closeEntry();zip.putNextEntry(new ZipEntry("sub/a.srt"));zip.write("1\n00:00:01,000 --> 00:00:02,000\n你好\n".getBytes("UTF-8"));zip.closeEntry();}
   String text=new String(OnlineSubtitleRules.unwrap(raw.toByteArray()),"UTF-8");check(text.contains("你好"),"zip unwrap");
   check(OnlineSubtitleRules.choice("assrt",7,0).equals("assrt:7"),"remembered choice");
-  System.out.println("PASS: Assrt and OpenSubtitles parsing, empty keys, subtitle folder.");
+  check(OnlineSubtitleRules.file("某番剧 中文字幕","[Script Info]\nTitle: x\n".getBytes("UTF-8")).endsWith(".ass"),"ass content keeps ass extension");
+  check(OnlineSubtitleRules.file("某番剧 中文字幕","WEBVTT\n\n00:01.000 --> 00:02.000\n你\n".getBytes("UTF-8")).endsWith(".vtt"),"vtt content keeps vtt extension");
+  check(OnlineSubtitleRules.file("只有名字",null).endsWith(".srt"),"missing content falls back to srt");
+  check(OnlineSubtitleRules.file("包.ass","[Script Info]".getBytes("UTF-8")).endsWith(".ass"),"explicit extension is kept");
+  check(OnlineSubtitleRules.extOf(new byte[]{(byte)0xEF,(byte)0xBB,(byte)0xBF,'W','E','B','V','T','T'}).equals(".vtt"),"utf8 bom vtt sniffed");
+  System.out.println("PASS: Assrt and OpenSubtitles parsing, empty keys, subtitle folder, extension sniffing.");
  }
 }

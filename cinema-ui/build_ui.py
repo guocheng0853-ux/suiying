@@ -112,7 +112,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
     out.write(p,n)
  out.write(root/'RUNTIME-LICENSE.md','assets/Fusion-runtime-license.txt')
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.81-player-p0-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.82-fixes-arm64.apk'
 run(bt/'apksigner','sign','--ks',Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks'))),'--ks-pass','pass:android','--key-pass','pass:android','--out',apk,work/'aligned.apk')
 run(bt/'apksigner','verify',apk)
 with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:

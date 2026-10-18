@@ -1,7 +1,8 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.81",
-  "android_device_tested": false,
+  "ui_version": "0.1.82",
+  "android_device_tested": true,
+  "android_device_note": "0.1.82: adb install -r over 0.1.81 on ColorOS arm64 (11a279bc); launch + ExternalPlayActivity with raw unencoded file:// Chinese/space path reached PlayerActivity and played, no FATAL in logcat",
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -19,7 +20,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6297,
   "dex_files": 3,
-  "main_version_code": 81,
+  "main_version_code": 83,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",

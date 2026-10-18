@@ -7,6 +7,8 @@ final class DanmuRules {
   final boolean shown;final int opacity,textSp,topLines,scrollLines,bottomLines;final float speedSec;final String block,match;final boolean remember;
   Config(boolean shown,int opacity,float speedSec,int textSp,int topLines,int scrollLines,int bottomLines,String block,String match,boolean remember){this.shown=shown;this.opacity=clamp(opacity,10,100);this.speedSec=speedSec<4f?4f:speedSec>20f?20f:speedSec;this.textSp=clamp(textSp,12,32);this.topLines=clamp(topLines,0,8);this.scrollLines=clamp(scrollLines,0,16);this.bottomLines=clamp(bottomLines,0,8);this.block=block==null?"":block;this.match="manual".equals(match)?"manual":"auto";this.remember=remember;}
   static Config defaults(){return new Config(true,80,8f,16,3,8,3,"","auto",true);}
+  /** 轮询里用来判断是否需要重新排版，避免每次都整帧重绘。 */
+  boolean same(Config o){return o!=null&&shown==o.shown&&opacity==o.opacity&&textSp==o.textSp&&topLines==o.topLines&&scrollLines==o.scrollLines&&bottomLines==o.bottomLines&&speedSec==o.speedSec&&block.equals(o.block)&&match.equals(o.match)&&remember==o.remember;}
  }
  static int clamp(int v,int min,int max){return v<min?min:v>max?max:v;}
  static int alpha(int opacity){return clamp(opacity,0,100)*255/100;}

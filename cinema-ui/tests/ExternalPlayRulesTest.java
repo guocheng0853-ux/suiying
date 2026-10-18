@@ -12,6 +12,11 @@ public class ExternalPlayRulesTest {
   JSONObject stream=ExternalPlayRules.stream("https://cdn.example/a.mp4","示例",new String[]{"User-Agent","suiying","Authorization","secret","Cookie","a=b"});
   check(stream.getString("url").endsWith("a.mp4")&&stream.getJSONObject("header").has("User-Agent")&&!stream.getJSONObject("header").has("Authorization")&&!stream.getJSONObject("header").has("Cookie"),"credential headers stay out");
   check(ExternalPlayRules.title("https://cdn.example/path/%E7%89%87.mkv","").equals("片.mkv"),"title from path");
+  check(ExternalPlayRules.playable("android.intent.action.VIEW","file:///storage/emulated/0/Download/我的 视频.mkv","video/x-matroska"),"raw unencoded chinese path with mime");
+  check(ExternalPlayRules.playable("android.intent.action.VIEW","file:///storage/emulated/0/电影 第2集.mp4",null),"raw unencoded chinese path without mime");
+  check(ExternalPlayRules.playable("android.intent.action.VIEW","content://providers/primary/我的 电影.mp4",null),"raw content uri without mime");
+  check(ExternalPlayRules.title("file:///storage/emulated/0/Download/我的 视频.mkv","").equals("我的 视频.mkv"),"title from raw path");
+  check(!ExternalPlayRules.playable("android.intent.action.VIEW","file:///storage/emulated/0/doc.txt",null),"raw path without video extension");
   check(ExternalPlayRules.importUrl("suiying://import?url=https%3A%2F%2Fexample.com%2Fa.json").equals("https://example.com/a.json"),"import url");
   check(ExternalPlayRules.importUrl("suiying://import?config=http://192.168.1.2:8080/box.json").startsWith("http://192.168.1.2"),"import config");
   check(ExternalPlayRules.importUrl("suiying://import?url=https://user:pass@example.com/a.json")==null,"import rejects credentials");

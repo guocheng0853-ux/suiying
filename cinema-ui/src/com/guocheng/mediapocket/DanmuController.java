@@ -3,14 +3,14 @@ import android.app.*;import android.content.*;import android.view.*;import andro
 /** 弹幕：匹配、加载、开关。没有密钥时只提示，不发请求。 */
 final class DanmuController {
  static final Map<Activity,DanmuController> ALL=new WeakHashMap<>();
- final Activity a;DanmuView view;List<DanDanPlayRules.Cue> cues=new ArrayList<>();int shift;String loaded="";boolean busy,started;
+ final Activity a;DanmuView view;List<DanDanPlayRules.Cue> cues=new ArrayList<>();int shift;String loaded="";boolean busy,started;DanmuRules.Config cachedCfg;
  DanmuController(Activity a){this.a=a;}
  static SharedPreferences prefs(Activity a){return a.getSharedPreferences("data",0);}
  static DanmuRules.Config config(SharedPreferences p){return new DanmuRules.Config(p.getBoolean("danmu.shown",true),p.getInt("danmu.opacity",80),p.getFloat("danmu.speed",8f),p.getInt("danmu.textSp",16),p.getInt("danmu.topLines",3),p.getInt("danmu.scrollLines",8),p.getInt("danmu.bottomLines",3),p.getString("danmu.block",""),p.getString("danmu.match","auto"),p.getBoolean("danmu.remember",true));}
  static String appId(SharedPreferences p){return p.getString("danmu.appId","");}
  static String secret(SharedPreferences p){return p.getString("danmu.appSecret","");}
  static void attach(Activity a){try{DanmuController c=ALL.get(a);if(c==null){c=new DanmuController(a);ALL.put(a,c);}c.ensure();c.autostart();}catch(Exception ignored){}}
- static void tick(Activity a){DanmuController c=ALL.get(a);if(c==null||c.view==null)return;c.rebind();c.view.position(EmbyPlayback.position(a));}
+ static void tick(Activity a){DanmuController c=ALL.get(a);if(c==null||c.view==null)return;c.view.position(EmbyPlayback.position(a));DanmuRules.Config cfg=config(prefs(a));if(!cfg.same(c.cachedCfg)){c.cachedCfg=cfg;c.rebind();}}
  static void dispose(Activity a){ALL.remove(a);}
  static String label(Activity a){String why=DanDanPlayRules.reason(appId(prefs(a)),secret(prefs(a)));if(why!=null)return "弹幕：未配置";return config(prefs(a)).shown?"弹幕：开":"弹幕：关";}
  static void menu(Activity a){String why=DanDanPlayRules.reason(appId(prefs(a)),secret(prefs(a)));if(why!=null){new AlertDialog.Builder(a).setTitle("弹幕").setMessage(why).setPositiveButton("知道了",null).show();return;}DanmuRules.Config cfg=config(prefs(a));String[] items={cfg.shown?"关闭弹幕":"显示弹幕",cfg.match.equals("manual")?"匹配：手动选集":"匹配：自动匹配","重新匹配","弹幕设置"};new AlertDialog.Builder(a).setTitle("弹幕").setItems(items,(d,i)->{if(i==0){prefs(a).edit().putBoolean("danmu.shown",!cfg.shown).apply();DanmuController c=ALL.get(a);if(c!=null){c.rebind();if(!cfg.shown)c.autostart();}}else if(i==1){String next=cfg.match.equals("manual")?"auto":"manual";prefs(a).edit().putString("danmu.match",next).apply();toast(a,"manual".equals(next)?"之后需要手动选集":"之后会自动匹配");}else if(i==2){DanmuController c=ALL.get(a);if(c!=null){c.loaded="";c.busy=false;c.started=true;c.search(false);}}else PlayerFeatureSettings.danmuStyle(a);}).show();}

@@ -20,7 +20,7 @@ public class HeaderRouteTest {
   Path dir=Files.createTempDirectory("hroute");Path v=dir.resolve("v");Files.createDirectories(v);
   // AES-128 key + keyinfo（key URI 为相对路径，用来验证 #EXT-X-KEY URI 改写）
   byte[] key=new byte[16];new Random(7).nextBytes(key);Files.write(v.resolve("k.bin"),key);
-  Files.write(dir.resolve("keyinfo"),("k.bin\n"+v.resolve("k.bin")+"\n").getBytes());
+  Files.write(dir.resolve("keyinfo"),("k.bin\n"+v.resolve("k.bin").toString().replace('\\','/')+"\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
   String r=run("ffmpeg","-y","-loglevel","error","-f","lavfi","-i","testsrc=size=320x180:rate=25","-f","lavfi","-i","sine=frequency=440","-t","6","-c:v","libx264","-g","25","-c:a","aac","-hls_time","2","-hls_list_size","0","-hls_key_info_file",dir.resolve("keyinfo").toString(),"-hls_segment_filename",v.resolve("seg%d.ts").toString(),v.resolve("index.m3u8").toString());
   check(r.startsWith("0"),"ffmpeg hls generation: "+r);
   Files.write(dir.resolve("master.m3u8"),"#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=400000,RESOLUTION=320x180\nv/index.m3u8\n".getBytes());
