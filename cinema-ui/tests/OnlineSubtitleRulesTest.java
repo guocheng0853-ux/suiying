@@ -22,6 +22,11 @@ public class OnlineSubtitleRulesTest {
   check(OnlineSubtitleRules.file("只有名字",null).endsWith(".srt"),"missing content falls back to srt");
   check(OnlineSubtitleRules.file("包.ass","[Script Info]".getBytes("UTF-8")).endsWith(".ass"),"explicit extension is kept");
   check(OnlineSubtitleRules.extOf(new byte[]{(byte)0xEF,(byte)0xBB,(byte)0xBF,'W','E','B','V','T','T'}).equals(".vtt"),"utf8 bom vtt sniffed");
+  boolean osThrew=false;try{OnlineSubtitleRules.opensubtitles(new JSONObject().put("message","You cannot consume this service"));}catch(Exception e){osThrew=e.getMessage().contains("邮箱没验证");}
+  check(osThrew,"OpenSubtitles error json surfaces a readable reason");
+  check(OnlineSubtitleRules.OPEN_DOWNLOAD.endsWith("/downloads"),"download endpoint is the plural downloads");
+  boolean assrtThrew=false;try{OnlineSubtitleRules.assrt(new JSONObject().put("status",1).put("msg","token 无效"));}catch(Exception e){assrtThrew=e.getMessage().contains("token 无效");}
+  check(assrtThrew,"assrt error msg surfaces");
   System.out.println("PASS: Assrt and OpenSubtitles parsing, empty keys, subtitle folder, extension sniffing.");
  }
 }
