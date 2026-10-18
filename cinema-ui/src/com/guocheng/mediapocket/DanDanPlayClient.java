@@ -10,7 +10,7 @@ final class DanDanPlayClient {
   long timestamp=System.currentTimeMillis()/1000L;String path=DanDanPlayRules.pathOnly(pathAndQuery);String sign=DanDanPlayRules.signature(appId,timestamp,path,secret);
   HttpURLConnection c=(HttpURLConnection)new URL(DanDanPlayRules.HOST+pathAndQuery).openConnection();
   c.setConnectTimeout(8000);c.setReadTimeout(15000);c.setRequestMethod(method);c.setInstanceFollowRedirects(false);
-  c.setRequestProperty("Accept","application/json");c.setRequestProperty("User-Agent","suiying/0.1.81");
+  c.setRequestProperty("Accept","application/json");c.setRequestProperty("User-Agent","suiying/0.1.82");
   c.setRequestProperty("X-AppId",appId.trim());c.setRequestProperty("X-Timestamp",Long.toString(timestamp));c.setRequestProperty("X-Signature",sign);c.setRequestProperty("X-Auth","1");
   try{if(body!=null){c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json; charset=utf-8");try(OutputStream o=c.getOutputStream()){o.write(body.getBytes(StandardCharsets.UTF_8));}}
    int status=c.getResponseCode();InputStream in=status>=400?c.getErrorStream():c.getInputStream();String text=read(in);if(text.isEmpty())throw new IOException(DanDanPlayRules.failure(null,status));
