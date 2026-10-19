@@ -1,4 +1,12 @@
- # 随影 0.1.91 Whisper 安全修正，交接文档去掉敏感信息
+ # 随影 0.1.92 修「更多」等菜单看得见点不动
+
+0.1.83 把系统对话框换成自绘的 CinemaMenu，挂在 Activity 的 `android.R.id.content` 上。播放页底层的 `GesturePlayerActivity.dispatchTouchEvent` 在按下时只检查触点是不是落在播放器 root 里的 Button / SeekBar 上，不是就整段当画面手势交给单击/双击识别并直接返回，事件根本不往视图树里送。菜单行是 LinearLayout、又不在 root 里，所以看得见、点哪里都没反应（0.1.89/0.1.90 修的量高和 bringToFront 都没碰到这个原因）。
+
+现在菜单放进独立的透明全屏 Dialog 窗口：触摸直接进菜单窗口，不经过播放器的 Activity 分发；也不会再被视频面重挂压住，`CinemaMenu.front` 改成空操作。弹出时先以不可聚焦方式显示并复制沉浸式标志，避免状态栏/导航栏闪出；返回键带动画收起；行点击有水波反馈；动作在菜单收起后挂到 Activity 窗口上执行；播放页销毁时同步关掉菜单窗口。
+
+版本 0.1.92 / code 93。60 个测试通过，构建和 `verify_apk.py` 通过。没有真机测试。
+
+## 随影 0.1.91 Whisper 安全修正，交接文档去掉敏感信息
 
 - **交接文档**：`HANDOFF-NEXT-AI.md` 原来写着 Whisper 服务令牌原文、服务器公网 IP 和本机用户目录路径，仓库是公开的。已删掉，并加了「公开仓库注意」。旧令牌仍在 git 历史里，必须在服务器上换新令牌。
 - **Whisper 服务端** `cloud/whisper-srt/server.py`：
