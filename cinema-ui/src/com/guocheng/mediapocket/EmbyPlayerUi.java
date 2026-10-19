@@ -40,7 +40,7 @@ final class EmbyPlayerUi {
  int duration(){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"getDuration",new Class<?>[0]);int d=r instanceof Integer?(Integer)r:-1;if(d>0)return d;}catch(Exception ignored){}JSONObject stream=TrackSelection.stream(a);return (int)Math.min(Integer.MAX_VALUE,EmbyApi.ticksToMs(stream.optLong("emby.runtimeTicks")));}
  void showSkip(String text,Long target){FrameLayout host=(FrameLayout)root();if(skip==null){skip=button(text,v->{if(target!=null)EmbyPlayback.seek(a,target.intValue());hideSkip();});host.addView(skip,corner(Gravity.END|Gravity.BOTTOM,dp(168)));}skip.setText(text);skip.setOnClickListener(v->{if(target!=null)EmbyPlayback.seek(a,target.intValue());hideSkip();});skip.setVisibility(View.VISIBLE);}
  void hideSkip(){if(skip!=null)skip.setVisibility(View.GONE);}
- String seriesNext(){Object meta=OnlineSubtitleSearch.field(a,"meta"),id=OnlineSubtitleSearch.field(a,"id"),type=OnlineSubtitleSearch.field(a,"type");if(!"series".equals(String.valueOf(type))||!(meta instanceof JSONObject))return null;return AutoNextRules.next((JSONObject)meta,id==null?"":id.toString());}
+ String seriesNext(){Object meta=OnlineSubtitleSearch.field(a,"meta"),id=OnlineSubtitleSearch.field(a,"id"),type=OnlineSubtitleSearch.field(a,"type");if(!(meta instanceof JSONObject)||!PlaybackReviewRules.series((JSONObject)meta,String.valueOf(type)))return null;return AutoNextRules.next((JSONObject)meta,id==null?"":id.toString());}
  void next(JSONObject stream,boolean chrome,int pos,int dur){
   String nextId=seriesNext();boolean enabled=PlaybackPrefs.autoNext(a.getSharedPreferences("data",0));
   boolean due=EmbyCue.nextDue(enabled,nextId!=null,cancelledNext,pos,dur,span.creditsStart);

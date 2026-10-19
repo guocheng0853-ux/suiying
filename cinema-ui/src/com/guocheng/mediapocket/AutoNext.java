@@ -13,7 +13,7 @@ final class AutoNext {
  void poll(boolean pip){if(a.isFinishing())return;if(EmbyPlayerUi.ownsNext(a)){hide();return;}Object idv=OnlineSubtitleSearch.field(a,"id"),type=OnlineSubtitleSearch.field(a,"type"),meta=OnlineSubtitleSearch.field(a,"meta");String id=idv==null?"":idv.toString();
   if(!id.equals(forId)){forId=id;cancelled=false;hide();nextId=meta instanceof JSONObject&&!id.startsWith("tvbox:")?AutoNextRules.next((JSONObject)meta,id):null;}
   SharedPreferences p=a.getSharedPreferences("data",0);Object video=OnlineSubtitleSearch.field(a,"video");boolean ended=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal"));
-  boolean want=!pip&&AutoNextRules.offer(PlaybackPrefs.autoNext(p),"series".equals(type),nextId!=null,cancelled,ended,intCall(video,"getCurrentPosition"),intCall(video,"getDuration"),PlaybackPrefs.autoNextLead(p));
+  boolean want=!pip&&AutoNextRules.offer(PlaybackPrefs.autoNext(p),PlaybackReviewRules.series(meta instanceof JSONObject?(JSONObject)meta:null,type==null?"":type.toString()),nextId!=null,cancelled,ended,intCall(video,"getCurrentPosition"),intCall(video,"getDuration"),PlaybackPrefs.autoNextLead(p));
   if(!want){if(card!=null&&!ended)hide();return;}
   if(card==null){show((JSONObject)meta);shownAt=SystemClock.elapsedRealtime();}
   int left=AutoNextRules.secondsLeft(SystemClock.elapsedRealtime()-shownAt);text.setText("下一集 · "+AutoNextRules.label((JSONObject)meta,nextId)+"\n"+left+" 秒后自动播放");place();if(left==0)go((JSONObject)meta,type.toString());}
