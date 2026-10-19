@@ -6,6 +6,7 @@ public class HomeCardRulesTest {
   check(HomeRules.cardTitle(new JSONObject().put("name","蜘蛛侠：崭新之日 · Spider-Man.2026.1080p.mkv").put("fusion.site","s")).equals("蜘蛛侠：崭新之日"),"tvbox name loses file suffix");
   check(HomeRules.cardTitle(new JSONObject().put("name","x · y").put("fusion.title","真名")).equals("真名"),"fusion.title wins");
   check(HomeRules.cardTitle(new JSONObject().put("name","Stremio · Title")).equals("Stremio · Title"),"non-tvbox untouched");
+  check(HomeRules.cardTitle(new JSONObject().put("name","牧神记 · S1E105 · 第 105 集")).equals("牧神记"),"episode suffix removed from title");
   check(HomeRules.resumeLine("续播",30*60000,120*60000).equals("剩 1 小时 30 分"),"movie left hours");
   check(HomeRules.resumeLine("续播",100*60000,124*60000).equals("剩 24 分钟"),"movie left minutes");
   check(HomeRules.resumeLine("续播",0,0).equals("继续播放"),"unknown duration");

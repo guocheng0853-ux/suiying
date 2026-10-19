@@ -21,6 +21,8 @@ final class SettingsLayout {
     if(!(v instanceof TextView)){add(groups,7,999,v,null);continue;}
     String label=((TextView)v).getText().toString();
     if(!(v instanceof Button)&&label.startsWith("随影新版")){title=v;continue;}
+    // 原版设置页开头的「设置」标题和空白提示行：页面已有「随影新版 x.y.z」标题，丢掉（真机上它们落进了「其他」组）
+    if(!(v instanceof Button)&&(label.trim().isEmpty()||label.trim().equals("设置")))continue;
     int[] at=SettingsRules.place(label);if(at[0]<0)continue;
     add(groups,at[0],at[1],v,label);
    }

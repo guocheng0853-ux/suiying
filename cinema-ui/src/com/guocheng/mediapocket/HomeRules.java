@@ -39,7 +39,9 @@ final class HomeRules {
  static String cardTitle(JSONObject m){
   if(m==null)return "影片";String t=m.optString("fusion.title");if(!t.trim().isEmpty())return t.trim();
   String name=m.optString("name","影片");if(m.has("fusion.site")){int dot=name.indexOf(" · ");if(dot>0)return name.substring(0,dot).trim();}
-  return name;
+  // 剧集记录的名字常带「 · S1E105 · 第 105 集」，副标题已经写了集数，标题里去掉
+  String trimmed=name.replaceAll("\\s*·\\s*S\\d+\\s*E\\d+.*$","").trim();
+  return trimmed.isEmpty()?name:trimmed;
  }
  /** 继续观看副标题：集数 + 剩余时长；不知道时长时把「续播」换成「继续播放」。 */
  static String resumeLine(String base,int posMs,int durMs){
