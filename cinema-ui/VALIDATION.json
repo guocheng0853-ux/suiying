@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.97",
+  "ui_version": "0.1.99",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -19,7 +19,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6371,
   "dex_files": 3,
-  "main_version_code": 98,
+  "main_version_code": 100,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",
@@ -30,7 +30,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
+  "real_source_note": "Candidate 0.1.99 has not been installed. Actual series video rendered on PJZ110 with 0.1.98; remaining device checks paused while user uses the phone. See DEVICE-VALIDATION.md.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -38,5 +38,39 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false
+  "torrent_boost_android_tested": false,
+  "apk_sha256": "45879e89c5750144252830e59614e18143253669a2e57e483db79f5dff59d735",
+  "signing_certificate_sha256": "87a44d822580215fff01d604b1fedb31e52d69b42eb85ffbcd8b65aea21783d1",
+  "jvm_tests": {
+    "total": 65,
+    "initial_passed": 63,
+    "initial_failed": [
+      "CoverTimeoutTest",
+      "DlnaClientTest"
+    ],
+    "isolated_reruns": [
+      {
+        "test": "CoverTimeoutTest",
+        "passed": true
+      },
+      {
+        "test": "DlnaClientTest",
+        "passed": true
+      }
+    ],
+    "all_tests_have_passing_results": true,
+    "full_initial_run_passed": false
+  },
+  "device_validation": {
+    "tested_version": "0.1.98",
+    "tested_version_code": 99,
+    "device": "PJZ110",
+    "candidate_version": "0.1.99",
+    "candidate_installed": false,
+    "checklist_complete": false,
+    "report": "DEVICE-VALIDATION.md",
+    "three_initial_fixes_verified": true,
+    "real_series_video_rendered": true,
+    "new_fixes_device_retested": false
+  }
 }
