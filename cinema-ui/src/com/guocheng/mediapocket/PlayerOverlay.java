@@ -17,12 +17,12 @@ final class PlayerOverlay {
  static View root(Activity a){Object v=OnlineSubtitleSearch.field(a,"root");return v instanceof View?(View)v:null;}
  static LinearLayout bar(Activity a,String field){Object v=OnlineSubtitleSearch.field(a,field);return v instanceof LinearLayout?(LinearLayout)v:null;}
  static void layout(Activity a){try{top(a);bottom(a);shot(a);hideCenter(a);PlayerRedesign.hideSeekButtons(a);retire(a);}catch(Exception ignored){}}
- static void refresh(Activity a){try{retire(a);titles(a);paintFixedSpeed(a);clock(a);decoder(a);transport(a);status(a);statusLine(a);pad(a);cues(a);hideCenter(a);hideChromeNoise(a);}catch(Exception ignored){}}
+ static void refresh(Activity a){try{retire(a);titles(a);paintFixedSpeed(a);clock(a);decoder(a);transport(a);status(a);statusLine(a);pad(a);cues(a);hideCenter(a);hideChromeNoise(a);gestureGuide(a);}catch(Exception ignored){}}
 
  static Drawable ripple(Activity a){try{TypedValue v=new TypedValue();if(a.getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless,v,true)&&v.resourceId!=0)return a.getDrawable(v.resourceId);}catch(Exception ignored){}return new ColorDrawable(0);}
  /** 图标放在 40dp 正中。四边留白相同，避免只垫左边导致左右对不齐。 */
  static void paint(Activity a,Button b,int kind){int s=dp(a,PlayerLayoutMetrics.ICON_DP);PlayerIcons icon=new PlayerIcons(kind,s);icon.setBounds(0,0,s,s);int pad=Math.max(0,(dp(a,PlayerLayoutMetrics.TOUCH_DP)-s)/2);b.setCompoundDrawables(null,icon,null,null);b.setCompoundDrawablePadding(0);b.setPadding(pad,pad,pad,pad);b.setGravity(Gravity.CENTER);}
- static Button icon(Activity a,int kind,String description,View.OnClickListener l){Button b=new Button(a);b.setText("");b.setAllCaps(false);b.setContentDescription(description);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(0,0,0,0);b.setGravity(Gravity.CENTER);b.setBackground(ripple(a));b.setOnClickListener(l);paint(a,b,kind);return b;}
+ static Button icon(Activity a,int kind,String description,View.OnClickListener l){Button b=new Button(a);b.setText("");b.setAllCaps(false);b.setContentDescription(description);if(description!=null&&!description.isEmpty())b.setTooltipText(description);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(0,0,0,0);b.setGravity(Gravity.CENTER);b.setBackground(ripple(a));b.setOnClickListener(l);paint(a,b,kind);return b;}
  static GradientDrawable fade(boolean top){return new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,top?new int[]{PlayerTheme.FADE_TOP,0x00000000}:new int[]{0x00000000,PlayerTheme.FADE_BOTTOM});}
 
  static void top(Activity a){LinearLayout top=bar(a,"top");if(top==null)return;top.setBackground(fade(true));top.setGravity(Gravity.CENTER_VERTICAL);
@@ -42,7 +42,7 @@ final class PlayerOverlay {
  /** 必须是 Button：底座只把 Button / SeekBar 的点击交出来，TextView 会被手势层吃掉。宽高都大于 0，并且可点、可聚焦。 */
  static Button decoderChip(Activity a,LinearLayout top){View found=findTag(top,"mp-decoder");Button chip=found instanceof Button?(Button)found:null;if(chip==null){if(found!=null&&found.getParent() instanceof ViewGroup)((ViewGroup)found.getParent()).removeView(found);chip=new Button(a);chip.setTag("mp-decoder");chip.setText("HW+");chip.setTextColor(0xffffffff);}chip.setAllCaps(false);chip.setTextSize(PlayerLayoutMetrics.DECODER_SP);chip.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);chip.setGravity(Gravity.CENTER);chip.setIncludeFontPadding(false);chip.setPadding(dp(a,PlayerLayoutMetrics.DECODER_PAD_DP),0,dp(a,PlayerLayoutMetrics.DECODER_PAD_DP),0);chip.setMinWidth(dp(a,48));chip.setMinimumWidth(dp(a,48));chip.setMinHeight(dp(a,PlayerLayoutMetrics.TOP_H_DP));chip.setMinimumHeight(dp(a,PlayerLayoutMetrics.TOP_H_DP));chip.setClickable(true);chip.setFocusable(true);chip.setFocusableInTouchMode(true);chip.setStateListAnimator(null);chip.setBackground(ripple(a));chip.setContentDescription("视频解码");chip.setOnClickListener(v->toggleDecoder(a));chip.setOnLongClickListener(v->{decodePicker(a);return true;});return chip;}
  static void hideChromeNoise(Activity a){LinearLayout top=bar(a,"top");if(top==null)return;for(int i=0;i<top.getChildCount();i++){View v=top.getChildAt(i);String blob=desc(v)+text(v);if(blob.contains("旋转")||desc(v).equals("视频")||text(v).equals("视频"))v.setVisibility(View.GONE);}}
- static void fit(Activity a,Button b,int kind,String description){b.setText("");b.setAllCaps(false);b.setContentDescription(description);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setBackground(ripple(a));paint(a,b,kind);slot(a,b,PlayerLayoutMetrics.TOUCH_DP);}
+ static void fit(Activity a,Button b,int kind,String description){b.setText("");b.setAllCaps(false);b.setContentDescription(description);if(description!=null&&!description.isEmpty())b.setTooltipText(description);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setBackground(ripple(a));paint(a,b,kind);slot(a,b,PlayerLayoutMetrics.TOUCH_DP);}
  static void slot(Activity a,View v,int widthDp){if(v==null)return;int h=dp(a,PlayerLayoutMetrics.TOP_H_DP);LinearLayout.LayoutParams l=v.getLayoutParams() instanceof LinearLayout.LayoutParams?(LinearLayout.LayoutParams)v.getLayoutParams():new LinearLayout.LayoutParams(-2,h);l.height=h;l.width=widthDp<=0?LinearLayout.LayoutParams.WRAP_CONTENT:dp(a,widthDp);l.gravity=Gravity.CENTER_VERTICAL;l.leftMargin=dp(a,PlayerLayoutMetrics.TOP_GAP_DP);l.rightMargin=0;l.topMargin=0;l.bottomMargin=0;v.setLayoutParams(l);}
  static void bottom(Activity a){LinearLayout bottom=bar(a,"bottom");if(bottom==null)return;bottom.setOrientation(LinearLayout.VERTICAL);bottom.setBackground(fade(false));
   TextView line=findTag(bottom,"mp-episode");if(line==null){line=label(a,PlayerLayoutMetrics.EPISODE_SP);line.setTag("mp-episode");line.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);bottom.addView(line,Math.min(1,bottom.getChildCount()));}
@@ -79,7 +79,7 @@ final class PlayerOverlay {
  }
  static void clock(Activity a){TextView clock=findTag(bar(a,"bottom"),"mp-time");if(clock==null)return;int pos=0,dur=0;Object dragging=OnlineSubtitleSearch.field(a,"dragging");Object seek=OnlineSubtitleSearch.field(a,"seek");if(Boolean.TRUE.equals(dragging)&&seek instanceof SeekBar&&((SeekBar)seek).getMax()>0){pos=((SeekBar)seek).getProgress();dur=((SeekBar)seek).getMax();}else{Object video=OnlineSubtitleSearch.field(a,"video");pos=callInt(video,"getCurrentPosition");dur=callInt(video,"getDuration");if(pos<0)pos=0;if(dur<0)dur=0;}String text=PlayerOverlayRules.clock(pos,dur);if(!text.equals(clock.getText()))clock.setText(text);}
  static int callInt(Object target,String method){try{Object r=target==null?null:OnlineSubtitleSearch.call(target,method,new Class<?>[0]);return r instanceof Integer?(Integer)r:-1;}catch(Exception e){return -1;}}
- static void decoder(Activity a){TextView chip=findTag(bar(a,"top"),"mp-decoder");if(chip==null)return;String tier=a.getSharedPreferences("data",0).getString("decodeTier","");String mode=tier.isEmpty()?a.getSharedPreferences("data",0).getString("decodeMode","auto"):tier;boolean known=false,software=false;Object video=OnlineSubtitleSearch.field(a,"video");if(video!=null){Object sw=OnlineSubtitleSearch.field(video,"software");if(sw instanceof Boolean){known=true;software=(Boolean)sw;}}String label=PlayerOverlayRules.decoderLabel(mode,known,software);if(!label.equals(chip.getText()))chip.setText(label);chip.setContentDescription("视频解码 "+label);}
+ static void decoder(Activity a){TextView chip=findTag(bar(a,"top"),"mp-decoder");if(chip==null)return;String tier=a.getSharedPreferences("data",0).getString("decodeTier","");String mode=tier.isEmpty()?a.getSharedPreferences("data",0).getString("decodeMode","auto"):tier;boolean known=false,software=false;Object video=OnlineSubtitleSearch.field(a,"video");if(video!=null){Object sw=OnlineSubtitleSearch.field(video,"software");if(sw instanceof Boolean){known=true;software=(Boolean)sw;}}String label=PlayerOverlayRules.decoderDisplay(PlayerOverlayRules.decoderLabel(mode,known,software));if(!label.equals(chip.getText()))chip.setText(label);chip.setContentDescription("视频解码 "+label);chip.setTooltipText("视频解码："+label+"（点按切换）");}
  static void toggleDecoder(Activity a){applyDecode(a,PlayerOverlayRules.toggleDecode(currentTier(a),decodeKnown(a),decodeSoftware(a)));}
  static String currentTier(Activity a){String tier=a.getSharedPreferences("data",0).getString("decodeTier","");return tier.isEmpty()?a.getSharedPreferences("data",0).getString("decodeMode","auto"):tier;}
  static boolean decodeKnown(Activity a){Object video=OnlineSubtitleSearch.field(a,"video");return video!=null&&OnlineSubtitleSearch.field(video,"software") instanceof Boolean;}
@@ -89,6 +89,13 @@ final class PlayerOverlay {
  static void decodePicker(Activity a){String[] values=PlayerOverlayRules.decodeChoices();String[] labels=new String[values.length];String cur=currentTier(a);int at=0;for(int i=0;i<values.length;i++){labels[i]=PlayerOverlayRules.decodeChoiceLabel(values[i]);if(values[i].equals(cur))at=i;}java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<values.length;i++){final String v=values[i];rows.add(CinemaMenu.choice(labels[i],values[i].equals(cur),()->applyDecode(a,v)));}CinemaMenu.show(a,"视频解码",rows);}
  static void quickAspect(Activity a){try{FullscreenMode.quick(a);}catch(Exception e){toast(a,"比例设置失败");}}
  static void aspectPicker(Activity a){String cur=a.getSharedPreferences("data",0).getString("aspectMode","fit");int at=FullscreenRules.index(cur);java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<FullscreenRules.LABELS.length;i++){final int n=i;rows.add(CinemaMenu.choice(FullscreenRules.LABELS[i],i==at,()->{try{FullscreenMode.apply(a,FullscreenRules.MODES[n],true);PlayerChrome.refresh(a);}catch(Exception e){toast(a,"比例设置失败");}}));}CinemaMenu.show(a,"画面比例",rows);}
+ /** 0.1.97：第一次真正开始播放后弹一次手势说明（画中画、锁屏、菜单或面板打开时不弹），之后不再出现。 */
+ static void gestureGuide(Activity a){
+  android.content.SharedPreferences p=a.getSharedPreferences("data",0);if(p.getBoolean("hint.gestures.v1",false))return;
+  if(!Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"rendered"))||CinemaMenu.isOpen(a)||PlayerSidePanel.open(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode()))return;
+  p.edit().putBoolean("hint.gestures.v1",true).apply();
+  new CinemaDialog(a).setTitle("播放手势").setMessage(PlayerOverlayRules.gestureGuide(PlaybackPrefs.seekSeconds(p),PlaybackPrefs.holdRate(p),PlaybackPrefs.doubleTapCenter(p))).setPositiveButton("知道了",null).show();
+ }
  static void paintFixedSpeed(Activity a){Button rate=findTag(bar(a,"bottom"),"mp-fixed-rate");if(rate==null)return;String label=PlayerOverlayRules.speedPill(PlaybackPrefs.speed(a.getSharedPreferences("data",0))).replace("x","×");if(!label.equals(text(rate)))rate.setText(label);rate.setContentDescription("播放速度 "+label);}
  static void transport(Activity a){LinearLayout bottom=bar(a,"bottom");if(bottom==null)return;JSONObject meta=meta(a);String id=id(a);boolean series=PlaybackReviewRules.series(meta,type(a));int videos=EpisodeActions.list(meta).size();boolean tvbox=meta.has("fusion.config");
   show(findTag(bottom,"mp-prev"),series&&PlayerOverlayRules.showNeighbor(PlayerOverlayRules.neighbor(meta,id,-1)));
@@ -107,11 +114,12 @@ final class PlayerOverlay {
  /** 0.1.93：只放播放器级设置。字幕获取、片源/版本/线路、章节、码率、定时、流信息都在右侧面板，不在这里重复。 */
  static void more(Activity a){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();
   labels.add(DanmuController.label(a));actions.add(()->DanmuController.menu(a));
+  // 0.1.97：解码只在顶栏芯片、音轨只在面板，不再打开原版「播放器」菜单；外部播放器单独一项
+  labels.add("线路与片源");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
+  labels.add("定时关闭");actions.add(()->PlayerSidePanel.sleepMenu(a));
+  labels.add("流信息");actions.add(()->PlayerSidePanel.infoDialog(a));
   labels.add("播放设置");actions.add(()->PlayerFeatureSettings.playback(a));
-  labels.add("线路 · 章节 · 定时 · 流信息");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
-  View scroll=scroll(bar(a,"bottom"));
-  // 原版「播放器」菜单（顶栏「视频」是同一个）：解码 / 音轨 / 外部播放器
-  Button player=findExact(scroll,"播放器");if(player==null)player=findExact(bar(a,"top"),"视频");click(player,"解码与外部播放器",labels,actions);
+  labels.add("用外部播放器打开");actions.add(()->{try{OnlineSubtitleSearch.call(a,"external",new Class<?>[0]);}catch(Exception e){toast(a,"没有可用的外部播放器");}});
   click(findExact(bar(a,"top"),"旋转"),"旋转",labels,actions);
   labels.add("片头标记");actions.add(()->introMenu(a));
   labels.add("调试信息");actions.add(()->DebugLog.show(a));

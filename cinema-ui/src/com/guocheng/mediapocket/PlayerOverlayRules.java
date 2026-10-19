@@ -28,6 +28,12 @@ final class PlayerOverlayRules {
  }
  /** 长按解码面板的三个选项，和单击循环同一套值。 */
  static String[] decodeChoices(){return new String[]{"hardware","hw","software"};}
+ /** 顶栏芯片上显示的中文（内部仍用 HW+ / HW / SW / AUTO）。 */
+ static String decoderDisplay(String label){if("HW+".equals(label))return "硬解+";if("HW".equals(label))return "硬解";if("SW".equals(label))return "软解";if("AUTO".equals(label))return "自动";return label==null?"":label;}
+ /** 首次进入播放页的手势说明。seek = 双击跳转秒数，hold = 长按倍速。 */
+ static String gestureGuide(int seek,float hold,boolean doubleTapCenterPauses){
+  return "双击左侧 / 右侧：后退 / 前进 "+seek+" 秒\n左右滑动：拖动进度\n左半边上下滑：亮度　右半边上下滑：音量\n长按画面：临时 "+String.format(java.util.Locale.ROOT,"%.1f",hold)+"× 加速，松手恢复\n双指捏合：缩放画面\n双击中间："+(doubleTapCenterPauses?"播放 / 暂停":"恢复画面大小")+"\n长按任意图标：显示它的名称";
+ }
  static String decodeChoiceLabel(String mode){return decoderLabel(mode,false,false);}
  static boolean canToggleDecode(boolean hasVideo,boolean hasUrl){return hasVideo&&hasUrl;}
  /**

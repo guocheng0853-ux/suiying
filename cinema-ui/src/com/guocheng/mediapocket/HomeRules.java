@@ -35,6 +35,29 @@ final class HomeRules {
   return StreamInfo.minutes(y.isEmpty()?meta.optString("runtime",""):y);
  }
  /** lastEpisode 形如 tt123:1:161 → S1E161 · 第161集；否则「最近观看」。 */
+ /** 继续观看卡片标题：影视仓记录的名字是「片名 · 线路/文件名」，只显示片名。 */
+ static String cardTitle(JSONObject m){
+  if(m==null)return "影片";String t=m.optString("fusion.title");if(!t.trim().isEmpty())return t.trim();
+  String name=m.optString("name","影片");if(m.has("fusion.site")){int dot=name.indexOf(" · ");if(dot>0)return name.substring(0,dot).trim();}
+  return name;
+ }
+ /** 继续观看副标题：集数 + 剩余时长；不知道时长时把「续播」换成「继续播放」。 */
+ static String resumeLine(String base,int posMs,int durMs){
+  String b=base==null?"":base.trim();boolean generic=b.isEmpty()||b.equals("续播")||b.equals("最近观看");
+  String left="";if(durMs>0&&posMs>0&&durMs>posMs){long min=(durMs-posMs+59999L)/60000L;left=min>=60?"剩 "+(min/60)+" 小时"+(min%60>0?" "+(min%60)+" 分":""):"剩 "+min+" 分钟";}
+  if(generic)return left.isEmpty()?"继续播放":left;
+  return left.isEmpty()?b:b+" · "+left;
+ }
+ /** 首页来源下拉每项下面的一行说明。 */
+ static String sourceHint(String id,String type){
+  String i=id==null?"":id,t=type==null?"":type;
+  if(i.equals("provider:fusion"))return "合并你配置的所有来源";
+  if(i.equals("provider:tvbox"))return "当前影视仓接口的站点";
+  if(i.equals("provider:stremio"))return "已安装的 Stremio 插件目录";
+  if(i.startsWith("provider:emby:")||t.equals("emby"))return "Emby 服务器的媒体库";
+  if(i.startsWith("action:"))return "添加或管理 Emby 服务器";
+  return "影视仓接口";
+ }
  static String episodeLabel(String lastEpisode){
   if(lastEpisode==null||lastEpisode.isEmpty())return "最近观看";
   String[] p=lastEpisode.split(":");

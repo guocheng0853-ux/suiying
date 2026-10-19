@@ -14,7 +14,9 @@ final class HomeChrome {
   String id=HomeRules.selectedId(provider,sourceId);
   TextView t=a.text(HomeRules.labelFor(options,id)+"  ▾",16,0xffffffff);t.setTypeface(null,1);
   t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
-  t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(0,dp(6),dp(8),dp(6));t.setContentDescription("切换片源");
+  t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(dp(10),dp(6),dp(12),dp(6));t.setContentDescription("首页内容来源");
+  // 0.1.97：压在海报上时看不清，加半透明深色胶囊底
+  t.setBackground(round(0x66000000,18));
   final JSONArray opts=options;t.setOnClickListener(v->pickSource(opts,id,t));return t;
  }
  void pickSource(JSONArray options,String current,View anchor){
@@ -29,9 +31,10 @@ final class HomeChrome {
   // 返回键、点外面、选完片源都经由 dismiss() → 先播放收起动画再真正关闭
   popup.closing=close;
   dim.setOnClickListener(v->close.run());
-  for(int i=0;i<options.length();i++){JSONObject item=options.optJSONObject(i);if(item==null)continue;final JSONObject choice=item;TextView row=a.text((current.equals(item.optString("id"))?"◉  ":"○  ")+item.optString("label"),14,a.ink());row.setPadding(dp(10),dp(12),dp(10),dp(12));row.setOnClickListener(v->{String optionId=choice.optString("id");if(HomeRules.keepsHomeProvider(optionId)){after[0]=()->EmbyLibraryActivity.manage(a);close.run();return;}String[] applied=HomeRules.apply(optionId);if(applied==null){close.run();return;}a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();a.fusionSession=null;after[0]=()->a.home();close.run();});list.addView(row);}
+  {TextView head=a.text("首页内容来源",12,a.muted());head.setPadding(dp(10),dp(6),dp(10),dp(4));list.addView(head);}
+  for(int i=0;i<options.length();i++){JSONObject item=options.optJSONObject(i);if(item==null)continue;final JSONObject choice=item;String hint=HomeRules.sourceHint(item.optString("id"),item.optString("type"));TextView row=a.text("",14,a.ink());{String first=(current.equals(item.optString("id"))?"◉  ":"○  ")+item.optString("label");android.text.SpannableStringBuilder sb=new android.text.SpannableStringBuilder(first+"\n      "+hint);sb.setSpan(new android.text.style.RelativeSizeSpan(0.8f),first.length(),sb.length(),0);sb.setSpan(new android.text.style.ForegroundColorSpan(a.muted()),first.length(),sb.length(),0);row.setText(sb);}row.setLineSpacing(dp(2),1f);row.setPadding(dp(10),dp(10),dp(10),dp(10));row.setOnClickListener(v->{String optionId=choice.optString("id");if(HomeRules.keepsHomeProvider(optionId)){after[0]=()->EmbyLibraryActivity.manage(a);close.run();return;}String[] applied=HomeRules.apply(optionId);if(applied==null){close.run();return;}a.prefs.edit().putString("fusion.homeProvider",applied[0]).putString("home.source.v1",applied[1]).apply();a.fusionSession=null;after[0]=()->a.home();close.run();});list.addView(row);}
   int[] at=new int[2];anchor.getLocationOnScreen(at);
-  FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(dp(230),Math.min(dp(340),dp(16+options.length()*48)),Gravity.TOP|Gravity.LEFT);lp.leftMargin=at[0];lp.topMargin=at[1]+anchor.getHeight()+dp(4);overlay.addView(scroll,lp);
+  FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(dp(250),Math.min(dp(380),dp(44+options.length()*62)),Gravity.TOP|Gravity.LEFT);lp.leftMargin=at[0];lp.topMargin=at[1]+anchor.getHeight()+dp(4);overlay.addView(scroll,lp);
   scroll.setPivotX(dp(24));scroll.setPivotY(0);scroll.setAlpha(0);scroll.setScaleX(HomeMotionRules.menuScale(0));scroll.setScaleY(HomeMotionRules.menuScale(0));
   popup.showAtLocation(anchor,Gravity.TOP|Gravity.LEFT,0,0);
   dim.animate().alpha(HomeMotionRules.dimAlpha(1)/255f).setDuration(HomeMotionRules.MENU_MS).start();
@@ -51,7 +54,7 @@ final class HomeChrome {
   if(!HomeRules.sectionShown(a.prefs.getString("home.hiddenSections",""),"resume"))return;
   history=HomeRules.withoutHidden(history,a.prefs.getString("home.hiddenResume","[]"));
   if(history.length()==0)return;
-  TextView head=a.heading(heading);head.setOnLongClickListener(v->{String next=HomeRules.toggleSection(a.prefs.getString("home.hiddenSections",""),"resume");a.prefs.edit().putString("home.hiddenSections",next).apply();android.widget.Toast.makeText(a,"已隐藏「继续观看」，可在设置里恢复",0).show();a.home();return true;});parent.addView(head);
+  TextView head=a.heading(heading);head.setOnLongClickListener(v->{java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();rows.add(CinemaMenu.item("隐藏「"+heading+"」",()->{String next=HomeRules.toggleSection(a.prefs.getString("home.hiddenSections",""),"resume");a.prefs.edit().putString("home.hiddenSections",next).apply();android.widget.Toast.makeText(a,"已隐藏，可在「我的 › 首页与外观」恢复",0).show();a.home();}));CinemaMenu.show(a,heading,rows);return true;});parent.addView(head);
   HorizontalScrollView scroller=new HorizontalScrollView(a);scroller.setHorizontalScrollBarEnabled(false);scroller.setClipToPadding(false);
   LinearLayout row=new LinearLayout(a);row.setGravity(Gravity.TOP);
   int available=a.getResources().getDisplayMetrics().widthPixels-dp(32),width=Math.min((available-dp(10))/2,dp(220));
@@ -81,8 +84,8 @@ final class HomeChrome {
    FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(4),Gravity.BOTTOM);frame.addView(barHost,bp);
   }
   c.addView(frame,new LinearLayout.LayoutParams(width,(int)(width/1.72f)));
-  TextView title=a.text(meta.optString("name","影片"),12,a.ink());title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
-  String line=meta.optString("emby.line");TextView sub=a.text(line.isEmpty()?HomeRules.episodeLabel(epId):line,10,a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
+  TextView title=a.text(HomeRules.cardTitle(meta),12,a.ink());title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
+  String line=meta.optString("emby.line");TextView sub=a.text(HomeRules.resumeLine(line.isEmpty()?HomeRules.episodeLabel(epId):line,pos,dur),10,a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
   c.setOnClickListener(v->{if(meta.optBoolean("emby.directPlay"))EmbyPlayback.play(a,meta);else a.openItem(meta);});
   c.setOnLongClickListener(v->{String id=meta.optString("id");if(id.isEmpty())id=meta.optString("Id");String store=HomeRules.hideResume(a.prefs.getString("home.hiddenResume","[]"),id);a.prefs.edit().putString("home.hiddenResume",store).apply();if(EmbyApi.isEmbyId(id)){final String watch=id;EmbyPlayback.IO.execute(()->{try{JSONObject server=EmbyStore.get(a,EmbyApi.serverOf(watch));if(server!=null)EmbyClient.hideFromResume(a,server,EmbyApi.itemOf(watch));}catch(Exception ignored){}});}android.widget.Toast.makeText(a,"已从继续观看移除",0).show();a.home();return true;});
   return c;
@@ -90,7 +93,7 @@ final class HomeChrome {
  /** 媒体库分类瓦片（电影/剧集/动画…），可附带缓存海报拼贴。 */
  void librarySection(){
   if(!HomeRules.sectionShown(a.prefs.getString("home.hiddenSections",""),"libraries"))return;
-  TextView head=a.heading("媒体库");head.setOnLongClickListener(v->{a.prefs.edit().putString("home.hiddenSections",HomeRules.toggleSection(a.prefs.getString("home.hiddenSections",""),"libraries")).apply();android.widget.Toast.makeText(a,"已隐藏「媒体库」，可在设置里恢复",0).show();a.home();return true;});a.body.addView(head);
+  TextView head=a.heading("媒体库");head.setOnLongClickListener(v->{java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();rows.add(CinemaMenu.item("隐藏「媒体库」",()->{a.prefs.edit().putString("home.hiddenSections",HomeRules.toggleSection(a.prefs.getString("home.hiddenSections",""),"libraries")).apply();android.widget.Toast.makeText(a,"已隐藏，可在「我的 › 首页与外观」恢复",0).show();a.home();}));CinemaMenu.show(a,"媒体库",rows);return true;});a.body.addView(head);
   HorizontalScrollView scroller=new HorizontalScrollView(a);scroller.setHorizontalScrollBarEnabled(false);
   LinearLayout row=new LinearLayout(a);
   String[][] tiles=HomeRules.libraryTiles();
