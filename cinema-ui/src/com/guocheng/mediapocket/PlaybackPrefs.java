@@ -23,7 +23,7 @@ public final class PlaybackPrefs {
  /** 右侧竖条：最上最快、最下最慢。y 从条顶算起，落在哪一格就是哪一档。无效坐标返回 -1。 */
  static int indexFromTrack(float y,float height){int n=SPEEDS.length;if(n==0||!(height>0f)||Float.isNaN(y)||Float.isInfinite(y))return -1;if(y<0f)return n-1;if(y>=height)return 0;int fromTop=(int)(y/height*n);if(fromTop<0)fromTop=0;if(fromTop>=n)fromTop=n-1;return n-1-fromTop;}
  static float speedFromTrack(float y,float height){int i=indexFromTrack(y,height);return i<0?Float.NaN:SPEEDS[i];}
- static String speedLabel(float v){float n=normalizeSpeed(v);return (n==(int)n?String.valueOf((int)n):String.valueOf(n))+"×";}
+ static String speedLabel(float v){float n=clampRate(v);return (n==(int)n?String.valueOf((int)n):String.valueOf(n))+"×";}
  /** 记住的倍速按 0.1–8.0 原样保存，不再吸回旧的六档。非法值回到 1。 */
  static float clampRate(float v){if(Float.isNaN(v)||Float.isInfinite(v))return 1f;if(v<0.1f)v=0.1f;if(v>8f)v=8f;return Math.round(v*100f)/100f;}
  static float speed(SharedPreferences p){return clampRate(p.getFloat("playbackSpeed",1f));}

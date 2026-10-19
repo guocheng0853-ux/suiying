@@ -6,6 +6,7 @@ public class PlaybackSpeedTest {
   check(PlaybackPrefs.nextSpeed(1f)==1.25f&&PlaybackPrefs.nextSpeed(2f)==0.5f&&PlaybackPrefs.nextSpeed(0.5f)==0.75f,"cycle");
   check(PlaybackPrefs.normalizeSpeed(Float.NaN)==1f&&PlaybackPrefs.normalizeSpeed(-1)==1f&&PlaybackPrefs.normalizeSpeed(3f)==2f&&PlaybackPrefs.normalizeSpeed(1.3f)==1.25f,"normalize");
   check(PlaybackPrefs.speedLabel(1f).equals("1×")&&PlaybackPrefs.speedLabel(1.25f).equals("1.25×")&&PlaybackPrefs.speedLabel(2f).equals("2×"),"labels");
+  check(PlaybackPrefs.speedLabel(2.5f).equals("2.5×")&&PlaybackPrefs.speedLabel(3f).equals("3×")&&PlaybackPrefs.speedLabel(1.1f).equals("1.1×"),"saved rates keep their actual labels above and between legacy steps");
   float h=120f;
   check(PlaybackPrefs.speedFromTrack(0f,h)==2f&&PlaybackPrefs.indexFromTrack(0f,h)==5,"top of the bar is 2×");
   check(PlaybackPrefs.speedFromTrack(h-0.1f,h)==0.5f&&PlaybackPrefs.speedFromTrack(h,h)==0.5f,"bottom of the bar is 0.5×");
