@@ -101,12 +101,26 @@ final class PlayerOverlay {
  static void jump(Activity a,int direction){JSONObject meta=meta(a);String next=PlayerOverlayRules.neighbor(meta,id(a),direction);if(next==null)return;AutoNext.handoff(a,meta,next,type(a));}
  static void dispatch(Activity a,String action){PlayerChrome.bump(a);if(PlayerOverlayRules.AUDIO.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.AUDIO);else if(PlayerOverlayRules.SUBTITLE.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.SUB);else if(PlayerOverlayRules.EPISODES.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.EPISODES);}
  static void episodes(Activity a){JSONObject meta=meta(a);if(meta.has("fusion.config")&&EpisodeActions.list(meta).isEmpty()){PlaybackSitePicker.selectEpisode(a);return;}ArrayList<JSONObject> list=EpisodeActions.list(meta);if(list.isEmpty()){if(meta.has("fusion.config"))PlaybackSitePicker.selectEpisode(a);else toast(a,"没有可选择的剧集");return;}String cur=id(a);String[] labels=new String[list.size()];int selected=-1;for(int i=0;i<list.size();i++){labels[i]=EpisodeActions.label(list.get(i));if(cur.equals(list.get(i).optString("id")))selected=i;}java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<list.size();i++){final String next=list.get(i).optString("id");rows.add(CinemaMenu.choice(labels[i],cur.equals(next),()->{if(!next.isEmpty()&&!next.equals(cur))AutoNext.handoff(a,meta,next,type(a));}));}CinemaMenu.show(a,"选集",rows);}
- static void more(Activity a){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();labels.add(DanmuController.label(a));actions.add(()->DanmuController.menu(a));labels.add("在线字幕");actions.add(()->OnlineSubtitleController.open(a));labels.add("Whisper 生成字幕");actions.add(()->PlayerFeatureSettings.whisper(a));labels.add("播放设置");actions.add(()->PlayerFeatureSettings.playback(a));if(EmbyPlayerUi.hasChapters(a)){labels.add("章节");actions.add(()->EmbyPlayerUi.openChapters(a));}if(EmbyPlayerUi.hasVersions(a)){labels.add("切换版本");actions.add(()->EmbyPlayerUi.openVersions(a));}if(meta(a).has("fusion.config")){labels.add("切换片源");actions.add(()->PlaybackSitePicker.show(a));}
-  click(findExact(bar(a,"top"),"旋转"),"旋转",labels,actions);click(findExact(bar(a,"top"),"视频"),"画面与声音",labels,actions);View scroll=scroll(bar(a,"bottom"));click(findExact(scroll,"播放器"),"播放器",labels,actions);click(findExact(scroll,"更多"),"更多设置",labels,actions);
-  Object auto=OnlineSubtitleSearch.field(a,"autoButton");if(auto instanceof Button){Button b=(Button)auto;String t=text(b).isEmpty()?"自动换源":text(b);labels.add(t);actions.add(()->b.performClick());}
-  labels.add("码率");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.BITRATE));labels.add("线路");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));labels.add("定时关闭");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.SLEEP));labels.add("流信息");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.INFO));labels.add("标记片头开始");actions.add(()->markIntro(a,true));labels.add("标记片头结束");actions.add(()->markIntro(a,false));labels.add("清除片头标记");actions.add(()->{String key=EmbyCue.seriesKey(meta(a),name(a));a.getSharedPreferences("data",0).edit().putString("intro.marks",EmbyCue.clearIntro(a.getSharedPreferences("data",0).getString("intro.marks","{}"),key)).apply();toast(a,"已清除片头标记");});
-  labels.add("调试信息");actions.add(()->DebugLog.show(a));java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<labels.size();i++)rows.add(CinemaMenu.item(labels.get(i),actions.get(i)));CinemaMenu.show(a,"更多",rows);
+ /** 0.1.93：只放播放器级设置。字幕获取、片源/版本/线路、章节、码率、定时、流信息都在右侧面板，不在这里重复。 */
+ static void more(Activity a){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();
+  labels.add(DanmuController.label(a));actions.add(()->DanmuController.menu(a));
+  labels.add("播放设置");actions.add(()->PlayerFeatureSettings.playback(a));
+  labels.add("线路 · 章节 · 定时 · 流信息");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
+  View scroll=scroll(bar(a,"bottom"));
+  // 原版「播放器」菜单（顶栏「视频」是同一个）：解码 / 音轨 / 外部播放器
+  Button player=findExact(scroll,"播放器");if(player==null)player=findExact(bar(a,"top"),"视频");click(player,"解码与外部播放器",labels,actions);
+  click(findExact(bar(a,"top"),"旋转"),"旋转",labels,actions);
+  labels.add("片头标记");actions.add(()->introMenu(a));
+  labels.add("调试信息");actions.add(()->DebugLog.show(a));
+  java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<labels.size();i++)rows.add(CinemaMenu.item(labels.get(i),actions.get(i)));CinemaMenu.show(a,"更多",rows);
  }
+ /** 原版「更多播放设置」（自动换源、换下一个源、等待时间、连接详情）的按钮，放到线路页里用。 */
+ static Button baseMore(Activity a){Button b=findExact(scroll(bar(a,"bottom")),"更多");return b!=null&&b.getTag() instanceof String&&((String)b.getTag()).startsWith("mp-")?null:b;}
+ static void introMenu(Activity a){java.util.List<CinemaMenu.Item> rows=new ArrayList<>();
+  rows.add(CinemaMenu.item("标记片头开始（当前位置）",()->markIntro(a,true)));
+  rows.add(CinemaMenu.item("标记片头结束（当前位置）",()->markIntro(a,false)));
+  rows.add(CinemaMenu.item("清除片头标记",()->{String key=EmbyCue.seriesKey(meta(a),name(a));a.getSharedPreferences("data",0).edit().putString("intro.marks",EmbyCue.clearIntro(a.getSharedPreferences("data",0).getString("intro.marks","{}"),key)).apply();toast(a,"已清除片头标记");}));
+  CinemaMenu.show(a,"片头标记",rows);}
  static void markIntro(Activity a,boolean start){String key=EmbyCue.seriesKey(meta(a),name(a));if(key.isEmpty()){toast(a,"还不能标记这部片子的片头");return;}int pos=EmbyPlayback.position(a);if(pos<0){toast(a,"还没有播放进度");return;}String store=a.getSharedPreferences("data",0).getString("intro.marks","{}");String next=EmbyCue.writeIntro(store,key,start?Long.valueOf(pos):null,start?null:Long.valueOf(pos));a.getSharedPreferences("data",0).edit().putString("intro.marks",next).apply();toast(a,start?"已标记片头开始":"已标记片头结束");}
  static void click(Button b,String label,ArrayList<String> labels,ArrayList<Runnable> actions){if(b==null)return;labels.add(label);actions.add(()->b.performClick());}
 
