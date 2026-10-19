@@ -58,7 +58,7 @@ public final class ScrapedMainActivity extends MainActivity {
   homeProvider=prefs.getString("fusion.homeProvider","stremio");selectNav("首页");clear("");homeCanvas=true;body.removeAllViews();updateInsets();createHero();
   if(homeChrome==null)homeChrome=new HomeChrome(this);
   if("emby".equals(homeProvider)){EmbyHome.show(this);restoreScroll();return;}
-  homeChrome.continueWatching(array("history"));
+  {JSONArray raw=array("history"),history=HomeRules.dedupeHistory(raw);if(history.length()!=raw.length())prefs.edit().putString("history",history.toString()).apply();homeChrome.continueWatching(history);}
   if(!homeProvider.equals("stremio")&&sectionOn("fusion"))fusionHome();
   if(!homeProvider.equals("tvbox")){
   homeChrome.librarySection();

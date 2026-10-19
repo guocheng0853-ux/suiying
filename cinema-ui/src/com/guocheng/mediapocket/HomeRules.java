@@ -182,6 +182,24 @@ final class HomeRules {
   out.put(id);return out.toString();
  }
  static boolean resumeHidden(String store,String id){if(id==null||id.isEmpty()||store==null||store.isEmpty())return false;try{JSONArray old=new JSONArray(store);for(int i=0;i<old.length();i++)if(id.equals(old.optString(i)))return true;}catch(Exception ignored){}return false;}
+ /**
+  * 同一部片子的观看记录键。影视仓的记录 id 是按“接口+站点+片子+集名”算的哈希，每集（每个版本）都不同，
+  * 原版按 id 去重会让同一部剧每看一集多一条。这里按片子归并：影视仓用接口+站点+vod_id，Emby 用剧集（没有剧集用条目），其余用 id。
+  */
+ static String showKey(JSONObject m){
+  if(m==null)return "";
+  String site=m.optString("fusion.site"),video=m.optString("fusion.video");
+  if(!site.isEmpty()&&!video.isEmpty())return "tvbox|"+m.optString("fusion.config")+"|"+site+"|"+video;
+  String server=m.optString("emby.server");
+  if(!server.isEmpty()){String series=m.optString("emby.series");return "emby|"+server+"|"+(series.isEmpty()?m.optString("emby.item",m.optString("id")):series);}
+  return m.optString("id");
+ }
+ /** 每部片子只留最近的一条（记录按新到旧排列，保留第一次出现的）。 */
+ static JSONArray dedupeHistory(JSONArray items){
+  JSONArray out=new JSONArray();if(items==null)return out;java.util.HashSet<String> seen=new java.util.HashSet<>();
+  for(int i=0;i<items.length();i++){JSONObject m=items.optJSONObject(i);if(m==null)continue;String key=showKey(m);if(!key.isEmpty()&&!seen.add(key))continue;out.put(m);}
+  return out;
+ }
  static JSONArray withoutHidden(JSONArray items,String store){
   JSONArray out=new JSONArray();if(items==null)return out;
   for(int i=0;i<items.length();i++){JSONObject m=items.optJSONObject(i);if(m==null)continue;String id=m.optString("id");if(id.isEmpty())id=m.optString("Id");if(resumeHidden(store,id))continue;out.put(m);}
