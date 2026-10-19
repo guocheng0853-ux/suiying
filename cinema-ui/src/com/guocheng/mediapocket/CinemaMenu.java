@@ -22,8 +22,14 @@ final class CinemaMenu {
   * GesturePlayerActivity.dispatchTouchEvent 只把落在播放器 root 里 Button/SeekBar 上的触摸交给视图，
   * 其余全当画面手势吞掉——菜单看得见却点不动。独立窗口的触摸不经过 Activity 分发，也不再怕视频面重挂把菜单压住。
   */
- static void show(final Activity a,String title,List<Item> rows){
-  if(a.isFinishing()||blocked(a)||rows==null||rows.isEmpty())return;
+ static void show(final Activity a,String title,List<Item> rows){open(a,title,null,rows,null);}
+ /**
+  * 通用形态：标题 + 可选正文（说明文字或输入表单）+ 行。没点任何行就关掉（点外面、返回键）时执行 onCancel。
+  * 返回 false 表示没弹出（画中画、锁屏、页面已关闭），调用方可以改用系统对话框。
+  */
+ static boolean open(final Activity a,String title,View body,List<Item> rows,final Runnable onCancel){
+  if(rows==null)rows=new java.util.ArrayList<>();
+  if(a.isFinishing()||blocked(a)||(rows.isEmpty()&&body==null))return false;
   dismissNow(a);
   final View decor=a.getWindow().getDecorView();
   final android.app.Dialog dialog=new android.app.Dialog(a,android.R.style.Theme_Translucent_NoTitleBar);
@@ -37,6 +43,7 @@ final class CinemaMenu {
    TextView head=new TextView(a);head.setText(title);head.setTextColor(0xffffffff);head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);head.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
    head.setPadding(dp(a,8),dp(a,6),dp(a,8),dp(a,4));panel.addView(head);
   }
+  if(body!=null){if(body.getParent() instanceof ViewGroup)((ViewGroup)body.getParent()).removeView(body);LinearLayout.LayoutParams bl=new LinearLayout.LayoutParams(-1,-2);bl.setMargins(dp(a,8),dp(a,4),dp(a,8),dp(a,8));panel.addView(body,bl);}
   for(final Item it:rows){
    LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);
    row.setMinimumHeight(dp(a,PlayerMotionRules.MENU_ROW_DP));row.setPadding(dp(a,10),dp(a,4),dp(a,10),dp(a,4));
@@ -60,28 +67,33 @@ final class CinemaMenu {
   ScrollView scroll=new ScrollView(a);scroll.setVerticalScrollBarEnabled(false);scroll.addView(panel,new FrameLayout.LayoutParams(width,-2));
   center.addView(scroll,new FrameLayout.LayoutParams(width,menuH,Gravity.CENTER));
   scrim.addView(center,new FrameLayout.LayoutParams(-1,-1));
-  scrim.setOnClickListener(v->dismiss(a));
+  scrim.setOnClickListener(v->cancel(a));
   dialog.setContentView(scrim);
   dialog.setCancelable(true);
-  dialog.setOnKeyListener((d,code,e)->{if(code==KeyEvent.KEYCODE_BACK){if(e.getAction()==KeyEvent.ACTION_UP)dismiss(a);return true;}return false;});
+  dialog.setOnKeyListener((d,code,e)->{if(code==KeyEvent.KEYCODE_BACK){if(e.getAction()==KeyEvent.ACTION_UP)cancel(a);return true;}return false;});
   Window w=dialog.getWindow();
   if(w!=null){
    w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));
    w.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
    w.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS|WindowManager.LayoutParams.FLAG_FULLSCREEN);
    w.setLayout(-1,-1);w.setWindowAnimations(0);
+   if(body!=null&&hasInput(body))w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE|WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
    if(Build.VERSION.SDK_INT>=28){WindowManager.LayoutParams lp=w.getAttributes();lp.layoutInDisplayCutoutMode=a.getWindow().getAttributes().layoutInDisplayCutoutMode;w.setAttributes(lp);}
    // 先不可聚焦地显示并复制沉浸式标志，再恢复可聚焦（返回键），避免弹出时状态栏/导航栏闪出来
    w.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
   }
-  try{dialog.show();}catch(Exception e){return;}
+  try{dialog.show();}catch(Exception e){return false;}
   if(w!=null){w.getDecorView().setSystemUiVisibility(decor.getSystemUiVisibility());w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);}
-  OPEN.put(a,new Open(dialog,scrim));
+  OPEN.put(a,new Open(dialog,scrim,onCancel));
   scrim.setAlpha(0f);panel.setScaleX(0.92f);panel.setScaleY(0.92f);
   scrim.animate().alpha(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
   panel.animate().scaleX(1f).scaleY(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
+  return true;
  }
- static final class Open {final android.app.Dialog dialog;final FrameLayout scrim;Open(android.app.Dialog d,FrameLayout s){dialog=d;scrim=s;}}
+ static boolean hasInput(View v){if(v instanceof EditText)return true;if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)if(hasInput(g.getChildAt(i)))return true;}return false;}
+ static final class Open {final android.app.Dialog dialog;final FrameLayout scrim;final Runnable onCancel;Open(android.app.Dialog d,FrameLayout s,Runnable c){dialog=d;scrim=s;onCancel=c;}}
+ /** 没选任何行就关掉：收起并执行 onCancel。 */
+ static void cancel(final Activity a){Open o=OPEN.get(a);final Runnable after=o==null?null:o.onCancel;dismiss(a);if(after!=null)a.getWindow().getDecorView().postDelayed(()->{if(!a.isFinishing())after.run();},PlayerMotionRules.MENU_OUT_MS);}
  static final java.util.Map<Activity,Open> OPEN=new java.util.WeakHashMap<>();
  static boolean isOpen(Activity a){Open o=OPEN.get(a);return o!=null&&o.dialog.isShowing();}
  static void dismiss(final Activity a){

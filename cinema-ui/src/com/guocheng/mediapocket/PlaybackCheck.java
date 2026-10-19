@@ -18,7 +18,7 @@ final class PlaybackCheck {
  static void decide(Activity a,String source,String url,String via,LinkProbe.Result r,Runnable play){
   if(!r.definitive){log(a,source,url,via,r,r.media?"播放":"检查未确认，交给播放器");play.run();return;}
   if(a.isFinishing()||a.isDestroyed())return;
-  new AlertDialog.Builder(a).setTitle("这个地址大概率放不出来").setMessage(r.summary()+"\n\n来源："+source+(via==null||via.isEmpty()?"":"\n取得方式："+via)+"\n\n可以返回换一条线路，或仍然交给播放器尝试。")
+  new CinemaDialog(a).setTitle("这个地址大概率放不出来").setMessage(r.summary()+"\n\n来源："+source+(via==null||via.isEmpty()?"":"\n取得方式："+via)+"\n\n可以返回换一条线路，或仍然交给播放器尝试。")
    .setPositiveButton("返回换源",(d,n)->log(a,source,url,via,r,"用户返回"))
    .setNegativeButton("仍然播放",(d,n)->{log(a,source,url,via,r,"用户仍然播放");play.run();})
    .setOnCancelListener(d->log(a,source,url,via,r,"用户返回")).show();
