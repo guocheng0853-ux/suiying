@@ -5,10 +5,11 @@ final class OnlineSubtitleRules {
  static final String ASSRT="https://api.assrt.net/v1/sub/search";
  static final String ASSRT_DETAIL="https://api.assrt.net/v1/sub/detail";
  static final String OPEN="https://api.opensubtitles.com/api/v1/subtitles";
+
  static final String OPEN_DOWNLOAD="https://api.opensubtitles.com/api/v1/downloads";
  /** 迅雷开放字幕匹配：免密钥，按片名搜，data[].url 是 .srt 直链。 */
  static final String XUNLEI="https://api-shoulei-ssl.xunlei.com/oracle/subtitle";
- static final String UA="suiying/0.1.81";
+ static final String UA="suiying/0.1.89";
  private OnlineSubtitleRules(){}
  static boolean assrtReady(String token){return token!=null&&!token.trim().isEmpty();}
  static boolean openReady(String key){return key!=null&&!key.trim().isEmpty();}
