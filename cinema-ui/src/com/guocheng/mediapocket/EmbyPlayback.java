@@ -23,7 +23,7 @@ final class EmbyPlayback {
      info=EmbyClient.playbackInfo(a,attempt,itemId,EmbyApi.msToTicks(resume),mediaSourceId,audio,sub,bitrate);
      JSONArray versions=EmbyCue.versions(info.optJSONArray("MediaSources"));
      if((mediaSourceId==null||mediaSourceId.isEmpty())&&versions.length()>1){JSONObject chosenItem=item,chosenInfo=info,route=attempt;a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(cancel[0]||a.isFinishing())return;pickVersion(a,route,itemId,versions,replace);});return;}
-     choice=EmbyApi.select(attempt.optString("url"),itemId,attempt.optString("token"),info,mediaSourceId);working=attempt;break;
+     choice=EmbyApi.select(attempt.optString("url"),itemId,attempt.optString("token"),info,mediaSourceId,EmbyApi.clientOf(attempt));working=attempt;break;
     }catch(Exception e){last=e;if(!EmbyCue.retryable(e))break;}}
    if(choice==null)throw last==null?new java.io.IOException("无法播放"):last;
    final JSONObject route=working,detail=item,playback=info;final EmbyApi.Choice chosen=choice;JSONObject user=detail.optJSONObject("UserData");long resume=keep>10000?keep:EmbyApi.ticksToMs(user==null?0:user.optLong("PlaybackPositionTicks"));

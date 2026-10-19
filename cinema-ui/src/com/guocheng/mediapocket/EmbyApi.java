@@ -7,6 +7,10 @@ import org.json.*;import java.net.*;import java.nio.charset.StandardCharsets;imp
 final class EmbyApi {
  static final String VERSION="0.1.72";
  static final String CLIENT="MediaPocket";
+ /** 官方客户端名。只在服务器拒绝当前名称时再试这一次，不写死 Hills 等第三方名字。 */
+ static final String OFFICIAL_CLIENT="Emby";
+ /** explain 认这个前缀，后面是服务器原文。不要把密码或令牌拼进来。 */
+ static final String CLIENT_ERROR="EMBY_CLIENT ";
  /** 1 毫秒 = 10_000 个 100 纳秒 tick。 */
  static final long TICKS_PER_MS=10000L;
  static final long PLAYED_TAIL_TICKS=30L*10000000L;
@@ -15,11 +19,59 @@ final class EmbyApi {
   final String url;final boolean direct;final String mediaSourceId,playSessionId;final JSONArray subtitles,audio;
   Choice(String url,boolean direct,String mediaSourceId,String playSessionId,JSONArray subtitles,JSONArray audio){this.url=url;this.direct=direct;this.mediaSourceId=mediaSourceId==null?"":mediaSourceId;this.playSessionId=playSessionId==null?"":playSessionId;this.subtitles=subtitles==null?new JSONArray():subtitles;this.audio=audio==null?new JSONArray():audio;}
  }
+ /** 一次登录尝试的结论。retry 为真时只用 client 再请求一次。 */
+ static final class AuthAttempt {
+  final String client;final boolean retry;final String error;
+  AuthAttempt(String client,boolean retry,String error){this.client=client==null?CLIENT:client;this.retry=retry;this.error=error;}
+ }
  /** 登录前不含 Token。值里的引号和换行去掉，避免把请求头拆开。 */
- static String authorization(String device,String deviceId,String version,String token){
-  StringBuilder h=new StringBuilder("MediaBrowser Client=\"").append(clean(CLIENT)).append("\", Device=\"").append(clean(device)).append("\", DeviceId=\"").append(clean(deviceId)).append("\", Version=\"").append(clean(version==null||version.isEmpty()?VERSION:version)).append("\"");
+ static String authorization(String device,String deviceId,String version,String token){return authorization(CLIENT,device,deviceId,version,token);}
+ static String authorization(String client,String device,String deviceId,String version,String token){
+  String name=clean(client);if(name.isEmpty())name=CLIENT;
+  StringBuilder h=new StringBuilder("MediaBrowser Client=\"").append(name).append("\", Device=\"").append(clean(device)).append("\", DeviceId=\"").append(clean(deviceId)).append("\", Version=\"").append(clean(version==null||version.isEmpty()?VERSION:version)).append("\"");
   if(token!=null&&!token.trim().isEmpty())h.append(", Token=\"").append(token.trim().replace("\"","").replace("\r","").replace("\n","")).append("\"");
   return h.toString();
+ }
+ /** 已保存的服务器沿用上次被接受的名称；没有则仍是 MediaPocket。 */
+ static String clientOf(JSONObject server){String name=server==null?"":clean(server.optString("client"));return name.isEmpty()?CLIENT:name;}
+ /**
+  * 明文 403，且正文在说客户端不被允许。401 是密码错误。JSON 错误体不是这种拒绝，不因此换名称。
+  */
+ static boolean clientRejected(int code,String body){
+  if(code!=403)return false;
+  String text=body==null?"":body.trim();
+  if(text.isEmpty()||text.startsWith("{")||text.startsWith("["))return false;
+  return text.contains("客户端")||text.toLowerCase(Locale.ROOT).contains("client");
+ }
+ /** 已经是官方名称就返回空，调用方不得再重试。 */
+ static String nextClient(String current){String name=clean(current);if(name.isEmpty())name=CLIENT;return OFFICIAL_CLIENT.equals(name)?"":OFFICIAL_CLIENT;}
+ /**
+  * 登录结果。200 保留当前名称；401 不重试；只有客户端拒绝且还没用官方名称时，才换 Emby 再试一次。
+  * alreadyRetried 为真时不再给第二次机会。error 不含密码和令牌。
+  */
+ static AuthAttempt authAttempt(String client,int code,String body,boolean alreadyRetried){
+  String name=clean(client);if(name.isEmpty())name=CLIENT;
+  if(code>=200&&code<300)return new AuthAttempt(name,false,null);
+  if(code==401)return new AuthAttempt(name,false,"HTTP 401");
+  if(!alreadyRetried&&clientRejected(code,body)){String next=nextClient(name);if(!next.isEmpty())return new AuthAttempt(next,true,null);}
+  if(clientRejected(code,body))return new AuthAttempt(name,false,CLIENT_ERROR+(body==null?"":body));
+  return new AuthAttempt(name,false,"HTTP "+code);
+ }
+ /** 给界面的客户端拒绝文案。正文不可读时用固定短句，并去掉疑似令牌。 */
+ static String clientNotice(String raw){
+  String text=raw==null?"":raw.replace('\r',' ').replace('\n',' ').trim();
+  text=text.replaceAll("(?i)access[_ ]?token[=:]\\S+","").replaceAll("\\b[0-9a-fA-F]{20,}\\b","…").trim();
+  boolean named=text.contains("客户端")||text.toLowerCase(Locale.ROOT).contains("client");
+  if(text.isEmpty()||!named||text.length()>80||text.indexOf('<')>=0||text.indexOf('{')>=0)return "服务器不允许这个客户端";
+  return text;
+ }
+ /** 直链不带令牌头。改用官方名称的服务器要在地址上标明客户端，否则取流同样被拒绝。 */
+ static String withClient(String base,String url,String client){
+  if(url==null||url.isEmpty())return url==null?"":url;
+  if(!OFFICIAL_CLIENT.equals(clean(client)))return url;
+  if(!sameServer(base,url))return url;
+  if(url.toLowerCase(Locale.ROOT).contains("x-emby-client="))return url;
+  return url+(url.contains("?")?"&":"?")+"X-Emby-Client="+enc(OFFICIAL_CLIENT);
  }
  static String clean(String v){return v==null?"":v.replace("\"","").replace("\r","").replace("\n","").replace(",","").trim();}
  /** 保留 http/https、端口和路径前缀，去掉末尾斜杠、账号和片段。没写端口时 https 用 443、http 用 80。 */
@@ -102,7 +154,8 @@ final class EmbyApi {
  static boolean staticUrl(String url){return url!=null&&url.toLowerCase(Locale.ROOT).contains("static=true");}
  /** 优先 static=true 直连；没有可直连的源时用服务器给的转码地址。mediaSourceId 非空时只使用这一版。 */
  static Choice select(String base,String itemId,String token,JSONObject info)throws JSONException{return select(base,itemId,token,info,null);}
- static Choice select(String base,String itemId,String token,JSONObject info,String mediaSourceId)throws JSONException{
+ static Choice select(String base,String itemId,String token,JSONObject info,String mediaSourceId)throws JSONException{return select(base,itemId,token,info,mediaSourceId,CLIENT);}
+ static Choice select(String base,String itemId,String token,JSONObject info,String mediaSourceId,String client)throws JSONException{
   if(info==null)throw new IllegalArgumentException("服务器没有返回播放信息");
   String play=info.optString("PlaySessionId");JSONArray sources=info.optJSONArray("MediaSources");
   if(sources==null||sources.length()==0)throw new IllegalArgumentException("服务器没有返回可播放的媒体");
@@ -118,7 +171,9 @@ final class EmbyApi {
   if(direct!=null){chosen=directSource;url=direct;isDirect=true;}
   else if(trans!=null){chosen=transSource;url=trans;isDirect=false;}
   else throw new IllegalArgumentException("没有可播放的视频流");
-  return new Choice(url,isDirect,chosen.optString("Id"),play,subtitles(base,itemId,token,play,chosen),audio(chosen));
+  JSONArray subs=subtitles(base,itemId,token,play,chosen);
+  for(int i=0;i<subs.length();i++){JSONObject sub=subs.optJSONObject(i);if(sub!=null)sub.put("url",withClient(base,sub.optString("url"),client));}
+  return new Choice(withClient(base,url,client),isDirect,chosen.optString("Id"),play,subs,audio(chosen));
  }
  static String explicitStatic(String base,JSONObject source,String token,String playSessionId){
   String raw=source.optString("DirectStreamUrl");
@@ -226,6 +281,7 @@ final class EmbyApi {
   if(c instanceof ConnectException||e instanceof ConnectException)return "无法连接服务器，请检查地址、端口和网络";
   if(c instanceof javax.net.ssl.SSLException||e instanceof javax.net.ssl.SSLException)return "安全连接失败，请检查 https 证书或改用 http";
   if(m.startsWith("HTTP 401"))return "用户名或密码不正确";
+  if(m.startsWith(CLIENT_ERROR))return clientNotice(m.substring(CLIENT_ERROR.length()));
   if(m.startsWith("HTTP 403"))return "服务器拒绝访问，请检查账号权限";
   if(m.startsWith("HTTP 404"))return "服务器没有这个接口，请确认地址指向 Emby";
   if(m.startsWith("HTTP "))return "服务器返回错误（"+m+"）";

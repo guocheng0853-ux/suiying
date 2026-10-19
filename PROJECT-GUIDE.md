@@ -1,6 +1,6 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 2026-10-19 更新，对应 main = 0.1.99（code 100，真机验证尚未完成）。先读完这一份，再读 `HANDOFF-CODEX-DEVICE.md`（真机调试任务）、`DEVICE-VALIDATION.md`（实际验证范围）和 `cinema-ui/README.md` 顶部几条更新记录。
+> 2026-10-19 更新，对应 main = 0.1.100（code 101）。Emby 客户端名回退已在指定服务器上核对 403/200，真机尚未安装。先读完这一份，再读 `HANDOFF-CODEX-DEVICE.md`（真机调试任务）、`DEVICE-VALIDATION.md`（实际验证范围）和 `cinema-ui/README.md` 顶部几条更新记录。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 1. 这是什么
@@ -118,6 +118,6 @@ keytool -list -v -keystore signing.jks -storepass android   # 别名 mediapocket
 
 ## 10. 当前状态（2026-10-19）
 
-- main = 0.1.99 / code 100：在 0.1.97 界面改动上合入三处设备小修，以及默认倍速标签、加载提示宽度两项修复。构建和签名校验通过；65 个测试首跑 63/65，两项单独复跑通过，详见 `DEVICE-VALIDATION.md`。
+- main = 0.1.100 / code 101：Emby 登录在服务器拒绝 `Client="MediaPocket"` 时改用官方名称 `Emby` 再试一次，403 显示服务器原文，401 仍是密码错误。指定托管服务器已核对 403 与 200；真机尚未安装。0.1.99 的设备修复记录仍见 `DEVICE-VALIDATION.md`。
 - 真机上已确认：能装能开、无崩溃；「我的」分组和开关；继续观看去重与剩余时长副标题。
 - `wip/0.1.98-device-fixes` 按用户要求先行合并 main。三处小修已在 0.1.98 真机确认，0.1.99 尚未安装复测。**下一步是按 `DEVICE-VALIDATION.md` 完成剩余真机清单；不得把合并视为真机验证通过。**
