@@ -150,7 +150,7 @@ final class PlayerOverlay {
   if(box==null){box=new LinearLayout(a);box.setTag("mp-playback-feedback");box.setOrientation(LinearLayout.VERTICAL);box.setGravity(Gravity.CENTER);box.setPadding(dp(a,16),dp(a,12),dp(a,16),dp(a,12));box.setBackground(PlayerTheme.card(a.getResources().getDisplayMetrics().density));root.addView(box,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));}
   String key=(failure?"fail:":"load:")+text;if(!key.equals(box.getContentDescription())){box.removeAllViews();box.setContentDescription(key);
    if(!failure){ProgressBar progress=new ProgressBar(a);box.addView(progress,new LinearLayout.LayoutParams(dp(a,28),dp(a,28)));}
-   TextView label=label(a,14);label.setSingleLine(false);label.setGravity(Gravity.CENTER);label.setMaxWidth(dp(a,300));label.setText(text);box.addView(label);
+   TextView label=label(a,14);label.setSingleLine(false);label.setGravity(Gravity.CENTER);label.setMaxWidth(dp(a,300));label.setText(text);box.addView(label,new LinearLayout.LayoutParams(-2,-2));
    if(failure){LinearLayout actions=new LinearLayout(a);Button next=feedbackButton(a,"换下一个源",()->nextSource(a));Button choose=feedbackButton(a,"选择片源",()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));actions.addView(next);actions.addView(choose);box.addView(actions);}
   }box.setVisibility(View.VISIBLE);
  }
