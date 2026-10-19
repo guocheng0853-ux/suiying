@@ -1,8 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.90",
-  "android_device_tested": true,
-  "android_device_note": "0.1.90: merge of parallel line 0.1.82-b (episode segments per 30) with local 0.1.82-0.1.89 fixes (danmu regex, subtitle ext sniffing, raw chinese path, singleTask, z-order, menu scroll); install smoke clean",
+  "ui_version": "0.1.91",
+  "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -18,9 +17,9 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 6299,
+  "unique_classes": 6329,
   "dex_files": 3,
-  "main_version_code": 91,
+  "main_version_code": 92,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",

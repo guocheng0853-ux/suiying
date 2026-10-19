@@ -34,6 +34,7 @@ final class PlayerFeatureSettings {
   String token=p.getString("whisper.token","");
   JSONObject stream=TrackSelection.stream(a);String media=stream==null?"":stream.optString("url","");
   if(!media.startsWith("http://")&&!media.startsWith("https://")){Toast.makeText(a,"当前是磁力/P2P 源，云端取不到视频，请换直链线路",Toast.LENGTH_LONG).show();return;}
+  if(WhisperClient.unreachableFromCloud(media)){Toast.makeText(a,"当前是局域网/本机地址，云端服务器访问不到，请换公网直链线路",Toast.LENGTH_LONG).show();return;}
   final String fBase=base,fMedia=media,fToken=token;
   final android.app.ProgressDialog wait=android.app.ProgressDialog.show(a,"Whisper 生成字幕","提交任务…",true,true);
   final boolean[] cancel={false};wait.setOnCancelListener(d->cancel[0]=true);

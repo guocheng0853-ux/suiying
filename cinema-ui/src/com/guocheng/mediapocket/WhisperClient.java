@@ -5,6 +5,8 @@ import java.io.*;import java.net.*;import java.nio.charset.StandardCharsets;
 final class WhisperClient {
  private WhisperClient(){}
  static String trim(String base){String s=base==null?"":base.trim();while(s.endsWith("/"))s=s.substring(0,s.length()-1);return s;}
+ /** 云端访问不到的地址：本机、局域网、链路本地。只看字面主机名，不做 DNS（在界面线程调用）。 */
+ static boolean unreachableFromCloud(String url){try{String h=new URI(url).getHost();if(h==null)return true;h=h.toLowerCase(java.util.Locale.ROOT);if(h.startsWith("[")&&h.endsWith("]"))h=h.substring(1,h.length()-1);if(h.equals("localhost")||h.endsWith(".local")||h.equals("::1")||h.startsWith("fe80:")||h.startsWith("fc")||h.startsWith("fd"))return true;String[] p=h.split("\\.");if(p.length!=4)return false;int[] n=new int[4];for(int i=0;i<4;i++){if(!p[i].matches("[0-9]{1,3}"))return false;n[i]=Integer.parseInt(p[i]);}return n[0]==127||n[0]==10||n[0]==0||(n[0]==192&&n[1]==168)||(n[0]==172&&n[1]>=16&&n[1]<=31)||(n[0]==169&&n[1]==254)||(n[0]==100&&n[1]>=64&&n[1]<=127);}catch(Exception e){return true;}}
  static String jobUrl(String base){return trim(base)+"/job";}
  static String srtUrl(String base,String id){return trim(base)+"/srt/"+id;}
  static String jobBody(String mediaUrl,String model){

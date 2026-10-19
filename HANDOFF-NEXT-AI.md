@@ -22,13 +22,13 @@
 
 ## 云端 Whisper 服务（已部署，等用户放行入口）
 
-- 位置：hermes-cloud（42.192.114.180）systemd 服务 `whisper-srt`，端口 8765，源码=仓库 `cloud/whisper-srt/server.py`
+- 位置：用户自己的腾讯云服务器（地址不写进公开仓库）systemd 服务 `whisper-srt`，端口 8765，源码=仓库 `cloud/whisper-srt/server.py`
 - 栈：faster-whisper 1.2.1 base int8 + **av==14.2.0（钉死，19.x 删了 metadata_errors 会炸）** + huggingface_hub 0.36.2；模型走 hf-mirror.com 且 `HF_HUB_DISABLE_XET=1`（Xet 走镜像 401）
-- 令牌：`~/whisper-srt/token.txt` = `038f1511ad74896eb535133a5d0cd129`
+- 令牌：在服务器 `~/whisper-srt/token.txt`（**不要写进仓库**；旧令牌曾在 2026-10-19 公开过，已要求用户更换）
 - 管道已端到端验证：POST /job → 下载 → ffmpeg 抽音轨 → 转写 → GET /srt/{id}
-- **卡点**：`audio.guocheng126.uk` 整域在 Cloudflare Access 后（全 401），安全组也没开 8765。二选一：
-  - A（推荐）：腾讯云控制台 → 安全组放行 **TCP 8765** → App 填 `http://42.192.114.180:8765`
-  - B：Cloudflare Zero Trust → Access → 给 `/whisper/*` 加 Bypass → App 填 `https://audio.guocheng126.uk/whisper`
+- **卡点**：入口还没对外开放。做法（0.1.91 起服务默认只监听 127.0.0.1）：
+  - 推荐：用服务器上已有的 Caddy 加一个子域名反代到 `127.0.0.1:8765`（自动 HTTPS），App 填 `https://<子域名>`。令牌走 HTTPS，不明文。
+  - 不要直接在安全组放行 8765 用 http 访问：令牌会明文传输，服务还会替任何拿到令牌的人下载任意地址。
 - 用户配置后：播放 http 直链视频 → 更多 → Whisper 生成字幕 → 等转写（base 模型 ≈ 片长一半时间）→ 自动加载。磁力/P2P 源不支持（云端取不到）
 
 ## Windows 构建 + 测试链（全部本机可用）
@@ -50,14 +50,15 @@
 
 - **P0**：用户控制台放行 Whisper 入口（A 或 B）→ App 里填服务器+令牌 → 真机播一集验证转写质量与耗时；base 中文不够就升 small（服务端 WHISPER_MODEL 环境变量或请求体 model 字段）
 - **P0**：用户回归验证 0.1.89 的菜单（19 项可滚动、各项可点）与蜘蛛侠的迅雷字幕搜索
-- **P1**：主页 Hills 化第二批（海报行视觉节奏、hero 文案层级、首页画图测试——参照 PlayerMotionRulesTest 的 PNG 渲染模式）；Hills 基准帧在 D:\tmp\hills-frames\
+- **P1**：主页 Hills 化第二批（海报行视觉节奏、hero 文案层级、首页画图测试——参照 PlayerMotionRulesTest 的 PNG 渲染模式）；Hills 基准帧在用户本机
 - **P2**：Whisper small 档位选项透出到设置；YIFY 免密钥兜底源（仅电影）；Emby 直链的 Logo 顶栏扩展到 Emby 源（现仅 Stremio meta.logo）
 - **版本习惯**：每版升 code+1、README 顶部加记录、VALIDATION.json 同步、build_win.py 产物名同步——0.1.85-87 三版记录已在 0.1.88 一并补齐
 
 ## 相关文件
 
-- 拆解报告：`C:\Users\李俊飞\.zcode\workspace\default\hills-teardown-suiying-improvements.md`（Hills 全量拆解+改进清单+行动项）
-- Hills 反编译：`D:\AI-Data\tools\rea-engines\hills\`（10674 类）
-- Hills 基准帧：`D:\tmp\hills-frames\`（f001 首页 / f008 详情页 / f018ccw 播放器）
-- 记忆文件：`suiying-windows-test-chain.md`（构建链+坑）、`hills-teardown-suiying.md`（拆解结论）
+- Hills 拆解报告、反编译目录、基准帧都在用户本机（路径不写进公开仓库），需要时向用户要。
 - 本机 python 是占位符：跑 .py 一律 `uv.exe run --no-project python`
+
+## 公开仓库注意
+
+本仓库是公开的。不要提交：签名文件、`fusion-default.json`、任何令牌/密码/AppSecret、服务器公网 IP、本机用户目录路径。提交前跑 `git grep -nIE "token|secret|[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"` 自查。
