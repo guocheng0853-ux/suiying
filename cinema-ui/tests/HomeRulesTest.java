@@ -32,6 +32,16 @@ public class HomeRulesTest {
   check(with.length()==6&&with.getJSONObject(3).getString("id").equals("provider:emby:a")&&with.getJSONObject(3).getString("label").equals("客厅 · Emby")&&with.getJSONObject(4).getString("id").equals("provider:emby:b")&&with.getJSONObject(5).getString("label").equals("管理 Emby 服务器"),"servers then manage");
   check(HomeRules.embyServersLabel(null).equals("Emby 服务器 · 未添加")&&HomeRules.embyServersLabel(new JSONArray()).equals("Emby 服务器 · 未添加")&&HomeRules.embyServersLabel(servers).equals("Emby 服务器 · 2 个"),"emby count label");
   check(HomeRules.labelFor(opts,"provider:stremio").equals("Stremio 目录"),"label");
+  JSONObject selected=HomeRules.selectedEmbyServer(servers,"b");
+  check(selected.optString("name").equals("卧室"),"existing server stays selected");
+  selected=HomeRules.selectedEmbyServer(servers,"removed-server");
+  String resolved=HomeRules.selectedId("emby",selected.optString("id"));
+  check(HomeRules.labelFor(with,resolved).equals("客厅 · Emby"),"stale selection uses actual fallback server name");
+  check(resolved.equals(with.getJSONObject(3).getString("id")),"fallback dropdown selection matches displayed content");
+  check(HomeRules.selectedEmbyServer(new JSONArray().put(new JSONObject()).put(servers.getJSONObject(2)),"removed-server").optString("id").equals("b"),"skip invalid server entries");
+  check(HomeRules.selectedEmbyServer(new JSONArray(),"missing")==null&&HomeRules.selectedEmbyServer(null,"missing")==null,"no server fallback");
+  check(HomeRules.labelFor(with,"provider:emby:removed-server").equals("Emby"),"missing server never displays internal id");
+  check(HomeRules.labelFor(opts,"source:removed-source").equals("影视仓")&&HomeRules.labelFor(null,null).equals("片源"),"safe missing source labels");
   check(HomeRules.libraryTiles().length==4&&HomeRules.libraryTiles()[0][0].equals("电影"),"tiles");
   check(HomeRules.runtimeMinutes(new JSONObject().put("runtime","1h 13m"))==73,"runtime");
   check(HomeRules.keepOnResume(true,3)&&!HomeRules.keepOnResume(true,0)&&!HomeRules.keepOnResume(false,3),"resume keeps a filled home");

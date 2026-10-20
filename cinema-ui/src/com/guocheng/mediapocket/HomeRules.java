@@ -158,6 +158,16 @@ final class HomeRules {
  static JSONObject opt(String id,String label,String kind)throws Exception{
   return new JSONObject().put("id",id).put("label",label).put("kind",kind);
  }
+ /** 已保存编号失效时，和首页内容一致地使用第一台有效服务器。 */
+ static JSONObject selectedEmbyServer(JSONArray servers,String id){
+  JSONObject first=null;
+  if(servers!=null)for(int i=0;i<servers.length();i++){
+   JSONObject s=servers.optJSONObject(i);if(s==null||s.optString("id").isEmpty())continue;
+   if(first==null)first=s;
+   if(s.optString("id").equals(id))return s;
+  }
+  return first;
+ }
  /** 当前选中项 id。 */
  static String selectedId(String provider,String sourceId){
   if("emby".equals(provider))return "provider:emby:"+(sourceId==null||sourceId.isEmpty()?"current":sourceId);
@@ -170,10 +180,13 @@ final class HomeRules {
  static String labelFor(JSONArray options,String id){
   if(options!=null)for(int i=0;i<options.length();i++){
    JSONObject o=options.optJSONObject(i);
-   if(o!=null&&id.equals(o.optString("id")))return o.optString("label",id);
+   if(o!=null&&id!=null&&id.equals(o.optString("id"))){String label=o.optString("label").trim();if(!label.isEmpty())return label;}
   }
-  if(id.startsWith("provider:"))return id.substring(9);
-  if(id.startsWith("source:"))return id.substring(7);
+  if(id==null)return "片源";
+  if(id.startsWith("provider:emby:"))return "Emby";
+  if(id.equals("provider:stremio"))return "Stremio 目录";
+  if(id.equals("provider:tvbox")||id.startsWith("source:"))return "影视仓";
+  if(id.equals("provider:fusion"))return "融合";
   return "片源";
  }
  /** 解析选项 → [provider, sourceId]。添加/管理返回 null，调用方不得写入片源。source 选项落到 tvbox。 */

@@ -10,11 +10,13 @@ final class HomeChrome {
  TextView sourceSwitcher(){
   String provider=a.prefs.getString("fusion.homeProvider","stremio"),sourceId=a.prefs.getString("home.source.v1","current");
   JSONArray servers;try{servers=EmbyStore.list(a);}catch(Exception e){servers=new JSONArray();}
+  if("emby".equals(provider)){JSONObject server=HomeRules.selectedEmbyServer(servers,sourceId);if(server!=null)sourceId=server.optString("id");}
   JSONArray options;try{options=HomeRules.sourceOptions(HomeSources.list(a),servers);}catch(Exception e){try{options=HomeRules.sourceOptions(new JSONArray(),servers);}catch(Exception x){options=new JSONArray();}}
   String id=HomeRules.selectedId(provider,sourceId);
-  TextView t=a.text(HomeRules.labelFor(options,id)+"  ▾",16,0xffffffff);t.setTypeface(null,1);
+  String label=HomeRules.labelFor(options,id);
+  TextView t=a.text(label+"  ▾",16,0xffffffff);t.setTypeface(null,1);t.setSingleLine(true);t.setEllipsize(android.text.TextUtils.TruncateAt.END);t.setMaxWidth(dp(260));
   t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
-  t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(dp(10),dp(6),dp(12),dp(6));t.setContentDescription("首页内容来源");
+  t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(dp(10),dp(6),dp(12),dp(6));t.setContentDescription("首页内容来源："+label);
   // 0.1.97：压在海报上时看不清，加半透明深色胶囊底
   t.setBackground(round(0x66000000,18));
   final JSONArray opts=options;t.setOnClickListener(v->pickSource(opts,id,t));return t;
