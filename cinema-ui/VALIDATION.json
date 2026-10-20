@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
   "ui_version": "0.1.108",
-  "android_device_tested": false,
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -30,7 +30,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "Candidate 0.1.108 not installed yet; device currently has 0.1.106. See DEVICE-VALIDATION.md for version-specific evidence.",
+  "real_source_note": "0.1.108 installed with the pinned certificate; landscape home background extends to left edge. Route timeout and detail lifecycle checks in progress. Earlier playback evidence remains version-specific.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -38,5 +38,25 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false
+  "torrent_boost_android_tested": false,
+  "apk_sha256": "e6387a2e83e93c1940cea61c175e2da1ea5428d000edcc789b1f31a5b31dac15",
+  "signing_certificate_sha256": "87a44d822580215fff01d604b1fedb31e52d69b42eb85ffbcd8b65aea21783d1",
+  "jvm_tests": {
+    "total": 66,
+    "initial_passed": 66,
+    "initial_failed": [],
+    "full_initial_run_passed": true
+  },
+  "device_validation": {
+    "tested_version": "0.1.108",
+    "tested_version_code": 109,
+    "device": "PJZ110",
+    "candidate_installed": true,
+    "checklist_complete": false,
+    "report": "DEVICE-VALIDATION.md",
+    "landscape_home_left_edge_verified": true,
+    "source_timeout_refresh_verified": false,
+    "completed_detail_after_timeout_verified": false,
+    "phone_previous_version": "0.1.106"
+  }
 }
