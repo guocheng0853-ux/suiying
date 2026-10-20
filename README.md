@@ -1,6 +1,6 @@
 # 随影 MediaPocket
 
-当前 main：0.1.99 / code 100，按用户要求合并设备修复；真机清单尚未完成，0.1.99 尚未安装复测。验证范围见 [真机验证记录](DEVICE-VALIDATION.md)，版本改动见 [更新记录](cinema-ui/README.md)。
+当前 main：0.1.100 / code 101。Emby 遇到只允许官方客户端的服务器时，会改用 `Client="Emby"` 再登录一次；真机尚未安装这个版本。验证范围见 [更新记录](cinema-ui/README.md)，此前的真机清单见 [真机验证记录](DEVICE-VALIDATION.md)。
 
 安卓播放器（Stremio 插件 + 影视仓配置，VLC 播放）。采用"基础 APK + Java 界面/功能扩展"的叠加构建方式，不是 Gradle 工程。
 

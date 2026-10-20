@@ -7,17 +7,21 @@ final class EmbyClient {
  static JSONObject authenticate(Context c,JSONObject server,String username,String password)throws Exception{
   String base=EmbyApi.server(server.optString("url"));String device=EmbyStore.deviceId(c);
   byte[] body=EmbyApi.authenticateBody(username,password).toString().getBytes(StandardCharsets.UTF_8);
-  HttpResult r=exchange("POST",EmbyApi.authenticateUrl(base),EmbyApi.authorization("Android",device,EmbyApi.VERSION,""),null,body,false);
-  if(r.code==401||r.code==403)throw new IOException("HTTP 401");
-  if(r.code<200||r.code>=300)throw new IOException("HTTP "+r.code);
+  String client=EmbyApi.clientOf(server);
+  HttpResult r=exchange("POST",EmbyApi.authenticateUrl(base),EmbyApi.authorization(client,"Android",device,EmbyApi.VERSION,""),null,body,false);
+  EmbyApi.AuthAttempt plan=EmbyApi.authAttempt(client,r.code,r.body,false);
+  if(plan.retry){client=plan.client;r=exchange("POST",EmbyApi.authenticateUrl(base),EmbyApi.authorization(client,"Android",device,EmbyApi.VERSION,""),null,body,false);plan=EmbyApi.authAttempt(client,r.code,r.body,true);}
+  if(plan.error!=null)throw new IOException(plan.error);
   JSONObject json=new JSONObject(r.body);String token=json.optString("AccessToken");JSONObject user=json.optJSONObject("User");
   if(token.isEmpty()||user==null||user.optString("Id").isEmpty())throw new IOException("服务器没有返回登录令牌");
   server.put("url",base).put("username",username).put("password",password==null?"":password).put("token",token).put("userId",user.optString("Id")).put("serverId",json.optString("ServerId"));
-  if(server.optString("name").isEmpty()||server.optString("name").equals(server.optString("url"))){try{JSONObject info=publicInfo(base);if(!info.optString("ServerName").isEmpty())server.put("name",info.optString("ServerName"));}catch(Exception ignored){}}
+  if(EmbyApi.OFFICIAL_CLIENT.equals(client))server.put("client",client);else server.remove("client");
+  if(server.optString("name").isEmpty()||server.optString("name").equals(server.optString("url"))){try{JSONObject info=publicInfo(base,client);if(!info.optString("ServerName").isEmpty())server.put("name",info.optString("ServerName"));}catch(Exception ignored){}}
   if(server.optString("name").isEmpty())server.put("name",host(base));
   return server;
  }
- static JSONObject publicInfo(String base)throws Exception{HttpResult r=exchange("GET",EmbyApi.join(EmbyApi.server(base),"/System/Info/Public"),EmbyApi.authorization("Android","mediapocket",EmbyApi.VERSION,""),null,null,false);if(r.code!=200)throw new IOException("HTTP "+r.code);return new JSONObject(r.body);}
+ static JSONObject publicInfo(String base)throws Exception{return publicInfo(base,EmbyApi.CLIENT);}
+ static JSONObject publicInfo(String base,String client)throws Exception{HttpResult r=exchange("GET",EmbyApi.join(EmbyApi.server(base),"/System/Info/Public"),EmbyApi.authorization(client,"Android","mediapocket",EmbyApi.VERSION,""),null,null,false);if(r.code!=200)throw new IOException("HTTP "+r.code);return new JSONObject(r.body);}
  static JSONObject views(Context c,JSONObject server)throws Exception{return json(c,server,"GET","/Users/"+EmbyApi.enc(server.optString("userId"))+"/Views",null);}
  static final String FIELDS="Overview,ProductionYear,CommunityRating,RunTimeTicks,Genres,UserData,ImageTags,BackdropImageTags";
  static JSONObject resume(Context c,JSONObject server)throws Exception{return json(c,server,"GET","/Users/"+EmbyApi.enc(server.optString("userId"))+"/Items/Resume?Limit=16&MediaTypes=Video&Fields="+FIELDS+"&EnableImages=true",null);}
@@ -42,7 +46,7 @@ final class EmbyClient {
  static JSONObject thumbnailSet(Context c,JSONObject server,String itemId,String mediaSourceId,int width)throws Exception{return json(c,server,"GET",EmbyApi.thumbnailSetPath(itemId,mediaSourceId,width),null);}
  static byte[] bytes(Context c,JSONObject server,String path)throws Exception{
   String[] bases=EmbyCue.bases(server.optString("url"),server.optJSONArray("backups"));Exception last=null;
-  for(String base:bases){try{return readBytes(EmbyApi.withKey(EmbyApi.join(base,path),server.optString("token")),EmbyApi.authorization("Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"));}catch(Exception e){last=e;if(!EmbyCue.retryable(e))throw e;}}
+  for(String base:bases){try{return readBytes(EmbyApi.withKey(EmbyApi.join(base,path),server.optString("token")),EmbyApi.authorization(EmbyApi.clientOf(server),"Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"));}catch(Exception e){last=e;if(!EmbyCue.retryable(e))throw e;}}
   if(last instanceof Exception)throw (Exception)last;throw new java.io.IOException("无法下载");
  }
  static void playing(Context c,JSONObject server,JSONObject body)throws Exception{json(c,server,"POST","/Sessions/Playing",body.toString());}
@@ -59,10 +63,13 @@ final class EmbyClient {
  static HttpResult call(Context c,JSONObject server,String method,String path,String body,boolean retry)throws Exception{
   String[] bases=EmbyCue.bases(server.optString("url"),server.optJSONArray("backups"));if(bases.length==0)bases=new String[]{server.optString("url")};
   byte[] bytes=body==null?null:body.getBytes(StandardCharsets.UTF_8);IOException last=new IOException("无法连接服务器");
+  String client=EmbyApi.clientOf(server);boolean clientRetried=false;
   for(int i=0;i<bases.length;i++){
-   try{HttpResult r=exchange(method,EmbyApi.join(bases[i],path),EmbyApi.authorization("Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"),bytes,true);
+   try{HttpResult r=exchange(method,EmbyApi.join(bases[i],path),EmbyApi.authorization(client,"Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"),bytes,true);
+    if(!clientRetried){EmbyApi.AuthAttempt plan=EmbyApi.authAttempt(client,r.code,r.body,false);if(plan.retry){client=plan.client;server.put("client",client);clientRetried=true;r=exchange(method,EmbyApi.join(bases[i],path),EmbyApi.authorization(client,"Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"),bytes,true);}}
     if(r.code==401&&retry){authenticate(c,server,server.optString("username"),server.optString("password"));EmbyStore.save(c,server);return call(c,server,method,path,body,false);}
     if(r.code==401)throw new IOException("HTTP 401");
+    if(EmbyApi.clientRejected(r.code,r.body))throw new IOException(EmbyApi.authAttempt(client,r.code,r.body,true).error);
     if(r.code>=500&&i+1<bases.length){last=new IOException("HTTP "+r.code);continue;}
     if(r.code<200||r.code>=300)throw new IOException("HTTP "+r.code);
     return r;
