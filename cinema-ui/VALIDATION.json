@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.107",
+  "ui_version": "0.1.108",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -19,7 +19,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6443,
   "dex_files": 3,
-  "main_version_code": 108,
+  "main_version_code": 109,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",
@@ -30,7 +30,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
+  "real_source_note": "Candidate 0.1.108 not installed yet; device currently has 0.1.106. See DEVICE-VALIDATION.md for version-specific evidence.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
