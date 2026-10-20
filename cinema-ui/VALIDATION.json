@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.101",
+  "ui_version": "0.1.102",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -19,7 +19,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6373,
   "dex_files": 3,
-  "main_version_code": 102,
+  "main_version_code": 103,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",
@@ -30,7 +30,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "0.1.101 installed with the pinned signing certificate. Bottom navigation tested on PJZ110: all four tabs, light/dark themes, landscape and 150% font scale. Playback checklist remains incomplete; earlier playback evidence belongs to 0.1.99. See DEVICE-VALIDATION.md.",
+  "real_source_note": "0.1.102 installed with the pinned certificate; stale Emby source label and dropdown selection match actual fallback server on PJZ110. Full playback checklist remains incomplete. Bottom navigation evidence belongs to 0.1.101 and playback evidence to 0.1.99.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -39,7 +39,7 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "apk_sha256": "821bf0b26dfb8a37f59b6abd8466d829cd51d634b57dae6d11ae0d1c9b704668",
+  "apk_sha256": "6db66b8a7378ae47a3b88d182025936152e6a5a134b973e2f49c737e531ad609",
   "signing_certificate_sha256": "87a44d822580215fff01d604b1fedb31e52d69b42eb85ffbcd8b65aea21783d1",
   "jvm_tests": {
     "total": 65,
@@ -50,10 +50,10 @@
     "full_initial_run_passed": true
   },
   "device_validation": {
-    "tested_version": "0.1.101",
-    "tested_version_code": 102,
+    "tested_version": "0.1.102",
+    "tested_version_code": 103,
     "device": "PJZ110",
-    "candidate_version": "0.1.101",
+    "candidate_version": "0.1.102",
     "candidate_installed": true,
     "checklist_complete": false,
     "report": "DEVICE-VALIDATION.md",
@@ -73,7 +73,9 @@
     "restoration": {
       "font_scale": "1.0 restored",
       "rotation": "free restored",
-      "appearance": "light; restoring previous dark theme pending exclusive device access"
-    }
+      "appearance": "original dark theme restored and confirmed"
+    },
+    "source_name_device_tested": true,
+    "bottom_nav_tested_version": "0.1.101"
   }
 }
