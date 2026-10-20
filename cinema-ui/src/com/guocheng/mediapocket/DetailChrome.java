@@ -15,13 +15,13 @@ final class DetailChrome {
   for(int i=0;i<a.body.getChildCount();i++){View v=a.body.getChildAt(i);if(v instanceof TextView&&((TextView)v).getText().toString().equals("剧集"))keep=true;if(keep)episodes.add(v);}
   for(View v:episodes)((android.view.ViewGroup)v.getParent()).removeView(v);a.body.removeAllViews();
   String art=meta.optString("background");if(art.isEmpty())art=meta.optString("poster");boolean hasArt=!art.isEmpty();
-  FrameLayout hero=new FrameLayout(a);hero.setBackgroundColor(a.card());
+  FrameLayout hero=new FrameLayout(a);hero.setTag("mp-full-width");hero.setBackgroundColor(a.card());
   artwork=new ImageView(a);artwork.setScaleType(ImageView.ScaleType.CENTER_CROP);hero.addView(artwork,new FrameLayout.LayoutParams(-1,-1));
   View shade=new View(a);shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x18000000,0x00000000,a.surface()}));hero.addView(shade,new FrameLayout.LayoutParams(-1,-1));
   LinearLayout cap=new LinearLayout(a);cap.setOrientation(1);cap.setPadding(dp(16),0,dp(16),dp(12));String logo=meta.optString("logo");
   if(!logo.isEmpty()){ImageView mark=new ImageView(a);mark.setScaleType(ImageView.ScaleType.FIT_START);TvPosterImages.load(a,mark,logo,dp(320));cap.addView(mark,new LinearLayout.LayoutParams(-1,dp(92)));}
   artworkState=label(hasArt?"正在加载封面…":"暂无封面",12,a.muted());cap.addView(artworkState);hero.addView(cap,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
-  int width=a.getResources().getDisplayMetrics().widthPixels;LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(width,hasArt?Math.min(dp(390),(int)(width*.90)):a.safeTop+dp(110));hp.setMargins(-dp(16),0,-dp(16),dp(8));a.body.addView(hero,hp);
+  int width=a.getResources().getDisplayMetrics().widthPixels;LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(width,hasArt?Math.min(dp(390),(int)(width*.90)):a.safeTop+dp(110));hp.setMargins(-a.body.getPaddingLeft(),0,-a.body.getPaddingRight(),dp(8));a.body.addView(hero,hp);
   if(hasArt){TvPosterImages.load(a,artwork,art,width);final int token=a.epoch;artwork.postDelayed(()->checkArtwork(hero,token,0),1200);}
   TextView title=label(DetailMetadata.useful(meta)?meta.optString("name"):"影片资料暂不可用",25,a.ink());title.setTypeface(null,1);block(title,12);
   LinearLayout facts=new LinearLayout(a);facts.setGravity(Gravity.CENTER_VERTICAL);TextView fact=label(info(meta),14,a.ink());facts.addView(fact,new LinearLayout.LayoutParams(0,-2,1));String cert=certification(meta);if(!cert.isEmpty()){TextView badge=label(cert,12,a.ink());badge.setPadding(dp(5),dp(1),dp(5),dp(1));badge.setBackground(round(0,4,a.muted()));facts.addView(badge);}if(facts.getChildCount()>1||!info(meta).isEmpty())block(facts,8);
