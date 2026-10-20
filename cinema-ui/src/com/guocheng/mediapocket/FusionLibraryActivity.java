@@ -33,7 +33,7 @@ public final class FusionLibraryActivity extends Activity {
  int accentFill(){return light?0xff2f6f8f:0xffa2d0ed;}int accentInk(){return light?0xffffffff:0xff0c2a33;}
  String watchId(String id,String episode){try{return "tvbox:"+TvSpiderRules.digest((session.url+"|"+session.site.optString("key")+"|"+id+"|"+episode).getBytes("UTF-8"),"SHA-256");}catch(Exception e){return "";}}
  /** 0.1.97 与 Stremio / Emby 详情同一版式：通栏大图 + 渐变、大标题、信息行、主按钮（有进度就继续）、可展开简介、线路胶囊、紧凑选集格。 */
- void detail(String id){screen("影片详情");work("正在读取影片与选集…",()->{JSONObject response=FusionCatalog.request(this,session,"detail",id,"",1);JSONArray list=response.optJSONArray("list");JSONObject m=list==null?null:list.optJSONObject(0);if(m==null)throw new Exception("站点未返回详情");return ()->{current=m;String title=m.optString("vod_name","影片");status.setText(session.site.optString("name"));
+ void detail(String id){screen("影片详情");work("正在读取影片与选集…",()->{JSONObject response=FusionCatalog.request(this,session,"detail",id,"",1);JSONArray list=response.optJSONArray("list");JSONObject m=list==null?null:list.optJSONObject(0);if(m==null)throw new Exception("站点未返回详情");return ()->{current=m;String title=m.optString("vod_name","影片");status.setText(session.site.optString("name"));detailExtras(id,m);
   int sw=getResources().getDisplayMetrics().widthPixels,heroH=DetailLandscape.heroHeight(this,Math.min(dp(360),(int)(sw*.62f)));
   FrameLayout hero=new FrameLayout(this);hero.setTag("mp-detail-hero");ImageView cover=new ImageView(this);cover.setScaleType(ImageView.ScaleType.CENTER_CROP);hero.addView(cover,new FrameLayout.LayoutParams(-1,-1));load(cover,m.optString("vod_pic"),sw);final int detailToken=epoch;if(m.optString("vod_pic").isEmpty())FusionArtwork.resolve(this,m,match->runOnUiThread(()->{if(detailToken==epoch&&!dead)load(cover,match.optString("poster"),sw);}));
   View fade=new View(this);fade.setBackground(new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,0x00000000,(surface()&0xffffff)|0xcc000000,surface()}));hero.addView(fade,new FrameLayout.LayoutParams(-1,-1));
@@ -66,12 +66,16 @@ public final class FusionLibraryActivity extends Activity {
  };},()->detail(id));}
  void paintChips(LinearLayout chips,int on){for(int i=0;i<chips.getChildCount();i++){View c=chips.getChildAt(i);boolean sel=i==on;c.setBackground(rounded(sel?accentFill():(light?0x14000000:0x24ffffff),18));if(c instanceof TextView)((TextView)c).setTextColor(sel?accentInk():ink());}}
  /** 选集格：一行 4 个（集名长时 2 个），看过的变淡；最多 1000 项。 */
+ /** 0.1.106：详情页右上角「收藏」，收藏后集数变多会提醒；打开详情即算看过最新一集。 */
+ void detailExtras(String id,JSONObject m){try{LinearLayout header=(LinearLayout)root.getChildAt(0);for(int i=header.getChildCount()-1;i>=0;i--)if("mp-fav".equals(header.getChildAt(i).getTag()))header.removeViewAt(i);
+  JSONObject meta=FusionCatalog.normalize(session,new JSONArray().put(m),getIntent().getStringExtra("category")==null?"":getIntent().getStringExtra("category")).optJSONObject(0);if(meta==null)return;meta.put("fusion.video",id);meta.put("id","tvbox-fav:"+session.site.optString("key")+":"+id);
+  header.addView(FollowUp.heart(this,meta,ink()),Math.max(0,header.getChildCount()-1),new LinearLayout.LayoutParams(-2,dp(44)));FollowUp.opened(this,meta.optString("id"),FollowRules.fusionCount(m.optString("vod_play_url")));}catch(Exception ignored){}}
  void fillEpisodes(LinearLayout grid,String id,String title,String flag,String group){
   grid.removeAllViews();java.util.List<String[]> eps=new java.util.ArrayList<>();int maxLen=0;
   for(String encoded:group.split("#")){if(eps.size()>=1000)break;String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;eps.add(ep);maxLen=Math.max(maxLen,ep[0].length());}
   int cols=maxLen<=6?4:2;LinearLayout line=null;
   for(int i=0;i<eps.size();i++){final String[] ep=eps.get(i);if(line==null||line.getChildCount()==cols){line=new LinearLayout(this);LinearLayout.LayoutParams ll=new LinearLayout.LayoutParams(-1,-2);ll.bottomMargin=dp(8);grid.addView(line,ll);}
-   Button b=button(ep[0],()->play(id,title,flag,ep[0],ep[1]));b.setSingleLine(true);b.setEllipsize(android.text.TextUtils.TruncateAt.END);b.setTextSize(13);b.setPadding(dp(6),0,dp(6),0);b.setMinWidth(0);b.setMinimumWidth(0);
+   Button b=button(ep[0],()->play(id,title,flag,ep[0],ep[1]));b.setOnLongClickListener(v->{OfflineDownloads.fusion(this,session,flag,ep[1],title+" · "+ep[0],watchId(id,ep[0]),current);return true;});b.setSingleLine(true);b.setEllipsize(android.text.TextUtils.TruncateAt.END);b.setTextSize(13);b.setPadding(dp(6),0,dp(6),0);b.setMinWidth(0);b.setMinimumWidth(0);
    if(prefs.getInt("pos:"+watchId(id,ep[0]),0)>10000)b.setTextColor(muted());
    LinearLayout.LayoutParams bl=new LinearLayout.LayoutParams(0,dp(42),1f);if(line.getChildCount()<cols-1)bl.rightMargin=dp(8);line.addView(b,bl);}
   if(line!=null)while(line.getChildCount()<cols){View pad=new View(this);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(0,dp(42),1f);if(line.getChildCount()<cols-1)pl.rightMargin=dp(8);line.addView(pad,pl);}

@@ -45,7 +45,7 @@ public final class EmbyLibraryActivity extends Activity {
   * 0.1.97 详情页与 Stremio 详情同一版式：通栏背景大图 + 渐变到底色、大标题、信息行、一个主按钮、可展开简介；
   * 剧集的季用横向胶囊切换，集列表在同一页，不再多点一层。
   */
- void renderDetail(JSONObject server,JSONObject item,JSONArray seasons){try{JSONObject meta=EmbyApi.meta(server,item);title.setText("");
+ void renderDetail(JSONObject server,JSONObject item,JSONArray seasons){try{JSONObject meta=EmbyApi.meta(server,item);title.setText("");detailExtras(server,item,meta);
   int sw=getResources().getDisplayMetrics().widthPixels,heroH=DetailLandscape.heroHeight(this,Math.min(dp(360),(int)(sw*.62f)));
   FrameLayout hero=new FrameLayout(this);hero.setTag("mp-detail-hero");ImageView cover=new ImageView(this);cover.setScaleType(ImageView.ScaleType.CENTER_CROP);hero.addView(cover,new FrameLayout.LayoutParams(-1,-1));TvPosterImages.load(this,cover,meta.optString("background",meta.optString("poster")),sw);
   View fade=new View(this);fade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,0x00000000,(surface()&0xffffff)|0xcc000000,surface()}));hero.addView(fade,new FrameLayout.LayoutParams(-1,-1));
@@ -68,6 +68,11 @@ public final class EmbyLibraryActivity extends Activity {
    seasonEpisodes(server,item.optString("Id"),first,list,primary,true);
   }
  }catch(Exception e){status.setText(EmbyApi.explain(e));}}
+ /** 0.1.106：详情页右上角「收藏」（剧集收藏后追更新）；电影 / 单集多一个「下载」。 */
+ void detailExtras(JSONObject server,JSONObject item,JSONObject meta){try{LinearLayout header=(LinearLayout)root.getChildAt(0);for(int i=header.getChildCount()-1;i>=0;i--){Object tag=header.getChildAt(i).getTag();if("mp-fav".equals(tag)||"mp-dl".equals(tag))header.removeViewAt(i);}
+  String type=item.optString("Type");if("Movie".equals(type)||"Episode".equals(type)){TextView dl=text("⬇ 下载",15);dl.setTag("mp-dl");dl.setGravity(Gravity.CENTER);dl.setPadding(dp(12),0,dp(12),0);dl.setContentDescription("下载到本机，离线观看");String name=meta.optString("name")+("Episode".equals(type)?" · "+EmbyApi.line(item):"");dl.setOnClickListener(v->OfflineDownloads.emby(this,server,item.optString("Id"),name,meta));header.addView(dl,new LinearLayout.LayoutParams(-2,dp(44)));}
+  header.addView(FollowUp.heart(this,meta,ink()),new LinearLayout.LayoutParams(-2,dp(44)));
+  if("Series".equals(type))FollowUp.openedEmby(this,server,item.optString("Id"),meta.optString("id"));}catch(Exception ignored){}}
  void paintChips(LinearLayout chips,int on){for(int i=0;i<chips.getChildCount();i++){View c=chips.getChildAt(i);boolean sel=i==on;c.setBackground(rounded(sel?accentFill():(light?0x14000000:0x24ffffff),18));if(c instanceof TextView)((TextView)c).setTextColor(sel?accentInk():ink());}}
  /** 在详情页内加载一季的集；首次加载时顺便决定主按钮播哪一集（有进度的 → 第一个没看完的 → 第一集）。 */
  void seasonEpisodes(JSONObject server,String seriesId,String seasonId,LinearLayout list,Button primary,boolean decidePrimary){
@@ -77,7 +82,7 @@ public final class EmbyLibraryActivity extends Activity {
     JSONObject resume=null,unplayed=null;
     for(int i=0;i<items.length();i++){JSONObject ep=items.optJSONObject(i);if(ep==null)continue;JSONObject ud=ep.optJSONObject("UserData");boolean played=ud!=null&&ud.optBoolean("Played");long pos=ud==null?0:ud.optLong("PlaybackPositionTicks");if(resume==null&&pos>0&&!played)resume=ep;if(unplayed==null&&!played)unplayed=ep;
      String label=EmbyApi.line(ep);if(label.isEmpty()||label.equals("续播"))label=ep.optString("Name","剧集");String mark=played?"  ✓":pos>0?"  · 看到一半":"";String id=ep.optString("Id");
-     Button b=button(label+mark,()->EmbyPlayback.playItem(this,server,id));b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);if(played)b.setTextColor(muted());LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(6);list.addView(b,p);}
+     Button b=button(label+mark,()->EmbyPlayback.playItem(this,server,id));final String dlName=ep.optString("SeriesName",title.getText().toString())+" · "+label;b.setOnLongClickListener(v->{OfflineDownloads.emby(this,server,id,dlName,null);return true;});b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);if(played)b.setTextColor(muted());LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(6);list.addView(b,p);}
     if(decidePrimary){JSONObject pick=resume!=null?resume:unplayed!=null?unplayed:items.optJSONObject(0);if(pick!=null){String l=EmbyApi.line(pick);if(l.isEmpty()||l.equals("续播"))l=pick.optString("Name");primary.setText((resume!=null?"▶  继续 ":"▶  播放 ")+l);primary.setEnabled(true);String id=pick.optString("Id");primary.setOnClickListener(v->EmbyPlayback.playItem(this,server,id));}}
    });}catch(Exception e){runOnUiThread(()->{if(dead||token!=epoch)return;list.removeAllViews();TextView err=text(EmbyApi.explain(e),13);err.setTextColor(muted());list.addView(err);});}});
  }

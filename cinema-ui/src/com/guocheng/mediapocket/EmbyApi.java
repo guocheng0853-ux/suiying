@@ -145,6 +145,23 @@ final class EmbyApi {
  static long msToTicks(long ms){if(ms<=0)return 0L;if(ms>Long.MAX_VALUE/TICKS_PER_MS)return Long.MAX_VALUE;return ms*TICKS_PER_MS;}
  static long ticksToMs(long ticks){if(ticks<=0)return 0L;return ticks/TICKS_PER_MS;}
  static boolean played(long positionTicks,long runtimeTicks){if(positionTicks<=0||runtimeTicks<=0)return false;if(runtimeTicks-positionTicks<=PLAYED_TAIL_TICKS)return true;return positionTicks*100L>=runtimeTicks*90L;}
+ /**
+  * 0.1.106 转码兜底地址：让服务器转成 H.264 + AAC 的 HLS（手机一定能解）。直放失败、自动换源时作为第二个片源。
+  * 码率上限 20 Mbps、最长边 1920；字幕不烧进画面（字幕仍走外挂）。需要服务器给这个用户开了「允许转码」。
+  */
+ static String transcodeUrl(String base,String itemId,String mediaSourceId,String playSessionId,String token,String deviceId){
+  StringBuilder q=new StringBuilder("/Videos/").append(enc(itemId)).append("/master.m3u8?VideoCodec=h264&AudioCodec=aac&MaxStreamingBitrate=20000000&VideoBitrate=18000000&AudioBitrate=192000&MaxWidth=1920&TranscodingMaxAudioChannels=2&SegmentContainer=ts&MinSegments=1&BreakOnNonKeyFrames=True&SubtitleMethod=External");
+  if(mediaSourceId!=null&&!mediaSourceId.isEmpty())q.append("&MediaSourceId=").append(enc(mediaSourceId));
+  q.append("&PlaySessionId=").append(enc(playSessionId==null||playSessionId.isEmpty()?"suiying-"+System.currentTimeMillis():playSessionId+"-tc"));
+  if(deviceId!=null&&!deviceId.isEmpty())q.append("&DeviceId=").append(enc(deviceId));
+  return withKey(join(server(base),q.toString()),token);
+ }
+ /** 在直放片源后面接一个转码片源（同一集、同一进度）；已经是转码的就不加。 */
+ static JSONArray withTranscode(JSONObject stream,String base,String token,String deviceId)throws JSONException{
+  JSONArray out=new JSONArray().put(stream);if(!stream.optBoolean("emby.direct",false))return out;
+  JSONObject t=new JSONObject(stream.toString());t.put("url",transcodeUrl(base,stream.optString("emby.item"),stream.optString("emby.mediaSource"),stream.optString("emby.playSession"),token,deviceId));
+  t.put("title","Emby 服务器转码（兼容模式）").put("emby.direct",false).put("emby.transcodeFallback",true);out.put(t);return out;
+ }
  static String directUrl(String base,String itemId,String mediaSourceId,String playSessionId,String token){
   StringBuilder q=new StringBuilder("/Videos/").append(enc(itemId)).append("/stream?static=true");
   if(mediaSourceId!=null&&!mediaSourceId.isEmpty())q.append("&MediaSourceId=").append(enc(mediaSourceId));

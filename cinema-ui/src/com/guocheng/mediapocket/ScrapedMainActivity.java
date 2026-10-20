@@ -13,7 +13,7 @@ public final class ScrapedMainActivity extends MainActivity {
   light=appearance.equals("light")||(appearance.equals("system")&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)!=Configuration.UI_MODE_NIGHT_YES);
   p.edit().putString("themeMode",light?"light":"dark").apply();
   getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);UiImages.configure(getCacheDir());
-  HomeSources.seed(this);String imported=ConfigImport.consume(this);if(saved!=null)pendingScroll=saved.getInt("home.scrollY",-1);super.onCreate(saved);try{addons=PrivateTorrentAddons.sync(this,addons,false);}catch(Exception e){say("私用播放源初始化失败："+e.getClass().getSimpleName());}if(imported!=null)android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();
+  TvSupport.install(getApplication());HomeSources.seed(this);String imported=ConfigImport.consume(this);if(saved!=null)pendingScroll=saved.getInt("home.scrollY",-1);super.onCreate(saved);try{addons=PrivateTorrentAddons.sync(this,addons,false);}catch(Exception e){say("私用播放源初始化失败："+e.getClass().getSimpleName());}if(imported!=null)android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();if(saved!=null&&saved.getBoolean("cinema.settings"))preferences();FollowUp.start(this);if(body!=null)body.postDelayed(()->{if(!isFinishing())UpdateCheck.auto(this);},4000);
  }
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String imported=ConfigImport.consume(this);if(imported!=null){homeProvider="tvbox";android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();home();}}
  int surface(){return light?0xffedf5f5:0xff1c1b21;}int card(){return light?0xffffffff:0xff27252e;}int ink(){return light?0xff173740:0xfff5fafb;}int muted(){return light?0xff52757c:0xffafcbd2;}int accent(){return light?0xff67549c:0xffd0bfff;}
@@ -61,6 +61,7 @@ public final class ScrapedMainActivity extends MainActivity {
  @Override void home(){if(keepHome)return;
   homeProvider=prefs.getString("fusion.homeProvider","stremio");selectNav("首页");clear("");homeCanvas=true;body.removeAllViews();updateInsets();createHero();
   if(homeChrome==null)homeChrome=new HomeChrome(this);
+  FollowUp.homeSection(this);
   if("emby".equals(homeProvider)){EmbyHome.show(this);restoreScroll();return;}
   {JSONArray raw=array("history"),history=HomeRules.dedupeHistory(raw);if(history.length()!=raw.length())prefs.edit().putString("history",history.toString()).apply();homeChrome.continueWatching(history);}
   if(!homeProvider.equals("stremio")&&sectionOn("fusion"))fusionHome();
@@ -221,6 +222,13 @@ public final class ScrapedMainActivity extends MainActivity {
   body.addView(button(PlaybackPrefs.doubleTapCenter(prefs)?"双击中间播放暂停：开":"双击中间播放暂停：关",()->{prefs.edit().putBoolean("pref.doubleTapCenter",!PlaybackPrefs.doubleTapCenter(prefs)).apply();preferences();}));
   PlayerFeatureSettings.add(this);
   body.addView(button("恢复已隐藏的首页分区",()->{String hidden=prefs.getString("home.hiddenResume","[]");prefs.edit().putString("home.hiddenSections","").putString("home.hiddenResume","[]").apply();EmbyPlayback.IO.execute(()->{try{JSONArray ids=new JSONArray(hidden);for(int i=0;i<ids.length();i++){String id=ids.optString(i);if(!EmbyApi.isEmbyId(id))continue;JSONObject server=EmbyStore.get(this,EmbyApi.serverOf(id));if(server!=null)EmbyClient.hideFromResume(this,server,EmbyApi.itemOf(id),false);}}catch(Exception ignored){}});Toast.makeText(this,"已恢复本机隐藏的分区。Emby 上隐藏的条目也已请求重新显示",0).show();}));
+  // 0.1.106 新增：备份恢复、离线下载、追剧提醒、系统媒体控制、检查更新
+  body.addView(button("备份与恢复",()->BackupActivity.menu(this)));
+  body.addView(button(OfflineDownloads.label(this),()->startActivity(new android.content.Intent(this,DownloadsActivity.class))));
+  body.addView(button(FollowUp.label(this),()->{SettingsLayout.remember(this);FollowUp.setEnabled(this,!FollowUp.enabled(this));preferences();}));
+  body.addView(button("系统媒体控制："+(prefs.getBoolean("media.controls",true)?"开":"关")+"（耳机线控、通知栏和锁屏控制）",()->{SettingsLayout.remember(this);prefs.edit().putBoolean("media.controls",!prefs.getBoolean("media.controls",true)).apply();preferences();}));
+  body.addView(button("检查更新：当前 "+BackupActivity.version(this),()->UpdateCheck.manual(this)));
+  body.addView(button("自动检查更新："+(prefs.getBoolean("update.auto",true)?"开":"关")+"（打开时每 12 小时查一次 GitHub 发布）",()->{SettingsLayout.remember(this);prefs.edit().putBoolean("update.auto",!prefs.getBoolean("update.auto",true)).apply();preferences();}));
   SettingsLayout.apply(this);
  }
  String embySkipLabel(){String m=EmbyCue.skipMode(prefs.getString("emby.skip",EmbyCue.ASK));return "跳过片头片尾："+(EmbyCue.AUTO.equals(m)?"自动":EmbyCue.OFF.equals(m)?"关闭":"询问");}
