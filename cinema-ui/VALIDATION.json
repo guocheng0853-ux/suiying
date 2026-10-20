@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
   "ui_version": "0.1.101",
-  "android_device_tested": false,
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -30,7 +30,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "Candidate 0.1.101 has not been installed. Partial device evidence belongs to 0.1.99; see DEVICE-VALIDATION.md. Phone currently used by another debugging session.",
+  "real_source_note": "0.1.101 installed with the pinned signing certificate. Bottom navigation tested on PJZ110: all four tabs, light/dark themes, landscape and 150% font scale. Playback checklist remains incomplete; earlier playback evidence belongs to 0.1.99. See DEVICE-VALIDATION.md.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -50,16 +50,30 @@
     "full_initial_run_passed": true
   },
   "device_validation": {
-    "tested_version": "0.1.99",
-    "tested_version_code": 100,
+    "tested_version": "0.1.101",
+    "tested_version_code": 102,
     "device": "PJZ110",
     "candidate_version": "0.1.101",
-    "candidate_installed": false,
+    "candidate_installed": true,
     "checklist_complete": false,
     "report": "DEVICE-VALIDATION.md",
     "three_initial_fixes_verified": true,
     "real_series_video_rendered": true,
-    "bottom_nav_device_tested": false,
-    "bottom_nav_offline_preview": "deliverables/home-nav-preview.png"
+    "bottom_nav_device_tested": true,
+    "bottom_nav_offline_preview": "deliverables/home-nav-preview.png",
+    "playback_evidence_version": "0.1.99",
+    "bottom_nav_checks": {
+      "four_tabs_and_selected_state": true,
+      "light_theme": true,
+      "dark_theme": true,
+      "landscape": true,
+      "font_scale_150_percent": true,
+      "full_playback_checklist": false
+    },
+    "restoration": {
+      "font_scale": "1.0 restored",
+      "rotation": "free restored",
+      "appearance": "light; restoring previous dark theme pending exclusive device access"
+    }
   }
 }
