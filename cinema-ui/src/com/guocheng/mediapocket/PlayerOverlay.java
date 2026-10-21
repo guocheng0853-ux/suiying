@@ -116,6 +116,7 @@ final class PlayerOverlay {
   labels.add(DanmuController.label(a));actions.add(()->DanmuController.menu(a));
   // 0.1.97：解码只在顶栏芯片、音轨只在面板，不再打开原版「播放器」菜单；外部播放器单独一项
   labels.add("线路与片源");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
+  labels.add(AudioEffects.label(a));actions.add(()->AudioEffects.menu(a));
   labels.add("定时关闭");actions.add(()->PlayerSidePanel.sleepMenu(a));
   labels.add("流信息");actions.add(()->PlayerSidePanel.infoDialog(a));
   labels.add("播放设置");actions.add(()->PlayerFeatureSettings.playback(a));

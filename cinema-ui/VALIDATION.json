@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.109",
-  "android_device_tested": true,
+  "ui_version": "0.1.110",
+  "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -17,9 +17,9 @@
   ],
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "apk_class_resolution": "passed",
-  "unique_classes": 6443,
+  "unique_classes": 6450,
   "dex_files": 3,
-  "main_version_code": 110,
+  "main_version_code": 111,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",
@@ -30,7 +30,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "0.1.109 installed with pinned certificate; TVBox primary button verified in portrait and landscape. Playback and full checklist not revalidated on 0.1.109. Landscape detail left gap remains, unlike the previously checked home screen.",
+  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -38,43 +38,5 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false,
-  "apk_sha256": "b69e0ff713c0cf459d19f7b7254f7e969270279a65afeba069a8afe644515c6b",
-  "signing_certificate_sha256": "87a44d822580215fff01d604b1fedb31e52d69b42eb85ffbcd8b65aea21783d1",
-  "jvm_tests": {
-    "total": 66,
-    "initial_passed": 66,
-    "initial_failed": [],
-    "full_initial_run_passed": true
-  },
-  "device_validation": {
-    "tested_version": "0.1.109",
-    "tested_version_code": 110,
-    "candidate_installed": true,
-    "checklist_complete": false,
-    "report": "DEVICE-VALIDATION.md",
-    "detail_button_fix_device_verified": true,
-    "portrait_button_verified": true,
-    "landscape_button_verified": true,
-    "evidence": [
-      "155",
-      "157",
-      "160"
-    ],
-    "emby_button_device_retested": false,
-    "landscape_detail_left_gap_still_present": true,
-    "restoration": {
-      "rotation": "temporary landscape lock; testing in progress",
-      "playback_speed": "attempted 1.25 earlier; restoration to 1.0 pending",
-      "auto_switch": "on observed in 141; restoration to off pending",
-      "home_source": "tvbox; prior Emby selection restoration pending"
-    }
-  },
-  "previous_device_validation": {
-    "version": "0.1.108",
-    "record_commit": "8f71811",
-    "movie_2160p_selected_file_frames_observed": true,
-    "movie_2160p_resolution_confirmed": false,
-    "evidence": "151-152 explicit 2160p file selection; 153 actual video frames; 154 skipped because target not focused"
-  }
+  "torrent_boost_android_tested": false
 }
