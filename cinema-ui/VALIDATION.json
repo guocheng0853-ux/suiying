@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.116",
+  "ui_version": "0.1.117",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -18,11 +18,11 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 71,
+  "jvm_test_programs_passed": 72,
   "apk_class_resolution": "passed",
-  "unique_classes": 8969,
+  "unique_classes": 9008,
   "dex_files": 3,
-  "main_version_code": 117,
+  "main_version_code": 118,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",

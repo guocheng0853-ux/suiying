@@ -32,6 +32,6 @@ final class AudioEffects {
   rows.add(CinemaMenu.choice("夜间模式（大幅压低爆炸和重低音）",cur.equals(AudioEffectRules.NIGHT),()->choose(a,AudioEffectRules.NIGHT)));
   int n=presetCount();for(int i=0;i<n;i++){final int at=i;String v=AudioEffectRules.PRESET+i;String name=AudioEffectRules.chinese(presetName(i));if(name.equals("平直"))continue;rows.add(CinemaMenu.choice("均衡器 · "+name,cur.equals(v),()->choose(a,v)));}
   CinemaMenu.show(a,"音效",rows);}
- static void choose(Activity a,String value){prefs(a).edit().putString(KEY,value).apply();Object p=player(a);boolean ok=p!=null&&apply(p,value);if(p!=null&&ok)APPLIED.put(p,value);
+ static void choose(Activity a,String value){prefs(a).edit().putString(KEY,value).putInt("audio.media3Preset",-1).apply();Object p=player(a);boolean ok=p!=null&&apply(p,value);if(p!=null&&ok)APPLIED.put(p,value);
   int i=AudioEffectRules.presetIndex(value);FullscreenMode.hud(a,ok||p==null?"音效 · "+AudioEffectRules.label(value,i>=0?presetName(i):""):"这个片源暂时无法套用音效");}
 }
