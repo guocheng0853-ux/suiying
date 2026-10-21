@@ -29,8 +29,8 @@
   "torrentclaw_removal_retained": true,
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
-  "real_source_playback_tested": false,
-  "real_source_note": "0.1.108 installed with the pinned certificate; landscape home background extends to left edge. Route timeout and detail lifecycle checks in progress. Earlier playback evidence remains version-specific.",
+  "real_source_playback_tested": true,
+  "real_source_note": "0.1.108 installed with the pinned certificate. TVBox movie detail remains usable more than 45 seconds after initial loading; actual 1080p video frames observed, two version labels verified. Full checklist and all-source playback remain incomplete.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -55,8 +55,15 @@
     "checklist_complete": false,
     "report": "DEVICE-VALIDATION.md",
     "landscape_home_left_edge_verified": true,
-    "source_timeout_refresh_verified": false,
-    "completed_detail_after_timeout_verified": false,
-    "phone_previous_version": "0.1.106"
+    "source_timeout_refresh_verified": true,
+    "completed_detail_after_timeout_verified": true,
+    "phone_previous_version": "0.1.106",
+    "route_original_settings_restored": true,
+    "landscape_window_frame": "[0,0][3168,1440]",
+    "detail_observation_seconds": 119.8,
+    "movie_version_labels_verified": true,
+    "movie_prev_next_hidden_screenshot_verified": true,
+    "movie_1080p_frames_verified": true,
+    "movie_2160p_frames_verified": false
   }
 }
