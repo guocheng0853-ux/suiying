@@ -136,7 +136,8 @@ Claude、Codex、Cursor 会同时在这个仓库工作，此前出现过两次�
 
 ## 界面改进待办（2026-10-22 参考 Findroid、Fladder、Streamyfin、Wholphin 整理）
 
-已做（0.1.122）：Emby 详情页规格标签、操作按钮行、演职员、剧集缩略图卡片、加载骨架。
+已做（0.1.122–0.1.123）：Emby 详情页规格标签、操作按钮行、演职员、剧集缩略图卡片；拖动预览（两个播放页）；继续观看合并下一集与剧照卡片；全站加载骨架和图片淡入；更多类似；字幕样式；服务器管理列表。
+仍可做：Jellyfin Trickplay（/Videos/{id}/Trickplay）预览；HDR 片源单独字幕样式；「我的」页 Material 3 化；搜索结果骨架。
 待做，按价值排序：
 1. 拖动进度条时显示画面预览（Emby BIF / Jellyfin Trickplay；仓库已有 BifIndex）。
 2. 首页「继续观看」与「下一集」可合并为一行；卡片用横版剧照而不是竖版海报（Wholphin）。

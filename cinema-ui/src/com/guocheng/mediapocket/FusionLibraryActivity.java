@@ -17,11 +17,15 @@ public final class FusionLibraryActivity extends Activity {
  void clearExtras(){try{LinearLayout header=(LinearLayout)root.getChildAt(0);for(int i=header.getChildCount()-1;i>=0;i--){Object tag=header.getChildAt(i).getTag();if("mp-fav".equals(tag)||"mp-dl".equals(tag))header.removeViewAt(i);}}catch(Exception ignored){}}
  void screen(String label){clearExtras();epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);body.removeAllViews();status.setText(label);}
  void work(String label,Work task,Runnable retry){work(label,task,retry,WORK_LIMIT);}
- void work(String label,Work task,Runnable retry,int limit){int token=++epoch;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);status.setText(label);
+ void work(String label,Work task,Runnable retry,int limit){int token=++epoch;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);status.setText(label);skeleton(label);
   // 0.1.103：每个任务单独一条线程（原来单线程排队，前一个磁力解析卡住时后面的详情页永远轮不到，一直停在「正在读取…」）；
   // 只认最新一次 epoch 的结果；超过 WORK_LIMIT 还没回来就判超时，给出「重试」，迟到的结果直接丢弃。Error 也算失败，不会让状态行停住。
-  Runnable timeout=()->{if(dead||token!=epoch)return;epoch++;if(pending!=null)pending.cancel(true);status.setText(label.replace("…","")+"超时（"+limit/1000+" 秒未返回）");row("重试",retry);};watch.postDelayed(timeout,limit);
-  pending=io.submit(()->{try{Runnable done=task.run();runOnUiThread(()->{watch.removeCallbacks(timeout);if(!dead&&token==epoch){status.setText("");try{done.run();}catch(RuntimeException e){status.setText("页面显示失败："+why(e));row("重试",retry);}}});}catch(Throwable e){runOnUiThread(()->{watch.removeCallbacks(timeout);if(dead||token!=epoch)return;status.setText("读取失败："+why(e));row("重试",retry);});}});}
+  Runnable timeout=()->{if(dead||token!=epoch)return;epoch++;if(pending!=null)pending.cancel(true);Skeleton.clear(body);status.setText(label.replace("…","")+"超时（"+limit/1000+" 秒未返回）");row("重试",retry);};watch.postDelayed(timeout,limit);
+  pending=io.submit(()->{try{Runnable done=task.run();runOnUiThread(()->{watch.removeCallbacks(timeout);if(!dead&&token==epoch){status.setText("");Skeleton.clear(body);try{done.run();}catch(RuntimeException e){status.setText("页面显示失败："+why(e));row("重试",retry);}}});}catch(Throwable e){runOnUiThread(()->{watch.removeCallbacks(timeout);if(dead||token!=epoch)return;Skeleton.clear(body);status.setText("读取失败："+why(e));row("重试",retry);});}});}
+ /** 0.1.123：按读取的内容放加载骨架（详情页 / 海报网格），结果回来或失败时清掉。 */
+ void skeleton(String label){Skeleton.clear(body);int w=body.getWidth()>0?body.getWidth()-body.getPaddingLeft()-body.getPaddingRight():getResources().getDisplayMetrics().widthPixels-dp(32);
+  if(label.contains("详情")||label.contains("选集"))body.addView(Skeleton.detail(this,card(),Math.min(dp(360),(int)(getResources().getDisplayMetrics().widthPixels*.62f))));
+  else if(label.contains("条目")||label.contains("分类")||label.contains("搜索"))body.addView(Skeleton.grid(this,card(),w,3));}
  static final int WORK_LIMIT=45000;
  static String why(Throwable e){return e.getMessage()==null?e.getClass().getSimpleName():e.getMessage();}
  void push(Runnable destination,Runnable previous){back.push(previous);destination.run();}

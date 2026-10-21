@@ -223,6 +223,8 @@ public final class ScrapedMainActivity extends MainActivity {
   PlayerFeatureSettings.add(this);
   body.addView(button("恢复已隐藏的首页分区",()->{String hidden=prefs.getString("home.hiddenResume","[]");prefs.edit().putString("home.hiddenSections","").putString("home.hiddenResume","[]").apply();EmbyPlayback.IO.execute(()->{try{JSONArray ids=new JSONArray(hidden);for(int i=0;i<ids.length();i++){String id=ids.optString(i);if(!EmbyApi.isEmbyId(id))continue;JSONObject server=EmbyStore.get(this,EmbyApi.serverOf(id));if(server!=null)EmbyClient.hideFromResume(this,server,EmbyApi.itemOf(id),false);}}catch(Exception ignored){}});Toast.makeText(this,"已恢复本机隐藏的分区。Emby 上隐藏的条目也已请求重新显示",0).show();}));
   // 0.1.106 新增：备份恢复、离线下载、追剧提醒、系统媒体控制、检查更新
+  body.addView(button("继续观看合并下一集："+(prefs.getBoolean("home.mergeNextUp",true)?"开":"关")+"（Emby 首页，下一集排在看了一半的后面）",()->{SettingsLayout.remember(this);prefs.edit().putBoolean("home.mergeNextUp",!prefs.getBoolean("home.mergeNextUp",true)).apply();preferences();}));
+  body.addView(button(SubtitleStyle.label(this),()->SubtitleStyle.menu(this,()->{SettingsLayout.remember(this);preferences();})));
   body.addView(button("备份与恢复",()->BackupActivity.menu(this)));
   body.addView(button(OfflineDownloads.label(this),()->startActivity(new android.content.Intent(this,DownloadsActivity.class))));
   body.addView(button(FollowUp.label(this),()->{SettingsLayout.remember(this);FollowUp.setEnabled(this,!FollowUp.enabled(this));preferences();}));

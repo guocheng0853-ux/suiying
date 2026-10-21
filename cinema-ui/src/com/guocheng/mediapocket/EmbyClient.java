@@ -52,6 +52,8 @@ final class EmbyClient {
  static void playing(Context c,JSONObject server,JSONObject body)throws Exception{json(c,server,"POST","/Sessions/Playing",body.toString());}
  static void progress(Context c,JSONObject server,JSONObject body)throws Exception{json(c,server,"POST","/Sessions/Playing/Progress",body.toString());}
  static void stopped(Context c,JSONObject server,JSONObject body)throws Exception{json(c,server,"POST","/Sessions/Playing/Stopped",body.toString());}
+ /** 0.1.123 相似推荐（Emby / Jellyfin 都有 /Items/{id}/Similar）。 */
+ static JSONObject similar(Context c,JSONObject server,String itemId)throws Exception{return json(c,server,"GET","/Items/"+EmbyApi.enc(itemId)+"/Similar?UserId="+EmbyApi.enc(server.optString("userId"))+"&Limit=12&Fields=ProductionYear,ImageTags,PrimaryImageAspectRatio",null);}
  static void unplayed(Context c,JSONObject server,String itemId)throws Exception{json(c,server,"DELETE","/Users/"+EmbyApi.enc(server.optString("userId"))+"/PlayedItems/"+EmbyApi.enc(itemId),null);}
  static void played(Context c,JSONObject server,String itemId)throws Exception{json(c,server,"POST","/Users/"+EmbyApi.enc(server.optString("userId"))+"/PlayedItems/"+EmbyApi.enc(itemId),"{}");}
  static JSONObject json(Context c,JSONObject server,String method,String path,String body)throws Exception{

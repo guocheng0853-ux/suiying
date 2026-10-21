@@ -10,11 +10,13 @@ final class EmbyHome {
   */
  static void show(ScrapedMainActivity a){final int ticket=a.epoch;JSONObject server=selected(a);LinearLayout target=section(a);if(server==null){target.addView(a.heading("Emby"));target.addView(a.text("还没有 Emby 服务器，请到设置里添加",13,a.muted()));target.addView(a.button("添加 Emby 服务器",()->EmbyLibraryActivity.manage(a)));return;}
   target.addView(a.text("正在读取 "+EmbyStore.label(server)+" …",12,a.muted()));
+  // 0.1.123：没有缓存时先放骨架（继续观看横卡 + 两行海报），缓存或结果一到 render() 会整体替换
+  target.addView(Skeleton.shelf(a,a.card(),true,3));target.addView(Skeleton.shelf(a,a.card(),false,4));target.addView(Skeleton.shelf(a,a.card(),false,4));
   final boolean[] done={false};final long started=System.currentTimeMillis();
   IO.execute(()->{final JSONObject cached=readCache(a,server);if(cached!=null)a.runOnUiThread(()->{if(done[0]||ticket!=a.epoch||a.isFinishing())return;render(a,server,target,cached);});
    try{JSONObject data=fetch(a,server,cached!=null?null:partial->a.runOnUiThread(()->{if(done[0]||ticket!=a.epoch||a.isFinishing())return;render(a,server,target,partial);target.addView(a.text("正在读取更多分区…",12,a.muted()));}));done[0]=true;writeCache(a,server,data);DebugLog.event("Emby 首页","读取用时 "+(System.currentTimeMillis()-started)/100/10.0+" 秒"+(cached!=null?"（先显示了缓存）":""));
     a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing())return;if(cached!=null&&cached.toString().equals(data.toString()))return;render(a,server,target,data);});
-   }catch(Exception e){done[0]=true;DebugLog.event("Emby 首页","读取失败 · "+EmbyApi.explain(e));a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing())return;if(cached!=null){boolean hinted=false;for(int i=0;i<target.getChildCount();i++)if("emby-offline".equals(String.valueOf(target.getChildAt(i).getTag())))hinted=true;if(target.getChildCount()<=1)render(a,server,target,cached);if(!hinted){TextView tag=a.text("离线数据 · 刷新失败，显示的是上次保存的内容",12,a.muted());tag.setTag("emby-offline");target.addView(tag,0);}return;}target.removeAllViews();target.addView(a.heading("Emby"));target.addView(a.text(EmbyApi.explain(e),13,a.muted()));target.addView(a.button("重试",()->a.home()));});}});}
+   }catch(Exception e){done[0]=true;DebugLog.event("Emby 首页","读取失败 · "+EmbyApi.explain(e));a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing())return;if(cached!=null){boolean hinted=false;for(int i=0;i<target.getChildCount();i++)if("emby-offline".equals(String.valueOf(target.getChildAt(i).getTag())))hinted=true;if(target.getChildCount()<=1||target.findViewWithTag("mp-skeleton")!=null)render(a,server,target,cached);if(!hinted){TextView tag=a.text("离线数据 · 刷新失败，显示的是上次保存的内容",12,a.muted());tag.setTag("emby-offline");target.addView(tag,0);}return;}target.removeAllViews();target.addView(a.heading("Emby"));target.addView(a.text(EmbyApi.explain(e),13,a.muted()));target.addView(a.button("重试",()->a.home()));});}});}
 
  static final ExecutorService FETCH=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"emby-home-fetch");t.setDaemon(true);return t;});
  /** 拉一次首页需要的全部数据，结果是可直接缓存的 JSON：resume / next / heroes / order / libs / latest。 */
@@ -44,8 +46,8 @@ final class EmbyHome {
   if(a.homeChrome==null)a.homeChrome=new HomeChrome(a);
   boolean any=false;
   for(int s=0;orderJson!=null&&s<orderJson.length();s++){String section=orderJson.optString(s);
-   if("resume".equals(section)){if(!a.sectionOn("resume"))continue;JSONArray cont=metas(a,server,resumeItems,true);if(cont.length()>0){a.homeChrome.continueWatching(target,cont,"继续观看");any=true;}}
-   else if("nextup".equals(section)){if(!a.sectionOn("nextup"))continue;JSONArray row=metas(a,server,nextItems,false);if(row.length()>0){TextView heading=a.sectionHead("nextup","下一集");target.addView(heading);LinearLayout shelf=new LinearLayout(a);shelf.setOrientation(1);target.addView(shelf);a.shelf(shelf,row,"series",false);any=true;}}
+   if("resume".equals(section)){if(!a.sectionOn("resume"))continue;JSONArray cont=metas(a,server,resumeItems,true);if(mergeNext(a))cont=withNextUp(cont,metas(a,server,nextItems,false));if(cont.length()>0){a.homeChrome.continueWatching(target,cont,"继续观看");any=true;}}
+   else if("nextup".equals(section)){if(!a.sectionOn("nextup")||mergeNext(a))continue;JSONArray row=metas(a,server,nextItems,false);if(row.length()>0){TextView heading=a.sectionHead("nextup","下一集");target.addView(heading);LinearLayout shelf=new LinearLayout(a);shelf.setOrientation(1);target.addView(shelf);a.shelf(shelf,row,"series",false);any=true;}}
    else if("latest".equals(section)){if(!a.sectionOn("latest"))continue;for(int i=0;i<libs.length()&&i<latest.length();i++){JSONArray metas=metas(a,server,latest.optJSONArray(i),false);if(metas.length()==0)continue;JSONObject lib=libs.optJSONObject(i);TextView heading=a.sectionHead("latest","最新 · "+lib.optString("Name","媒体库")+" ›");String id=lib.optString("Id");heading.setOnClickListener(v->EmbyLibraryActivity.openLibrary(a,server.optString("id"),id));target.addView(heading);LinearLayout shelf=new LinearLayout(a);shelf.setOrientation(1);target.addView(shelf);a.shelf(shelf,metas,"movie",false);any=true;}}}
   if(!any)target.addView(a.text("这个服务器还没有可以展示的内容",13,a.muted()));
  }
@@ -59,6 +61,11 @@ final class EmbyHome {
     JSONArray views=rows(safe(()->EmbyClient.views(a,server)));int shown=0;for(JSONObject lib:libraries(views)){if(shown>=6||EmbyCue.hidden(server,lib.optString("Id")))continue;JSONArray metas=metas(a,server,rows(safe(()->EmbyClient.latest(a,server,lib.optString("Id")))),false);if(metas.length()>0){blocks.put(new JSONObject().put("title","最新 · "+lib.optString("Name","媒体库")).put("items",metas));shown++;}}}
    a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing()||!a.homeCanvas)return;target.removeAllViews();if(a.homeChrome==null)a.homeChrome=new HomeChrome(a);for(int i=0;i<blocks.length();i++){JSONObject b=blocks.optJSONObject(i);if(b==null)continue;if(b.optBoolean("continue"))a.homeChrome.continueWatching(target,b.optJSONArray("items"),b.optString("title"));else{target.addView(a.heading(b.optString("title")+" ›"));LinearLayout shelf=new LinearLayout(a);shelf.setOrientation(1);target.addView(shelf);a.shelf(shelf,b.optJSONArray("items"),"movie",false);}}});
   }catch(Exception ignored){}});}
+ /** 0.1.123（参考 Wholphin）：「下一集」并进「继续观看」同一行，排在看了一半的后面；同一部剧已在继续观看里就不重复。「我的」里可关。 */
+ static boolean mergeNext(ScrapedMainActivity a){return a.prefs.getBoolean("home.mergeNextUp",true);}
+ static JSONArray withNextUp(JSONArray resume,JSONArray next){JSONArray out=new JSONArray();HashSet<String> series=new HashSet<>();for(int i=0;i<resume.length();i++){JSONObject m=resume.optJSONObject(i);if(m==null)continue;out.put(m);String sid=m.optString("emby.series");if(!sid.isEmpty())series.add(sid);}
+  for(int i=0;next!=null&&i<next.length();i++){JSONObject m=next.optJSONObject(i);if(m==null)continue;String sid=m.optString("emby.series");if(!sid.isEmpty()&&!series.add(sid))continue;try{JSONObject c=new JSONObject(m.toString());String line=c.optString("emby.line");c.put("emby.line","下一集"+(line.isEmpty()?"":" · "+line));c.put("emby.directPlay",true);out.put(c);}catch(Exception ignored){}}
+  return out;}
  static JSONObject selected(ScrapedMainActivity a){return HomeRules.selectedEmbyServer(EmbyStore.list(a),a.prefs.getString("home.source.v1",""));}
  static LinearLayout section(ScrapedMainActivity a){LinearLayout t=new LinearLayout(a);t.setOrientation(1);a.body.addView(t);return t;}
  static JSONArray rows(JSONObject response){if(response==null)return new JSONArray();JSONArray items=response.optJSONArray("Items");return items==null?new JSONArray():items;}

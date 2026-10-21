@@ -72,8 +72,11 @@ final class HomeChrome {
   FrameLayout frame=new FrameLayout(a);frame.setBackground(round(a.card(),10));frame.setClipToOutline(true);
   ImageView img=new ImageView(a);img.setScaleType(ImageView.ScaleType.CENTER_CROP);
   frame.addView(img,new FrameLayout.LayoutParams(-1,-1));
-  String art=meta.optString("background",meta.optString("poster"));
-  TvPosterImages.load(a,img,art,width);
+  // 0.1.123：剧集优先用这一集的剧照（16:9，和卡片同比例），失败再换背景图 / 海报；都没有时卡片上写片名，不再是一块空灰
+  boolean episode="Episode".equals(meta.optString("emby.type"));String bg=meta.optString("background"),poster=meta.optString("poster");
+  String art=episode&&!poster.isEmpty()?poster:(bg.isEmpty()?poster:bg),fallback=art.equals(bg)?poster:bg;
+  TextView placeholder=a.text(HomeRules.cardTitle(meta),13,a.muted());placeholder.setGravity(Gravity.CENTER);placeholder.setPadding(dp(8),0,dp(8),0);frame.addView(placeholder,0,new FrameLayout.LayoutParams(-1,-1));
+  TvPosterImages.load(a,img,art,fallback,width);
   String epId=meta.optString("lastEpisode",meta.optString("id"));
   int pos=a.prefs.getInt("pos:"+epId,0),dur=a.prefs.getInt("dur:"+epId,0);
   if(pos<=0&&meta.optLong("emby.resumeMs")>0)pos=(int)Math.min(Integer.MAX_VALUE,meta.optLong("emby.resumeMs"));

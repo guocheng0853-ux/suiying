@@ -117,6 +117,7 @@ final class PlayerOverlay {
   // 0.1.97：解码只在顶栏芯片、音轨只在面板，不再打开原版「播放器」菜单；外部播放器单独一项
   labels.add("线路与片源");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
   labels.add(AudioEffects.label(a));actions.add(()->AudioEffects.menu(a));
+  labels.add("字幕样式");actions.add(()->SubtitleStyle.menu(a,null));
   labels.add("用外部播放器重播（颜色发紫发绿时用）");actions.add(()->externalReplay(a));
   labels.add("系统解码重播（实验）");actions.add(()->systemReplay(a));
   labels.add("定时关闭");actions.add(()->PlayerSidePanel.sleepMenu(a));

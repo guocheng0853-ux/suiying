@@ -10,10 +10,13 @@ final class TvPosterImages {
  static volatile String lastStatus="尚未加载封面图片";
  static File directory(Context c){return new File(c.getCacheDir(),"tv-posters-v2");}
  static boolean valid(byte[] b){BitmapFactory.Options p=new BitmapFactory.Options();p.inJustDecodeBounds=true;BitmapFactory.decodeByteArray(b,0,b.length,p);return p.outWidth>0&&p.outHeight>0;}
+ static final java.util.Map<ImageView,String[]> FALLBACK=new java.util.WeakHashMap<>();
+ /** 先加载 raw，失败时自动换 fallback。raw 为空时直接加载 fallback。 */
+ static void load(Context c,ImageView view,String raw,String fallback,int width){if(raw==null||raw.trim().isEmpty()){load(c,view,fallback,width);return;}if(fallback!=null&&!fallback.trim().isEmpty()&&!fallback.equals(raw)){synchronized(FALLBACK){FALLBACK.put(view,new String[]{fallback,String.valueOf(width)});}}else{synchronized(FALLBACK){FALLBACK.remove(view);}}load(c,view,raw,width);}
  static void load(Context c,ImageView view,String raw,int width){
   if(raw==null||raw.trim().isEmpty()){view.setTag(null);record("","封面地址为空");return;}
   final Context app=c.getApplicationContext();final String tag="tvposter:"+hash(raw)+":"+width;
-  view.setTag(tag);Bitmap memory=MEMORY.get(tag);if(memory!=null){view.setImageBitmap(memory);return;}
+  view.setTag(tag);Bitmap memory=MEMORY.get(tag);if(memory!=null){synchronized(FALLBACK){FALLBACK.remove(view);}view.setImageBitmap(memory);return;}
   synchronized(PENDING){List<WeakReference<ImageView>> group=PENDING.get(tag);if(group!=null){group.add(new WeakReference<>(view));return;}group=new ArrayList<>();group.add(new WeakReference<>(view));PENDING.put(tag,group);}
   try{IO.execute(()->{
    Bitmap result=null;String status="加载失败";
@@ -41,7 +44,10 @@ final class TvPosterImages {
  }
  static void complete(String tag,Bitmap bitmap,String status){
   final List<WeakReference<ImageView>> targets;synchronized(PENDING){targets=PENDING.remove(tag);}
-  if(targets==null)return;MAIN.post(()->{for(WeakReference<ImageView> ref:targets){ImageView v=ref.get();if(v!=null&&tag.equals(v.getTag())){if(bitmap!=null)v.setImageBitmap(bitmap);else v.setContentDescription(status);}}});
+  if(targets==null)return;MAIN.post(()->{for(WeakReference<ImageView> ref:targets){ImageView v=ref.get();if(v!=null&&tag.equals(v.getTag())){
+    // 0.1.123：第一次出图时淡入；加载失败且登记了备用图时改加载备用图（例如剧集截图失败 → 剧集海报）
+    if(bitmap!=null){boolean fade=v.getDrawable()==null;v.setImageBitmap(bitmap);if(fade){v.setAlpha(0f);v.animate().alpha(1f).setDuration(220).start();}}
+    else{String[] fb;synchronized(FALLBACK){fb=FALLBACK.remove(v);}if(fb!=null&&!fb[0].isEmpty()){try{load(v.getContext(),v,fb[0],Integer.parseInt(fb[1]));}catch(Exception ignored){}}else v.setContentDescription(status);}}}});
  }
  static String reason(Exception e){if(e instanceof SocketTimeoutException)return "连接或读取超时";if(e instanceof UnknownHostException)return "域名解析失败";if(e instanceof javax.net.ssl.SSLException)return "TLS连接失败";String s=e.getMessage();return s!=null&&(s.matches("HTTP [0-9]{3}")||s.equals("返回内容不是图片")||s.equals("图片解码失败"))?s:e.getClass().getSimpleName();}
  static void record(String raw,String result){String host=raw.isEmpty()?"目录数据":"内嵌图片";try{String url=TvPosterRules.parse(raw).url;if(!url.isEmpty()&&!url.startsWith("data:"))host=new URI(url).getHost();}catch(Exception ignored){}lastStatus=String.valueOf(host)+"："+result;REPORT.remove(lastStatus);REPORT.addFirst(lastStatus);while(REPORT.size()>20)REPORT.pollLast();}
