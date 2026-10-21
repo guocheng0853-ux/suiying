@@ -17,6 +17,10 @@ final class Skeleton {
   for(int i=0;i<count;i++){LinearLayout cell=new LinearLayout(c);cell.setOrientation(LinearLayout.VERTICAL);cell.addView(block(c,color,w,h,10));View t=block(c,color,Math.round(w*.7f),dp(c,10),4);((LinearLayout.LayoutParams)t.getLayoutParams()).topMargin=dp(c,8);cell.addView(t);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(w,-2);lp.rightMargin=dp(c,10);row.addView(cell,lp);}
   HorizontalScrollView hs=new HorizontalScrollView(c);hs.setHorizontalScrollBarEnabled(false);hs.addView(row);box.addView(hs);return pulse(box);}
 
+ /** 只有一行卡片、不带标题（标题已经由分区自己画了）。 */
+ static View row(Context c,int color,boolean landscape,int count){LinearLayout row=new LinearLayout(c);row.setPadding(0,0,0,dp(c,6));int w=landscape?dp(c,200):dp(c,110),h=landscape?Math.round(w/1.72f):Math.round(w*1.5f);
+  for(int i=0;i<count;i++){LinearLayout cell=new LinearLayout(c);cell.setOrientation(LinearLayout.VERTICAL);cell.addView(block(c,color,w,h,10));View t=block(c,color,Math.round(w*.7f),dp(c,10),4);((LinearLayout.LayoutParams)t.getLayoutParams()).topMargin=dp(c,8);cell.addView(t);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(w,-2);lp.rightMargin=dp(c,10);row.addView(cell,lp);}
+  HorizontalScrollView hs=new HorizontalScrollView(c);hs.setHorizontalScrollBarEnabled(false);hs.addView(row);return pulse(hs);}
  /** 海报网格（媒体库、影视仓分类）。 */
  static View grid(Context c,int color,int availableWidth,int rows){LinearLayout box=new LinearLayout(c);box.setOrientation(LinearLayout.VERTICAL);int columns=Math.max(3,Math.min(6,availableWidth/dp(c,140))),w=(availableWidth-dp(c,10)*(columns-1))/columns;
   for(int r=0;r<rows;r++){LinearLayout line=new LinearLayout(c);for(int i=0;i<columns;i++){LinearLayout cell=new LinearLayout(c);cell.setOrientation(LinearLayout.VERTICAL);cell.addView(block(c,color,w,Math.round(w*1.5f),10));View t=block(c,color,Math.round(w*.75f),dp(c,10),4);((LinearLayout.LayoutParams)t.getLayoutParams()).topMargin=dp(c,6);cell.addView(t);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(w,-2);if(i<columns-1)lp.rightMargin=dp(c,10);lp.bottomMargin=dp(c,12);line.addView(cell,lp);}box.addView(line);}
