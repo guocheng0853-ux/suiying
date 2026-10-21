@@ -1,5 +1,5 @@
 package com.guocheng.mediapocket;
-import org.json.*;import java.util.*;
+import org.json.*;import java.nio.charset.StandardCharsets;import java.security.*;import java.util.*;import java.util.regex.*;import javax.crypto.*;import javax.crypto.spec.*;
 /**
  * 0.1.106 备份与恢复的纯逻辑（不依赖 Android，便于测试）。
  * 备份文件是一个 JSON：{app, format, version, created, secrets, prefs:{文件名:{键:{t,v}}}}。
@@ -14,22 +14,22 @@ final class BackupRules {
  static final String[] SECRET_FIELDS={"token","accesstoken","password","passwd","secret","apikey","api_key","cookie","authorization"};
 
  static boolean skip(String key){if(key==null)return true;for(String p:SKIP_PREFIXES)if(key.startsWith(p))return true;return false;}
- static boolean secretKey(String key){if(key==null)return false;String k=key.toLowerCase(Locale.ROOT).replace("-","").replace("_","");for(String s:SECRET_FIELDS){String n=s.replace("_","");if(k.endsWith(n)||k.contains(n+"."))return true;}return k.contains("token")||k.contains("password");}
+ static boolean secretKey(String key){if(key==null)return false;String k=key.toLowerCase(Locale.ROOT).replace("-","").replace("_","");for(String s:SECRET_FIELDS){String n=s.replace("_","");if(k.endsWith(n)||k.contains(n+"."))return true;}return k.contains("token")||k.contains("password")||k.endsWith("key");}
 
  /** 把一个 SharedPreferences.getAll() 的结果编码成备份里的一节。 */
  static JSONObject encode(Map<String,?> all,boolean withSecrets)throws JSONException{
   JSONObject out=new JSONObject();if(all==null)return out;
   TreeMap<String,Object> sorted=new TreeMap<>(all);
-  for(Map.Entry<String,Object> e:sorted.entrySet()){String k=e.getKey();Object v=e.getValue();if(skip(k)||v==null)continue;if(!withSecrets&&secretKey(k))continue;
+  for(Map.Entry<String,Object> e:sorted.entrySet()){String k=e.getKey();Object v=e.getValue();if(skip(k)||v==null)continue;if(!withSecrets&&secretKey(k))continue;String outKey=withSecrets?k:scrubText(k);
    JSONObject cell=new JSONObject();
-   if(v instanceof String){String s=(String)v;if(!withSecrets)s=stripJson(s);cell.put("t","s").put("v",s);}
+   if(v instanceof String){String s=(String)v;if(!withSecrets)s=scrubText(stripJson(s));cell.put("t","s").put("v",s);}
    else if(v instanceof Integer)cell.put("t","i").put("v",v);
    else if(v instanceof Long)cell.put("t","l").put("v",v);
    else if(v instanceof Float)cell.put("t","f").put("v",((Float)v).doubleValue());
    else if(v instanceof Boolean)cell.put("t","b").put("v",v);
-   else if(v instanceof Set){JSONArray arr=new JSONArray();for(Object o:new TreeSet<>(((Set<?>)v).stream().map(String::valueOf).collect(java.util.stream.Collectors.toSet())))arr.put(o);cell.put("t","ss").put("v",arr);}
+   else if(v instanceof Set){JSONArray arr=new JSONArray();for(Object o:new TreeSet<>(((Set<?>)v).stream().map(String::valueOf).collect(java.util.stream.Collectors.toSet())))arr.put(!withSecrets?scrubText(String.valueOf(o)):String.valueOf(o));cell.put("t","ss").put("v",arr);}
    else continue;
-   out.put(k,cell);}
+   out.put(outKey,cell);}
   return out;
  }
  /** 值看起来是 JSON 时删掉里面的令牌 / 密码字段；不是 JSON 原样返回。 */
@@ -37,6 +37,7 @@ final class BackupRules {
  static Object strip(Object o)throws JSONException{
   if(o instanceof JSONObject){JSONObject in=(JSONObject)o,out=new JSONObject();for(Iterator<String> it=in.keys();it.hasNext();){String k=it.next();if(secretField(k))continue;out.put(k,strip(in.get(k)));}return out;}
   if(o instanceof JSONArray){JSONArray in=(JSONArray)o,out=new JSONArray();for(int i=0;i<in.length();i++)out.put(strip(in.get(i)));return out;}
+  if(o instanceof String)return scrubText((String)o);
   return o;
  }
  static boolean secretField(String k){String n=k.toLowerCase(Locale.ROOT).replace("_","");for(String s:SECRET_FIELDS)if(n.equals(s.replace("_","")))return true;return false;}
@@ -46,8 +47,11 @@ final class BackupRules {
   return new JSONObject().put("app",APP).put("format",FORMAT).put("version",version).put("created",created).put("secrets",withSecrets).put("prefs",prefs);
  }
  /** 校验并取出备份内容；不是随影备份时抛出带中文说明的异常。 */
- static JSONObject open(String text)throws Exception{
+ static boolean sealed(String text){try{return new JSONObject(text).optBoolean("sealed");}catch(Exception e){return false;}}
+ static JSONObject open(String text)throws Exception{return open(text,null);}
+ static JSONObject open(String text,String password)throws Exception{
   JSONObject root;try{root=new JSONObject(text);}catch(Exception e){throw new IllegalArgumentException("这不是随影的备份文件");}
+  if(root.optBoolean("sealed"))root=new JSONObject(unseal(root,password));
   if(!APP.equals(root.optString("app"))||root.optJSONObject("prefs")==null)throw new IllegalArgumentException("这不是随影的备份文件");
   if(root.optInt("format")>FORMAT)throw new IllegalArgumentException("备份来自更新的版本，请先升级随影");
   return root;
@@ -73,5 +77,23 @@ final class BackupRules {
   }catch(Exception ignored){}
   return incoming;
  }
+ static final Pattern URL_IN_TEXT=Pattern.compile("https?://[^\\s\"'<>\\\\)]+");
+ static final Pattern USERINFO=Pattern.compile("(?i)^(https?://)(?:[^/@\\s]+(?::[^/@\\s]*)?@)");
+ static final int KDF_ITER=10000;
+ /** 去掉网址里的账号、查询参数令牌，以及小雅 / 插件 / Debrid 这类路径令牌。普通路径保留。 */
+ static String scrubText(String s){if(s==null||s.indexOf("://")<0)return s;Matcher m=URL_IN_TEXT.matcher(s);StringBuffer b=new StringBuffer();while(m.find())m.appendReplacement(b,Matcher.quoteReplacement(scrubUrl(m.group())));m.appendTail(b);return b.toString();}
+ static String scrubUrl(String url){return scrubPath(scrubQuery(USERINFO.matcher(url).replaceFirst("$1")));}
+ static boolean secretParam(String name){String n=name.toLowerCase(Locale.ROOT).replace("_","");return n.equals("token")||n.equals("apikey")||n.equals("accesstoken")||n.equals("authtoken")||n.equals("password")||n.equals("passwd")||n.equals("pwd")||n.equals("secret")||n.equals("cookie")||n.equals("authorization")||n.equals("key");}
+ static String scrubQuery(String url){int q=url.indexOf('?');if(q<0)return url;int h=url.indexOf('#',q);String query=h<0?url.substring(q+1):url.substring(q+1,h);String hash=h<0?"":url.substring(h);StringBuilder kept=new StringBuilder();for(String p:query.split("&")){if(p.isEmpty())continue;int eq=p.indexOf('=');String name=eq<0?p:p.substring(0,eq);if(secretParam(name))continue;if(kept.length()>0)kept.append('&');kept.append(p);}String base=url.substring(0,q);return kept.length()==0?base+hash:base+"?"+kept+hash;}
+ static boolean mixedToken(String seg){if(seg==null||!seg.matches("[A-Za-z0-9_\\-]{12,128}"))return false;boolean d=false,l=false;for(int i=0;i<seg.length();i++){char c=seg.charAt(i);if(Character.isDigit(c))d=true;else if(Character.isLetter(c))l=true;}return d&&l;}
+ /** 只去掉明显是令牌的路径段：/令牌/tvbox、/令牌/manifest.json、/d|download|dav|token/令牌，以及单独一段的令牌。 */
+ static boolean dropSegment(String seg,String prev,String next){if(seg==null||!seg.matches("[A-Za-z0-9_\\-]{8,128}"))return false;if(next!=null&&(next.equalsIgnoreCase("tvbox")||next.equalsIgnoreCase("manifest.json")))return true;if(prev!=null&&(prev.equalsIgnoreCase("d")||prev.equalsIgnoreCase("download")||prev.equalsIgnoreCase("dav")||prev.equalsIgnoreCase("token"))&&mixedToken(seg))return true;return (next==null||next.isEmpty())&&(prev==null||prev.isEmpty())&&mixedToken(seg);}
+ static String scrubPath(String url){int scheme=url.indexOf("://");if(scheme<0)return url;int pathStart=url.indexOf('/',scheme+3);if(pathStart<0)return url;int query=url.indexOf('?',pathStart),hash=url.indexOf('#',pathStart),end=url.length();if(query>=0)end=Math.min(end,query);if(hash>=0&&hash<end)end=hash;String[] seg=url.substring(pathStart,end).split("/",-1);StringBuilder nb=new StringBuilder();for(int i=0;i<seg.length;i++){if(i>0)nb.append('/');String next=i+1<seg.length?seg[i+1]:null,prev=i>0?seg[i-1]:null;nb.append(dropSegment(seg[i],prev,next)?"REDACTED":seg[i]);}return url.substring(0,pathStart)+nb+url.substring(end);}
+ /** 含账号的备份可选密码。外壳只有盐和密文，里面仍是原来的备份 JSON。 */
+ static String seal(String json,String password)throws Exception{if(password==null||password.trim().length()<4)throw new IllegalArgumentException("密码至少 4 位");byte[] salt=new byte[16],iv=new byte[12];SecureRandom r=new SecureRandom();r.nextBytes(salt);r.nextBytes(iv);byte[] ct=cipher(Cipher.ENCRYPT_MODE,password,salt,iv,KDF_ITER).doFinal(json.getBytes(StandardCharsets.UTF_8));return new JSONObject().put("app",APP).put("format",FORMAT).put("sealed",true).put("iter",KDF_ITER).put("salt",b64(salt)).put("iv",b64(iv)).put("data",b64(ct)).toString(1);}
+ static String unseal(JSONObject root,String password)throws Exception{if(password==null||password.isEmpty())throw new IllegalArgumentException("这份备份已用密码加密，请输入密码");try{byte[] salt=b64d(root.getString("salt")),iv=b64d(root.getString("iv")),ct=b64d(root.getString("data"));int iter=root.optInt("iter",KDF_ITER);if(iter<1000||iter>2_000_000)throw new IllegalArgumentException("备份的加密参数无效");return new String(cipher(Cipher.DECRYPT_MODE,password,salt,iv,iter).doFinal(ct),StandardCharsets.UTF_8);}catch(IllegalArgumentException e){throw e;}catch(Exception e){throw new IllegalArgumentException("密码不对，或备份已损坏");}}
+ static Cipher cipher(int mode,String password,byte[] salt,byte[] iv,int iter)throws Exception{SecretKeyFactory f=SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");byte[] key=f.generateSecret(new PBEKeySpec(password.toCharArray(),salt,iter,256)).getEncoded();Cipher c=Cipher.getInstance("AES/GCM/NoPadding");c.init(mode,new SecretKeySpec(key,"AES"),new GCMParameterSpec(128,iv));return c;}
+ static String b64(byte[] b){return Base64.getEncoder().encodeToString(b);}
+ static byte[] b64d(String s){return Base64.getDecoder().decode(s);}
  static String fileName(String version,long now){java.text.SimpleDateFormat f=new java.text.SimpleDateFormat("yyyyMMdd-HHmm",Locale.ROOT);return "随影备份-"+f.format(new Date(now))+"-v"+version+".json";}
 }

@@ -8,7 +8,10 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
  Prepared prepared;Info info;Error error;Complete complete;Size size;MediaController controller;
  ExoPlayer player;final SurfaceView surface;boolean notified;String pendingSubtitle="";String failure="";int httpStatus;int width,height;boolean strictP5;String aspect="fit";float zoom=1f;android.widget.TextView subtitleView;
  Media3VideoView(Context c){super(c);surface=new SurfaceView(c);addView(surface,new LayoutParams(-1,-1,Gravity.CENTER));setOnClickListener(v->{if(controller!=null)controller.show();});}
- static boolean supportsP5(){try{for(android.media.MediaCodecInfo codec:new android.media.MediaCodecList(android.media.MediaCodecList.ALL_CODECS).getCodecInfos()){if(codec.isEncoder())continue;for(String type:codec.getSupportedTypes())if("video/dolby-vision".equalsIgnoreCase(type))for(android.media.MediaCodecInfo.CodecProfileLevel profile:codec.getCapabilitiesForType(type).profileLevels)if(profile.profile==android.media.MediaCodecInfo.CodecProfileLevel.DolbyVisionProfileDvheStn)return true;}}catch(RuntimeException ignored){}return false;}
+ static volatile Boolean p5Cache;
+ static void warmDecoder(){Thread t=new Thread(Media3VideoView::supportsP5,"p5-probe");t.setDaemon(true);t.start();}
+ static boolean supportsP5(){Boolean cached=p5Cache;if(cached!=null)return cached;synchronized(Media3VideoView.class){if(p5Cache!=null)return p5Cache;p5Cache=probeP5();return p5Cache;}}
+ static boolean probeP5(){try{for(android.media.MediaCodecInfo codec:new android.media.MediaCodecList(android.media.MediaCodecList.ALL_CODECS).getCodecInfos()){if(codec.isEncoder())continue;for(String type:codec.getSupportedTypes())if("video/dolby-vision".equalsIgnoreCase(type))for(android.media.MediaCodecInfo.CodecProfileLevel profile:codec.getCapabilitiesForType(type).profileLevels)if(profile.profile==android.media.MediaCodecInfo.CodecProfileLevel.DolbyVisionProfileDvheStn)return true;}}catch(RuntimeException ignored){}return false;}
  static String userAgent(Map<String,String> headers){if(headers!=null)for(Map.Entry<String,String> entry:headers.entrySet())if("User-Agent".equalsIgnoreCase(entry.getKey())&&entry.getValue()!=null&&!entry.getValue().isEmpty())return entry.getValue();return "Mozilla/5.0";}
  void requireDolbyP5(boolean strict){strictP5=strict;}
  void setMediaController(MediaController c){controller=c;c.setMediaPlayer(this);}
@@ -16,8 +19,8 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
  int getVideoWidth(){return width;}int getVideoHeight(){return height;}
  void setVideoURI(Uri uri,Map<String,String> headers){
   stopPlayback();notified=false;pendingSubtitle="";failure="";httpStatus=0;
-  DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory().setUserAgent(userAgent(headers)).setAllowCrossProtocolRedirects(true).setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setDefaultRequestProperties(headers);
-  DefaultDataSource.Factory data=new DefaultDataSource.Factory(getContext(),http);
+  String agent=userAgent(headers);Map<String,String> request=headers==null?new HashMap<String,String>():new HashMap<>(headers);
+  DefaultDataSource.Factory data=new DefaultDataSource.Factory(getContext(),()->new ScopedHttpDataSource(agent,request));
   DefaultRenderersFactory renderers=new DefaultRenderersFactory(getContext()).setEnableDecoderFallback(true).setMediaCodecSelector((mime,secure,tunnel)->{
    // Profile 5 has no HDR10 base layer: falling back to a plain HEVC decoder produces wrong colours.
    if(strictP5&&MimeTypes.VIDEO_H265.equals(mime))return Collections.emptyList();

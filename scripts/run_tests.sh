@@ -9,4 +9,5 @@ fail=0
 for t in tests/*Test.java; do n=$(basename "$t" .java)
   if out=$(timeout 180 java -cp "build/tests:$CP" com.guocheng.mediapocket.$n 2>&1); then echo "$out" | grep -v JAVA_TOOL | tail -1; else echo "FAIL $n"; echo "$out" | tail -5; fail=1; fi
 done
+if [ "$fail" -eq 0 ]; then count=$(find tests -maxdepth 1 -name '*Test.java' | wc -l | tr -d ' '); mkdir -p build; printf '%s\n' "$count" > build/jvm-tests.passed; fi
 exit $fail

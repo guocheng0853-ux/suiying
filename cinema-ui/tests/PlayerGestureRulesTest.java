@@ -11,5 +11,7 @@ public class PlayerGestureRulesTest {
   int dur=45*60000;check(PlayerGestureRules.seekTarget(600000,dur,500,1000)==937500,"half width is half of a quarter");check(PlayerGestureRules.seekTarget(1000,dur,-1000,1000)==0,"clamp start");check(PlayerGestureRules.seekTarget(dur-2000,dur,1000,1000)==dur-1000,"clamp end");
   check(PlayerGestureRules.time(3725000).equals("1:02:05")&&PlayerGestureRules.time(65000).equals("1:05"),"time");check(PlayerGestureRules.seekLabel(65000,0,dur).startsWith("⏩ +1:05")&&PlayerGestureRules.seekLabel(0,10000,dur).startsWith("⏪ -0:10"),"label");
   check(PlayerGestureRules.brightness(0.9f,0.5f)==1f&&PlayerGestureRules.brightness(0.1f,-1f)==0.01f&&PlayerGestureRules.volume(5,15,0.5f)==13&&PlayerGestureRules.volume(5,15,-1f)==0,"brightness/volume");
-  System.out.println("PASS: gesture thirds, halves, axis lock, seek span/target clamp, labels, brightness/volume clamp.");}
+  check(LevelIconGeometry.volume(0)==LevelIconGeometry.MUTE&&LevelIconGeometry.volume(33)==LevelIconGeometry.LOW&&LevelIconGeometry.volume(40)==LevelIconGeometry.MID&&LevelIconGeometry.volume(66)==LevelIconGeometry.MID&&LevelIconGeometry.volume(70)==LevelIconGeometry.HIGH&&LevelIconGeometry.volume(160)==LevelIconGeometry.HIGH,"volume icon steps");
+  check(LevelHudMetrics.x(1000,200,1f,80,0)>LevelHudMetrics.x(1000,200,1f,0,0)&&LevelHudMetrics.top(1f,40,true)>LevelHudMetrics.top(1f,40,false),"hud stays inside the cutout");
+  System.out.println("PASS: gesture thirds, halves, axis lock, seek span/target clamp, labels, brightness/volume clamp, level icon and safe-area placement.");}
 }
