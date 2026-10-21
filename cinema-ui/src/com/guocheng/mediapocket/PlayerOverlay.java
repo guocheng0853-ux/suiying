@@ -132,7 +132,7 @@ final class PlayerOverlay {
  /** 0.1.111：把当前片源交给安卓自带解码器从当前位置重播（杜比视界 P5 等 VLC 显示异常的片源）。 */
  static void systemReplay(Activity a){try{JSONObject stream=TrackSelection.stream(a);String url=stream.optString("url");if(url.isEmpty()||stream.has("infoHash")||MagnetLinks.isMagnet(url)){toast(a,"磁力 / 种子片源不能用系统解码");return;}
   int pos=EmbyPlayback.position(a);Object n=OnlineSubtitleSearch.field(a,"name");String title=n==null?meta(a).optString("name",""):n.toString();
-  SystemPlayerActivity.open(a,stream,id(a),title,Math.max(0,pos));a.finish();}catch(Exception e){toast(a,"无法切换到系统解码");}}
+  SystemPlayerActivity.open(a,stream,id(a),title,Math.max(0,pos),new android.content.Intent(a.getIntent()));a.finish();}catch(Exception e){toast(a,"无法切换到系统解码");}}
  static void introMenu(Activity a){java.util.List<CinemaMenu.Item> rows=new ArrayList<>();
   rows.add(CinemaMenu.item("标记片头开始（当前位置）",()->markIntro(a,true)));
   rows.add(CinemaMenu.item("标记片头结束（当前位置）",()->markIntro(a,false)));
