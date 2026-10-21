@@ -4,6 +4,9 @@ import org.json.*;
 public final class EmbyFeaturesTest {
  static int failures;
  public static void main(String[] args)throws Exception{
+  if(!EmbyCue.showChapterMarks(true,true,2400000,true))throw new AssertionError("visible timeline shows chapters");
+  if(EmbyCue.showChapterMarks(false,true,2400000,true)||EmbyCue.showChapterMarks(true,false,2400000,true)||EmbyCue.showChapterMarks(true,true,0,true)||EmbyCue.showChapterMarks(true,true,2400000,false))throw new AssertionError("hidden controls/seek, unknown duration, empty chapters leave no floating dots");
+
   JSONArray chapters=new JSONArray()
    .put(new JSONObject().put("StartPositionTicks",0).put("MarkerType","IntroStart").put("Name","片头开始"))
    .put(new JSONObject().put("StartPositionTicks",90L*10000000L).put("MarkerType","IntroEnd"))

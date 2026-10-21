@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.118",
+  "ui_version": "0.1.119",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -18,11 +18,11 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 73,
+  "jvm_test_programs_passed": 74,
   "apk_class_resolution": "passed",
-  "unique_classes": 9019,
+  "unique_classes": 9022,
   "dex_files": 3,
-  "main_version_code": 119,
+  "main_version_code": 120,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",
@@ -41,8 +41,5 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false,
-  "media3_vendored_verified": true,
-  "offline_dependency_test": "passed",
-  "python_network_disabled_during_build": true
+  "torrent_boost_android_tested": false
 }

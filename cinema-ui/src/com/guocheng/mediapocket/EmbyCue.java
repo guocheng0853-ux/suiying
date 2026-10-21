@@ -72,6 +72,7 @@ final class EmbyCue {
   return null;
  }
  /** 询问模式下按钮停留 BUTTON_MS；控件可见时一直留着。自动和关闭不显示按钮。 */
+ static boolean showChapterMarks(boolean controlsShown,boolean seekShown,int duration,boolean hasMarkers){return controlsShown&&seekShown&&duration>0&&hasMarkers;}
  static boolean showSkipButton(String mode,String text,boolean controlsOn,long visibleMs){
   if(!ASK.equals(skipMode(mode))||text==null)return false;
   if(controlsOn)return true;

@@ -13,7 +13,7 @@ final class EmbyPlayerUi {
  int dp(int v){return Math.round(v*a.getResources().getDisplayMetrics().density);}
  Object root(){return OnlineSubtitleSearch.field(a,"root");}
  void poll(JSONObject stream,boolean pip,boolean chrome){
-  if(pip||!(root() instanceof FrameLayout)){hideSkip();hideNext();return;}
+  if(pip||!(root() instanceof FrameLayout)){hideSkip();hideNext();hideTools();hideMarks();return;}
   if(!item.equals(stream.optString("emby.item")))prepare(stream);
   int pos=EmbyPlayback.position(a),dur=duration();
   String mode=EmbyCue.skipMode(a.getSharedPreferences("data",0).getString("emby.skip",EmbyCue.ASK));
@@ -29,7 +29,7 @@ final class EmbyPlayerUi {
   next(stream,chrome,pos,dur);
   if(chrome){showTools();}else{hideTools();}
   lift(skip,true);lift(nextCard,true);lift(previewBox,false);lift(chapterHost,false);
-  placeMarks(dur);
+  placeMarks(dur,chrome);
   if(!appliedPref&&pos>=0)applyPreferred(stream);
  }
  void prepare(JSONObject stream){
@@ -73,7 +73,17 @@ final class EmbyPlayerUi {
   String base=server==null?"":server.optString("url"),token=server==null?"":server.optString("token");
   for(int i=0;i<chapters.length();i++){JSONObject c=chapters.optJSONObject(i);if(c==null)continue;LinearLayout cell=new LinearLayout(a);cell.setOrientation(LinearLayout.VERTICAL);cell.setPadding(dp(6),dp(6),dp(6),dp(6));ImageView img=new ImageView(a);img.setScaleType(ImageView.ScaleType.CENTER_CROP);String url=base.isEmpty()?"":EmbyApi.chapterImage(base,stream.optString("emby.item"),c.optInt("index"),token,c.optString("tag"));if(!url.isEmpty())TvPosterImages.load(a,img,url,dp(160));cell.addView(img,new LinearLayout.LayoutParams(dp(112),dp(63)));TextView name=new TextView(a);name.setText(c.optString("name"));name.setTextColor(0xffffffff);name.setTextSize(11);name.setMaxLines(1);cell.addView(name);long at=c.optLong("startMs");cell.setOnClickListener(v->{EmbyPlayback.seek(a,(int)Math.min(Integer.MAX_VALUE,at));if(chapterHost!=null){host.removeView(chapterHost);chapterHost=null;chapterStrip=null;}});chapterStrip.addView(cell);}
   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM);lp.bottomMargin=dp(210);host.addView(scroller,lp);}
- void placeMarks(int dur){if(dur<=0||(chapters.length()==0&&!span.any())){if(marks!=null)marks.setVisibility(View.GONE);return;}if(seek==null)seek=findSeek(root() instanceof View?(View)root():null);SeekBar bar=seek;if(bar==null||bar.getWidth()<=0||!(root() instanceof FrameLayout))return;if(marks!=null&&marks.getChildCount()>0&&markedDur==dur)return;markedDur=dur;FrameLayout host=(FrameLayout)root();if(marks==null){marks=new FrameLayout(a);host.addView(marks);}marks.setVisibility(View.VISIBLE);marks.removeAllViews();int[] loc=new int[2];int[] hostLoc=new int[2];bar.getLocationInWindow(loc);host.getLocationInWindow(hostLoc);FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(Math.max(1,bar.getWidth()),dp(4));lp.leftMargin=loc[0]-hostLoc[0];lp.topMargin=loc[1]-hostLoc[1]+bar.getHeight()-dp(3);marks.setLayoutParams(lp);
+ void hideMarks(){if(marks!=null)marks.setVisibility(View.GONE);}
+ void placeMarks(int dur,boolean chrome){
+  if(seek==null)seek=findSeek(root() instanceof View?(View)root():null);SeekBar bar=seek;
+  if(!EmbyCue.showChapterMarks(chrome,bar!=null&&bar.isShown(),dur,chapters.length()>0||span.any())||!(root() instanceof FrameLayout)){hideMarks();return;}
+  int width=bar.getWidth()-bar.getPaddingLeft()-bar.getPaddingRight();if(width<=0){hideMarks();return;}
+  FrameLayout host=(FrameLayout)root();if(marks==null){marks=new FrameLayout(a);marks.setClickable(false);marks.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);host.addView(marks);}
+  boolean rebuild=marks.getChildCount()==0||markedDur!=dur||marks.getLayoutParams()==null||marks.getLayoutParams().width!=width;
+  int[] loc=new int[2],hostLoc=new int[2];bar.getLocationInWindow(loc);host.getLocationInWindow(hostLoc);
+  FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(width,dp(4));lp.leftMargin=loc[0]-hostLoc[0]+bar.getPaddingLeft();lp.topMargin=loc[1]-hostLoc[1]+bar.getHeight()/2-dp(2);marks.setLayoutParams(lp);
+  Object bottom=OnlineSubtitleSearch.field(a,"bottom");marks.setAlpha(bottom instanceof View?((View)bottom).getAlpha():1f);marks.setVisibility(View.VISIBLE);
+  if(!rebuild)return;markedDur=dur;marks.removeAllViews();
   addMark(EmbyCue.mark(span.introStart,dur),PlayerTheme.MARK_INTRO);addMark(EmbyCue.mark(span.introEnd,dur),PlayerTheme.MARK_INTRO);addMark(EmbyCue.mark(span.creditsStart,dur),PlayerTheme.MARK_CREDITS);
   for(int i=0;i<chapters.length();i++){JSONObject c=chapters.optJSONObject(i);if(c!=null)addMark(EmbyCue.mark(c.optLong("startMs"),dur),PlayerTheme.MARK_CHAPTER);}
  }

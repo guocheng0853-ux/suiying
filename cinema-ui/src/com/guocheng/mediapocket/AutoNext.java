@@ -21,8 +21,11 @@ final class AutoNext {
  Button button(String t,View.OnClickListener l){Button b=new Button(a);b.setText(t);b.setAllCaps(false);b.setTextColor(0xffffffff);b.setBackground(PlayerTheme.card(a.getResources().getDisplayMetrics().density));b.setOnClickListener(l);return b;}
  void show(JSONObject meta){Object root=OnlineSubtitleSearch.field(a,"root");if(!(root instanceof FrameLayout))return;card=new LinearLayout(a);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(dp(16),dp(12),dp(16),dp(12));card.setBackground(PlayerTheme.card(a.getResources().getDisplayMetrics().density));card.setClipToOutline(true);text=new TextView(a);text.setTextColor(0xffffffff);text.setTextSize(15);card.addView(text);LinearLayout row=new LinearLayout(a);row.addView(button("取消",v->{cancelled=true;hide();}));LinearLayout.LayoutParams gap=new LinearLayout.LayoutParams(-2,-2);gap.leftMargin=dp(10);row.addView(button("立即播放",v->go(meta,String.valueOf(OnlineSubtitleSearch.field(a,"type")))),gap);card.addView(row);FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(-2,-2,Gravity.END|Gravity.BOTTOM);lp.rightMargin=dp(24);lp.bottomMargin=dp(96);((FrameLayout)root).addView(card,lp);}
  void hide(){if(card!=null&&card.getParent() instanceof ViewGroup)((ViewGroup)card.getParent()).removeView(card);card=null;}
- void go(JSONObject meta,String type){if(nextId==null||a.isFinishing())return;pendingMeta=meta;pendingId=nextId;pendingType=type;cancelled=true;hide();a.finish();}
- static void handoff(Activity a,JSONObject meta,String nextId,String type){if(nextId==null||a==null||a.isFinishing())return;pendingMeta=meta;pendingId=nextId;pendingType=type;AutoNext n=ALL.get(a);if(n!=null){n.cancelled=true;n.hide();}a.finish();}
+ void go(JSONObject meta,String type){if(nextId==null||a.isFinishing())return;cancelled=true;hide();handoff(a,meta,nextId,type);}
+ static void handoff(Activity a,JSONObject meta,String nextId,String type){if(nextId==null||a==null||a.isFinishing())return;AutoNext n=ALL.get(a);if(n!=null){n.cancelled=true;n.hide();}
+  // Emby library pages do not consume the main Activity's static pending request.
+  // Keep this player until playItem starts its replacement successfully.
+  EpisodeHandoff.dispatch(nextId,id->EmbyPlayback.switchEpisode(a,id),()->{pendingMeta=meta;pendingId=nextId;pendingType=type;a.finish();});}
  /** 主界面 onResume 调用：取出请求，返回 [id,type] 与 meta。 */
  static Object[] consume(){if(pendingId==null)return null;Object[] r={pendingId,pendingType,pendingMeta};pendingId=null;pendingType=null;pendingMeta=null;return r;}
 }
