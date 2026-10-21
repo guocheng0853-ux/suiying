@@ -12,6 +12,7 @@ public class DolbyRulesTest {
   check(DolbyRules.kind(src(new JSONObject().put("VideoRange","HDR").put("VideoRangeType","HDR10"),"x")).equals("hdr"),"hdr10");
   check(DolbyRules.kind(src(new JSONObject().put("VideoRange","SDR"),"Where.the.Mask.Ends.S01E01.2160p.WEB-DL.DV.HEVC")).equals("dv"),"file name DV");
   check(DolbyRules.kind(src(new JSONObject().put("VideoRange","SDR"),"Movie.DVDRip.x264")).equals("sdr")&&DolbyRules.kind(src(new JSONObject(),"DVB capture")).equals("sdr"),"DVD/DVB not DV");
+  check(DolbyRules.kind(src(new JSONObject().put("DvProfile",8).put("VideoRangeType","DOVI"),"x")).equals("dv-compatible"),"explicit profile wins over generic range");
   check(DolbyRules.kind(null).equals("sdr")&&DolbyRules.kind(new JSONObject()).equals("sdr"),"empty");
   check(DolbyRules.risky("p5")&&DolbyRules.risky("dv")&&!DolbyRules.risky("dv-compatible")&&!DolbyRules.risky("hdr"),"risky");
   check(DolbyRules.profileIn("Dolby Vision Profile 8.1")==8&&DolbyRules.profileIn("DoviProfile50")==5&&DolbyRules.profileIn("none")==-1,"profile parse");

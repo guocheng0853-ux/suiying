@@ -1,0 +1,56 @@
+[
+  {
+    "name": "media3-common",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-common/1.8.0/media3-common-1.8.0.aar",
+    "aar_sha256": "001efb6ce0d21965a32c17b9c5be317c07c8722fb680601b19906f64064536b2",
+    "jar_sha256": "0b5c16eb4ef834579e3f2bb9bccfe766cee19c7a550284c4051de0e87dbb97af"
+  },
+  {
+    "name": "media3-container",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-container/1.8.0/media3-container-1.8.0.aar",
+    "aar_sha256": "3860a15aa5b2a2baf2dcde38c3b638a384a84daf4855ac47867714c9dac0368d",
+    "jar_sha256": "ede55527cb3389be6461bedaf41940e6e0f984fef00bb2106be22450eeae964d"
+  },
+  {
+    "name": "media3-datasource",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-datasource/1.8.0/media3-datasource-1.8.0.aar",
+    "aar_sha256": "9bb676ab1f259b822b30f00755879c6111d7e88466622f9041d588fc7aeb6915",
+    "jar_sha256": "752dce39b51bcf5c6bc63adf77b1487a868485fb94f085f1f9990d8df1a92ff0"
+  },
+  {
+    "name": "media3-decoder",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-decoder/1.8.0/media3-decoder-1.8.0.aar",
+    "aar_sha256": "ffa96597c2418de39d6b24975c788d3aa4bdab00fb89e6b5b22aef2a49a919e8",
+    "jar_sha256": "f7901ef50c1b26920192e5768be21f6f92a327720187421bb3a111a7c767a2c1"
+  },
+  {
+    "name": "media3-extractor",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-extractor/1.8.0/media3-extractor-1.8.0.aar",
+    "aar_sha256": "778312cd8a9975debd50c86a20ae4ed7b0770ff43e9b72acfb6664b6ed36d3ae",
+    "jar_sha256": "5c90a60b138263c5ec6170ba0d847a9bac823aed88dea915172d71cbdf67570e"
+  },
+  {
+    "name": "media3-database",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-database/1.8.0/media3-database-1.8.0.aar",
+    "aar_sha256": "13bf4ccce6bc9e8ef8e04a62e90fa6c1589b89bee8633f0db9f61ae2c23f6ef6",
+    "jar_sha256": "d4b0509ee93605d4d43da2d458e78bbf728f865dbcd00aa2a726f4daf91d5da2"
+  },
+  {
+    "name": "media3-exoplayer",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-exoplayer/1.8.0/media3-exoplayer-1.8.0.aar",
+    "aar_sha256": "606275b20c57e5991834470457a23576ffd0e92db5bfa2a4562ac1782d2166fb",
+    "jar_sha256": "0a90699e6f468ce80da811bbecb01890b5fb7dbae0b6b86c8ed705abd96e828b"
+  },
+  {
+    "name": "media3-exoplayer-hls",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/media3/media3-exoplayer-hls/1.8.0/media3-exoplayer-hls-1.8.0.aar",
+    "aar_sha256": "cc7fe465f7e35c5992946ea257b6014b722d29d4cd0d2d1ac39dc712817879f7",
+    "jar_sha256": "a8232964eb121812ef571af003cb3f87d6efa0ae1b7a62446f60e5f98d50bbe2"
+  },
+  {
+    "name": "exifinterface",
+    "url": "https://dl.google.com/dl/android/maven2/androidx/exifinterface/exifinterface/1.3.6/exifinterface-1.3.6.aar",
+    "aar_sha256": "1804105e9e05fdd8f760413bad5de498c381aa329f4f9d94c851bc891ac654c6",
+    "jar_sha256": "074b42b244b390d5f18dc5f75e5d154ee67fb0c5f9626ea06b805b2acf6e1da7"
+  }
+]

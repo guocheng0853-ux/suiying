@@ -15,8 +15,12 @@ final class DolbyRules {
   for(int i=0;streams!=null&&i<streams.length();i++){JSONObject s=streams.optJSONObject(i);if(s!=null&&"Video".equalsIgnoreCase(s.optString("Type"))){video=s;break;}}
   if(video!=null){
    int profile=video.optInt("DvProfile",-1);String range=video.optString("VideoRangeType"),ext=video.optString("ExtendedVideoType"),sub=video.optString("ExtendedVideoSubType")+" "+video.optString("ExtendedVideoSubTypeDescription");
-   if(profile==5||range.equalsIgnoreCase("DOVI")||profileIn(sub)==5)return P5;
-   if(profile>5||range.toUpperCase(Locale.ROOT).startsWith("DOVIWITH")||profileIn(sub)>5)return COMPATIBLE;
+   if(profile==5)return P5;
+   if(profile>5)return COMPATIBLE;
+   if(profileIn(sub)==5)return P5;
+   if(profileIn(sub)>5)return COMPATIBLE;
+   if(range.equalsIgnoreCase("DOVI"))return P5;
+   if(range.toUpperCase(Locale.ROOT).startsWith("DOVIWITH"))return COMPATIBLE;
    if(ext.equalsIgnoreCase("DolbyVision")||mentionsDv(video.optString("DisplayTitle"))||mentionsDv(video.optString("Title")))return DV;
    String vr=video.optString("VideoRange");if(vr.equalsIgnoreCase("HDR")||range.toUpperCase(Locale.ROOT).startsWith("HDR")||range.equalsIgnoreCase("HLG")||ext.toLowerCase(Locale.ROOT).startsWith("hdr"))return HDR;
   }

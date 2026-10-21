@@ -32,7 +32,7 @@ final class EmbyPlayback {
    JSONObject stream=EmbyApi.stream(route,itemId,chosen,resume).put("emby.runtimeTicks",detail.optLong("RunTimeTicks"));
    if(detail.optJSONArray("Chapters")!=null)stream.put("emby.chapters",detail.optJSONArray("Chapters"));
    JSONArray versions=EmbyCue.versions(playback.optJSONArray("MediaSources"));if(versions.length()>1)stream.put("emby.versions",versions);
-   String dk="sdr";{JSONArray ms=playback.optJSONArray("MediaSources");for(int i=0;ms!=null&&i<ms.length();i++){JSONObject src=ms.optJSONObject(i);if(src!=null&&chosen.mediaSourceId.equals(src.optString("Id")))dk=DolbyRules.kind(src);}}final String dolby=dk;if(DolbyRules.risky(dolby))DebugLog.event("杜比视界","片源类型 "+dolby);
+   String dk="sdr";{JSONArray ms=playback.optJSONArray("MediaSources");for(int i=0;ms!=null&&i<ms.length();i++){JSONObject src=ms.optJSONObject(i);if(src!=null&&chosen.mediaSourceId.equals(src.optString("Id")))dk=DolbyRules.kind(src);}}stream.put("dolby.kind",dk);final String dolby=dk;if(DolbyRules.risky(dolby))DebugLog.event("杜比视界","片源类型 "+dolby);
    String watch=meta.optString("id");int pos=(int)Math.min(Integer.MAX_VALUE,resume),dur=(int)Math.min(Integer.MAX_VALUE,EmbyApi.ticksToMs(detail.optLong("RunTimeTicks")));
    a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(cancel[0]||a.isFinishing())return;if(pos>10000)a.getSharedPreferences("data",0).edit().putInt("pos:"+watch,pos).putInt("dur:"+watch,dur).apply();
     JSONArray sources;try{sources=EmbyApi.withTranscode(stream,route.optString("url"),route.optString("token"),EmbyStore.deviceId(a));}catch(Exception e){sources=new JSONArray().put(stream);}final JSONArray all=sources;

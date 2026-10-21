@@ -17,6 +17,7 @@ api=build/'android-api-only.jar'
 with zipfile.ZipFile(sdk) as source,zipfile.ZipFile(api,'w') as target:
  for n in source.namelist():
   if not n.startswith(('java/','javax/','org/w3c/','org/xml/sax/','sun/','jdk/')):target.writestr(n,source.read(n))
+run('python3',root/'fetch_media3.py')
 libs=sorted((root/'runtime-libs').glob('*.jar'));cp=':'.join(str(p) for p in libs)
 run('java','-XX:-UsePerfData','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',str(api)+':'+cp,'-d',build/'runtime-classes',*list((root/'runtime-src').rglob('*.java')))
 base=set()
@@ -31,6 +32,8 @@ for lib in [build/'runtime.jar']+libs:
  with zipfile.ZipFile(lib) as source,zipfile.ZipFile(filtered,'w') as target:
   for n in source.namelist():
    if n=='module-info.class' or n.endswith('/module-info.class'):continue
+   # Not used by our player; needs AAR string resources absent from the preserved base table.
+   if n=='androidx/media3/exoplayer/offline/DownloadNotificationHelper.class':continue
    data=source.read(n)
    if n.endswith('.class'):
     if n in base:continue

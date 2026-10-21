@@ -10,3 +10,7 @@ cinema-ui/build/
 __pycache__/
 # 含个人小雅令牌的真实默认配置：只保留在本地，仓库里是脱敏样例 fusion-default.example.json
 cinema-ui/assets/fusion-default.json
+
+# Downloaded pinned Media3 artifacts (fetch_media3.py)
+cinema-ui/runtime-libs/media3-*.jar
+cinema-ui/runtime-libs/exifinterface-1.3.6.jar
