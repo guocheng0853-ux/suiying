@@ -21,29 +21,30 @@ public final class BackupActivity extends Activity {
   CinemaMenu.show(a,"备份与恢复",rows);}
  static void warnSecrets(Activity a){EditText pass=new EditText(a);pass.setHint("加密密码，至少 4 位");pass.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
   new AlertDialog.Builder(a,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("含账号与令牌的备份").setMessage("文件里会有 Emby 密码、字幕密钥，以及网盘和配置地址中的令牌。不加密时是明文 JSON，任何拿到文件的人都能读取。建议设置密码，或改用不含账号的备份。").setView(pass)
-   .setPositiveButton("用密码加密导出",(d,w)->{String p=pass.getText().toString().trim();if(p.length()<4){Toast.makeText(a,"密码至少 4 位，已取消导出",Toast.LENGTH_LONG).show();return;}export(a,true,p);})
+   .setPositiveButton("用密码加密导出",(d,w)->{String p=pass.getText().toString();if(p.length()<4){Toast.makeText(a,"密码至少 4 位，已取消导出",Toast.LENGTH_LONG).show();return;}export(a,true,p);})
    .setNeutralButton("仍导出明文",(d,w)->export(a,true,null)).setNegativeButton("取消",null).show();}
 
- @Override protected void onCreate(Bundle saved){super.onCreate(saved);if(saved!=null)return;
-  String mode=getIntent().getStringExtra("mode");secrets=getIntent().getBooleanExtra("secrets",false);password=getIntent().getStringExtra("password");if(password==null)password="";
+ @Override protected void onCreate(Bundle saved){super.onCreate(saved);
+  secrets=getIntent().getBooleanExtra("secrets",false);password=getIntent().getStringExtra("password");if(password==null)password="";if(saved!=null)return;
+  String mode=getIntent().getStringExtra("mode");
   try{if("export".equals(mode)){Intent pick=new Intent(Intent.ACTION_CREATE_DOCUMENT);pick.addCategory(Intent.CATEGORY_OPENABLE);pick.setType("application/json");pick.putExtra(Intent.EXTRA_TITLE,BackupRules.fileName(version(this),System.currentTimeMillis()));startActivityForResult(pick,EXPORT);}
    else{Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT);pick.addCategory(Intent.CATEGORY_OPENABLE);pick.setType("*/*");startActivityForResult(pick,IMPORT);}
   }catch(Exception e){toast("这台设备没有文件选择器："+e.getClass().getSimpleName());finish();}}
- @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putBoolean("secrets",secrets);out.putString("password",password);}
- @Override protected void onRestoreInstanceState(Bundle in){super.onRestoreInstanceState(in);secrets=in.getBoolean("secrets",false);password=in.getString("password","");}
 
  @Override protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);
   Uri uri=data==null?null:data.getData();if(result!=RESULT_OK||uri==null){finish();return;}
-  if(request==EXPORT){CinemaWait wait=CinemaWait.show(this,"正在备份","正在写入备份…",true,false);final Uri dest=uri;IO.execute(()->{try{writeBackup(dest);runOnUiThread(()->{if(wait.isShowing())wait.dismiss();toast(password.isEmpty()?"备份已保存":"加密备份已保存");finish();});}catch(Exception e){runOnUiThread(()->{if(wait.isShowing())wait.dismiss();toast("备份失败："+reason(e));finish();});}});return;}
-  if(request==IMPORT){CinemaWait wait=CinemaWait.show(this,"正在读取备份","正在读取文件…",true,false);final Uri src=uri;IO.execute(()->{try{String text=read(src);runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(!isFinishing())offer(text);});}catch(Exception e){runOnUiThread(()->{if(wait.isShowing())wait.dismiss();toast(reason(e));finish();});}});}
+  if(request==EXPORT){CinemaWait wait=CinemaWait.show(this,"正在备份","正在写入备份…",true,false);final Uri dest=uri;IO.execute(()->{try{writeBackup(dest);ui(wait,()->{toast(password.isEmpty()?"备份已保存":"加密备份已保存");finish();});}catch(Exception e){ui(wait,()->{toast("备份失败："+reason(e));finish();});}});return;}
+  if(request==IMPORT){CinemaWait wait=CinemaWait.show(this,"正在读取备份","正在读取文件…",true,false);final Uri src=uri;IO.execute(()->{try{String text=read(src);ui(wait,()->offer(text));}catch(Exception e){ui(wait,()->{toast(reason(e));finish();});}});}
  }
+ /** 页面已经关掉或窗口拆掉时不再动对话框，避免旋转或返回后 dismiss 抛异常。 */
+ void ui(CinemaWait wait,Runnable next){runOnUiThread(()->{if(isFinishing()||isDestroyed())return;try{if(wait!=null&&wait.isShowing())wait.dismiss();}catch(RuntimeException ignored){}if(isFinishing()||isDestroyed())return;next.run();});}
  void offer(String text){try{if(BackupRules.sealed(text)){askPassword(text);return;}confirm(BackupRules.open(text));}catch(Exception e){toast(reason(e));finish();}}
  void askPassword(String text){EditText pass=new EditText(this);pass.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
   new AlertDialog.Builder(this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("备份已加密").setMessage("请输入导出时设置的密码。").setView(pass)
-   .setPositiveButton("解密",(d,w)->{String p=pass.getText().toString();CinemaWait wait=CinemaWait.show(this,"正在解密","正在核对密码…",true,false);IO.execute(()->{try{JSONObject root=BackupRules.open(text,p);runOnUiThread(()->{if(wait.isShowing())wait.dismiss();if(!isFinishing())confirm(root);});}catch(Exception e){runOnUiThread(()->{if(wait.isShowing())wait.dismiss();toast(reason(e));finish();});}});})
+   .setPositiveButton("解密",(d,w)->{String p=pass.getText().toString();CinemaWait wait=CinemaWait.show(this,"正在解密","正在核对密码…",true,false);IO.execute(()->{try{JSONObject root=BackupRules.open(text,p);ui(wait,()->confirm(root));}catch(Exception e){ui(wait,()->{toast(reason(e));finish();});}});})
    .setNegativeButton("取消",(d,w)->finish()).setOnCancelListener(d->finish()).show();}
  void confirm(JSONObject root){new AlertDialog.Builder(this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("从备份恢复？").setMessage(BackupRules.summary(root)+"\n\n备份里的设置会覆盖手机上的同名设置，其余保留。恢复后随影会重新打开。")
-  .setPositiveButton("恢复",(d,w)->{CinemaWait wait=CinemaWait.show(this,"正在恢复","正在写回设置…",true,false);IO.execute(()->{try{apply(root);runOnUiThread(()->{if(wait.isShowing())wait.dismiss();toast("已恢复");restart();});}catch(Exception e){runOnUiThread(()->{if(wait.isShowing())wait.dismiss();toast("恢复失败："+reason(e));finish();});}});})
+  .setPositiveButton("恢复",(d,w)->{CinemaWait wait=CinemaWait.show(this,"正在恢复","正在写回设置…",true,false);IO.execute(()->{try{apply(root);ui(wait,()->{toast("已恢复");restart();});}catch(Exception e){ui(wait,()->{toast("恢复失败："+reason(e));finish();});}});})
   .setNegativeButton("取消",(d,w)->finish()).setOnCancelListener(d->finish()).show();}
 
  void writeBackup(Uri uri)throws Exception{

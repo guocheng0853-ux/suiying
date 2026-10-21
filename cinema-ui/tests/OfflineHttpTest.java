@@ -22,13 +22,25 @@ public class OfflineHttpTest {
   gate.start();
   try{JSONObject headers=new JSONObject().put("User-Agent","Custom/1").put("Cookie","sid=1").put("Authorization","Bearer t").put("X-Emby-Token","emby").put("Referer","https://src.example/a");
    HttpURLConnection c=OfflineHttp.open("http://127.0.0.1:"+gate.getAddress().getPort()+"/go",headers,0);check(c.getResponseCode()==200,"cross-port redirect followed");c.disconnect();
-   check("Custom/1".equals(hop[0])&&hop[1]==null&&hop[2]==null&&hop[3]==null&&hop[4]==null,"credential headers dropped on another port, user-agent kept: "+java.util.Arrays.toString(hop));
+   check("Custom/1".equals(hop[0])&&hop[1]==null&&hop[2]==null&&hop[3]==null&&"https://src.example/a".equals(hop[4]),"credentials dropped on another port, referer kept: "+java.util.Arrays.toString(hop));
   }finally{gate.stop(0);other.stop(0);}
   URL https=new URL("https://cdn.example/a"),http=new URL("http://cdn.example/a"),otherHost=new URL("https://other.example/a"),port=new URL("https://cdn.example:8443/a"),same=new URL("https://CDN.example/b");
-  check(!RequestHeaders.allow("Cookie",https,http)&&RequestHeaders.allow("User-Agent",https,http),"https to http drops cookie only");
-  check(!RequestHeaders.allow("Referer",https,otherHost)&&!RequestHeaders.allow("X-Emby-Token",https,otherHost)&&!RequestHeaders.allow("Authorization",https,port),"cross-origin drops credentials");
+  check(!RequestHeaders.allow("Cookie",https,http)&&!RequestHeaders.allow("Referer",https,http)&&RequestHeaders.allow("User-Agent",https,http),"https to http drops cookie and referer");
+  check(RequestHeaders.allow("Referer",https,otherHost)&&RequestHeaders.allow("Referer",https,port)&&!RequestHeaders.allow("X-Emby-Token",https,otherHost)&&!RequestHeaders.allow("Authorization",https,port),"cross-origin keeps referer and drops credentials");
   check(RequestHeaders.allow("Cookie",https,same)&&RequestHeaders.allow("Referer",https,same),"same origin keeps credentials");
-  System.out.println("PASS: in-app downloader follows redirects with source headers, player User-Agent default, Range resume with Content-Range total, and strips credentials on cross-origin and https-to-http.");
+  HttpRange.Plan ignored=HttpRange.plan(200,1000,500,100000,-1);
+  check(ignored.skip==1000&&ignored.read==500&&!ignored.empty&&!ignored.reject,"200 skips to position and honors requested length");
+  HttpRange.Plan rest=HttpRange.plan(200,1000,HttpRange.UNSET,100000,-1);
+  check(rest.skip==1000&&rest.read==99000,"200 without a length reads what remains after the skip");
+  HttpRange.Plan partial=HttpRange.plan(206,1000,500,500,100000);
+  check(partial.skip==0&&partial.read==500,"206 does not skip");
+  HttpRange.Plan atEnd=HttpRange.plan(416,100000,HttpRange.UNSET,-1,100000);
+  check(atEnd.empty&&atEnd.read==0&&!atEnd.reject,"416 at the document size is an empty success");
+  HttpRange.Plan atEndLen=HttpRange.plan(416,100000,20,-1,100000);
+  check(atEndLen.empty&&atEndLen.read==20,"416 at the document size returns the requested length");
+  HttpRange.Plan rejected=HttpRange.plan(416,50,10,-1,100000);
+  check(rejected.reject&&!rejected.empty,"416 before the end is rejected");
+  System.out.println("PASS: in-app downloader follows redirects with source headers, player User-Agent default, Range resume with Content-Range total, keeps Referer across hosts, and strips credentials on cross-origin and https-to-http.");
  }
 }
 

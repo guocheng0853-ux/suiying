@@ -6,8 +6,8 @@ final class OfflineHttp {
  static final String UA="MediaPocket/0.1.3";
  /**
   * 打开连接并手动跟随重定向（含 http↔https）。
-  * Cookie / Authorization / X-Emby-Token / Referer 只发给最初那一跳的来源；
-  * 跨主机、跨端口，或从 https 降到 http 时去掉这些头。User-Agent 等普通头保留。
+ * Cookie / Authorization / X-Emby-Token 只发给最初那一跳的来源；
+ * 跨主机、跨端口，或从 https 降到 http 时去掉这些头。Referer 跨主机仍然带上，只在 https 降到 http 时去掉。User-Agent 等普通头保留。
   */
  static HttpURLConnection open(String url,JSONObject headers,long from)throws IOException{
   URL origin;try{origin=new URL(url);}catch(Exception e){origin=null;}

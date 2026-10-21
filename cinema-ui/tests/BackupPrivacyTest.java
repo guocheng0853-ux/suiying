@@ -14,6 +14,10 @@ public class BackupPrivacyTest {
   prefs.put("lone","https://xiaoya.example/Ab12cd34Ef56");
   prefs.put("poster","https://cdn.example/posters/df6450a1cc03f3139b659338e9f15278.jpg");
   prefs.put("emby.item","https://emby.example/Items/5f2a8c9d1e4b7a6c0d3e/Images/Primary");
+  String configKey="tvbox.config:https://user:pass@xiaoya.example/Ab12cd34Ef56/tvbox/my_ext.json";
+  prefs.put(configKey,"{\"sites\":[]}");
+  String plainKey="bookmark:https://cdn.example/watch/movie";
+  prefs.put(plainKey,"keep-me");
   JSONObject full=BackupRules.encode(prefs,true),lite=BackupRules.encode(prefs,false);
   check(full.has("subtitle.opensubtitlesKey")&&full.optJSONObject("tvbox.profiles").optString("v").contains("token="),"full backup keeps secrets");
   check(!lite.has("subtitle.opensubtitlesKey"),"lite drops opensubtitles key");
@@ -26,6 +30,8 @@ public class BackupPrivacyTest {
   check(lite.optJSONObject("lone").optString("v").endsWith("/REDACTED"),"lone path token");
   check(lite.optJSONObject("poster").optString("v").contains("df6450a1cc03f3139b659338e9f15278.jpg"),"poster hash kept");
   check(lite.optJSONObject("emby.item").optString("v").contains("5f2a8c9d1e4b7a6c0d3e"),"emby id kept");
+  check(full.has(configKey)&&!lite.has(configKey)&&!lite.toString().contains("tvbox.config:"),"lite drops a preference whose key embeds a credential URL");
+  check("keep-me".equals(lite.optJSONObject(plainKey).optString("v")),"plain URL key that scrubbing does not change is kept");
   Map<String,JSONObject> sec=new HashMap<>();sec.put("data",full);JSONObject root=BackupRules.wrap("0.1.120",1L,true,sec);
   String sealed=BackupRules.seal(root.toString(),"test-pass");
   check(BackupRules.sealed(sealed)&&!sealed.contains("OS-SECRET"),"sealed wrapper hides the key");
@@ -33,6 +39,12 @@ public class BackupPrivacyTest {
   check(opened.optJSONObject("prefs").optJSONObject("data").has("subtitle.opensubtitlesKey"),"password opens the backup");
   boolean ask=false;try{BackupRules.open(sealed,null);}catch(IllegalArgumentException e){ask=e.getMessage().contains("请输入密码");}check(ask,"sealed file asks for a password");
   boolean wrong=false;try{BackupRules.open(sealed,"nope");}catch(IllegalArgumentException e){wrong=e.getMessage().contains("密码不对");}check(wrong,"wrong password rejected");
-  System.out.println("PASS: lite backup drops key prefs and URL credentials; site id and media paths stay; sealed backup round-trips.");
+  check(BackupRules.KDF_ITER>=210000&&new JSONObject(sealed).optInt("iter")==BackupRules.KDF_ITER,"pbkdf2 iterations stored and at least 210000");
+  String spaced="  test-pass  ";
+  String sealedSpaces=BackupRules.seal(root.toString(),spaced);
+  check(BackupRules.open(sealedSpaces,spaced).optJSONObject("prefs").optJSONObject("data").has("subtitle.opensubtitlesKey"),"untrimmed password round-trips");
+  boolean trimmed=false;try{BackupRules.open(sealedSpaces,spaced.trim());}catch(IllegalArgumentException e){trimmed=e.getMessage().contains("密码不对");}check(trimmed,"trimming the password does not open the backup");
+  boolean shortSpaces=false;try{BackupRules.seal("{}", "   ");}catch(IllegalArgumentException e){shortSpaces=e.getMessage().contains("至少 4");}check(shortSpaces,"spaces count toward the length");
+  System.out.println("PASS: lite backup drops key prefs, credential URL keys, and URL credentials; site id and media paths stay; sealed backup round-trips with the untrimmed password.");
  }
 }

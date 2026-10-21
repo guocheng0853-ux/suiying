@@ -2,8 +2,9 @@ package com.guocheng.mediapocket;
 import android.net.Uri;import androidx.media3.common.C;import androidx.media3.datasource.*;import java.io.*;import java.net.*;import java.util.*;
 /**
  * Media3 播放用的 HTTP 源。自己跟随重定向，凭证头按 RequestHeaders 裁剪：
- * 跨主机 / 跨端口 / 换协议去掉 Cookie、Authorization、X-Emby-Token、Referer；
- * https 降到 http 时这些凭证一律不带。User-Agent 等普通头保留。
+ * 跨主机 / 跨端口去掉 Cookie、Authorization、X-Emby-Token；Referer 仍然带上。
+ * https 降到 http 时这些头和 Referer 都不带。User-Agent 等普通头保留。
+ * 对方忽略 Range 而返回 200 时，跳到请求的位置并按请求长度截断；416 且起点已是文件末尾则当作读完。
  */
 final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSource {
  final String userAgent;final Map<String,String> headers=new LinkedHashMap<>();
@@ -22,14 +23,17 @@ final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSourc
     c=(HttpURLConnection)current.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout(15000);c.setReadTimeout(20000);c.setRequestMethod(spec.httpMethod==DataSpec.HTTP_METHOD_HEAD?"HEAD":"GET");
     boolean ua=false;for(Map.Entry<String,String> e:req.entrySet()){String k=e.getKey(),v=e.getValue();if(k==null||v==null||k.isEmpty()||v.isEmpty()||k.equalsIgnoreCase("Range")||k.equalsIgnoreCase("Host"))continue;if(!RequestHeaders.allow(k,origin,current))continue;c.setRequestProperty(k,v);if(k.equalsIgnoreCase("User-Agent"))ua=true;}
     if(!ua)c.setRequestProperty("User-Agent",userAgent);
-    if(spec.position>0||spec.length>0){String end=spec.length>0?Long.toString(spec.position+spec.length-1):"";c.setRequestProperty("Range","bytes="+spec.position+"-"+end);}
+    if(spec.position>0||spec.length!=C.LENGTH_UNSET){String end=spec.length==C.LENGTH_UNSET?"":Long.toString(spec.position+spec.length-1);c.setRequestProperty("Range","bytes="+spec.position+"-"+end);}
     c.setRequestProperty("Accept-Encoding","identity");int code=c.getResponseCode();
     if(code==301||code==302||code==303||code==307||code==308){String loc=c.getHeaderField("Location");if(loc==null||loc.isEmpty())throw new IOException("重定向没有目标地址");current=new URL(current,loc);continue;}
     responseCode=code;responseHeaders=copy(c.getHeaderFields());
-    if(code<200||code>299){byte[] err=readLimited(c.getErrorStream());HttpURLConnection bad=c;c=null;bad.disconnect();throw new InvalidResponseCodeException(code,"",null,responseHeaders,spec,err);}
-    input=c.getInputStream();connection=c;c=null;long len=connection.getContentLengthLong();
-    if(spec.position>0&&code==200){skipFully(input,spec.position);len=len>spec.position?len-spec.position:-1;}
-    remaining=len>=0?len:-1;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return remaining>=0?remaining:C.LENGTH_UNSET;}
+    long contentLength=c.getContentLengthLong();long documentSize=OfflineRules.totalFromContentRange(c.getHeaderField("Content-Range"));
+    HttpRange.Plan plan=HttpRange.plan(code,spec.position,spec.length==C.LENGTH_UNSET?HttpRange.UNSET:spec.length,contentLength<0?HttpRange.UNSET:contentLength,documentSize<0?HttpRange.UNSET:documentSize);
+    if(plan.reject||((code<200||code>299)&&!plan.empty)){byte[] err=readLimited(c.getErrorStream());HttpURLConnection bad=c;c=null;bad.disconnect();throw new InvalidResponseCodeException(code,"",null,responseHeaders,spec,err);}
+    if(plan.empty){c.disconnect();c=null;input=new ByteArrayInputStream(new byte[0]);remaining=0;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return plan.read;}
+    input=c.getInputStream();connection=c;c=null;
+    if(plan.skip>0)skipFully(input,plan.skip);
+    remaining=plan.read;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return remaining>=0?remaining:C.LENGTH_UNSET;}
    throw new IOException("重定向次数过多");
   }catch(HttpDataSourceException e){throw e;}catch(IOException e){if(c!=null)c.disconnect();throw HttpDataSourceException.createForIOException(e,spec,HttpDataSourceException.TYPE_OPEN);}
  }
@@ -37,5 +41,5 @@ final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSourc
  @Override public void close()throws HttpDataSourceException{try{if(input!=null)try{input.close();}catch(IOException ignored){}input=null;if(connection!=null){connection.disconnect();connection=null;}}finally{if(opened){opened=false;transferEnded();}}}
  static Map<String,List<String>> copy(Map<String,List<String>> in){Map<String,List<String>> out=new HashMap<>();if(in!=null)for(Map.Entry<String,List<String>> e:in.entrySet())if(e.getKey()!=null)out.put(e.getKey(),e.getValue());return out;}
  static byte[] readLimited(InputStream in){if(in==null)return new byte[0];try{ByteArrayOutputStream b=new ByteArrayOutputStream();byte[] buf=new byte[1024];int n,total=0;while(total<4096&&(n=in.read(buf))>0){b.write(buf,0,n);total+=n;}return b.toByteArray();}catch(IOException e){return new byte[0];}finally{try{in.close();}catch(IOException ignored){}}}
- static void skipFully(InputStream in,long n)throws IOException{long left=n;while(left>0){long s=in.skip(left);if(s<=0){if(in.read()<0)return;s=1;}left-=s;}}
+ void skipFully(InputStream in,long n)throws IOException{byte[] buf=new byte[8192];long left=n;while(left>0){int r=in.read(buf,0,(int)Math.min(buf.length,left));if(r<0)throw new IOException("服务器忽略了断点，文件比请求的位置短");left-=r;bytesTransferred(r);}}
 }

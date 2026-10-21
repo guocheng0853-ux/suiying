@@ -1,11 +1,12 @@
 package com.guocheng.mediapocket;
-import android.app.Activity;import android.graphics.*;import android.graphics.drawable.GradientDrawable;import android.view.*;import android.widget.*;import java.util.*;
+import android.app.Activity;import android.graphics.*;import android.graphics.drawable.GradientDrawable;import android.view.*;import android.widget.*;
 /**
  * 播放时上下滑的音量 / 亮度指示。VLC 播放页和内置 Media3 播放页共用。
  * 圆角半透明药丸、矢量图标、进度条和百分比；亮画面和暗画面都靠深色底加浅色描边分开。
+ * 指示挂在窗口 DecorView 的 tag 上，不放进静态表，避免值反过来抓住 Activity。
  */
 final class LevelHud {
- static final Map<Activity,LevelHud> ALL=new WeakHashMap<>();
+ static final int TAG=0x7f0e1201;
  final Activity a;final FrameLayout panel;final ImageView icon;final Bar bar;final TextView percent;final Runnable hideTask;int generation;boolean brightness;int value,scale=100;
  private LevelHud(Activity a,FrameLayout host){
   this.a=a;float d=a.getResources().getDisplayMetrics().density;int dp=LevelHudMetrics.WIDTH;
@@ -22,10 +23,12 @@ final class LevelHud {
   host.addView(panel,new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.START));
   hideTask=()->hide(true);
  }
- static void show(Activity a,FrameLayout host,boolean brightness,int value,int scale){if(a==null||host==null)return;LevelHud h=ALL.get(a);if(h==null||h.panel.getParent()!=host){if(h!=null)dismiss(a);h=new LevelHud(a,host);ALL.put(a,h);}h.update(brightness,value,scale);}
- static void hideSoon(Activity a,long delay){LevelHud h=ALL.get(a);if(h==null||h.panel.getVisibility()!=View.VISIBLE)return;h.panel.removeCallbacks(h.hideTask);h.panel.postDelayed(h.hideTask,delay);}
- static void hide(Activity a,boolean animate){LevelHud h=ALL.get(a);if(h!=null)h.hide(animate);}
- static void dismiss(Activity a){LevelHud h=ALL.remove(a);if(h==null)return;h.panel.removeCallbacks(h.hideTask);h.panel.animate().cancel();if(h.panel.getParent() instanceof ViewGroup)((ViewGroup)h.panel.getParent()).removeView(h.panel);}
+ static LevelHud find(Activity a){if(a==null||a.getWindow()==null)return null;Object tag=a.getWindow().getDecorView().getTag(TAG);return tag instanceof LevelHud?(LevelHud)tag:null;}
+ static void show(Activity a,FrameLayout host,boolean brightness,int value,int scale){if(a==null||host==null||a.getWindow()==null)return;LevelHud h=find(a);if(h==null||h.panel.getParent()!=host){if(h!=null)h.detach();h=new LevelHud(a,host);a.getWindow().getDecorView().setTag(TAG,h);}h.update(brightness,value,scale);}
+ static void hideSoon(Activity a,long delay){LevelHud h=find(a);if(h==null||h.panel.getVisibility()!=View.VISIBLE)return;h.panel.removeCallbacks(h.hideTask);h.panel.postDelayed(h.hideTask,delay);}
+ static void hide(Activity a,boolean animate){LevelHud h=find(a);if(h!=null)h.hide(animate);}
+ static void dismiss(Activity a){LevelHud h=find(a);if(h==null)return;h.detach();if(a.getWindow()!=null)a.getWindow().getDecorView().setTag(TAG,null);}
+ void detach(){panel.removeCallbacks(hideTask);panel.animate().cancel();if(panel.getParent() instanceof ViewGroup)((ViewGroup)panel.getParent()).removeView(panel);}
  void update(boolean brightness,int value,int scale){this.brightness=brightness;this.value=value;this.scale=scale<=0?100:scale;int iconType=brightness?LevelIconGeometry.SUN:LevelIconGeometry.volume(value);int px=Math.round(LevelHudMetrics.ICON*a.getResources().getDisplayMetrics().density);icon.setImageDrawable(new LevelIcons(iconType,px));bar.set(value,this.scale);percent.setText(value+"%");panel.setContentDescription((brightness?"亮度 ":"音量 ")+value+"%");place();panel.removeCallbacks(hideTask);boolean wasGone=panel.getVisibility()!=View.VISIBLE;int token=++generation;panel.animate().cancel();panel.setVisibility(View.VISIBLE);panel.bringToFront();if(wasGone)panel.setAlpha(0f);if(wasGone||panel.getAlpha()<0.99f)panel.animate().alpha(1f).setDuration(LevelHudMetrics.FADE_IN_MS).withEndAction(()->{if(token!=generation)return;panel.setAlpha(1f);}).start();else panel.setAlpha(1f);}
  void hide(boolean animate){panel.removeCallbacks(hideTask);int token=++generation;panel.animate().cancel();if(!animate){panel.setAlpha(0f);panel.setVisibility(View.GONE);return;}panel.animate().alpha(0f).setDuration(LevelHudMetrics.FADE_OUT_MS).withEndAction(()->{if(token!=generation)return;panel.setVisibility(View.GONE);}).start();}
  void place(){View host=(View)panel.getParent();if(host==null)return;int[] cut=PlayerOverlay.insets(host);float d=a.getResources().getDisplayMetrics().density;int hostW=host.getWidth()>0?host.getWidth():a.getResources().getDisplayMetrics().widthPixels;int hostH=host.getHeight()>0?host.getHeight():a.getResources().getDisplayMetrics().heightPixels;int pill=Math.round(LevelHudMetrics.WIDTH*d);FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)panel.getLayoutParams();lp.gravity=Gravity.TOP|Gravity.START;lp.leftMargin=LevelHudMetrics.x(hostW,pill,d,cut[0],cut[2]);lp.topMargin=LevelHudMetrics.top(d,cut[1],hostH>=hostW);lp.rightMargin=0;lp.bottomMargin=0;panel.setLayoutParams(lp);}
