@@ -10,7 +10,7 @@ import android.net.Uri;import androidx.media3.common.C;import androidx.media3.da
 final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSource {
  final String userAgent;final Map<String,String> headers=new LinkedHashMap<>();
  DataSpec spec;HttpURLConnection connection;InputStream input;Uri uri;Map<String,List<String>> responseHeaders=new HashMap<>();int responseCode;long remaining=-1;boolean opened;
- ScopedHttpDataSource(String userAgent,Map<String,String> headers){super(true);this.userAgent=userAgent==null||userAgent.isEmpty()?"Mozilla/5.0":userAgent;if(headers!=null)for(Map.Entry<String,String> e:headers.entrySet())if(e.getKey()!=null&&e.getValue()!=null)this.headers.put(e.getKey(),e.getValue());}
+ ScopedHttpDataSource(String userAgent,Map<String,String> headers){super(true);this.userAgent=userAgent==null||userAgent.isEmpty()?OfflineHttp.UA:userAgent;if(headers!=null)for(Map.Entry<String,String> e:headers.entrySet())if(e.getKey()!=null&&e.getValue()!=null)this.headers.put(e.getKey(),e.getValue());}
  @Override public void setRequestProperty(String name,String value){if(name!=null&&value!=null)headers.put(name,value);}
  @Override public void clearRequestProperty(String name){headers.remove(name);}
  @Override public void clearAllRequestProperties(){headers.clear();}
@@ -33,6 +33,8 @@ final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSourc
     if(plan.reject||((code<200||code>299)&&!plan.empty)){byte[] err=readLimited(c.getErrorStream());HttpURLConnection bad=c;c=null;bad.disconnect();throw new InvalidResponseCodeException(code,"",null,responseHeaders,spec,err);}
     if(plan.empty){c.disconnect();c=null;input=new ByteArrayInputStream(new byte[0]);remaining=0;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return plan.read;}
     input=c.getInputStream();connection=c;c=null;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;
+    // 0.1.121：服务器不支持从中间读时，跳过的部分要整段下载；超过 64 MB 就不硬读（4K 片源拖动会白下几个 GB），直接报原因
+    if(plan.skip>HttpRange.MAX_SKIP)throw new IOException("服务器不支持从中间读取（拖到这里要先下载 "+OfflineRules.size(plan.skip)+"），请从头播放或换一条线路");
     if(plan.skip>0)skipFully(input,plan.skip);
     remaining=plan.read;return remaining>=0?remaining:C.LENGTH_UNSET;}
    throw new IOException("重定向次数过多");

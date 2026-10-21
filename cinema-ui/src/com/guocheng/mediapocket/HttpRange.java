@@ -5,6 +5,8 @@ package com.guocheng.mediapocket;
  */
 final class HttpRange {
  static final long UNSET=-1;
+ /** 0.1.121：对方忽略 Range 时最多跳过 64 MB，再多就放弃并提示。 */
+ static final long MAX_SKIP=64L*1024*1024;
  static final class Plan {
   final long skip,read;final boolean empty,reject;
   Plan(long skip,long read,boolean empty,boolean reject){this.skip=skip;this.read=read;this.empty=empty;this.reject=reject;}

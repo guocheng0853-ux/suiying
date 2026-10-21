@@ -122,3 +122,13 @@ keytool -list -v -keystore signing.jks -storepass android   # 别名 mediapocket
 - 用户指定继续使用`fix/detail-timeout-0103`的新历史，不再推旧分支或旧提交。当前候选0.1.109 / code 110，在0.1.108基础上修复详情主按钮长文字裁切，构建和真机验证进行中。
 - 接手时手机为0.1.106，现已同签名升级至0.1.109 / code 110；不得安装更旧的候选包覆盖已有功能。签名仍按第5节指定指纹核对，保留所有用户数据。
 - 历史装机证据按版本分别记录在`DEVICE-VALIDATION.md`；未完成的播放失败卡片、电影版本、影视仓详情等场景仍需继续验证。
+
+
+## 多个 AI 协作规则（2026-10-22 起）
+
+Claude、Codex、Cursor 会同时在这个仓库工作，此前出现过两次版本号相撞。约定：
+1. 开工前先 `git fetch` 并基于最新 `origin/main`；动手前在 README 顶部看清当前版本号。
+2. 版本号只在出包时才加，出包后**立刻推送**，不要在本地攒多个版本。下一个版本号 = main 上的版本 + 1。
+3. 推送前再 `git fetch` 一次；main 有了别人的新提交就先合并、重新构建测试，再推。
+4. 改动较大或会持续多轮时用分支 + PR，由用户合并；小修直接进 main。
+5. 每次出包都要在 cinema-ui/README.md 顶部写更新记录，并跑 `scripts/run_tests.sh` 与 `verify_apk.py`。

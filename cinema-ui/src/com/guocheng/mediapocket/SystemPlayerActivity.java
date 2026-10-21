@@ -64,5 +64,5 @@ public final class SystemPlayerActivity extends Activity {
  /** Emby 进度回报（直接播放）。 */
  void report(String kind){if(serverId.isEmpty()||item.isEmpty()||video==null)return;final long ticks=EmbyApi.msToTicks(Math.max(0,video.getCurrentPosition()));final boolean paused=!video.isPlaying();Context app=getApplicationContext();
   EmbyPlayback.IO.execute(()->{try{JSONObject server=EmbyStore.get(app,serverId);if(server==null)return;JSONObject body=EmbyApi.sessionBody(item,media,session,ticks,paused,true);
-   if("start".equals(kind)){if(reportedStart)return;reportedStart=true;EmbyClient.playing(app,server,body);}else if("stop".equals(kind))EmbyClient.stopped(app,server,body);else{body.put("EventName","pause".equals(kind)?"Pause":"TimeUpdate");EmbyClient.progress(app,server,body);}}catch(Exception ignored){}});}
+   if("start".equals(kind)){if(reportedStart)return;reportedStart=true;EmbySessions.started(serverId,item,media,session,ticks,true);EmbyClient.playing(app,server,body);}else if("stop".equals(kind)){EmbySessions.stopped(session);EmbyClient.stopped(app,server,body);}else{EmbySessions.progress(session,ticks);body.put("EventName","pause".equals(kind)?"Pause":"TimeUpdate");EmbyClient.progress(app,server,body);}}catch(Exception ignored){}});}
 }

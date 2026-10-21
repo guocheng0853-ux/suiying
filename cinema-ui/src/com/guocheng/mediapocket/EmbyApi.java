@@ -288,6 +288,12 @@ final class EmbyApi {
    .put("emby.server",server.optString("id")).put("emby.item",itemId).put("emby.mediaSource",choice.mediaSourceId).put("emby.playSession",choice.playSessionId).put("emby.direct",choice.direct).put("emby.resumeMs",Math.max(0L,resumeMs));
  }
  static boolean library(JSONObject view){if(view==null)return false;String t=view.optString("CollectionType");if(t.isEmpty())return true;return t.equals("movies")||t.equals("tvshows")||t.equals("homevideos")||t.equals("boxsets")||t.equals("folders")||t.equals("mixed");}
+ /** 0.1.121 服务器错误正文里给人看的那句话：JSON 取 Message / message / error，HTML / 纯文本去标签；去掉网址和疑似令牌，最多 80 字。 */
+ static String serverReason(String body){if(body==null)return "";String t=body.trim();if(t.isEmpty())return "";
+  try{if(t.startsWith("{")){JSONObject o=new JSONObject(t);for(String k:new String[]{"Message","message","error","Error","detail","title"}){String v=o.optString(k);if(!v.isEmpty()){t=v;break;}}}}catch(Exception ignored){}
+  t=t.replaceAll("(?s)<(script|style)[^>]*>.*?</\\1>"," ").replaceAll("<[^>]+>"," ").replaceAll("(?i)https?://\\S+","[地址]").replaceAll("[A-Za-z0-9_\\-]{24,}","[已隐藏]").replaceAll("\\s+"," ").trim();
+  if(t.startsWith("{")||t.startsWith("["))return "";return t.length()>80?t.substring(0,80)+"…":t;}
+ static boolean conflict(Throwable e){return e!=null&&e.getMessage()!=null&&e.getMessage().startsWith("HTTP 409");}
  static String explain(Throwable e){
   if(e==null)return "未知错误";
   if(e instanceof IllegalArgumentException&&e.getMessage()!=null&&!e.getMessage().isEmpty())return e.getMessage();
@@ -301,6 +307,7 @@ final class EmbyApi {
   if(m.startsWith(CLIENT_ERROR))return clientNotice(m.substring(CLIENT_ERROR.length()));
   if(m.startsWith("HTTP 403"))return "服务器拒绝访问，请检查账号权限";
   if(m.startsWith("HTTP 404"))return "服务器没有这个接口，请确认地址指向 Emby";
+  if(m.startsWith("HTTP 409"))return "服务器拒绝了这次播放（HTTP 409"+(m.length()>8?"，服务器说："+m.substring(9).trim():"")+"）。共享服务器常限制同时播放的路数或设备数：关掉其他正在播的设备，等一两分钟再试。";
   if(m.startsWith("HTTP "))return "服务器返回错误（"+m+"）";
   if(m.contains("账号")||m.contains("地址")||m.contains("播放"))return m;
   return "无法完成请求，请检查网络后重试";
