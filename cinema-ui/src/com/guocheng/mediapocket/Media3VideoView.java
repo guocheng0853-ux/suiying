@@ -12,7 +12,8 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
  static void warmDecoder(){Thread t=new Thread(Media3VideoView::supportsP5,"p5-probe");t.setDaemon(true);t.start();}
  static boolean supportsP5(){Boolean cached=p5Cache;if(cached!=null)return cached;synchronized(Media3VideoView.class){if(p5Cache!=null)return p5Cache;p5Cache=probeP5();return p5Cache;}}
  static boolean probeP5(){try{for(android.media.MediaCodecInfo codec:new android.media.MediaCodecList(android.media.MediaCodecList.ALL_CODECS).getCodecInfos()){if(codec.isEncoder())continue;for(String type:codec.getSupportedTypes())if("video/dolby-vision".equalsIgnoreCase(type))for(android.media.MediaCodecInfo.CodecProfileLevel profile:codec.getCapabilitiesForType(type).profileLevels)if(profile.profile==android.media.MediaCodecInfo.CodecProfileLevel.DolbyVisionProfileDvheStn)return true;}}catch(RuntimeException ignored){}return false;}
- static String userAgent(Map<String,String> headers){if(headers!=null)for(Map.Entry<String,String> entry:headers.entrySet())if("User-Agent".equalsIgnoreCase(entry.getKey())&&entry.getValue()!=null&&!entry.getValue().isEmpty())return entry.getValue();return OfflineHttp.UA;}  // 0.1.121：与 VLC 播放、离线下载同一个身份
+ /** 片源自带 User-Agent 时照用。否则用浏览器式标识：部分站点会拒绝 MediaPocket/0.1.3。VLC 与离线下载仍用 OfflineHttp.UA。 */
+ static String userAgent(Map<String,String> headers){if(headers!=null)for(Map.Entry<String,String> entry:headers.entrySet())if("User-Agent".equalsIgnoreCase(entry.getKey())&&entry.getValue()!=null&&!entry.getValue().isEmpty())return entry.getValue();return OfflineHttp.BROWSER_UA;}
  void requireDolbyP5(boolean strict){strictP5=strict;}
  void setMediaController(MediaController c){controller=c;c.setMediaPlayer(this);}
  void setOnPreparedListener(Prepared v){prepared=v;}void setOnInfoListener(Info v){info=v;}void setOnErrorListener(Error v){error=v;}void setOnCompletionListener(Complete v){complete=v;}void setOnVideoSizeChangedListener(Size v){size=v;}
@@ -57,7 +58,10 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
  public void start(){if(player!=null)player.play();}public void pause(){if(player!=null)player.pause();}
  public int getDuration(){return player==null||player.getDuration()==C.TIME_UNSET?0:(int)Math.min(Integer.MAX_VALUE,player.getDuration());}
  public int getCurrentPosition(){return player==null?0:(int)Math.min(Integer.MAX_VALUE,player.getCurrentPosition());}
- public void seekTo(int pos){if(player!=null)player.seekTo(Math.max(0,pos));}public boolean isPlaying(){return player!=null&&player.isPlaying();}
+ public void seekTo(int pos){seekTo(pos,false);}
+ /** fromUser 为真时，接下来大约 2.5 秒内忽略 Range 的跳过才受 64 MB 上限约束。续播和第一次打开走 seekTo(int)。 */
+ public void seekTo(int pos,boolean fromUser){if(fromUser){ScopedHttpDataSource.userSeek=true;final int gen=++ScopedHttpDataSource.seekGen;postDelayed(()->{if(ScopedHttpDataSource.seekGen==gen)ScopedHttpDataSource.userSeek=false;},2500);}if(player!=null)player.seekTo(Math.max(0,pos));}
+ public boolean isPlaying(){return player!=null&&player.isPlaying();}
  public int getBufferPercentage(){return player==null?0:player.getBufferedPercentage();}public boolean canPause(){return true;}public boolean canSeekBackward(){return true;}public boolean canSeekForward(){return true;}public int getAudioSessionId(){return player==null?0:player.getAudioSessionId();}
  void stopPlayback(){if(player!=null){player.release();player=null;}}
 }

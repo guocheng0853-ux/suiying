@@ -10,7 +10,7 @@ import org.json.*;import java.nio.charset.StandardCharsets;import java.security.
 final class BackupRules {
  private BackupRules(){}
  static final String APP="suiying";static final int FORMAT=1;
- static final String[] SKIP_PREFIXES={"fusion.catalog","cinema.meta.","home.hero","hero.","cinema.hero","emby.deviceId","update.","followup.lastRun"};
+ static final String[] SKIP_PREFIXES={"fusion.catalog","fusion.home:","cinema.catalog.","cinema.meta.","home.hero","hero.","cinema.hero","emby.deviceId","update.","followup.lastRun"};
  static final String[] SECRET_FIELDS={"token","accesstoken","password","passwd","secret","apikey","api_key","cookie","authorization"};
 
  static boolean skip(String key){if(key==null)return true;for(String p:SKIP_PREFIXES)if(key.startsWith(p))return true;return false;}

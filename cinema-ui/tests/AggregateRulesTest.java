@@ -20,6 +20,15 @@ public final class AggregateRulesTest {
   JSONArray resume=AggregateRules.resume(new JSONArray().put(new JSONObject().put("id","e1").put("name","三体")),new JSONArray().put(new JSONObject().put("id","tt1").put("name","三体")).put(new JSONObject().put("id","tt2").put("name","奥本海默")));
   check(resume.length()==2&&resume.getJSONObject(0).optString("id").equals("e1"),"resume dedupe");
   check(AggregateRules.stale(0,1000)&&!AggregateRules.stale(1000,2000)&&AggregateRules.stale(0,AggregateRules.FRESH_MS+5),"stale");
-  System.out.println("PASS: aggregate home source detection, title key, year guard, round-robin merge with dedupe count, category mapping, resume merge.");
+  JSONObject dune=new JSONObject().put("name","沙丘").put("year","2021").put("poster","keep").put("emby.server","s");
+  JSONObject dune2=new JSONObject().put("name","沙丘").put("year","2021").put("fusion.site","f");
+  JSONArray once=AggregateRules.merge(Arrays.asList(new JSONArray().put(dune),new JSONArray().put(dune2)),5);
+  check(once.length()==1&&once.getJSONObject(0).optInt("agg.count")==2&&"keep".equals(dune.optString("poster"))&&!dune.has("agg.source"),"dedupe keeps source object, count 2");
+  JSONObject copy=AggregateRules.copy(dune);copy.put("poster","");check("keep".equals(dune.optString("poster"))&&"".equals(copy.optString("poster")),"shallow copy");
+  List<JSONArray> bench=new ArrayList<>();
+  for(int s=0;s<4;s++){JSONArray list=new JSONArray();for(int i=0;i<30;i++)list.put(new JSONObject().put("name","片"+s+"-"+i).put("year",String.valueOf(2000+(i%5))));bench.add(list);}
+  long started=System.nanoTime();for(int n=0;n<80;n++)check(AggregateRules.merge(bench,20).length()==20,"bench size");
+  long ms=(System.nanoTime()-started)/1000000L;check(ms<1500,"merge 80x4x30 took "+ms+"ms");
+  System.out.println("PASS: aggregate home source detection, title key, year guard, round-robin merge with dedupe count, category mapping, resume merge, shallow copy, "+ms+"ms for 80 merges.");
  }
 }

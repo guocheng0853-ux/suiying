@@ -4,6 +4,8 @@ import org.json.*;import java.io.*;import java.net.*;import java.util.*;
 final class OfflineHttp {
  private OfflineHttp(){}
  static final String UA="MediaPocket/0.1.3";
+ /** 内置播放器在片源没有 User-Agent 时用这个。VLC 和离线下载仍用 {@link #UA}。 */
+ static final String BROWSER_UA="Mozilla/5.0";
  /**
   * 打开连接并手动跟随重定向（含 http↔https）。
  * Cookie / Authorization / X-Emby-Token 只发给最初那一跳的来源；

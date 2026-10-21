@@ -1,5 +1,5 @@
 package com.guocheng.mediapocket;
-import android.graphics.Typeface;import android.view.*;import android.widget.*;import org.json.*;import java.util.*;
+import android.graphics.Typeface;import android.view.*;import android.widget.*;import org.json.*;import java.util.*;import java.util.concurrent.*;
 /**
  * 0.1.127 聚合首页（原「融合」）：不再按来源一块一块往下排，而是按内容排——
  * 继续观看 → 最近更新 → 电影 → 剧集 → 动漫 → 纪录片，每一行同时混排 Emby、影视仓、Stremio 的条目，同名去重，
@@ -7,6 +7,7 @@ import android.graphics.Typeface;import android.view.*;import android.widget.*;i
  * 最底下保留影视仓分类入口和站点切换。
  */
 final class AggregateHome {
+ static final ExecutorService MERGE=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"agg-merge");t.setDaemon(true);return t;});
  final ScrapedMainActivity a;final int ticket;final Map<String,Row> rows=new LinkedHashMap<>();final List<String> order=new ArrayList<>();
  LinearLayout resumeHost,footer;JSONArray local;final Map<String,JSONArray> embyResume=new LinkedHashMap<>();
  AggregateHome(ScrapedMainActivity a){this.a=a;ticket=a.epoch;}
@@ -32,17 +33,18 @@ final class AggregateHome {
   stremio("movie","movie","");stremio("series","series","");stremio("anime","series","Animation");stremio("doc","movie","Documentary");
  }
 
- /** 一行：标题 + 海报横排；parts 按来源存条目，任何来源有新结果就整行重画。 */
+ /** 一行：标题 + 海报横排。来源陆续到达时合并到一次重画；合并在后台做，主线程只贴结果。 */
  final class Row {
-  final String key,title,type;final TextView head;final LinearLayout host;final Map<String,JSONArray> parts=new HashMap<>();final Set<String> waiting=new HashSet<>(order);String fusionCategory="",painted="";
+  final String key,title,type;final TextView head;final LinearLayout host;final Map<String,JSONArray> parts=new HashMap<>();final Set<String> waiting=new HashSet<>(order);String fusionCategory="",painted="";int paintGen;
+  final Runnable paintLater=this::paintNow;
   Row(String key,String title,String type){this.key=key;this.title=title;this.type=type;head=a.sectionHead("agg-"+key,title+" ›");head.setOnClickListener(v->open());a.body.addView(head);host=new LinearLayout(a);host.setOrientation(1);a.body.addView(host);host.addView(Skeleton.row(a,a.card(),false,4));}
   void open(){if(key.equals("fresh")){if(!fusionCategory.isEmpty())a.openFusion(fusionCategory);return;}if(key.equals("anime"))a.genreBrowse("series","Animation");else if(key.equals("doc"))a.genreBrowse("movie","Documentary");else a.genreBrowse(type,"");}
   void skip(String source){waiting.remove(source);}
-  void put(String source,JSONArray items,boolean last){if(items!=null)parts.put(source,items);if(last)waiting.remove(source);paint();}
-  void paint(){List<JSONArray> lists=new ArrayList<>();for(String s:order)lists.add(parts.get(s));JSONArray merged=AggregateRules.merge(lists,20);
-   if(merged.length()==0){if(waiting.isEmpty()){head.setVisibility(View.GONE);host.setVisibility(View.GONE);}return;}
-   // 缓存和新数据一样时不重画，避免整行海报重新加载、首页重排
-   StringBuilder sig=new StringBuilder();for(int i=0;i<merged.length();i++){JSONObject m=merged.optJSONObject(i);sig.append(m.optString("id")).append('|').append(m.optInt("agg.count")).append(';');}if(sig.toString().equals(painted))return;painted=sig.toString();
+  void put(String source,JSONArray items,boolean last){if(items!=null)parts.put(source,items);if(last)waiting.remove(source);a.carousel.removeCallbacks(paintLater);if(waiting.isEmpty())paintNow();else a.carousel.postDelayed(paintLater,300);}
+  void paintNow(){a.carousel.removeCallbacks(paintLater);final List<JSONArray> lists=new ArrayList<>();for(String s:order)lists.add(parts.get(s));final int gen=++paintGen;final boolean done=waiting.isEmpty();MERGE.execute(()->{JSONArray merged=AggregateRules.merge(lists,20);ui(()->applyPaint(gen,merged,done));});}
+  void applyPaint(int gen,JSONArray merged,boolean done){if(gen!=paintGen)return;
+   if(merged.length()==0){if(done){Skeleton.clear(host);head.setVisibility(View.GONE);host.setVisibility(View.GONE);}return;}
+   StringBuilder sig=new StringBuilder();for(int i=0;i<merged.length();i++){JSONObject m=merged.optJSONObject(i);if(m==null)continue;sig.append(m.optString("id")).append('|').append(m.optInt("agg.count")).append(';');}if(sig.toString().equals(painted))return;painted=sig.toString();
    head.setVisibility(View.VISIBLE);host.setVisibility(View.VISIBLE);host.removeAllViews();a.shelf(host,merged,type,false);badges(host,merged);}
  }
 
@@ -56,31 +58,40 @@ final class AggregateHome {
 
  // ---------- Emby ----------
  void emby(int index,JSONObject server){String src=AggregateRules.EMBY+"#"+index;
-  EmbyHome.IO.execute(()->{JSONObject cached=EmbyHome.readCache(a,server);if(cached!=null){JSONObject c=cached;ui(()->applyEmby(index,src,server,c,false));}
-   try{JSONObject data=EmbyHome.fetch(a,server,null);EmbyHome.writeCache(a,server,data);ui(()->applyEmby(index,src,server,data,true));}
+  EmbyHome.IO.execute(()->{JSONObject cached=EmbyHome.readCache(a,server);if(cached!=null){EmbySlice slice=slice(server,cached,false);ui(()->applyEmby(index,src,slice));}
+   try{JSONObject data=EmbyHome.fetch(a,server,null);EmbyHome.writeCache(a,server,data);EmbySlice slice=slice(server,data,true);ui(()->applyEmby(index,src,slice));}
    catch(Exception e){DebugLog.event("聚合首页","Emby 读取失败 · "+EmbyApi.explain(e));ui(()->{for(Row r:rows.values())r.put(src,null,true);});}});}
- void applyEmby(int index,String src,JSONObject server,JSONObject data,boolean last){
-  JSONArray resume=EmbyHome.metas(a,server,data.optJSONArray("resume"),true);if(EmbyHome.mergeNext(a))resume=EmbyHome.withNextUp(resume,EmbyHome.metas(a,server,data.optJSONArray("next"),false));embyResume.put(src,resume);paintResume();
-  JSONArray latest=data.optJSONArray("latest");List<JSONArray> libs=new ArrayList<>();for(int i=0;latest!=null&&i<latest.length();i++)libs.add(EmbyHome.metas(a,server,latest.optJSONArray(i),false));
-  JSONArray fresh=AggregateRules.merge(libs,30),movies=new JSONArray(),series=new JSONArray();for(int i=0;i<fresh.length();i++){JSONObject m=fresh.optJSONObject(i);if("series".equals(m.optString("type")))series.put(m);else movies.put(m);}
-  for(Row r:rows.values()){JSONArray items=r.key.equals("fresh")?fresh:r.key.equals("movie")?movies:r.key.equals("series")?series:new JSONArray();r.put(src,items,last);}
-  if(index==0&&a.heroPriority<4){JSONArray heroes=new JSONArray();JSONArray picks=data.optJSONArray("heroes");if(picks==null)picks=new JSONArray();for(int i=0;i<picks.length()&&heroes.length()<5;i++){JSONObject item=picks.optJSONObject(i);JSONObject m=EmbyHome.card(a,server,item,false);if(m==null)continue;String t=item.optString("Type");if("Movie".equals(t)||"Episode".equals(t))try{m.put("emby.directPlay",true);}catch(Exception ignored){}heroes.put(m);}
-   if(heroes.length()>0){a.heroPriority=4;a.setHeroes(heroes,heroes.optJSONObject(0).optString("type","movie"));}}}
+ static final class EmbySlice {final JSONArray resume,fresh,movies,series,heroes;final boolean last;EmbySlice(JSONArray resume,JSONArray fresh,JSONArray movies,JSONArray series,JSONArray heroes,boolean last){this.resume=resume;this.fresh=fresh;this.movies=movies;this.series=series;this.heroes=heroes;this.last=last;}}
+ /** 把 Emby 原始条目换成首页卡片。在 Emby 后台线程做，进度只写一次。 */
+ EmbySlice slice(JSONObject server,JSONObject data,boolean last){
+  android.content.SharedPreferences.Editor ed=a.prefs.edit();boolean[] wrote={false};
+  JSONArray resume=EmbyHome.metas(a,server,data.optJSONArray("resume"),true,ed,wrote);if(EmbyHome.mergeNext(a))resume=EmbyHome.withNextUp(resume,EmbyHome.metas(a,server,data.optJSONArray("next"),false,ed,wrote));
+  JSONArray latest=data.optJSONArray("latest");List<JSONArray> libs=new ArrayList<>();for(int i=0;latest!=null&&i<latest.length();i++)libs.add(EmbyHome.metas(a,server,latest.optJSONArray(i),false,ed,wrote));
+  JSONArray fresh=AggregateRules.merge(libs,30),movies=new JSONArray(),series=new JSONArray();for(int i=0;i<fresh.length();i++){JSONObject m=fresh.optJSONObject(i);if(m!=null&&"series".equals(m.optString("type")))series.put(m);else if(m!=null)movies.put(m);}
+  JSONArray heroes=new JSONArray();JSONArray picks=data.optJSONArray("heroes");if(picks==null)picks=new JSONArray();
+  for(int i=0;i<picks.length()&&heroes.length()<5;i++){JSONObject item=picks.optJSONObject(i);JSONObject m=EmbyHome.card(a,server,item,false,ed,wrote);if(m==null)continue;String t=item.optString("Type");if("Movie".equals(t)||"Episode".equals(t))try{m.put("emby.directPlay",true);}catch(Exception ignored){}heroes.put(m);}
+  if(wrote[0])ed.apply();return new EmbySlice(resume,fresh,movies,series,heroes,last);
+ }
+ void applyEmby(int index,String src,EmbySlice slice){
+  embyResume.put(src,slice.resume);paintResume();
+  for(Row r:rows.values()){JSONArray items=r.key.equals("fresh")?slice.fresh:r.key.equals("movie")?slice.movies:r.key.equals("series")?slice.series:new JSONArray();r.put(src,items,slice.last);}
+  if(index==0&&slice.heroes.length()>0)a.offerHeroes(slice.heroes,slice.heroes.optJSONObject(0).optString("type","movie"),4);
+ }
  static JSONArray flat(JSONArray latest){JSONArray out=new JSONArray();for(int i=0;latest!=null&&i<latest.length();i++){JSONArray l=latest.optJSONArray(i);for(int j=0;l!=null&&j<l.length();j++)out.put(l.opt(j));}return out;}
 
  // ---------- 影视仓 ----------
  void tvbox(){String src=AggregateRules.TVBOX;final String sourceId=a.prefs.getString("home.source.v1","fty");
-  FusionCatalog.IO.execute(()->{try{FusionCatalog.Session session=HomeSources.session(a,sourceId);String homeKey="fusion.home:"+session.url+"|"+session.site.optString("key");JSONObject response=null;String saved=a.prefs.getString(homeKey,"");if(!saved.isEmpty())try{response=new JSONObject(saved);}catch(Exception ignored){}
+  FusionCatalog.IO.execute(()->{try{FusionCatalog.Session session=HomeSources.session(a,sourceId);CacheFiles files=CacheFiles.of(a);String homeKey="fusion.home:"+session.url+"|"+session.site.optString("key");JSONObject response=null;String saved=files.readMigrating(a,homeKey);if(saved!=null&&!saved.isEmpty())try{response=new JSONObject(saved);}catch(Exception ignored){}
     if(response==null||response.optJSONArray("class")==null||response.optJSONArray("class").length()==0){response=FusionCatalog.request(a,session,"home","","",1);}
-    JSONArray categories=response.optJSONArray("class");if(categories==null||categories.length()==0)throw new Exception(session.site.optString("name")+"：站点没有返回分类");a.prefs.edit().putString(homeKey,response.toString()).apply();
+    JSONArray categories=response.optJSONArray("class");if(categories==null||categories.length()==0)throw new Exception(session.site.optString("name")+"：站点没有返回分类");files.write(homeKey,response.toString());
     Map<String,JSONObject> picked=new LinkedHashMap<>();for(int i=0;i<categories.length();i++){JSONObject c=categories.optJSONObject(i);if(c==null)continue;String row=AggregateRules.rowForCategory(c.optString("type_name"));if(!row.isEmpty()&&!picked.containsKey(row))picked.put(row,c);}
     ui(()->{a.fusionSession=session;footer(session,categories);for(Row r:rows.values()){JSONObject c=picked.get(r.key);if(c==null){r.put(src,null,true);continue;}r.fusionCategory=c.optString("type_id");}});
     for(Map.Entry<String,JSONObject> e:picked.entrySet())category(session,e.getKey(),e.getValue());
    }catch(Exception e){String why=e.getMessage()==null?"站点暂未响应":e.getMessage();ui(()->{for(Row r:rows.values())r.put(src,null,true);footerError(why);});}});}
- void category(FusionCatalog.Session s,String rowKey,JSONObject c){String src=AggregateRules.TVBOX,cat=c.optString("type_id"),key=FusionCatalog.cacheKey(s,cat);
-  JSONArray cached=null;try{cached=new JSONArray(a.prefs.getString(key,""));}catch(Exception ignored){}boolean fresh=cached!=null&&cached.length()>0&&!AggregateRules.stale(a.prefs.getLong(key+".time",0),System.currentTimeMillis());
+ void category(FusionCatalog.Session s,String rowKey,JSONObject c){String src=AggregateRules.TVBOX,cat=c.optString("type_id"),key=FusionCatalog.cacheKey(s,cat);CacheFiles files=CacheFiles.of(a);
+  JSONArray cached=null;String raw=files.readMigrating(a,key);try{if(raw!=null&&!raw.isEmpty())cached=new JSONArray(raw);}catch(Exception ignored){}boolean fresh=cached!=null&&cached.length()>0&&files.fresh(key,System.currentTimeMillis(),AggregateRules.FRESH_MS);
   if(cached!=null&&cached.length()>0){JSONArray c0=cached;ui(()->{Row r=rows.get(rowKey);if(r!=null)r.put(src,c0,fresh);heroFrom(c0,3);});}if(fresh)return;
-  try{JSONObject r=FusionCatalog.request(a,s,"category",cat,"",1);JSONArray items=FusionCatalog.normalize(s,r.optJSONArray("list"),cat);a.prefs.edit().putString(key,items.toString()).putLong(key+".time",System.currentTimeMillis()).apply();ui(()->{Row row=rows.get(rowKey);if(row!=null)row.put(src,items,true);heroFrom(items,3);});}
+  try{JSONObject r=FusionCatalog.request(a,s,"category",cat,"",1);JSONArray items=FusionCatalog.normalize(s,r.optJSONArray("list"),cat);files.write(key,items.toString());ui(()->{Row row=rows.get(rowKey);if(row!=null)row.put(src,items,true);heroFrom(items,3);});}
   catch(Exception e){ui(()->{Row row=rows.get(rowKey);if(row!=null)row.put(src,null,true);});}}
  void footer(FusionCatalog.Session session,JSONArray categories){footer.removeAllViews();LinearLayout head=new LinearLayout(a);head.setGravity(Gravity.CENTER_VERTICAL);TextView h=a.heading("影视仓分类 · "+session.site.optString("name","影视仓"));head.addView(h,new LinearLayout.LayoutParams(0,-2,1f));TextView more=a.text("切换站点",13,a.muted());more.setPadding(a.dp(12),a.dp(6),a.dp(4),a.dp(6));more.setOnClickListener(v->a.chooseFusionSite());head.addView(more);footer.addView(head);
   HorizontalScrollView hs=new HorizontalScrollView(a);hs.setHorizontalScrollBarEnabled(false);LinearLayout line=new LinearLayout(a);hs.addView(line);footer.addView(hs);
@@ -88,12 +99,12 @@ final class AggregateHome {
  void footerError(String why){footer.removeAllViews();footer.addView(a.heading("影视仓"));footer.addView(a.text("读取失败："+why,12,a.muted()));footer.addView(a.button("切换站点",()->a.chooseFusionSite()));footer.addView(a.button("管理接口",()->a.startActivity(new android.content.Intent(a,TvBoxActivity.class))));}
 
  // ---------- Stremio ----------
- void stremio(String rowKey,String type,String genre){Row row=rows.get(rowKey);if(row==null)return;String src=AggregateRules.STREMIO,key="cinema.catalog."+type+"."+genre;
-  JSONArray cached=null;try{cached=new JSONArray(a.prefs.getString(key,""));}catch(Exception ignored){}boolean fresh=cached!=null&&cached.length()>0&&!AggregateRules.stale(a.prefs.getLong(key+".time",0),System.currentTimeMillis());
-  if(cached!=null&&cached.length()>0){row.put(src,cached,fresh);heroFrom(cached,genre.isEmpty()?(type.equals("series")?2:1):0);}if(fresh)return;
-  a.job(()->{try{JSONArray items=CinemaCatalogClient.json("https://v3-cinemeta.strem.io/catalog/"+type+"/top"+(genre.isEmpty()?"":"/genre="+Net.esc(genre))+".json").optJSONArray("metas");if(items==null||items.length()==0)throw new IllegalStateException("empty");a.prefs.edit().putString(key,items.toString()).putLong(key+".time",System.currentTimeMillis()).apply();ui(()->{row.put(src,items,true);heroFrom(items,genre.isEmpty()?(type.equals("series")?2:1):0);});}
+ void stremio(String rowKey,String type,String genre){Row row=rows.get(rowKey);if(row==null)return;String src=AggregateRules.STREMIO,key="cinema.catalog."+type+"."+genre;int priority=genre.isEmpty()?(type.equals("series")?2:1):0;
+  a.job(()->{CacheFiles files=CacheFiles.of(a);JSONArray cached=null;String raw=files.readMigrating(a,key);try{if(raw!=null&&!raw.isEmpty())cached=new JSONArray(raw);}catch(Exception ignored){}boolean fresh=cached!=null&&cached.length()>0&&files.fresh(key,System.currentTimeMillis(),AggregateRules.FRESH_MS);
+   if(cached!=null&&cached.length()>0){JSONArray shown=cached;ui(()->{row.put(src,shown,fresh);heroFrom(shown,priority);});if(fresh)return;}
+   try{JSONArray items=CinemaCatalogClient.json("https://v3-cinemeta.strem.io/catalog/"+type+"/top"+(genre.isEmpty()?"":"/genre="+Net.esc(genre))+".json").optJSONArray("metas");if(items==null||items.length()==0)throw new IllegalStateException("empty");files.write(key,items.toString());ui(()->{row.put(src,items,true);heroFrom(items,priority);});}
    catch(Exception e){ui(()->row.put(src,null,true));}});}
 
- /** 大图：Emby 优先（4），其次影视仓（3），再次 Stremio 热门（1–2）。 */
- void heroFrom(JSONArray items,int priority){if(items==null||items.length()==0||priority<=a.heroPriority)return;a.heroPriority=priority;JSONObject first=items.optJSONObject(0);a.setHeroes(items,first!=null&&"series".equals(first.optString("type"))?"series":"movie");}
+ /** 大图：Emby 优先（4），其次影视仓（3），再次 Stremio 热门（1–2）。用户正在滑时先记下，松手再换。 */
+ void heroFrom(JSONArray items,int priority){if(items==null||items.length()==0)return;JSONObject first=items.optJSONObject(0);a.offerHeroes(items,first!=null&&"series".equals(first.optString("type"))?"series":"movie",priority);}
 }

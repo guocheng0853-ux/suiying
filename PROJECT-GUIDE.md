@@ -1,6 +1,6 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前版本 0.1.120（versionCode 121）。先读本说明，再读 `cinema-ui/README.md` 顶部更新记录、`HANDOFF-CODEX-DEVICE.md` 和 `DEVICE-VALIDATION.md`。不要把构建或合并当作完整真机验证通过。
+> 当前版本 0.1.130（versionCode 131）。先读本说明，再读 `cinema-ui/README.md` 顶部更新记录、`HANDOFF-CODEX-DEVICE.md` 和 `DEVICE-VALIDATION.md`。不要把构建或合并当作完整真机验证通过。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 1. 这是什么

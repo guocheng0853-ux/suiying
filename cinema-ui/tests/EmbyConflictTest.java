@@ -13,7 +13,10 @@ public class EmbyConflictTest {
   check(EmbyApi.explain(new java.io.IOException("HTTP 409")).contains("等一两分钟"),"409 without body");
   check(EmbyApi.explain(new java.io.IOException("HTTP 500：内部错误")).contains("内部错误"),"other codes keep reason");
   check(HttpRange.MAX_SKIP==64L*1024*1024&&HttpRange.plan(200,HttpRange.MAX_SKIP*2,HttpRange.UNSET,HttpRange.MAX_SKIP*4,HttpRange.UNSET).skip>HttpRange.MAX_SKIP,"skip cap constant and plan");
-  check(OfflineHttp.UA.equals("MediaPocket/0.1.3"),"single player identity");
-  System.out.println("PASS: Emby server reasons (json/html/sanitised/capped), 409 detection and wording, ignored-Range skip cap, unified player UA.");
+  check(!HttpRange.rejectIgnoredRange(HttpRange.MAX_SKIP+1,false),"open and moov may skip past 64MB");
+  check(HttpRange.rejectIgnoredRange(HttpRange.MAX_SKIP+1,true)&&!HttpRange.rejectIgnoredRange(HttpRange.MAX_SKIP,true),"user seek rejects only above 64MB");
+  check(OfflineHttp.UA.equals("MediaPocket/0.1.3"),"vlc and offline identity");
+  check(OfflineHttp.BROWSER_UA.startsWith("Mozilla")&&!OfflineHttp.BROWSER_UA.equals(OfflineHttp.UA),"media3 default is a browser UA");
+  System.out.println("PASS: Emby server reasons (json/html/sanitised/capped), 409 detection and wording, ignored-Range skip cap only for user seeks, VLC UA plus browser UA.");
  }
 }

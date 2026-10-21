@@ -1,6 +1,6 @@
 # 随影 MediaPocket
 
-当前版本：0.1.120 / versionCode 121。详见[更新记录](cinema-ui/README.md)。0.1.108 的既有验证结果保留于[真机记录](DEVICE-VALIDATION.md)，完整清单仍未完成。
+当前版本：0.1.130 / versionCode 131。详见[更新记录](cinema-ui/README.md)。0.1.108 的既有验证结果保留于[真机记录](DEVICE-VALIDATION.md)，完整清单仍未完成。
 
 安卓播放器（Stremio 插件 + 影视仓配置，VLC 播放）。采用"基础 APK + Java 界面/功能扩展"的叠加构建方式，不是 Gradle 工程。
 

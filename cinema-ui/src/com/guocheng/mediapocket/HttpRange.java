@@ -5,8 +5,10 @@ package com.guocheng.mediapocket;
  */
 final class HttpRange {
  static final long UNSET=-1;
- /** 0.1.121：对方忽略 Range 时最多跳过 64 MB，再多就放弃并提示。 */
+ /** 0.1.121：对方忽略 Range 时，用户拖动最多跳过 64 MB，再多就放弃并提示。首次打开和读 moov 不套这道上限。 */
  static final long MAX_SKIP=64L*1024*1024;
+ /** 只有用户拖动进度时才拒绝过大的跳过。续播、第一次打开、读文件尾部的 moov 都允许。 */
+ static boolean rejectIgnoredRange(long skip,boolean userSeek){return userSeek&&skip>MAX_SKIP;}
  static final class Plan {
   final long skip,read;final boolean empty,reject;
   Plan(long skip,long read,boolean empty,boolean reject){this.skip=skip;this.read=read;this.empty=empty;this.reject=reject;}
