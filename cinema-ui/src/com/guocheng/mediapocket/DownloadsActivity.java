@@ -2,11 +2,11 @@ package com.guocheng.mediapocket;
 import android.app.Activity;import android.os.*;import android.view.*;import android.widget.*;import org.json.*;
 /** 0.1.106「离线下载」页：列出下载记录和进度，点已下载的直接播放，长按删除。每秒刷新一次进度。 */
 public final class DownloadsActivity extends Activity {
- LinearLayout list;TextView empty;boolean light;final Handler tick=new Handler(Looper.getMainLooper());
+ LinearLayout list;TextView empty;boolean light,gold;final Handler tick=new Handler(Looper.getMainLooper());
  final Runnable refresh=new Runnable(){public void run(){render();tick.postDelayed(this,1000);}};
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
- int ink(){return light?0xff173740:0xfff5fafb;}int muted(){return light?0xff52757c:0xffafcbd2;}int surface(){return light?0xffedf5f5:0xff10343e;}int card(){return light?0xffffffff:0xff19434e;}
- @Override protected void onCreate(Bundle saved){light="light".equals(getSharedPreferences("data",0).getString("themeMode","dark"));getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);super.onCreate(saved);
+ int ink(){return light?0xff173740:gold?CinemaTheme.INK:0xfff5fafb;}int muted(){return light?0xff52757c:gold?CinemaTheme.MUTED:0xffafcbd2;}int surface(){return light?0xffedf5f5:gold?CinemaTheme.BG:0xff10343e;}int card(){return light?0xffffffff:gold?CinemaTheme.CARD:0xff19434e;}
+ @Override protected void onCreate(Bundle saved){light="light".equals(getSharedPreferences("data",0).getString("themeMode","dark"));gold=!light&&CinemaTheme.gold(this);getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);super.onCreate(saved);
   getWindow().setStatusBarColor(surface());getWindow().setNavigationBarColor(surface());
   LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(surface());root.setPadding(dp(16),dp(8),dp(16),0);setContentView(root);
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);Button back=new Button(this);back.setText("‹ 返回");back.setOnClickListener(v->finish());header.addView(back);TextView title=text("离线下载",18,ink());title.setTypeface(null,1);title.setPadding(dp(12),0,0,0);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));root.addView(header);

@@ -15,7 +15,7 @@ final class HomeChrome {
   String id=HomeRules.selectedId(provider,sourceId);
   String label=HomeRules.labelFor(options,id);
   TextView t=a.text(label+"  ▾",16,0xffffffff);t.setTypeface(null,1);t.setSingleLine(true);t.setEllipsize(android.text.TextUtils.TruncateAt.END);t.setMaxWidth(dp(260));
-  t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
+  t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),a.gold?CinemaTheme.GOLD:0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
   t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(dp(10),dp(6),dp(12),dp(6));t.setContentDescription("首页内容来源："+label);
   // 0.1.97：压在海报上时看不清，加半透明深色胶囊底
   t.setBackground(round(0x66000000,18));
@@ -83,7 +83,7 @@ final class HomeChrome {
   float frac=HomeRules.progress(pos,dur,HomeRules.runtimeMinutes(meta));
   if(frac>0){
    FrameLayout barHost=new FrameLayout(a);barHost.setBackgroundColor(0x66000000);
-   View fill=new View(a);fill.setBackgroundColor(0xff6eb6e0);
+   View fill=new View(a);fill.setBackgroundColor(a.gold?CinemaTheme.GOLD:0xff6eb6e0);
    FrameLayout.LayoutParams fp=new FrameLayout.LayoutParams((int)(width*frac),-1,Gravity.LEFT|Gravity.FILL_VERTICAL);
    barHost.addView(fill,fp);
    FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(4),Gravity.BOTTOM);frame.addView(barHost,bp);
@@ -119,7 +119,7 @@ final class HomeChrome {
    for(int c=0;c<2;c++){
     int idx=r*2+c;
     ImageView img=new ImageView(a);img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-    img.setBackgroundColor((idx%2==0)?0xff2a5560:0xff1e4450);
+    img.setBackgroundColor(a.gold?((idx%2==0)?CinemaTheme.TILE_A:CinemaTheme.TILE_B):(idx%2==0)?0xff2a5560:0xff1e4450);
     if(cache!=null&&idx<cache.length()){JSONObject m=cache.optJSONObject(idx);if(m!=null)TvPosterImages.load(a,img,m.optString("poster"),cell);}
     line.addView(img,new LinearLayout.LayoutParams(0,h/2,1));
    }
@@ -150,8 +150,8 @@ final class HomeChrome {
  void bindHeroText(JSONObject m){
   String facts=HomeRules.heroFacts(m),desc=HomeRules.heroDescription(m),cert=HomeRules.heroCert(m);
   if(a.heroFacts!=null){a.heroFacts.setText(facts);a.heroFacts.setVisibility(facts.isEmpty()?View.GONE:View.VISIBLE);}
-  if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(desc.isEmpty()?View.GONE:View.VISIBLE);a.heroDescription.setTextColor(a.light?a.muted():0xffd6e8eb);}
-  if(a.heroFacts!=null)a.heroFacts.setTextColor(a.light?a.muted():0xffd6e8eb);
+  if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(desc.isEmpty()?View.GONE:View.VISIBLE);a.heroDescription.setTextColor(a.light?a.muted():a.gold?CinemaTheme.SOFT:0xffd6e8eb);}
+  if(a.heroFacts!=null)a.heroFacts.setTextColor(a.light?a.muted():a.gold?CinemaTheme.SOFT:0xffd6e8eb);
   if(a.heroCert!=null){a.heroCert.setText(cert);a.heroCert.setVisibility(cert.isEmpty()?View.GONE:View.VISIBLE);}
   if(a.heroTitle!=null){String logo=m.optString("logo");a.heroTitle.setText(m.optString("name","影片"));a.heroTitle.setTextSize(logo.isEmpty()?26:16);}
  }
