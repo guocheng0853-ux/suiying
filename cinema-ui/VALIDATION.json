@@ -58,7 +58,7 @@
     "source_timeout_refresh_verified": true,
     "completed_detail_after_timeout_verified": true,
     "phone_previous_version": "0.1.106",
-    "route_original_settings_restored": true,
+    "route_original_settings_restored": false,
     "landscape_window_frame": "[0,0][3168,1440]",
     "detail_observation_seconds": 119.8,
     "movie_version_labels_verified": true,
@@ -67,16 +67,31 @@
     "movie_2160p_frames_verified": false,
     "restoration": {
       "source_timeout_seconds": 30,
-      "auto_switch": false,
-      "rotation": "free restored",
-      "playback_speed": "1.0 unchanged; speed menu opened only",
-      "home_source": "tvbox selected for testing; previous Emby selection not restored because another application is foreground"
+      "auto_switch": true,
+      "rotation": "free restored after USB reauthorization",
+      "playback_speed": "attempted 1.25 selection; persistence and restoration to 1.0 pending",
+      "home_source": "tvbox selected for testing; restore prior Emby selection after remaining checks",
+      "auto_switch_restore_pending": true
     },
     "remaining_checks": [
       "forced request stall and late-result race",
-      "failure card buttons",
+      "failure card next-source action",
       "actual 2160p playback",
+      "speed persistence and test-settings restoration",
       "remaining scenarios listed in DEVICE-VALIDATION.md"
-    ]
+    ],
+    "latest_session": {
+      "date": "2026-10-21",
+      "status": "USB reauthorized; manual verification resumed",
+      "version_confirmed": "0.1.108",
+      "movie_1080p_frames_reconfirmed": true,
+      "speed_menu_baseline": "1.0 before interruption; later attempted 1.25 selection, persistence and restoration not yet confirmed",
+      "failure_fixture": "compiled and installed with pinned certificate; control and one screenshot request timed out; HTTP 404 case not run; helper uninstalled, forwarding removed and process ended",
+      "evidence": "130-134 valid captures; 136-137 actual video screenshots; 137 XML read timed out; 140/142 failure card, 141 source panel, 149 hide menu canceled before 150 detail"
+    },
+    "failure_card_choose_source_verified": true,
+    "failure_card_next_source_verified": false,
+    "failure_card_prompt_and_buttons_verified": true,
+    "section_hide_menu_canceled_verified": true
   }
 }
