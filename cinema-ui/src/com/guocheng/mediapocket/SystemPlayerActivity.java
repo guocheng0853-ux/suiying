@@ -29,7 +29,7 @@ public final class SystemPlayerActivity extends Activity {
   video.setOnInfoListener((mp,what,extra)->{if(what==3){rendered=true;wait.setVisibility(View.GONE);DebugLog.event("系统解码","出画面 · 用时 "+(SystemClock.elapsedRealtime()-opened)/100/10.0+" 秒");}else if(what==701){wait.setText("缓冲中…");wait.setVisibility(View.VISIBLE);}else if(what==702){if(rendered)wait.setVisibility(View.GONE);}else if(what==804||what==805){DebugLog.event("系统解码","音视频轨不支持 · what="+what);}return false;});
   video.setOnPreparedListener(mp->{mp.setOnVideoSizeChangedListener((p2,w,h)->DebugLog.event("系统解码","画面 "+w+"×"+h));DebugLog.event("系统解码","准备完成 · 用时 "+(SystemClock.elapsedRealtime()-opened)/100/10.0+" 秒 · 画面 "+mp.getVideoWidth()+"×"+mp.getVideoHeight());if(mp.getVideoWidth()==0){wait.setText("只解出了声音，没有画面");}if(start>10000&&!started)video.seekTo((int)Math.min(Integer.MAX_VALUE,start));started=true;if(resumed)video.start();else resumeAfterPause=true;report("start");tick.removeCallbacks(save);tick.postDelayed(save,10000);});
   video.setOnCompletionListener(mp->{persist(true);finish();});
-  video.setOnErrorListener((mp,what,extra)->{asked=true;tick.removeCallbacks(watchdog);wait.setVisibility(View.GONE);DebugLog.event("系统解码","播放失败 · what="+what+" extra="+extra);new android.app.AlertDialog.Builder(this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("内置杜比播放失败").setMessage("内置播放器未能解码这个片源（错误 "+what+" / "+extra+"）。").setPositiveButton("改用 VLC",(d,w)->toVlc()).setNeutralButton("用外部播放器打开",(d,w)->external()).setNegativeButton("返回",(d,w)->finish()).setOnCancelListener(d->finish()).show();return true;});
+  video.setOnErrorListener((mp,what,extra)->{asked=true;tick.removeCallbacks(watchdog);wait.setVisibility(View.GONE);DebugLog.event("系统解码","播放失败 · what="+what+" extra="+extra);new android.app.AlertDialog.Builder(this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle(what>=2000&&what<3000?"片源连接失败":"内置杜比播放失败").setMessage(Media3ErrorRules.message(what,extra)).setPositiveButton(what>=2000&&what<3000?"重新获取地址":"改用 VLC",(d,w)->{if(what>=2000&&what<3000)retrySource();else toVlc();}).setNeutralButton("用外部播放器打开",(d,w)->external()).setNegativeButton("返回",(d,w)->finish()).setOnCancelListener(d->finish()).show();return true;});
   try{String url=stream.optString("url");DebugLog.event("系统解码","打开 · "+LinkProbe.host(url));video.setVideoURI(Uri.parse(url),headers(stream));}catch(Exception e){Toast.makeText(this,"无法打开：" + e.getClass().getSimpleName(),Toast.LENGTH_LONG).show();finish();}
  }
  /** 每秒检查：准备超过 25 秒或开播 8 秒仍无画面，给出办法（只问一次）。 */
@@ -38,6 +38,13 @@ public final class SystemPlayerActivity extends Activity {
   if(!asked&&!rendered&&(s>=20||(started&&video!=null&&video.isPlaying()&&video.getCurrentPosition()>8000))){asked=true;DebugLog.event("系统解码","无画面 · "+s+" 秒 · 已准备="+started+" · 位置="+(video==null?-1:video.getCurrentPosition()));
    new android.app.AlertDialog.Builder(SystemPlayerActivity.this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("内置播放尚未显示画面").setMessage(started?"声音在走但没有画面，手机自带解码器可能不支持这个片源的画面格式。":"等了 "+s+" 秒还没准备好，可能是片源太大或格式不受支持。").setPositiveButton("改用 VLC",(d,w)->toVlc()).setNeutralButton("用外部播放器打开",(d,w)->external()).setNegativeButton("再等等",null).show();}
   if(!rendered)tick.postDelayed(this,1000);}};
+ /** Refresh expiring Emby addresses without pretending an HTTP failure is a codec failure. */
+ void retrySource(){
+  persist(false);JSONObject server=EmbyStore.get(this,serverId);
+  if(server!=null&&!item.isEmpty()){EmbyPlayback.playItem(this,server,item,media,true);return;}
+  start=Math.max(start,video==null?0:video.getCurrentPosition());started=false;rendered=false;asked=false;opened=SystemClock.elapsedRealtime();wait.setText("正在重新连接…");wait.setVisibility(View.VISIBLE);
+  video.setVideoURI(Uri.parse(source.optString("url")),headers(source));tick.removeCallbacks(watchdog);tick.post(watchdog);
+ }
  /** 回到 VLC 播放（从当前位置；进度已写回 pos:）。 */
  void toVlc(){persist(false);Intent vlc=getIntent().getParcelableExtra("vlc");if(vlc!=null){try{startActivity(vlc);}catch(Exception e){Toast.makeText(this,"无法回到 VLC",Toast.LENGTH_LONG).show();}}finish();}
  /** 交给手机上的其他播放器（如 Just Player、MX Player）；Emby 地址自带令牌，影视仓需要请求头的片源可能打不开。 */

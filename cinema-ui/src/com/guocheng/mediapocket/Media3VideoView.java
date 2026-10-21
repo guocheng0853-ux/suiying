@@ -6,16 +6,17 @@ import java.util.*;
 final class Media3VideoView extends FrameLayout implements MediaController.MediaPlayerControl {
  interface Prepared {void call(Media3VideoView view);} interface Info {boolean call(Media3VideoView view,int what,int extra);} interface Error {boolean call(Media3VideoView view,int what,int extra);} interface Complete {void call(Media3VideoView view);} interface Size {void call(Media3VideoView view,int width,int height);}
  Prepared prepared;Info info;Error error;Complete complete;Size size;MediaController controller;
- ExoPlayer player;final SurfaceView surface;boolean notified;String failure="";int width,height;boolean strictP5;
+ ExoPlayer player;final SurfaceView surface;boolean notified;String failure="";int httpStatus;int width,height;boolean strictP5;
  Media3VideoView(Context c){super(c);surface=new SurfaceView(c);addView(surface,new LayoutParams(-1,-1,Gravity.CENTER));setOnClickListener(v->{if(controller!=null)controller.show();});}
  static boolean supportsP5(){try{for(android.media.MediaCodecInfo codec:new android.media.MediaCodecList(android.media.MediaCodecList.ALL_CODECS).getCodecInfos()){if(codec.isEncoder())continue;for(String type:codec.getSupportedTypes())if("video/dolby-vision".equalsIgnoreCase(type))for(android.media.MediaCodecInfo.CodecProfileLevel profile:codec.getCapabilitiesForType(type).profileLevels)if(profile.profile==android.media.MediaCodecInfo.CodecProfileLevel.DolbyVisionProfileDvheStn)return true;}}catch(RuntimeException ignored){}return false;}
+ static String userAgent(Map<String,String> headers){if(headers!=null)for(Map.Entry<String,String> entry:headers.entrySet())if("User-Agent".equalsIgnoreCase(entry.getKey())&&entry.getValue()!=null&&!entry.getValue().isEmpty())return entry.getValue();return "Mozilla/5.0";}
  void requireDolbyP5(boolean strict){strictP5=strict;}
  void setMediaController(MediaController c){controller=c;c.setMediaPlayer(this);}
  void setOnPreparedListener(Prepared v){prepared=v;}void setOnInfoListener(Info v){info=v;}void setOnErrorListener(Error v){error=v;}void setOnCompletionListener(Complete v){complete=v;}void setOnVideoSizeChangedListener(Size v){size=v;}
  int getVideoWidth(){return width;}int getVideoHeight(){return height;}
  void setVideoURI(Uri uri,Map<String,String> headers){
-  stopPlayback();notified=false;
-  DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory().setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setDefaultRequestProperties(headers);
+  stopPlayback();notified=false;failure="";httpStatus=0;
+  DefaultHttpDataSource.Factory http=new DefaultHttpDataSource.Factory().setUserAgent(userAgent(headers)).setAllowCrossProtocolRedirects(true).setConnectTimeoutMs(15000).setReadTimeoutMs(20000).setDefaultRequestProperties(headers);
   DefaultDataSource.Factory data=new DefaultDataSource.Factory(getContext(),http);
   DefaultRenderersFactory renderers=new DefaultRenderersFactory(getContext()).setEnableDecoderFallback(true).setMediaCodecSelector((mime,secure,tunnel)->{
    // Profile 5 has no HDR10 base layer: falling back to a plain HEVC decoder produces wrong colours.
@@ -30,7 +31,7 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
    @Override public void onTracksChanged(Tracks tracks){for(Tracks.Group group:tracks.getGroups())if(group.getType()==C.TRACK_TYPE_VIDEO)for(int i=0;i<group.length;i++)if(group.isTrackSelected(i)){Format f=group.getTrackFormat(i);DebugLog.event("杜比内置","视频格式="+f.sampleMimeType+" · codecs="+f.codecs+" · "+f.width+"×"+f.height);}}
    @Override public void onRenderedFirstFrame(){DebugLog.event("杜比内置","首帧已显示");if(info!=null)info.call(Media3VideoView.this,3,0);}
    @Override public void onPlaybackStateChanged(int state){if(state==Player.STATE_BUFFERING&&info!=null)info.call(Media3VideoView.this,701,0);if(state==Player.STATE_READY){if(info!=null)info.call(Media3VideoView.this,702,0);if(!notified){notified=true;if(prepared!=null)prepared.call(Media3VideoView.this);}}if(state==Player.STATE_ENDED&&complete!=null)complete.call(Media3VideoView.this);}
-   @Override public void onPlayerError(PlaybackException e){failure=e.getErrorCodeName();DebugLog.event("杜比内置","播放错误 · "+failure);if(error!=null)error.call(Media3VideoView.this,e.errorCode,0);}
+   @Override public void onPlayerError(PlaybackException e){failure=e.getErrorCodeName();httpStatus=0;Throwable cause=e;for(int depth=0;cause!=null&&depth<12;depth++,cause=cause.getCause())if(cause instanceof HttpDataSource.InvalidResponseCodeException){httpStatus=((HttpDataSource.InvalidResponseCodeException)cause).responseCode;break;}DebugLog.event("杜比内置","播放错误 · "+failure+" · HTTP="+httpStatus);if(error!=null)error.call(Media3VideoView.this,e.errorCode,httpStatus);}
   });
   DebugLog.event("杜比内置","Media3 1.8.0 · P5约束="+strictP5+" · 系统P5解码声明="+supportsP5());
   player.setMediaItem(MediaItem.fromUri(uri));player.prepare();
