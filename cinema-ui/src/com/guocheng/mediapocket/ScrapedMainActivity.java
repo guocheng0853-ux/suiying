@@ -110,7 +110,7 @@ public final class ScrapedMainActivity extends MainActivity {
   return c;
  }
  String heroCacheKey(){return "cinema.hero.v2."+homeProvider+"."+prefs.getString("home.source.v1","current");}
- int heroSceneHeight(){if(wide())return Math.round(getResources().getDisplayMetrics().heightPixels*.66f);return Math.min(dp(610),(int)(getResources().getDisplayMetrics().widthPixels*1.40));}
+ int heroSceneHeight(){if(wide())return Math.round(getResources().getDisplayMetrics().heightPixels*.66f);if(gold)return Math.min(dp(470),(int)(getResources().getDisplayMetrics().widthPixels*1.08));return Math.min(dp(610),(int)(getResources().getDisplayMetrics().widthPixels*1.40));}
  boolean wide(){android.util.DisplayMetrics m=getResources().getDisplayMetrics();return m.widthPixels>m.heightPixels;}
  /**
   * 0.1.104 横屏首页（参考 Hills）：海报约占屏高三分之二，片名 / 信息 / 简介靠左叠在海报左下，
@@ -127,7 +127,43 @@ public final class ScrapedMainActivity extends MainActivity {
   if(heroFacts!=null)heroFacts.setGravity(w?Gravity.START:Gravity.CENTER);
   if(heroDescription!=null){heroDescription.setGravity(w?Gravity.START:Gravity.CENTER);if(heroDescription.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)heroDescription.getLayoutParams();p.width=-1;p.rightMargin=w?Math.round(getResources().getDisplayMetrics().widthPixels*.40f):0;heroDescription.setLayoutParams(p);}}
   if(dots!=null&&dots.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)dots.getLayoutParams();p.width=-1;dots.setLayoutParams(p);}
-  heroCaption.setGravity(w?Gravity.START:Gravity.CENTER);heroCaption.setPadding(w?dp(8):dp(24),dp(w?2:10),dp(w?8:24),dp(4));
+  heroCaption.setGravity(w?Gravity.START:Gravity.CENTER);heroCaption.setPadding(w?dp(8):dp(24),dp(w?2:10),dp(w?8:24),dp(4));goldHero();
+ }
+ TextView heroKicker;LinearLayout heroActions;
+ boolean goldBelow(){return gold&&!wide()&&heroActions!=null&&heroActions.getParent()==heroCaption;}
+ static void detach(View v){if(v!=null&&v.getParent() instanceof ViewGroup)((ViewGroup)v.getParent()).removeView(v);}
+ /**
+  * 0.1.126 影院暗金竖屏首页（设计稿 A）：大图只放画面，底部渐隐进黑底；
+  * 图下靠左依次是金色小标题、衬线片名、信息行、两行简介、「播放 + 收藏」按钮和轮播点。横屏仍按 Hills 式叠在图上。
+  */
+ void goldHero(){if(!gold||hero==null||heroInfo==null||heroCaption==null||heroTitle==null||heroPlay==null)return;boolean below=!wide();
+  if(heroKicker==null){heroKicker=text("",12,CinemaTheme.GOLD);heroKicker.setLetterSpacing(.2f);heroKicker.setTypeface(null,1);heroKicker.setPadding(0,0,0,dp(6));}
+  if(heroActions==null){heroActions=new LinearLayout(this);heroActions.setGravity(Gravity.CENTER_VERTICAL);heroActions.setPadding(0,dp(16),0,0);}
+  detach(heroTitle);detach(heroPlay);detach(heroKicker);detach(heroActions);
+  if(below){
+   heroCaption.addView(heroKicker,0,new LinearLayout.LayoutParams(-1,-2));heroCaption.addView(heroTitle,1,new LinearLayout.LayoutParams(-1,-2));
+   heroCaption.addView(heroActions,Math.max(2,heroCaption.indexOfChild(dots)),new LinearLayout.LayoutParams(-1,-2));
+   heroActions.addView(heroPlay,new LinearLayout.LayoutParams(0,dp(48),1f));
+   heroCaption.setGravity(Gravity.START);heroCaption.setPadding(dp(20),0,dp(20),dp(6));
+   heroTitle.setGravity(Gravity.START);heroTitle.setTextSize(30);heroTitle.setLineSpacing(0,1.1f);
+   heroMetaRow.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);heroMetaRow.setPadding(0,dp(8),0,0);heroFacts.setGravity(Gravity.START);heroFacts.setTextSize(13);
+   heroDescription.setGravity(Gravity.START);if(heroDescription.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)heroDescription.getLayoutParams();p.width=-1;p.rightMargin=0;p.topMargin=dp(8);heroDescription.setLayoutParams(p);}
+   dots.setGravity(Gravity.START);dots.setPadding(0,dp(16),0,0);
+   heroPlay.setGravity(Gravity.CENTER);heroPlay.setTextSize(16);heroPlay.setPadding(dp(16),0,dp(16),0);heroPlay.setBackground(rounded(CinemaTheme.GOLD,24));heroPlay.setVisibility(View.VISIBLE);
+   heroInfo.setPadding(0,0,0,0);if(heroLogo!=null)heroLogo.setVisibility(View.GONE);
+  }else{
+   heroInfo.addView(heroTitle,Math.min(1,heroInfo.getChildCount()));LinearLayout.LayoutParams playLp=new LinearLayout.LayoutParams(-2,-2);playLp.topMargin=dp(8);playLp.gravity=Gravity.START;heroInfo.addView(heroPlay,playLp);
+   heroTitle.setTextSize(26);heroPlay.setPadding(dp(28),dp(10),dp(28),dp(10));heroPlay.setBackground(rounded(CinemaTheme.GOLD,22));dots.setGravity(Gravity.START);
+  }
+ }
+ void bindGoldHero(JSONObject m){
+  heroLogo.setVisibility(View.GONE);heroTitle.setVisibility(View.VISIBLE);heroTitle.setTextSize(30);
+  boolean emby=m.has("emby.server");String type=m.optString("type",heroType);
+  heroKicker.setText(emby?"最新入库 · EMBY":"今日推荐"+(type.equals("series")?" · 剧集":type.equals("movie")?" · 电影":""));
+  String label=emby?m.optString("emby.play","播放"):"查看详情";heroPlay.setText(label.startsWith("▶")?label:"▶  "+label);heroPlay.setVisibility(View.VISIBLE);
+  heroPlay.setOnClickListener(v->openItem(m));
+  for(int i=heroActions.getChildCount()-1;i>=0;i--)if("mp-fav".equals(heroActions.getChildAt(i).getTag()))heroActions.removeViewAt(i);
+  if(!m.optString("id").isEmpty()){TextView heart=FollowUp.heart(this,m,CinemaTheme.INK);heart.setTextSize(14);GradientDrawable ring=new GradientDrawable();ring.setCornerRadius(dp(24));ring.setStroke(dp(1),0xff55524b);heart.setBackground(ring);heart.setPadding(dp(18),0,dp(18),0);LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-2,dp(48));hp.leftMargin=dp(12);heroActions.addView(heart,hp);}
  }
  void placeHero(int height){LinearLayout.LayoutParams lp=(LinearLayout.LayoutParams)hero.getLayoutParams();lp.height=height;lp.bottomMargin=0;hero.setLayoutParams(lp);}
  void createHero(){
@@ -162,7 +198,7 @@ public final class ScrapedMainActivity extends MainActivity {
   final int ticket=epoch;job(()->{try{JSONObject meta=CinemaCatalogClient.json("https://v3-cinemeta.strem.io/meta/"+type+"/"+Net.esc(id)+".json").getJSONObject("meta");if(!DetailMetadata.useful(meta))return;prefs.edit().putString(key,meta.toString()).apply();runOnUiThread(()->{JSONObject active=heroes.optJSONObject(heroIndex);if(ticket==epoch&&homeCanvas&&active!=null&&id.equals(active.optString("id")))bindHero(meta);});}catch(Exception ignored){}});
  }
  void bindHero(JSONObject m){if(heroSwipe!=null&&heroSwipe.busy()){final int token=epoch;final String id=m.optString("id");carousel.postDelayed(()->{JSONObject current=heroes.optJSONObject(heroIndex);if(token==epoch&&homeCanvas&&current!=null&&id.equals(current.optString("id")))bindHero(m);},360);return;}boolean artwork=!HomeHeroRules.backdropOf(m).isEmpty();placeHero(artwork?heroSceneHeight():dp(220));heroScrimStrong=HomeHeroRules.portraitHero(m);String logo=m.optString("logo");heroLogo.setImageDrawable(null);heroLogo.setVisibility(logo.isEmpty()?View.GONE:View.VISIBLE);heroTitle.setVisibility(View.VISIBLE);if(!logo.isEmpty())TvPosterImages.load(this,heroLogo,logo,dp(320));if(homeChrome==null)homeChrome=new HomeChrome(this);homeChrome.dressHero(heroPage,heroImage,m);homeChrome.bindHeroText(m);heroTitle.setTextColor(light?ink():0xffffffff);heroFacts.setTextColor(light?muted():(gold?CinemaTheme.SOFT:0xffe0edf0));heroDescription.setTextColor(light?muted():(gold?CinemaTheme.SOFT:0xffd6e8eb));layoutHeroCaption(artwork);if(homeAtmosphere!=null){homeAtmosphere.sync(heroImage);}bindEmbyPlay(m);}
- void bindEmbyPlay(JSONObject m){if(heroPlay==null)return;boolean emby=m!=null&&m.has("emby.server");if(emby&&!m.optString("logo").isEmpty())heroTitle.setVisibility(View.GONE);if(!emby){heroPlay.setVisibility(View.GONE);return;}heroPlay.setVisibility(View.VISIBLE);heroPlay.setText(m.optString("emby.play","播放"));heroPlay.setOnClickListener(v->openItem(m));}
+ void bindEmbyPlay(JSONObject m){if(heroPlay==null)return;if(goldBelow()){bindGoldHero(m);return;}boolean emby=m!=null&&m.has("emby.server");if(emby&&!m.optString("logo").isEmpty())heroTitle.setVisibility(View.GONE);if(!emby){heroPlay.setVisibility(View.GONE);return;}heroPlay.setVisibility(View.VISIBLE);heroPlay.setText(m.optString("emby.play","播放"));heroPlay.setOnClickListener(v->openItem(m));}
  /** 图只占画面区；评分与简介挪到了图下的 heroCaption，正文分区自然接在它后面。 */
  void layoutHeroCaption(boolean artwork){
   placeHero(artwork?Math.max(heroSceneHeight(),safeTop+dp(210)):Math.max(dp(220),safeTop+dp(64)));

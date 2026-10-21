@@ -59,7 +59,7 @@ final class HomeChrome {
   TextView head=a.heading(heading);head.setOnLongClickListener(v->{java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();rows.add(CinemaMenu.item("隐藏「"+heading+"」",()->{String next=HomeRules.toggleSection(a.prefs.getString("home.hiddenSections",""),"resume");a.prefs.edit().putString("home.hiddenSections",next).apply();android.widget.Toast.makeText(a,"已隐藏，可在「我的 › 首页与外观」恢复",0).show();a.home();}));CinemaMenu.show(a,heading,rows);return true;});parent.addView(head);
   HorizontalScrollView scroller=new HorizontalScrollView(a);scroller.setHorizontalScrollBarEnabled(false);scroller.setClipToPadding(false);
   LinearLayout row=new LinearLayout(a);row.setGravity(Gravity.TOP);
-  int available=a.getResources().getDisplayMetrics().widthPixels-dp(32),width=Math.min((available-dp(10))/2,dp(220));
+  int available=a.getResources().getDisplayMetrics().widthPixels-dp(32),width=a.gold?Math.min((int)(available*.62f),dp(240)):Math.min((available-dp(10))/2,dp(220));
   for(int i=0;i<Math.min(history.length(),20);i++){
    JSONObject m=history.optJSONObject(i);if(m==null)continue;
    LinearLayout card=continueCard(m,width);
@@ -86,11 +86,11 @@ final class HomeChrome {
    View fill=new View(a);fill.setBackgroundColor(a.gold?CinemaTheme.GOLD:0xff6eb6e0);
    FrameLayout.LayoutParams fp=new FrameLayout.LayoutParams((int)(width*frac),-1,Gravity.LEFT|Gravity.FILL_VERTICAL);
    barHost.addView(fill,fp);
-   FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(4),Gravity.BOTTOM);frame.addView(barHost,bp);
+   FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(a.gold?3:4),Gravity.BOTTOM);frame.addView(barHost,bp);
   }
   c.addView(frame,new LinearLayout.LayoutParams(width,(int)(width/1.72f)));
-  TextView title=a.text(HomeRules.cardTitle(meta),12,a.ink());title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
-  String line=meta.optString("emby.line");TextView sub=a.text(HomeRules.resumeLine(line.isEmpty()?HomeRules.episodeLabel(epId):line,pos,dur),10,a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
+  TextView title=a.text(HomeRules.cardTitle(meta),a.gold?14:12,a.ink());if(a.gold)title.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
+  String line=meta.optString("emby.line");TextView sub=a.text(HomeRules.resumeLine(line.isEmpty()?HomeRules.episodeLabel(epId):line,pos,dur),a.gold?12:10,a.gold?a.muted():a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
   c.setOnClickListener(v->{if(meta.optBoolean("emby.directPlay"))EmbyPlayback.play(a,meta);else a.openItem(meta);});
   c.setOnLongClickListener(v->{String id=meta.optString("id");if(id.isEmpty())id=meta.optString("Id");String store=HomeRules.hideResume(a.prefs.getString("home.hiddenResume","[]"),id);a.prefs.edit().putString("home.hiddenResume",store).apply();if(EmbyApi.isEmbyId(id)){final String watch=id;EmbyPlayback.IO.execute(()->{try{JSONObject server=EmbyStore.get(a,EmbyApi.serverOf(watch));if(server!=null)EmbyClient.hideFromResume(a,server,EmbyApi.itemOf(watch));}catch(Exception ignored){}});}android.widget.Toast.makeText(a,"已从继续观看移除",0).show();a.home();return true;});
   return c;
