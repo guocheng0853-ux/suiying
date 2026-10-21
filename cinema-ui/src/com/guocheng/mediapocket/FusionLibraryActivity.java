@@ -44,7 +44,7 @@ public final class FusionLibraryActivity extends Activity {
   // 主按钮：第一条线路里有进度的那一集 → 第一集
   String[] pick=null;boolean resume=false;
   if(groups.length>0){String flag0=flags.length>0?flags[0]:"线路 1";for(String encoded:groups[0].split("#")){String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;if(pick==null)pick=new String[]{flag0,ep[0],ep[1]};if(prefs.getInt("pos:"+watchId(id,ep[0]),0)>10000){pick=new String[]{flag0,ep[0],ep[1]};resume=true;}}}
-  Button primary=button("",null);primary.setTextColor(accentInk());primary.setTextSize(16);primary.setTypeface(null,1);primary.setBackground(rounded(accentFill(),24));primary.setBackgroundTintList(null);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(-1,dp(48));pl.bottomMargin=dp(10);
+  Button primary=button("",null);primary.setTextColor(accentInk());primary.setTextSize(16);primary.setTypeface(null,1);primary.setSingleLine(true);primary.setEllipsize(android.text.TextUtils.TruncateAt.END);primary.setBackground(rounded(accentFill(),24));primary.setBackgroundTintList(null);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(-1,dp(48));pl.bottomMargin=dp(10);
   if(pick==null){TextView none=text("这个站点没有返回可播放的选集（线路为空）。可以返回换一个站点，或稍后重试。",14);none.setTextColor(muted());none.setPadding(0,dp(6),0,dp(10));body.addView(none);}
   if(pick!=null){final String[] p0=pick;int total=groups[0].split("#").length;primary.setText((resume?"▶  继续 ":"▶  播放 ")+(total>1?p0[1]:""));primary.setOnClickListener(v->play(id,title,p0[0],p0[1],p0[2]));body.addView(primary,pl);}
   LinearLayout actions=new LinearLayout(this);

@@ -52,7 +52,7 @@ public final class EmbyLibraryActivity extends Activity {
   body.addView(hero,DetailLandscape.heroParams(body,heroH));
   TextView name=text(meta.optString("name"),24);name.setTypeface(null,1);name.setPadding(0,dp(4),0,dp(2));LinearLayout.LayoutParams nl=new LinearLayout.LayoutParams(-1,-2);nl.topMargin=-dp(36);body.addView(name,nl);
   String facts=HomeRules.heroFacts(meta);String runtime=meta.optString("runtime");String line=facts+(runtime.isEmpty()?"":(facts.isEmpty()?"":" · ")+runtime);TextView f=null;if(!line.isEmpty()){f=text(line,13);f.setTextColor(muted());f.setPadding(0,0,0,dp(10));body.addView(f);}
-  Button primary=button("",null);primary.setTextColor(accentInk());primary.setTextSize(16);primary.setTypeface(null,1);primary.setBackground(rounded(accentFill(),24));primary.setBackgroundTintList(null);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(-1,dp(48));pl.bottomMargin=dp(12);body.addView(primary,pl);
+  Button primary=button("",null);primary.setTextColor(accentInk());primary.setTextSize(16);primary.setTypeface(null,1);primary.setSingleLine(true);primary.setEllipsize(android.text.TextUtils.TruncateAt.END);primary.setBackground(rounded(accentFill(),24));primary.setBackgroundTintList(null);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(-1,dp(48));pl.bottomMargin=dp(12);body.addView(primary,pl);
   String type=item.optString("Type");
   if("Movie".equals(type)||"Episode".equals(type)){primary.setText(meta.optLong("emby.resumeMs")>10000?"▶  继续播放":"▶  播放");primary.setOnClickListener(v->EmbyPlayback.playItem(this,server,item.optString("Id")));}
   else{primary.setText("正在读取剧集…");primary.setEnabled(false);}

@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.108",
+  "ui_version": "0.1.109",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -19,7 +19,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 6443,
   "dex_files": 3,
-  "main_version_code": 109,
+  "main_version_code": 110,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",
@@ -29,8 +29,8 @@
   "torrentclaw_removal_retained": true,
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
-  "real_source_playback_tested": true,
-  "real_source_note": "0.1.108 installed with the pinned certificate. TVBox movie detail remains usable more than 45 seconds after initial loading; actual 1080p video frames observed, two version labels verified. Full checklist and all-source playback remain incomplete.",
+  "real_source_playback_tested": false,
+  "real_source_note": "0.1.109 installed with pinned certificate; TVBox primary button verified in portrait and landscape. Playback and full checklist not revalidated on 0.1.109. Landscape detail left gap remains, unlike the previously checked home screen.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -39,7 +39,7 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "apk_sha256": "e6387a2e83e93c1940cea61c175e2da1ea5428d000edcc789b1f31a5b31dac15",
+  "apk_sha256": "b69e0ff713c0cf459d19f7b7254f7e969270279a65afeba069a8afe644515c6b",
   "signing_certificate_sha256": "87a44d822580215fff01d604b1fedb31e52d69b42eb85ffbcd8b65aea21783d1",
   "jvm_tests": {
     "total": 66,
@@ -48,50 +48,33 @@
     "full_initial_run_passed": true
   },
   "device_validation": {
-    "tested_version": "0.1.108",
-    "tested_version_code": 109,
-    "device": "PJZ110",
+    "tested_version": "0.1.109",
+    "tested_version_code": 110,
     "candidate_installed": true,
     "checklist_complete": false,
     "report": "DEVICE-VALIDATION.md",
-    "landscape_home_left_edge_verified": true,
-    "source_timeout_refresh_verified": true,
-    "completed_detail_after_timeout_verified": true,
-    "phone_previous_version": "0.1.106",
-    "route_original_settings_restored": false,
-    "landscape_window_frame": "[0,0][3168,1440]",
-    "detail_observation_seconds": 119.8,
-    "movie_version_labels_verified": true,
-    "movie_prev_next_hidden_screenshot_verified": true,
-    "movie_1080p_frames_verified": true,
-    "movie_2160p_frames_verified": false,
-    "restoration": {
-      "source_timeout_seconds": 30,
-      "auto_switch": true,
-      "rotation": "free restored after USB reauthorization",
-      "playback_speed": "attempted 1.25 selection; persistence and restoration to 1.0 pending",
-      "home_source": "tvbox selected for testing; restore prior Emby selection after remaining checks",
-      "auto_switch_restore_pending": true
-    },
-    "remaining_checks": [
-      "forced request stall and late-result race",
-      "failure card next-source action",
-      "actual 2160p playback",
-      "speed persistence and test-settings restoration",
-      "remaining scenarios listed in DEVICE-VALIDATION.md"
+    "detail_button_fix_device_verified": true,
+    "portrait_button_verified": true,
+    "landscape_button_verified": true,
+    "evidence": [
+      "155",
+      "157",
+      "160"
     ],
-    "latest_session": {
-      "date": "2026-10-21",
-      "status": "USB reauthorized; manual verification resumed",
-      "version_confirmed": "0.1.108",
-      "movie_1080p_frames_reconfirmed": true,
-      "speed_menu_baseline": "1.0 before interruption; later attempted 1.25 selection, persistence and restoration not yet confirmed",
-      "failure_fixture": "compiled and installed with pinned certificate; control and one screenshot request timed out; HTTP 404 case not run; helper uninstalled, forwarding removed and process ended",
-      "evidence": "130-134 valid captures; 136-137 actual video screenshots; 137 XML read timed out; 140/142 failure card, 141 source panel, 149 hide menu canceled before 150 detail"
-    },
-    "failure_card_choose_source_verified": true,
-    "failure_card_next_source_verified": false,
-    "failure_card_prompt_and_buttons_verified": true,
-    "section_hide_menu_canceled_verified": true
+    "emby_button_device_retested": false,
+    "landscape_detail_left_gap_still_present": true,
+    "restoration": {
+      "rotation": "temporary landscape lock; testing in progress",
+      "playback_speed": "attempted 1.25 earlier; restoration to 1.0 pending",
+      "auto_switch": "on observed in 141; restoration to off pending",
+      "home_source": "tvbox; prior Emby selection restoration pending"
+    }
+  },
+  "previous_device_validation": {
+    "version": "0.1.108",
+    "record_commit": "8f71811",
+    "movie_2160p_selected_file_frames_observed": true,
+    "movie_2160p_resolution_confirmed": false,
+    "evidence": "151-152 explicit 2160p file selection; 153 actual video frames; 154 skipped because target not focused"
   }
 }

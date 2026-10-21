@@ -1,6 +1,6 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前main = 0.1.103（code 104）；正在`fix/detail-timeout-0103`上验证0.1.108（code 109，基于0.1.107）。先读本说明，再读`HANDOFF-CODEX-DEVICE.md`、`DEVICE-VALIDATION.md`及`cinema-ui/README.md`，不要把构建或合并当作完整真机验证通过。
+> 当前main = 0.1.103（code 104）；正在`fix/detail-timeout-0103`上验证0.1.109（code 110，基于0.1.108）。先读本说明，再读`HANDOFF-CODEX-DEVICE.md`、`DEVICE-VALIDATION.md`及`cinema-ui/README.md`，不要把构建或合并当作完整真机验证通过。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 1. 这是什么
@@ -31,7 +31,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（纯逻辑类，`*Rules` 一类不依赖 Android）。`scripts/run_tests.sh` 全跑，当前 65 个 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（纯逻辑类，`*Rules` 一类不依赖 Android）。`scripts/run_tests.sh` 全跑，当前 66 个 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |
@@ -119,6 +119,6 @@ keytool -list -v -keystore signing.jks -storepass android   # 别名 mediapocket
 ## 10. 当前状态
 
 - main为0.1.103 / code 104，已含来源名称、横屏窗口、等待时间显示和详情读取超时处理。
-- 用户指定继续使用`fix/detail-timeout-0103`的新历史，不再推旧分支或旧提交。当前候选0.1.108 / code 109，在0.1.107基础上修复已完成读取仍误报超时的问题，构建和真机验证进行中。
-- 本次只读核对手机版本为0.1.106；不得安装更旧的候选包覆盖已有功能。签名仍按第5节指定指纹核对，保留所有用户数据。
+- 用户指定继续使用`fix/detail-timeout-0103`的新历史，不再推旧分支或旧提交。当前候选0.1.109 / code 110，在0.1.108基础上修复详情主按钮长文字裁切，构建和真机验证进行中。
+- 接手时手机为0.1.106，现已同签名升级至0.1.109 / code 110；不得安装更旧的候选包覆盖已有功能。签名仍按第5节指定指纹核对，保留所有用户数据。
 - 历史装机证据按版本分别记录在`DEVICE-VALIDATION.md`；未完成的播放失败卡片、电影版本、影视仓详情等场景仍需继续验证。
