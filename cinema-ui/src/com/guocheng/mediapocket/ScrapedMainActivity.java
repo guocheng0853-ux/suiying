@@ -227,6 +227,7 @@ public final class ScrapedMainActivity extends MainActivity {
   body.addView(button(OfflineDownloads.label(this),()->startActivity(new android.content.Intent(this,DownloadsActivity.class))));
   body.addView(button(FollowUp.label(this),()->{SettingsLayout.remember(this);FollowUp.setEnabled(this,!FollowUp.enabled(this));preferences();}));
   body.addView(button("系统媒体控制："+(prefs.getBoolean("media.controls",true)?"开":"关")+"（耳机线控、通知栏和锁屏控制）",()->{SettingsLayout.remember(this);prefs.edit().putBoolean("media.controls",!prefs.getBoolean("media.controls",true)).apply();preferences();}));
+  body.addView(button(DolbyChoice.label(this),()->DolbyChoice.settings(this,()->{SettingsLayout.remember(this);preferences();})));
   body.addView(button("检查更新：当前 "+BackupActivity.version(this),()->UpdateCheck.manual(this)));
   body.addView(button("自动检查更新："+(prefs.getBoolean("update.auto",true)?"开":"关")+"（打开时每 12 小时查一次 GitHub 发布）",()->{SettingsLayout.remember(this);prefs.edit().putBoolean("update.auto",!prefs.getBoolean("update.auto",true)).apply();preferences();}));
   SettingsLayout.apply(this);

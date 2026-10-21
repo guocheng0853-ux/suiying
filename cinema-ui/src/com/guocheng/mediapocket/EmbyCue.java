@@ -134,7 +134,7 @@ final class EmbyCue {
  static JSONArray versions(JSONArray sources)throws JSONException{
   JSONArray out=new JSONArray();if(sources==null||sources.length()<2)return out;
   for(int i=0;i<sources.length();i++){JSONObject s=sources.optJSONObject(i);if(s==null||s.optString("Id").isEmpty())continue;String name=s.optString("Name");if(name.isEmpty())name=fileName(s.optString("Path"));if(name.isEmpty())name="版本 "+(out.length()+1);String container=s.optString("Container");
-   out.put(new JSONObject().put("id",s.optString("Id")).put("name",container.isEmpty()?name:name+" · "+container.toUpperCase(Locale.ROOT)));}
+   out.put(new JSONObject().put("id",s.optString("Id")).put("name",(container.isEmpty()?name:name+" · "+container.toUpperCase(Locale.ROOT))+DolbyRules.tag(DolbyRules.kind(s))));}
   return out.length()<2?new JSONArray():out;
  }
  static String fileName(String path){if(path==null||path.isEmpty())return "";int slash=Math.max(path.lastIndexOf('/'),path.lastIndexOf('\\'));String n=slash>=0?path.substring(slash+1):path;int q=n.indexOf('?');return q>=0?n.substring(0,q):n;}

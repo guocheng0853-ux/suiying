@@ -117,6 +117,7 @@ final class PlayerOverlay {
   // 0.1.97：解码只在顶栏芯片、音轨只在面板，不再打开原版「播放器」菜单；外部播放器单独一项
   labels.add("线路与片源");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
   labels.add(AudioEffects.label(a));actions.add(()->AudioEffects.menu(a));
+  labels.add("系统解码重播（颜色发紫发绿时用）");actions.add(()->systemReplay(a));
   labels.add("定时关闭");actions.add(()->PlayerSidePanel.sleepMenu(a));
   labels.add("流信息");actions.add(()->PlayerSidePanel.infoDialog(a));
   labels.add("播放设置");actions.add(()->PlayerFeatureSettings.playback(a));
@@ -128,6 +129,10 @@ final class PlayerOverlay {
  }
  /** 原版「更多播放设置」（自动换源、换下一个源、等待时间、连接详情）的按钮，放到线路页里用。 */
  static Button baseMore(Activity a){Button b=findExact(scroll(bar(a,"bottom")),"更多");return b!=null&&b.getTag() instanceof String&&((String)b.getTag()).startsWith("mp-")?null:b;}
+ /** 0.1.111：把当前片源交给安卓自带解码器从当前位置重播（杜比视界 P5 等 VLC 显示异常的片源）。 */
+ static void systemReplay(Activity a){try{JSONObject stream=TrackSelection.stream(a);String url=stream.optString("url");if(url.isEmpty()||stream.has("infoHash")||MagnetLinks.isMagnet(url)){toast(a,"磁力 / 种子片源不能用系统解码");return;}
+  int pos=EmbyPlayback.position(a);Object n=OnlineSubtitleSearch.field(a,"name");String title=n==null?meta(a).optString("name",""):n.toString();
+  SystemPlayerActivity.open(a,stream,id(a),title,Math.max(0,pos));a.finish();}catch(Exception e){toast(a,"无法切换到系统解码");}}
  static void introMenu(Activity a){java.util.List<CinemaMenu.Item> rows=new ArrayList<>();
   rows.add(CinemaMenu.item("标记片头开始（当前位置）",()->markIntro(a,true)));
   rows.add(CinemaMenu.item("标记片头结束（当前位置）",()->markIntro(a,false)));
