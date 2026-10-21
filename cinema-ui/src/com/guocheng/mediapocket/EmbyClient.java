@@ -33,7 +33,7 @@ final class EmbyClient {
  static JSONObject items(Context c,JSONObject server,String parentId,String types,int start)throws Exception{return items(c,server,parentId,types,start,"",false);}
  static JSONObject items(Context c,JSONObject server,String parentId,String types,int start,String genre,boolean favorite)throws Exception{return json(c,server,"GET",EmbyCue.libraryPath(server.optString("userId"),parentId,types,start,genre,favorite),null);}
  static JSONObject search(Context c,JSONObject server,String word)throws Exception{return json(c,server,"GET","/Users/"+EmbyApi.enc(server.optString("userId"))+"/Items?SearchTerm="+EmbyApi.enc(word)+"&Recursive=true&IncludeItemTypes=Movie,Series&Limit=24&Fields=Overview,ProductionYear,CommunityRating,RunTimeTicks,Genres,UserData",null);}
- static JSONObject item(Context c,JSONObject server,String itemId)throws Exception{return json(c,server,"GET","/Users/"+EmbyApi.enc(server.optString("userId"))+"/Items/"+EmbyApi.enc(itemId)+"?Fields=Overview,ProductionYear,CommunityRating,RunTimeTicks,Genres,UserData,MediaSources,Chapters,ImageTags,BackdropImageTags",null);}
+ static JSONObject item(Context c,JSONObject server,String itemId)throws Exception{return json(c,server,"GET","/Users/"+EmbyApi.enc(server.optString("userId"))+"/Items/"+EmbyApi.enc(itemId)+"?Fields=Overview,ProductionYear,CommunityRating,RunTimeTicks,Genres,UserData,MediaSources,Chapters,ImageTags,BackdropImageTags,People",null);}
  static JSONObject seasons(Context c,JSONObject server,String seriesId)throws Exception{return json(c,server,"GET","/Shows/"+EmbyApi.enc(seriesId)+"/Seasons?UserId="+EmbyApi.enc(server.optString("userId")),null);}
  static JSONObject episodes(Context c,JSONObject server,String seriesId,String seasonId)throws Exception{return json(c,server,"GET",EmbyCue.episodesPath(server.optString("userId"),seriesId,seasonId,0,PAGE),null);}
  /** 按 StartIndex 翻页，直到短页、总数到齐，或同一批 Id 重复出现。最多 40 页、3000 集。 */
@@ -52,6 +52,7 @@ final class EmbyClient {
  static void playing(Context c,JSONObject server,JSONObject body)throws Exception{json(c,server,"POST","/Sessions/Playing",body.toString());}
  static void progress(Context c,JSONObject server,JSONObject body)throws Exception{json(c,server,"POST","/Sessions/Playing/Progress",body.toString());}
  static void stopped(Context c,JSONObject server,JSONObject body)throws Exception{json(c,server,"POST","/Sessions/Playing/Stopped",body.toString());}
+ static void unplayed(Context c,JSONObject server,String itemId)throws Exception{json(c,server,"DELETE","/Users/"+EmbyApi.enc(server.optString("userId"))+"/PlayedItems/"+EmbyApi.enc(itemId),null);}
  static void played(Context c,JSONObject server,String itemId)throws Exception{json(c,server,"POST","/Users/"+EmbyApi.enc(server.optString("userId"))+"/PlayedItems/"+EmbyApi.enc(itemId),"{}");}
  static JSONObject json(Context c,JSONObject server,String method,String path,String body)throws Exception{
   HttpResult r=call(c,server,method,path,body,true);

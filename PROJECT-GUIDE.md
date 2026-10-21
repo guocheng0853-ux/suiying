@@ -132,3 +132,16 @@ Claude、Codex、Cursor 会同时在这个仓库工作，此前出现过两次�
 3. 推送前再 `git fetch` 一次；main 有了别人的新提交就先合并、重新构建测试，再推。
 4. 改动较大或会持续多轮时用分支 + PR，由用户合并；小修直接进 main。
 5. 每次出包都要在 cinema-ui/README.md 顶部写更新记录，并跑 `scripts/run_tests.sh` 与 `verify_apk.py`。
+
+
+## 界面改进待办（2026-10-22 参考 Findroid、Fladder、Streamyfin、Wholphin 整理）
+
+已做（0.1.122）：Emby 详情页规格标签、操作按钮行、演职员、剧集缩略图卡片、加载骨架。
+待做，按价值排序：
+1. 拖动进度条时显示画面预览（Emby BIF / Jellyfin Trickplay；仓库已有 BifIndex）。
+2. 首页「继续观看」与「下一集」可合并为一行；卡片用横版剧照而不是竖版海报（Wholphin）。
+3. 影视仓详情页同样改成剧集卡片 + 骨架（目前只改了 Emby）。
+4. 首页、媒体库、搜索的加载都换成骨架；图片加载完成淡入。
+5. 「更多类似」推荐行（Emby /Items/{id}/Similar）。
+6. 字幕样式设置（字号、描边、底色、位置），HDR 片源单独一套（Wholphin）。
+7. 「我的」页按 Material 3 列表样式重做；Emby 服务器管理页去掉整行大按钮，改成列表项 + 右侧菜单。

@@ -5,6 +5,7 @@ public final class EmbyLibraryActivity extends Activity {
  LinearLayout root,body;TextView status,title;SharedPreferences prefs;boolean light,dead;int epoch;ExecutorService io=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"emby-ui");t.setDaemon(true);return t;});Future<?> pending;ArrayDeque<Runnable> back=new ArrayDeque<>();
  interface Work {Runnable run()throws Exception;}
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}int ink(){return light?0xff173740:0xfff5fafb;}int muted(){return light?0xff52757c:0xffafcbd2;}int surface(){return light?0xffedf5f5:0xff10343e;}int card(){return light?0xffffffff:0xff19434e;}
+ android.graphics.drawable.Drawable selectable(){android.util.TypedValue tv=new android.util.TypedValue();getTheme().resolveAttribute(android.R.attr.selectableItemBackground,tv,true);return tv.resourceId!=0?getDrawable(tv.resourceId):null;}
  GradientDrawable rounded(int color,int r){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(r));return d;}
  static void manage(android.content.Context c){android.content.Intent in=new android.content.Intent(c,EmbyLibraryActivity.class);in.putExtra("manage",true);c.startActivity(in);}
  static void open(android.content.Context c,JSONObject m){android.content.Intent in=new android.content.Intent(c,EmbyLibraryActivity.class);in.putExtra("server",m.optString("emby.server"));in.putExtra("item",m.optString("emby.item"));c.startActivity(in);}
@@ -54,11 +55,14 @@ public final class EmbyLibraryActivity extends Activity {
   body.addView(hero,DetailLandscape.heroParams(body,heroH));
   TextView name=text(meta.optString("name"),24);name.setTypeface(null,1);name.setPadding(0,dp(4),0,dp(2));LinearLayout.LayoutParams nl=new LinearLayout.LayoutParams(-1,-2);nl.topMargin=-dp(36);body.addView(name,nl);
   String facts=HomeRules.heroFacts(meta);String runtime=meta.optString("runtime");String line=facts+(runtime.isEmpty()?"":(facts.isEmpty()?"":" · ")+runtime);TextView f=null;if(!line.isEmpty()){f=text(line,13);f.setTextColor(muted());f.setPadding(0,0,0,dp(10));body.addView(f);}
+  View badgeRow=EmbyDetailParts.badges(this,MediaBadgeRules.badges(item));if(badgeRow!=null)body.addView(badgeRow);
   Button primary=button("",null);primary.setTextColor(accentInk());primary.setTextSize(16);primary.setTypeface(null,1);primary.setSingleLine(true);primary.setEllipsize(android.text.TextUtils.TruncateAt.END);primary.setBackground(rounded(accentFill(),24));primary.setBackgroundTintList(null);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(-1,dp(48));pl.bottomMargin=dp(12);body.addView(primary,pl);
   String type=item.optString("Type");
   if("Movie".equals(type)||"Episode".equals(type)){primary.setText(meta.optLong("emby.resumeMs")>10000?"▶  继续播放":"▶  播放");primary.setOnClickListener(v->EmbyPlayback.playItem(this,server,item.optString("Id")));}
   else{primary.setText("正在读取剧集…");primary.setEnabled(false);}
+  body.addView(actionRow(server,item,meta));
   String overview=meta.optString("description");TextView ov=text(overview.isEmpty()?"暂无简介":overview,14);ov.setLineSpacing(dp(3),1f);ov.setMaxLines(4);ov.setEllipsize(android.text.TextUtils.TruncateAt.END);ov.setOnClickListener(v->{boolean open=ov.getMaxLines()!=Integer.MAX_VALUE;ov.setMaxLines(open?Integer.MAX_VALUE:4);});body.addView(ov);DetailLandscape.overlay(this,hero,heroH,surface(),name,f,primary,ov);
+  View castRow=EmbyDetailParts.cast(this,server,item);if(castRow!=null)body.addView(castRow);
   if("Series".equals(type)){
    LinearLayout list=new LinearLayout(this);list.setOrientation(1);
    if(seasons!=null&&seasons.length()>1){HorizontalScrollView hs=new HorizontalScrollView(this);hs.setHorizontalScrollBarEnabled(false);LinearLayout chips=new LinearLayout(this);hs.addView(chips);LinearLayout.LayoutParams hsl=new LinearLayout.LayoutParams(-1,-2);hsl.topMargin=dp(14);body.addView(hs,hsl);
@@ -71,23 +75,34 @@ public final class EmbyLibraryActivity extends Activity {
   }
  }catch(Exception e){status.setText(EmbyApi.explain(e));}}
  /** 0.1.106：详情页右上角「收藏」（剧集收藏后追更新）；电影 / 单集多一个「下载」。 */
- void detailExtras(JSONObject server,JSONObject item,JSONObject meta){try{LinearLayout header=(LinearLayout)root.getChildAt(0);for(int i=header.getChildCount()-1;i>=0;i--){Object tag=header.getChildAt(i).getTag();if("mp-fav".equals(tag)||"mp-dl".equals(tag))header.removeViewAt(i);}
-  String type=item.optString("Type");if("Movie".equals(type)||"Episode".equals(type)){TextView dl=text("⬇ 下载",15);dl.setTag("mp-dl");dl.setGravity(Gravity.CENTER);dl.setPadding(dp(12),0,dp(12),0);dl.setContentDescription("下载到本机，离线观看");String name=meta.optString("name")+("Episode".equals(type)?" · "+EmbyApi.line(item):"");dl.setOnClickListener(v->OfflineDownloads.emby(this,server,item.optString("Id"),name,meta));header.addView(dl,new LinearLayout.LayoutParams(-2,dp(44)));}
-  header.addView(FollowUp.heart(this,meta,ink()),new LinearLayout.LayoutParams(-2,dp(44)));
-  if("Series".equals(type))FollowUp.openedEmby(this,server,item.optString("Id"),meta.optString("id"));}catch(Exception ignored){}}
+ /** 0.1.122：收藏 / 下载从右上角移到「操作按钮行」；这里只做追更记录。 */
+ void detailExtras(JSONObject server,JSONObject item,JSONObject meta){try{clearExtras();if("Series".equals(item.optString("Type")))FollowUp.openedEmby(this,server,item.optString("Id"),meta.optString("id"));}catch(Exception ignored){}}
+ /** 0.1.122 操作按钮行（参考 Findroid ItemButtonsBar）：收藏、标记已看 / 未看、下载（电影 / 单集）。 */
+ View actionRow(JSONObject server,JSONObject item,JSONObject meta){LinearLayout row=EmbyDetailParts.actions(this);String type=item.optString("Type");
+  TextView[] fav=new TextView[1];Runnable paintFav=()->{boolean on=FollowRules.contains(FollowUp.favorites(this),meta.optString("id"));fav[0].setText((on?"♥":"♡")+"\n"+(on?"已收藏":"收藏"));};
+  fav[0]=EmbyDetailParts.action(this,row,"♡","收藏",()->{FollowUp.heart(this,meta,ink()).performClick();});fav[0].postDelayed(paintFav,0);fav[0].setOnClickListener(v->{FollowUp.heart(this,meta,ink()).performClick();v.postDelayed(paintFav,150);});
+  JSONObject ud=item.optJSONObject("UserData");final boolean[] played={ud!=null&&ud.optBoolean("Played")};TextView[] seen=new TextView[1];
+  seen[0]=EmbyDetailParts.action(this,row,played[0]?"✓":"○",played[0]?"已看过":"标记已看",()->{boolean to=!played[0];String id=item.optString("Id");io.submit(()->{try{if(to)EmbyClient.played(this,server,id);else EmbyClient.unplayed(this,server,id);runOnUiThread(()->{played[0]=to;seen[0].setText((to?"✓":"○")+"\n"+(to?"已看过":"标记已看"));Toast.makeText(this,to?"已标记为看过":"已标记为未看",Toast.LENGTH_SHORT).show();});}catch(Exception e){runOnUiThread(()->Toast.makeText(this,EmbyApi.explain(e),Toast.LENGTH_LONG).show());}});});
+  if("Movie".equals(type)||"Episode".equals(type)){String name=meta.optString("name")+("Episode".equals(type)?" · "+EmbyApi.line(item):"");EmbyDetailParts.action(this,row,"⬇","下载",()->OfflineDownloads.emby(this,server,item.optString("Id"),name,meta));}
+  return row;}
  void paintChips(LinearLayout chips,int on){for(int i=0;i<chips.getChildCount();i++){View c=chips.getChildAt(i);boolean sel=i==on;c.setBackground(rounded(sel?accentFill():(light?0x14000000:0x24ffffff),18));if(c instanceof TextView)((TextView)c).setTextColor(sel?accentInk():ink());}}
  /** 在详情页内加载一季的集；首次加载时顺便决定主按钮播哪一集（有进度的 → 第一个没看完的 → 第一集）。 */
  void seasonEpisodes(JSONObject server,String seriesId,String seasonId,LinearLayout list,Button primary,boolean decidePrimary){
-  list.removeAllViews();TextView wait=text("正在读取剧集…",13);wait.setTextColor(muted());list.addView(wait);final int token=epoch;
+  list.removeAllViews();list.addView(EmbyDetailParts.skeleton(this,4));final int token=epoch;
   io.submit(()->{try{JSONArray items=EmbyClient.episodesAll(this,server,seriesId,seasonId);runOnUiThread(()->{if(dead||token!=epoch)return;list.removeAllViews();
     if(items==null||items.length()==0){TextView none=text("这一季暂时没有剧集",14);none.setTextColor(muted());list.addView(none);if(decidePrimary){primary.setText("暂无可播放的剧集");}return;}
     JSONObject resume=null,unplayed=null;
     for(int i=0;i<items.length();i++){JSONObject ep=items.optJSONObject(i);if(ep==null)continue;JSONObject ud=ep.optJSONObject("UserData");boolean played=ud!=null&&ud.optBoolean("Played");long pos=ud==null?0:ud.optLong("PlaybackPositionTicks");if(resume==null&&pos>0&&!played)resume=ep;if(unplayed==null&&!played)unplayed=ep;
-     String label=EmbyApi.line(ep);if(label.isEmpty()||label.equals("续播"))label=ep.optString("Name","剧集");String mark=played?"  ✓":pos>0?"  · 看到一半":"";String id=ep.optString("Id");
-     Button b=button(label+mark,()->EmbyPlayback.playItem(this,server,id));final String dlName=ep.optString("SeriesName",title.getText().toString())+" · "+label;b.setOnLongClickListener(v->{OfflineDownloads.emby(this,server,id,dlName,null);return true;});b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);if(played)b.setTextColor(muted());LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(6);list.addView(b,p);}
+     String label=MediaBadgeRules.episodeTitle(ep);String id=ep.optString("Id");final String dlName=ep.optString("SeriesName",title.getText().toString())+" · "+label;final boolean wasPlayed=played;
+     list.addView(EmbyDetailParts.episode(this,server,ep,()->EmbyPlayback.playItem(this,server,id),()->episodeMenu(server,id,dlName,wasPlayed,()->seasonEpisodes(server,seriesId,seasonId,list,primary,false))));}
     if(decidePrimary){JSONObject pick=resume!=null?resume:unplayed!=null?unplayed:items.optJSONObject(0);if(pick!=null){String l=EmbyApi.line(pick);if(l.isEmpty()||l.equals("续播"))l=pick.optString("Name");primary.setText((resume!=null?"▶  继续 ":"▶  播放 ")+l);primary.setEnabled(true);String id=pick.optString("Id");primary.setOnClickListener(v->EmbyPlayback.playItem(this,server,id));}}
    });}catch(Exception e){runOnUiThread(()->{if(dead||token!=epoch)return;list.removeAllViews();TextView err=text(EmbyApi.explain(e),13);err.setTextColor(muted());list.addView(err);});}});
  }
+ /** 剧集长按菜单：下载、标记已看 / 未看。 */
+ void episodeMenu(JSONObject server,String id,String name,boolean played,Runnable refresh){java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();
+  rows.add(CinemaMenu.item("⬇ 下载这一集",()->OfflineDownloads.emby(this,server,id,name,null)));
+  rows.add(CinemaMenu.item(played?"○ 标记为未看":"✓ 标记为已看",()->io.submit(()->{try{if(played)EmbyClient.unplayed(this,server,id);else EmbyClient.played(this,server,id);runOnUiThread(refresh);}catch(Exception e){runOnUiThread(()->Toast.makeText(this,EmbyApi.explain(e),Toast.LENGTH_LONG).show());}})));
+  CinemaMenu.show(this,name,rows);}
  void episodes(JSONObject server,String seriesId,String seasonId,String name){if(!name.isEmpty())screen(name);work(name.isEmpty()?"正在读取剧集…":"正在读取 "+name+" …",()->{JSONArray items=EmbyClient.episodesAll(this,server,seriesId,seasonId);return ()->{if(!name.isEmpty())title.setText(name);if(items==null||items.length()==0){body.addView(text("这一季暂时没有剧集",14));return;}for(int i=0;i<items.length();i++){JSONObject ep=items.optJSONObject(i);if(ep==null)continue;String label=EmbyApi.line(ep);if(label.isEmpty())label=ep.optString("Name","剧集");String id=ep.optString("Id");row(label,()->EmbyPlayback.playItem(this,server,id));}};},()->episodes(server,seriesId,seasonId,name));}
  void gallery(JSONObject server,JSONArray list,Runnable retry){if(list==null||list.length()==0){body.addView(text("此媒体库暂时没有条目",14));return;}int available=body.getWidth()>0?body.getWidth()-body.getPaddingLeft()-body.getPaddingRight():getResources().getDisplayMetrics().widthPixels-dp(32),columns=Math.max(3,Math.min(6,available/dp(140))),width=(available-dp(10)*(columns-1))/columns;LinearLayout line=null;
   for(int i=0;i<Math.min(list.length(),300);i++){JSONObject v=list.optJSONObject(i);if(v==null||v.optString("Id").isEmpty())continue;if(line==null||line.getChildCount()==columns){line=new LinearLayout(this);line.setGravity(Gravity.TOP);body.addView(line);}LinearLayout tile=new LinearLayout(this);tile.setOrientation(1);FrameLayout frame=new FrameLayout(this);frame.setBackground(rounded(card(),10));frame.setClipToOutline(true);tile.addView(frame,new LinearLayout.LayoutParams(width,(int)(width*1.5)));ImageView pic=new ImageView(this);pic.setScaleType(ImageView.ScaleType.CENTER_CROP);frame.addView(pic,new FrameLayout.LayoutParams(-1,-1));try{JSONObject meta=EmbyApi.meta(server,v);TvPosterImages.load(this,pic,meta.optString("poster"),width);TextView name=text(meta.optString("name"),12);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);tile.addView(name);String id=v.optString("Id"),serverId=server.optString("id");tile.setOnClickListener(x->push(()->detail(serverId,id),retry));}catch(Exception ignored){}LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(width,-2);lp.rightMargin=dp(10);lp.bottomMargin=dp(12);line.addView(tile,lp);}}
