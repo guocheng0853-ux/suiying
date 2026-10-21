@@ -15,7 +15,7 @@ final class HomeChrome {
   String id=HomeRules.selectedId(provider,sourceId);
   String label=HomeRules.labelFor(options,id);
   TextView t=a.text(label+"  ▾",16,0xffffffff);t.setTypeface(null,1);t.setSingleLine(true);t.setEllipsize(android.text.TextUtils.TruncateAt.END);t.setMaxWidth(dp(260));
-  t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),a.gold?CinemaTheme.GOLD:0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
+  t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),a.gold?CinemaTheme.GOLD:a.clay?CinemaTheme.CLAY:0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
   t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(dp(10),dp(6),dp(12),dp(6));t.setContentDescription("首页内容来源："+label);
   // 0.1.97：压在海报上时看不清，加半透明深色胶囊底
   t.setBackground(round(0x66000000,18));
@@ -59,7 +59,7 @@ final class HomeChrome {
   TextView head=a.heading(heading);head.setOnLongClickListener(v->{java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();rows.add(CinemaMenu.item("隐藏「"+heading+"」",()->{String next=HomeRules.toggleSection(a.prefs.getString("home.hiddenSections",""),"resume");a.prefs.edit().putString("home.hiddenSections",next).apply();android.widget.Toast.makeText(a,"已隐藏，可在「我的 › 首页与外观」恢复",0).show();a.home();}));CinemaMenu.show(a,heading,rows);return true;});parent.addView(head);
   HorizontalScrollView scroller=new HorizontalScrollView(a);scroller.setHorizontalScrollBarEnabled(false);scroller.setClipToPadding(false);
   LinearLayout row=new LinearLayout(a);row.setGravity(Gravity.TOP);
-  int available=a.getResources().getDisplayMetrics().widthPixels-dp(32),width=a.gold?Math.min((int)(available*.62f),dp(240)):Math.min((available-dp(10))/2,dp(220));
+  int available=a.getResources().getDisplayMetrics().widthPixels-dp(32),width=a.editorial()?Math.min((int)(available*.62f),dp(240)):Math.min((available-dp(10))/2,dp(220));
   for(int i=0;i<Math.min(history.length(),20);i++){
    JSONObject m=history.optJSONObject(i);if(m==null)continue;
    LinearLayout card=continueCard(m,width);
@@ -83,14 +83,14 @@ final class HomeChrome {
   float frac=HomeRules.progress(pos,dur,HomeRules.runtimeMinutes(meta));
   if(frac>0){
    FrameLayout barHost=new FrameLayout(a);barHost.setBackgroundColor(0x66000000);
-   View fill=new View(a);fill.setBackgroundColor(a.gold?CinemaTheme.GOLD:0xff6eb6e0);
+   View fill=new View(a);fill.setBackgroundColor(a.gold?CinemaTheme.GOLD:a.clay?CinemaTheme.CLAY:0xff6eb6e0);
    FrameLayout.LayoutParams fp=new FrameLayout.LayoutParams((int)(width*frac),-1,Gravity.LEFT|Gravity.FILL_VERTICAL);
    barHost.addView(fill,fp);
-   FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(a.gold?3:4),Gravity.BOTTOM);frame.addView(barHost,bp);
+   FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(a.editorial()?3:4),Gravity.BOTTOM);frame.addView(barHost,bp);
   }
   c.addView(frame,new LinearLayout.LayoutParams(width,(int)(width/1.72f)));
-  TextView title=a.text(HomeRules.cardTitle(meta),a.gold?14:12,a.ink());if(a.gold)title.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
-  String line=meta.optString("emby.line");TextView sub=a.text(HomeRules.resumeLine(line.isEmpty()?HomeRules.episodeLabel(epId):line,pos,dur),a.gold?12:10,a.gold?a.muted():a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
+  TextView title=a.text(HomeRules.cardTitle(meta),a.editorial()?14:12,a.ink());if(a.editorial())title.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
+  String line=meta.optString("emby.line");TextView sub=a.text(HomeRules.resumeLine(line.isEmpty()?HomeRules.episodeLabel(epId):line,pos,dur),a.editorial()?12:10,a.editorial()?a.muted():a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
   c.setOnClickListener(v->{if(meta.optBoolean("emby.directPlay"))EmbyPlayback.play(a,meta);else a.openItem(meta);});
   c.setOnLongClickListener(v->{String id=meta.optString("id");if(id.isEmpty())id=meta.optString("Id");String store=HomeRules.hideResume(a.prefs.getString("home.hiddenResume","[]"),id);a.prefs.edit().putString("home.hiddenResume",store).apply();if(EmbyApi.isEmbyId(id)){final String watch=id;EmbyPlayback.IO.execute(()->{try{JSONObject server=EmbyStore.get(a,EmbyApi.serverOf(watch));if(server!=null)EmbyClient.hideFromResume(a,server,EmbyApi.itemOf(watch));}catch(Exception ignored){}});}android.widget.Toast.makeText(a,"已从继续观看移除",0).show();a.home();return true;});
   return c;
@@ -119,7 +119,7 @@ final class HomeChrome {
    for(int c=0;c<2;c++){
     int idx=r*2+c;
     ImageView img=new ImageView(a);img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-    img.setBackgroundColor(a.gold?((idx%2==0)?CinemaTheme.TILE_A:CinemaTheme.TILE_B):(idx%2==0)?0xff2a5560:0xff1e4450);
+    img.setBackgroundColor(a.gold?((idx%2==0)?CinemaTheme.TILE_A:CinemaTheme.TILE_B):a.clay?((idx%2==0)?CinemaTheme.TILE_C:CinemaTheme.TILE_D):(idx%2==0)?0xff2a5560:0xff1e4450);
     if(cache!=null&&idx<cache.length()){JSONObject m=cache.optJSONObject(idx);if(m!=null)TvPosterImages.load(a,img,m.optString("poster"),cell);}
     line.addView(img,new LinearLayout.LayoutParams(0,h/2,1));
    }

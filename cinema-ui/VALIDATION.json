@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.127",
+  "ui_version": "0.1.128",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -22,7 +22,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 9139,
   "dex_files": 3,
-  "main_version_code": 128,
+  "main_version_code": 129,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "stremio",

@@ -7,7 +7,7 @@ import android.view.*;import android.widget.*;
  */
 final class PullRefresh {
  final ScrapedMainActivity a;final TextView pill;float startY=-1,startX;boolean armed,busy;
- PullRefresh(ScrapedMainActivity a,FrameLayout stage){this.a=a;pill=a.text("下拉刷新",13,a.gold?CinemaTheme.ON_GOLD:0xffffffff);pill.setGravity(Gravity.CENTER);pill.setPadding(a.dp(16),0,a.dp(16),0);pill.setBackground(a.rounded(a.gold?CinemaTheme.GOLD:0xee2c4a55,18));pill.setElevation(a.dp(8));pill.setAlpha(0);stage.addView(pill,new FrameLayout.LayoutParams(-2,a.dp(36),Gravity.TOP|Gravity.CENTER_HORIZONTAL));}
+ PullRefresh(ScrapedMainActivity a,FrameLayout stage){this.a=a;pill=a.text("下拉刷新",13,a.editorial()?a.onHi():0xffffffff);pill.setGravity(Gravity.CENTER);pill.setPadding(a.dp(16),0,a.dp(16),0);pill.setBackground(a.rounded(a.editorial()?a.hi():0xee2c4a55,18));pill.setElevation(a.dp(8));pill.setAlpha(0);stage.addView(pill,new FrameLayout.LayoutParams(-2,a.dp(36),Gravity.TOP|Gravity.CENTER_HORIZONTAL));}
  boolean atTop(){return a.homeCanvas&&a.scroll!=null&&a.scroll.getScrollY()<=0;}
  void track(MotionEvent e){if(busy)return;switch(e.getActionMasked()){
   case MotionEvent.ACTION_DOWN:startY=atTop()?e.getRawY():-1;startX=e.getRawX();armed=false;break;
