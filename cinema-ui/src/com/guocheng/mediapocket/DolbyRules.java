@@ -32,5 +32,5 @@ final class DolbyRules {
  /** 版本名后面的标记。 */
  static String tag(String kind){if(P5.equals(kind))return " · 杜比视界P5";if(DV.equals(kind))return " · 杜比视界";if(COMPATIBLE.equals(kind))return " · 杜比视界(兼容HDR10)";if(HDR.equals(kind))return " · HDR";return "";}
  /** 记住的处理方式：ask 每次问 / system 系统解码 / vlc 仍用 VLC / transcode 服务器转码。 */
- static String mode(String saved){if("system".equals(saved)||"vlc".equals(saved)||"transcode".equals(saved))return saved;return "ask";}
+ static String mode(String saved){if("external".equals(saved)||"system".equals(saved)||"vlc".equals(saved)||"transcode".equals(saved))return saved;return "ask";}
 }

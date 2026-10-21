@@ -15,7 +15,7 @@ public class DolbyRulesTest {
   check(DolbyRules.kind(null).equals("sdr")&&DolbyRules.kind(new JSONObject()).equals("sdr"),"empty");
   check(DolbyRules.risky("p5")&&DolbyRules.risky("dv")&&!DolbyRules.risky("dv-compatible")&&!DolbyRules.risky("hdr"),"risky");
   check(DolbyRules.profileIn("Dolby Vision Profile 8.1")==8&&DolbyRules.profileIn("DoviProfile50")==5&&DolbyRules.profileIn("none")==-1,"profile parse");
-  check(DolbyRules.mode("system").equals("system")&&DolbyRules.mode("weird").equals("ask")&&DolbyRules.mode(null).equals("ask"),"mode");
+  check(DolbyRules.mode("external").equals("external")&&DolbyRules.mode("system").equals("system")&&DolbyRules.mode("weird").equals("ask")&&DolbyRules.mode(null).equals("ask"),"mode");
   check(DolbyRules.tag("p5").contains("P5")&&DolbyRules.tag("sdr").isEmpty(),"tags");
   JSONArray v=EmbyCue.versions(new JSONArray().put(src(new JSONObject().put("VideoRangeType","DOVI"),"2160p DV").put("Container","mkv")).put(new JSONObject().put("Id","n").put("Name","1080p").put("Container","mp4")));
   check(v.length()==2&&v.getJSONObject(0).optString("name").contains("杜比视界P5")&&!v.getJSONObject(1).optString("name").contains("杜比"),"version labels "+v);
