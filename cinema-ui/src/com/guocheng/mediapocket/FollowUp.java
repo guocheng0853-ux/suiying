@@ -16,11 +16,13 @@ final class FollowUp {
  static JSONArray favorites(Context c){try{return new JSONArray(prefs(c).getString("favorites","[]"));}catch(Exception e){return new JSONArray();}}
 
  // ---------- 收藏按钮（Emby / 影视仓详情页右上角） ----------
- static TextView heart(Activity a,JSONObject meta,int ink){TextView t=new TextView(a);t.setTextSize(15);t.setTextColor(ink);t.setGravity(Gravity.CENTER);int p=Math.round(12*a.getResources().getDisplayMetrics().density);t.setPadding(p,0,p,0);t.setTag("mp-fav");
+ static TextView heart(Activity a,JSONObject meta,int ink){TextView t=new TextView(a);t.setTextSize(15);t.setTextColor(ink);t.setGravity(Gravity.CENTER);int p=Math.round(12*a.getResources().getDisplayMetrics().density);t.setPadding(p,0,p,0);t.setTag("mp-fav");bindHeart(a,t,meta);return t;}
+ /** 0.1.129：给已有的收藏按钮换绑条目（首页大图轮播复用同一个按钮，换页不再新建 View、不触发整页重排）。 */
+ static void bindHeart(Activity a,TextView t,JSONObject meta){
   Runnable paint=()->{boolean on=FollowRules.contains(favorites(a),meta.optString("id"));t.setText(on?"♥ 已收藏":"♡ 收藏");t.setContentDescription(on?"取消收藏":"收藏，有更新时提醒");};paint.run();
   t.setOnClickListener(v->{try{JSONObject entry=FollowRules.favoriteEntry(meta);JSONArray next=FollowRules.toggle(favorites(a),entry);boolean on=FollowRules.contains(next,entry.optString("id"));prefs(a).edit().putString("favorites",next.toString()).apply();paint.run();
     Toast.makeText(a,on?(FollowRules.trackable(entry)&&enabled(a)?"已收藏，有新的剧集会提醒你":"已收藏"):"已取消收藏",Toast.LENGTH_SHORT).show();if(on)askNotify(a);}catch(Exception e){Toast.makeText(a,"收藏失败",Toast.LENGTH_SHORT).show();}});
-  return t;}
+ }
  /** 详情页打开时调用：集数记为已看过，并收起「有更新」标记和通知。 */
  static void opened(Context c,String id,int count){if(id==null||id.isEmpty())return;synchronized(FollowUp.class){try{JSONObject s=state(c);if(!s.has(id)&&!FollowRules.contains(favorites(c),id))return;FollowRules.seen(s,id,count);saveState(c,s);}catch(Exception ignored){}}}
 

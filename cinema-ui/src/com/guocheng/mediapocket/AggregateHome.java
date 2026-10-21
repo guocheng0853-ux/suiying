@@ -34,13 +34,15 @@ final class AggregateHome {
 
  /** 一行：标题 + 海报横排；parts 按来源存条目，任何来源有新结果就整行重画。 */
  final class Row {
-  final String key,title,type;final TextView head;final LinearLayout host;final Map<String,JSONArray> parts=new HashMap<>();final Set<String> waiting=new HashSet<>(order);String fusionCategory="";
+  final String key,title,type;final TextView head;final LinearLayout host;final Map<String,JSONArray> parts=new HashMap<>();final Set<String> waiting=new HashSet<>(order);String fusionCategory="",painted="";
   Row(String key,String title,String type){this.key=key;this.title=title;this.type=type;head=a.sectionHead("agg-"+key,title+" ›");head.setOnClickListener(v->open());a.body.addView(head);host=new LinearLayout(a);host.setOrientation(1);a.body.addView(host);host.addView(Skeleton.row(a,a.card(),false,4));}
   void open(){if(key.equals("fresh")){if(!fusionCategory.isEmpty())a.openFusion(fusionCategory);return;}if(key.equals("anime"))a.genreBrowse("series","Animation");else if(key.equals("doc"))a.genreBrowse("movie","Documentary");else a.genreBrowse(type,"");}
   void skip(String source){waiting.remove(source);}
   void put(String source,JSONArray items,boolean last){if(items!=null)parts.put(source,items);if(last)waiting.remove(source);paint();}
   void paint(){List<JSONArray> lists=new ArrayList<>();for(String s:order)lists.add(parts.get(s));JSONArray merged=AggregateRules.merge(lists,20);
    if(merged.length()==0){if(waiting.isEmpty()){head.setVisibility(View.GONE);host.setVisibility(View.GONE);}return;}
+   // 缓存和新数据一样时不重画，避免整行海报重新加载、首页重排
+   StringBuilder sig=new StringBuilder();for(int i=0;i<merged.length();i++){JSONObject m=merged.optJSONObject(i);sig.append(m.optString("id")).append('|').append(m.optInt("agg.count")).append(';');}if(sig.toString().equals(painted))return;painted=sig.toString();
    head.setVisibility(View.VISIBLE);host.setVisibility(View.VISIBLE);host.removeAllViews();a.shelf(host,merged,type,false);badges(host,merged);}
  }
 
