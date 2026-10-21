@@ -64,6 +64,19 @@
     "movie_version_labels_verified": true,
     "movie_prev_next_hidden_screenshot_verified": true,
     "movie_1080p_frames_verified": true,
-    "movie_2160p_frames_verified": false
+    "movie_2160p_frames_verified": false,
+    "restoration": {
+      "source_timeout_seconds": 30,
+      "auto_switch": false,
+      "rotation": "free restored",
+      "playback_speed": "1.0 unchanged; speed menu opened only",
+      "home_source": "tvbox selected for testing; previous Emby selection not restored because another application is foreground"
+    },
+    "remaining_checks": [
+      "forced request stall and late-result race",
+      "failure card buttons",
+      "actual 2160p playback",
+      "remaining scenarios listed in DEVICE-VALIDATION.md"
+    ]
   }
 }
