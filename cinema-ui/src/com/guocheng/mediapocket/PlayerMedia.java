@@ -11,11 +11,11 @@ final class PlayerMedia {
  final Activity a;final MediaSession session;BroadcastReceiver receiver;Boolean shownPlaying;String shownTitle;long lastState;
  private PlayerMedia(Activity a){this.a=a;session=new MediaSession(a,"suiying");session.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS|MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
   session.setCallback(new MediaSession.Callback(){
-   @Override public void onPlay(){if(!EmbyPlayback.playing(a))PlayerOverlay.pause(a);}
-   @Override public void onPause(){if(EmbyPlayback.playing(a))PlayerOverlay.pause(a);}
-   @Override public void onStop(){if(EmbyPlayback.playing(a))PlayerOverlay.pause(a);}
-   @Override public void onSkipToNext(){PlayerOverlay.jump(a,1);}
-   @Override public void onSkipToPrevious(){PlayerOverlay.jump(a,-1);}
+   @Override public void onPlay(){setPlaying(a,true);}
+   @Override public void onPause(){setPlaying(a,false);}
+   @Override public void onStop(){setPlaying(a,false);}
+   @Override public void onSkipToNext(){neighbor(a,1);}
+   @Override public void onSkipToPrevious(){neighbor(a,-1);}
    @Override public void onFastForward(){skip(15000);}
    @Override public void onRewind(){skip(-15000);}
    @Override public void onSeekTo(long pos){EmbyPlayback.seek(a,(int)Math.max(0,Math.min(Integer.MAX_VALUE,pos)));}
@@ -23,22 +23,25 @@ final class PlayerMedia {
   Intent open=new Intent(a,a.getClass()).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP);
   session.setSessionActivity(PendingIntent.getActivity(a,NOTE_ID,open,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE));
   session.setActive(true);
-  receiver=new BroadcastReceiver(){@Override public void onReceive(Context c,Intent i){if(!ACTION.equals(i.getAction()))return;String cmd=i.getStringExtra("cmd");if("toggle".equals(cmd))PlayerOverlay.pause(a);else if("next".equals(cmd))PlayerOverlay.jump(a,1);else if("prev".equals(cmd))PlayerOverlay.jump(a,-1);else if("close".equals(cmd))a.finish();}};
+  receiver=new BroadcastReceiver(){@Override public void onReceive(Context c,Intent i){if(!ACTION.equals(i.getAction()))return;String cmd=i.getStringExtra("cmd");if("toggle".equals(cmd))toggle(a);else if("next".equals(cmd))neighbor(a,1);else if("prev".equals(cmd))neighbor(a,-1);else if("close".equals(cmd))a.finish();}};
   IntentFilter f=new IntentFilter(ACTION);if(Build.VERSION.SDK_INT>=33)a.registerReceiver(receiver,f,4);else a.registerReceiver(receiver,f);}
 
- static void tick(Activity a){try{if(!a.getSharedPreferences("data",0).getBoolean("media.controls",true))return;PlayerMedia m=ALL.get(a);if(m==null){m=new PlayerMedia(a);ALL.put(a,m);}m.sync();}catch(Throwable ignored){}}
- static void dispose(Activity a){PlayerMedia m=ALL.remove(a);if(m==null)return;try{if(m.receiver!=null)a.unregisterReceiver(m.receiver);}catch(Exception ignored){}try{m.session.setActive(false);m.session.release();}catch(Exception ignored){}try{NotificationManager nm=(NotificationManager)a.getSystemService(Context.NOTIFICATION_SERVICE);if(nm!=null)nm.cancel(NOTE_ID);}catch(Exception ignored){}}
+ static void setPlaying(Activity a,boolean play){if(a instanceof SystemPlayerActivity){SystemPlayerActivity n=(SystemPlayerActivity)a;n.resumeAfterPause=false;if(play)n.video.start();else n.video.pause();}else if(EmbyPlayback.playing(a)!=play)PlayerOverlay.pause(a);}
+ static void toggle(Activity a){if(a instanceof SystemPlayerActivity){SystemPlayerActivity n=(SystemPlayerActivity)a;n.resumeAfterPause=false;if(n.video.wantsPlayback())n.video.pause();else n.video.start();}else PlayerOverlay.pause(a);}
+ static void neighbor(Activity a,int direction){if(a instanceof SystemPlayerActivity)((SystemPlayerActivity)a).playNeighbor(direction);else PlayerOverlay.jump(a,direction);}
+ static void tick(Activity a){try{if(!a.getSharedPreferences("data",0).getBoolean("media.controls",true)){dispose(a);return;}PlayerMedia m=ALL.get(a);if(m==null){m=new PlayerMedia(a);ALL.put(a,m);}m.sync();}catch(Throwable ignored){}}
+ static void dispose(Activity a){PlayerMedia m=ALL.remove(a);if(m==null)return;try{if(m.receiver!=null)a.unregisterReceiver(m.receiver);}catch(Exception ignored){}try{m.session.setActive(false);m.session.release();}catch(Exception ignored){}try{NotificationManager nm=(NotificationManager)a.getSystemService(Context.NOTIFICATION_SERVICE);if(nm!=null&&ALL.isEmpty())nm.cancel(NOTE_ID);}catch(Exception ignored){}}
 
- void skip(int delta){int pos=EmbyPlayback.position(a);if(pos<0)return;EmbyPlayback.seek(a,Math.max(0,pos+delta));}
+ void skip(int delta){int pos=EmbyPlayback.position(a);if(pos<0)return;EmbyPlayback.seek(a,Media3ControlRules.seek(pos,(int)Math.min(Integer.MAX_VALUE,duration()),delta));}
  boolean series(){try{return PlaybackReviewRules.series(PlayerOverlay.meta(a),PlayerOverlay.type(a));}catch(Throwable e){return false;}}
  String title(){Object n=OnlineSubtitleSearch.field(a,"name");String s=n==null?"":n.toString();if(s.isEmpty())s=PlayerOverlay.meta(a).optString("name","随影");return s;}
 
- void sync(){boolean playing=EmbyPlayback.playing(a);int pos=EmbyPlayback.position(a);long now=SystemClock.elapsedRealtime();String title=title();
+ void sync(){boolean playing=a instanceof SystemPlayerActivity?((SystemPlayerActivity)a).video.wantsPlayback():EmbyPlayback.playing(a);int pos=EmbyPlayback.position(a);long now=SystemClock.elapsedRealtime();String title=title();
   boolean changed=!Boolean.valueOf(playing).equals(shownPlaying)||!title.equals(shownTitle);
   if(changed||now-lastState>5000){lastState=now;long actions=PlaybackState.ACTION_PLAY|PlaybackState.ACTION_PAUSE|PlaybackState.ACTION_PLAY_PAUSE|PlaybackState.ACTION_SEEK_TO|PlaybackState.ACTION_FAST_FORWARD|PlaybackState.ACTION_REWIND|PlaybackState.ACTION_STOP;if(series())actions|=PlaybackState.ACTION_SKIP_TO_NEXT|PlaybackState.ACTION_SKIP_TO_PREVIOUS;
    float speed=playing?PlaybackPrefs.speed(a.getSharedPreferences("data",0)):0f;
    session.setPlaybackState(new PlaybackState.Builder().setActions(actions).setState(playing?PlaybackState.STATE_PLAYING:PlaybackState.STATE_PAUSED,Math.max(0,pos),speed<=0&&playing?1f:speed).build());}
-  if(!title.equals(shownTitle)){long dur=duration();MediaMetadata.Builder md=new MediaMetadata.Builder().putString(MediaMetadata.METADATA_KEY_TITLE,title).putString(MediaMetadata.METADATA_KEY_ARTIST,"随影");if(dur>0)md.putLong(MediaMetadata.METADATA_KEY_DURATION,dur);session.setMetadata(md.build());}
+  if(!title.equals(shownTitle)||changed||now-lastState<50){long dur=duration();MediaMetadata.Builder md=new MediaMetadata.Builder().putString(MediaMetadata.METADATA_KEY_TITLE,title).putString(MediaMetadata.METADATA_KEY_ARTIST,"随影");if(dur>0)md.putLong(MediaMetadata.METADATA_KEY_DURATION,dur);session.setMetadata(md.build());}
   if(changed){shownPlaying=playing;shownTitle=title;notice(playing,title);}}
  long duration(){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"getDuration",new Class<?>[0]);return r instanceof Number?((Number)r).longValue():0;}catch(Exception e){return 0;}}
 
