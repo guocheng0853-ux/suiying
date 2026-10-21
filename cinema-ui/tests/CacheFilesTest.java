@@ -24,6 +24,23 @@ public final class CacheFilesTest {
   check(files.countMeta()<=CacheFiles.META_CAP,"meta cap "+files.countMeta());
   check(files.removePrefix("cinema.catalog.")>=1,"prefix removal");
   check(files.read("cinema.catalog.movie.")==null,"removed");
-  System.out.println("PASS: cache files write/read, skip identical rewrite, stale import, refresh epoch, meta cap.");
+  long previousCap=CacheFiles.FILE_CAP_BYTES;int previousMem=CacheFiles.MEMORY_CAP_CHARS;
+  CacheFiles.FILE_CAP_BYTES=Long.MAX_VALUE;
+  String chunk=new String(new char[1000]).replace('\0','x');
+  for(int i=0;i<6;i++){files.write("fusion.home:bulk"+i,chunk+i);files.touch("fusion.home:bulk"+i,1000L+i);}
+  CacheFiles.FILE_CAP_BYTES=2500;
+  check(files.trimFiles()>0,"trims non-meta files");
+  check(files.countOther()<=3,"non-meta files stay under the byte cap, have "+files.countOther());
+  check(files.read("fusion.home:bulk5")!=null,"newest non-meta file is kept");
+  CacheFiles.FILE_CAP_BYTES=previousCap;
+  CacheFiles.MEMORY_CAP_CHARS=5000;
+  String big=new String(new char[3000]).replace('\0','m');
+  files.write("fusion.home:mem-a",big+"a");
+  files.write("fusion.home:mem-b",big+"b");
+  check(CacheFiles.memory("fusion.home:mem-a")==null,"older memory entry is evicted by the byte cap");
+  check((big+"b").equals(CacheFiles.memory("fusion.home:mem-b")),"newest memory entry stays");
+  CacheFiles.MEMORY_CAP_CHARS=previousMem;
+  check(files.removeIf(k->k.startsWith("fusion.home:"))>=1,"predicate removal");
+  System.out.println("PASS: cache files write/read, skip identical rewrite, stale import, refresh epoch, meta cap, memory and file byte caps.");
  }
 }

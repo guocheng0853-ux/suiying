@@ -2,6 +2,7 @@ package com.guocheng.mediapocket;
 /** Media3 IO errors must never be presented as evidence of decoder incompatibility. */
 final class Media3ErrorRules {
  static String message(int code,int status){
+  if(code==HttpRange.SKIP_ERROR)return HttpRange.SKIP_MESSAGE;
   if(code==2004){String http=status>0?"（HTTP "+status+"）":"";
    if(status==401||status==403)return "服务器拒绝访问"+http+"。请返回影片详情重新获取播放地址；这还不是解码失败。";
    if(status==404||status==410)return "播放地址已失效或文件不存在"+http+"。请重新打开影片或选择其他版本。";

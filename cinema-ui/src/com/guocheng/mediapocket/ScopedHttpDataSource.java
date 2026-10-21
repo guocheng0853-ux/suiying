@@ -9,8 +9,6 @@ import android.net.Uri;import androidx.media3.common.C;import androidx.media3.da
  */
 final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSource {
  final String userAgent;final Map<String,String> headers=new LinkedHashMap<>();
- /** 用户拖动进度后的短时间内为真。续播和第一次打开保持为假，忽略 Range 时仍允许跳过 64 MB 以上。 */
- static volatile boolean userSeek;static volatile int seekGen;
  DataSpec spec;HttpURLConnection connection;InputStream input;Uri uri;Map<String,List<String>> responseHeaders=new HashMap<>();int responseCode;long remaining=-1;boolean opened;
  ScopedHttpDataSource(String userAgent,Map<String,String> headers){super(true);this.userAgent=userAgent==null||userAgent.isEmpty()?OfflineHttp.UA:userAgent;if(headers!=null)for(Map.Entry<String,String> e:headers.entrySet())if(e.getKey()!=null&&e.getValue()!=null)this.headers.put(e.getKey(),e.getValue());}
  @Override public void setRequestProperty(String name,String value){if(name!=null&&value!=null)headers.put(name,value);}
@@ -35,8 +33,9 @@ final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSourc
     if(plan.reject||((code<200||code>299)&&!plan.empty)){byte[] err=readLimited(c.getErrorStream());HttpURLConnection bad=c;c=null;bad.disconnect();throw new InvalidResponseCodeException(code,"",null,responseHeaders,spec,err);}
     if(plan.empty){c.disconnect();c=null;input=new ByteArrayInputStream(new byte[0]);remaining=0;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return plan.read;}
     input=c.getInputStream();connection=c;c=null;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;
-    // 0.1.130：64 MB 上限只拦用户拖动。续播落在 64 MB 之后、或 moov 在文件末尾时，第一次打开仍允许跳过（会比较慢，但能播）。
-    if(HttpRange.rejectIgnoredRange(plan.skip,userSeek))throw new IOException("服务器不支持从中间读取（拖到这里要先下载 "+OfflineRules.size(plan.skip)+"），请从头播放或换一条线路");
+    // 64 MB 上限只拦这一次用户拖动认领的字节位置。续播、第一次打开、读 moov 没有 armSeek，不拦。
+    // 错误码 2008，Exo 不重试；倒计时过了再重试就会把整段下下来。
+    if(HttpRange.rejectSeek(spec.position,plan.skip)){InputStream openedIn=input;HttpURLConnection openedConn=connection;input=null;connection=null;try{if(openedIn!=null)openedIn.close();}catch(IOException ignored){}if(openedConn!=null)openedConn.disconnect();if(opened){opened=false;transferEnded();}throw new HttpDataSource.HttpDataSourceException(HttpRange.SKIP_MESSAGE,spec,HttpRange.SKIP_ERROR,HttpDataSource.HttpDataSourceException.TYPE_OPEN);}
     if(plan.skip>0)skipFully(input,plan.skip);
     remaining=plan.read;return remaining>=0?remaining:C.LENGTH_UNSET;}
    throw new IOException("重定向次数过多");

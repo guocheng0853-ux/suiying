@@ -16,7 +16,7 @@ final class PlayerGestures extends GestureDetector.SimpleOnGestureListener {
  Object video(){return OnlineSubtitleSearch.field(a,"video");}
  int intCall(Object v,String name){try{Object r=v==null?null:OnlineSubtitleSearch.call(v,name,new Class<?>[0]);return r instanceof Integer?(Integer)r:-1;}catch(Exception e){return -1;}}
  void markSeek(){try{Object s=OnlineSubtitleSearch.field(a,"session");if(s!=null)OnlineSubtitleSearch.call(s,"seek",new Class<?>[0]);}catch(Exception ignored){}}
- void seekTo(int ms){try{markSeek();OnlineSubtitleSearch.call(video(),"seekTo",new Class<?>[]{int.class},ms);}catch(Exception ignored){}}
+ void seekTo(int ms){try{markSeek();try{OnlineSubtitleSearch.call(video(),"seekTo",new Class<?>[]{int.class,boolean.class},ms,Boolean.TRUE);}catch(NoSuchMethodException missing){OnlineSubtitleSearch.call(video(),"seekTo",new Class<?>[]{int.class},ms);}}catch(Exception ignored){}}
  int readBoost(){try{Object video=video();Object player=video==null?null:OnlineSubtitleSearch.field(video,"player");Object r=player==null?null:OnlineSubtitleSearch.call(player,"getVolume",new Class<?>[0]);return r instanceof Integer?(Integer)r:100;}catch(Exception e){return 100;}}
  void writeBoost(int percent){int v=Math.max(0,Math.min(200,percent));try{Object video=video();Object player=video==null?null:OnlineSubtitleSearch.field(video,"player");if(player!=null)OnlineSubtitleSearch.call(player,"setVolume",new Class<?>[]{int.class},v);else if(video!=null)OnlineSubtitleSearch.call(video,"setVolume",new Class<?>[]{int.class},v);}catch(Exception ignored){}}
  boolean blocked(){return !PlayerGestureRules.gesturesOpen(locked);}

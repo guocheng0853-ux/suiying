@@ -8,7 +8,8 @@ final class Skeleton {
  private Skeleton(){}
  static int dp(Context c,int v){return Math.round(v*c.getResources().getDisplayMetrics().density);}
  static View block(Context c,int color,int w,int h,int radius){View v=new View(c);GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(c,radius));v.setBackground(g);v.setLayoutParams(new LinearLayout.LayoutParams(w,h));return v;}
- static final int TAG_ANIM=0x7f0a7302;
+ /** 和字幕样式的 0x7f0a7302、预览条的 0x7f0a7301 错开，避免暂停骨架时把别的标记清掉。 */
+ static final int TAG_ANIM=0x7f0a7303;
  /** 只让灰色小块呼吸。容器本身保持不透明，避免整行离屏合成。 */
  static <T extends View> T pulse(T v){pulseBlocks(v);v.setTag("mp-skeleton");return v;}
  static void pulseBlocks(View v){if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;if(g.getChildCount()==0)start(v);else for(int i=0;i<g.getChildCount();i++)pulseBlocks(g.getChildAt(i));}else start(v);}

@@ -1,6 +1,6 @@
 """Compile a UI overlay while retaining the exact stable APK engines/native code."""
 from pathlib import Path
-import subprocess,zipfile,hashlib,shutil,json,struct,os
+import subprocess,zipfile,hashlib,shutil,json,struct,os,sys
 
 root=Path(__file__).resolve().parent;tools=root.parent/'build-tools';bt=tools/'android-15';sdk=tools/'android-35/android.jar';work=root/'build';work.mkdir(exist_ok=True)
 def run(*args):
@@ -115,11 +115,15 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
 dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.130-home-jank-arm64.apk'
 ks=Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks')))
-if ks.is_file():
+unsigned='--unsigned' in sys.argv
+if ks.is_file() and not unsigned:
  run(bt/'apksigner','sign','--ks',ks,'--ks-pass','pass:android','--key-pass','pass:android','--out',apk,work/'aligned.apk')
  run(bt/'apksigner','verify',apk)
+ print('signed apk')
+elif unsigned:
+ shutil.copy(work/'aligned.apk',apk);print('unsigned apk (--unsigned)')
 else:
- shutil.copy(work/'aligned.apk',apk);print('unsigned apk, no keystore present')
+ raise SystemExit('refusing to write an unsigned APK as '+apk.name+'; pass --unsigned or set MEDIAPOCKET_KEYSTORE')
 with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
  assert updated.testzip() is None
  preserved=[]

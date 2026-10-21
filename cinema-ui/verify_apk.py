@@ -49,7 +49,13 @@ with zipfile.ZipFile(root/'base.apk') as z:
 programs=sorted((root/'tests').glob('*Test.java'));stamp_path=root/'build'/'jvm-tests.passed'
 stamp=int(stamp_path.read_text().strip()) if stamp_path.exists() else None
 if stamp!=len(programs):raise SystemExit('jvm stamp %s != %d test programs; run scripts/run_tests.sh'%(stamp,len(programs)))
-validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'media3_runtime_included':True,'dolby_android_device_tested':False,'jvm_test_programs_passed':stamp,'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':131,'application_id':match.group(1),'review_build':match.group(1).endswith('.review'),'default_home_provider':'fusion','android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
+signed=False
+with zipfile.ZipFile(apk) as z:
+ for n in z.namelist():
+  if n.startswith('META-INF/') and n.rsplit('.',1)[-1] in ('RSA','DSA','EC','SF'):
+   signed=True;break
+print('apk signature:', 'present' if signed else 'absent')
+validation=json.loads((root/'VALIDATION.json').read_text());validation.update({'media3_runtime_included':True,'dolby_android_device_tested':False,'jvm_test_programs_passed':stamp,'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':131,'application_id':match.group(1),'review_build':match.group(1).endswith('.review'),'default_home_provider':'fusion','apk_signature_present':signed,'android_device_tested':False,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
  'header_route_patch':'VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)',
  'jvm_playback_chain_test':'HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.',
  'real_source_playback_tested':False,'real_source_note':'cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build',
