@@ -5,6 +5,7 @@ import android.net.Uri;import androidx.media3.common.C;import androidx.media3.da
  * 跨主机 / 跨端口去掉 Cookie、Authorization、X-Emby-Token；Referer 仍然带上。
  * https 降到 http 时这些头和 Referer 都不带。User-Agent 等普通头保留。
  * 对方忽略 Range 而返回 200 时，跳到请求的位置并按请求长度截断；416 且起点已是文件末尾则当作读完。
+ * 跳过之前先 transferStarted：bytesTransferred 会把 DataSpec 交给 DefaultBandwidthMeter，此时字段还是 null 会空指针。
  */
 final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSource {
  final String userAgent;final Map<String,String> headers=new LinkedHashMap<>();
@@ -31,15 +32,16 @@ final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSourc
     HttpRange.Plan plan=HttpRange.plan(code,spec.position,spec.length==C.LENGTH_UNSET?HttpRange.UNSET:spec.length,contentLength<0?HttpRange.UNSET:contentLength,documentSize<0?HttpRange.UNSET:documentSize);
     if(plan.reject||((code<200||code>299)&&!plan.empty)){byte[] err=readLimited(c.getErrorStream());HttpURLConnection bad=c;c=null;bad.disconnect();throw new InvalidResponseCodeException(code,"",null,responseHeaders,spec,err);}
     if(plan.empty){c.disconnect();c=null;input=new ByteArrayInputStream(new byte[0]);remaining=0;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return plan.read;}
-    input=c.getInputStream();connection=c;c=null;
+    input=c.getInputStream();connection=c;c=null;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;
     if(plan.skip>0)skipFully(input,plan.skip);
-    remaining=plan.read;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return remaining>=0?remaining:C.LENGTH_UNSET;}
+    remaining=plan.read;return remaining>=0?remaining:C.LENGTH_UNSET;}
    throw new IOException("重定向次数过多");
-  }catch(HttpDataSourceException e){throw e;}catch(IOException e){if(c!=null)c.disconnect();throw HttpDataSourceException.createForIOException(e,spec,HttpDataSourceException.TYPE_OPEN);}
+  }catch(HttpDataSourceException e){throw e;}catch(IOException e){if(c!=null)c.disconnect();if(connection!=null||input!=null||opened)try{close();}catch(HttpDataSourceException ignored){}throw HttpDataSourceException.createForIOException(e,spec,HttpDataSourceException.TYPE_OPEN);}
  }
  @Override public int read(byte[] buffer,int offset,int length)throws HttpDataSourceException{try{if(length==0)return 0;if(remaining==0)return C.RESULT_END_OF_INPUT;int n=input.read(buffer,offset,remaining>0?(int)Math.min(length,remaining):length);if(n==-1)return C.RESULT_END_OF_INPUT;if(remaining>0)remaining-=n;bytesTransferred(n);return n;}catch(IOException e){throw HttpDataSourceException.createForIOException(e,spec,HttpDataSourceException.TYPE_READ);}}
  @Override public void close()throws HttpDataSourceException{try{if(input!=null)try{input.close();}catch(IOException ignored){}input=null;if(connection!=null){connection.disconnect();connection=null;}}finally{if(opened){opened=false;transferEnded();}}}
  static Map<String,List<String>> copy(Map<String,List<String>> in){Map<String,List<String>> out=new HashMap<>();if(in!=null)for(Map.Entry<String,List<String>> e:in.entrySet())if(e.getKey()!=null)out.put(e.getKey(),e.getValue());return out;}
  static byte[] readLimited(InputStream in){if(in==null)return new byte[0];try{ByteArrayOutputStream b=new ByteArrayOutputStream();byte[] buf=new byte[1024];int n,total=0;while(total<4096&&(n=in.read(buf))>0){b.write(buf,0,n);total+=n;}return b.toByteArray();}catch(IOException e){return new byte[0];}finally{try{in.close();}catch(IOException ignored){}}}
+ /** 调用前必须已经 transferStarted。跳过的字节同样通知监听器，和 DefaultHttpDataSource 一致。 */
  void skipFully(InputStream in,long n)throws IOException{byte[] buf=new byte[8192];long left=n;while(left>0){int r=in.read(buf,0,(int)Math.min(buf.length,left));if(r<0)throw new IOException("服务器忽略了断点，文件比请求的位置短");left-=r;bytesTransferred(r);}}
 }

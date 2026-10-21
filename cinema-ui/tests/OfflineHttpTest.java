@@ -1,5 +1,6 @@
 package com.guocheng.mediapocket;
-import com.sun.net.httpserver.*;import java.net.*;import java.io.*;import org.json.*;
+import com.sun.net.httpserver.*;import java.net.*;import java.io.*;import java.util.*;import java.util.concurrent.*;import org.json.*;
+import androidx.media3.datasource.*;
 public class OfflineHttpTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
  public static void main(String[] a)throws Exception{
@@ -40,7 +41,40 @@ public class OfflineHttpTest {
   check(atEndLen.empty&&atEndLen.read==20,"416 at the document size returns the requested length");
   HttpRange.Plan rejected=HttpRange.plan(416,50,10,-1,100000);
   check(rejected.reject&&!rejected.empty,"416 before the end is rejected");
+  JvmAndroid.call("com.guocheng.mediapocket.OfflineHttpTest","rangeOrder");
   System.out.println("PASS: in-app downloader follows redirects with source headers, player User-Agent default, Range resume with Content-Range total, keeps Referer across hosts, and strips credentials on cross-origin and https-to-http.");
+ }
+ /** 服务器忽略 Range 时，传输开始早于跳过字节的回调。SDK android.jar 没有方法体，所以放到能造出 Uri 和 Build 的加载器里跑。 */
+ public static void rangeOrder()throws Exception{
+  byte[] file=new byte[64];for(int i=0;i<file.length;i++)file[i]=(byte)i;
+  HttpServer ignore=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
+  ignore.setExecutor(Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"range");t.setDaemon(true);return t;}));
+  ignore.createContext("/v",x->{x.getResponseHeaders().add("Content-Type","video/mp4");x.sendResponseHeaders(200,file.length);x.getResponseBody().write(file);x.close();});
+  ignore.createContext("/short",x->{x.sendResponseHeaders(200,8);x.getResponseBody().write(new byte[8]);x.close();});
+  ignore.start();
+  try{String root="http://127.0.0.1:"+ignore.getAddress().getPort();
+   OrderListener order=new OrderListener();
+   ScopedHttpDataSource src=new ScopedHttpDataSource("MediaPocket/0.1.3",null);src.addTransferListener(order);
+   long opened=src.open(new DataSpec(android.net.Uri.parse(root+"/v"),10,4));
+   check(opened==4,"ignored range returns the requested length");
+   byte[] got=new byte[4];check(src.read(got,0,4)==4&&got[0]==10&&got[3]==13,"skipped to the requested position");
+   src.close();
+   int startAt=order.events.indexOf("start"),bytesAt=order.events.indexOf("bytes"),endAt=order.events.indexOf("end");
+   check(startAt>=0&&bytesAt>startAt&&endAt>bytesAt,"transfer starts before skipped bytes are reported: "+order.events);
+   check(order.sawSpec&&order.skipped>=10,"skipped bytes reported with a data spec");
+   OrderListener early=new OrderListener();
+   ScopedHttpDataSource bad=new ScopedHttpDataSource("MediaPocket/0.1.3",null);bad.addTransferListener(early);
+   boolean shortFile=false;try{bad.open(new DataSpec(android.net.Uri.parse(root+"/short"),50,4));}catch(HttpDataSource.HttpDataSourceException e){shortFile=e.getCause()!=null&&String.valueOf(e.getCause().getMessage()).contains("文件比请求的位置短");}
+   check(shortFile&&early.events.contains("start")&&(early.events.indexOf("bytes")<0||early.events.indexOf("bytes")>early.events.indexOf("start")),"short ignored range fails after the transfer has started");
+  }finally{ignore.stop(0);}
+ }
+ /** 复现 DefaultBandwidthMeter：onBytesTransferred 里立刻读 DataSpec 标志。开始之前调用会空指针。 */
+ static final class OrderListener implements TransferListener {
+  final List<String> events=new ArrayList<>();boolean sawSpec;int skipped;
+  public void onTransferInitializing(DataSource source,DataSpec dataSpec,boolean isNetwork){events.add("init");}
+  public void onTransferStart(DataSource source,DataSpec dataSpec,boolean isNetwork){events.add("start");dataSpec.isFlagSet(DataSpec.FLAG_MIGHT_NOT_USE_FULL_NETWORK_SPEED);}
+  public void onBytesTransferred(DataSource source,DataSpec dataSpec,boolean isNetwork,int bytes){events.add("bytes");dataSpec.isFlagSet(DataSpec.FLAG_MIGHT_NOT_USE_FULL_NETWORK_SPEED);sawSpec=true;skipped+=bytes;}
+  public void onTransferEnd(DataSource source,DataSpec dataSpec,boolean isNetwork){events.add("end");}
  }
 }
 
