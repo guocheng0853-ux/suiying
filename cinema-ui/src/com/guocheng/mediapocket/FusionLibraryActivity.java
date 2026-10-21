@@ -13,7 +13,9 @@ public final class FusionLibraryActivity extends Activity {
  TextView text(String label,int size){TextView t=new TextView(this);t.setText(label);t.setTextSize(size);t.setTextColor(ink());t.setIncludeFontPadding(false);t.setPadding(0,dp(8),0,dp(8));return t;}
  Button button(String label,Runnable action){CinemaButton b=new CinemaButton(this,light);b.setText(label);b.setBackground(rounded(card(),12));b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(card()));if(action!=null)b.setOnClickListener(v->action.run());return b;}
  void row(String label,Runnable action){Button b=button(label,action);b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(8);body.addView(b,p);}
- void screen(String label){epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);body.removeAllViews();status.setText(label);}
+ /** 0.1.112：离开详情页时收起右上角「收藏 / 下载」，服务器列表、媒体库等页面不显示。 */
+ void clearExtras(){try{LinearLayout header=(LinearLayout)root.getChildAt(0);for(int i=header.getChildCount()-1;i>=0;i--){Object tag=header.getChildAt(i).getTag();if("mp-fav".equals(tag)||"mp-dl".equals(tag))header.removeViewAt(i);}}catch(Exception ignored){}}
+ void screen(String label){clearExtras();epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);body.removeAllViews();status.setText(label);}
  void work(String label,Work task,Runnable retry){work(label,task,retry,WORK_LIMIT);}
  void work(String label,Work task,Runnable retry,int limit){int token=++epoch;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);status.setText(label);
   // 0.1.103：每个任务单独一条线程（原来单线程排队，前一个磁力解析卡住时后面的详情页永远轮不到，一直停在「正在读取…」）；

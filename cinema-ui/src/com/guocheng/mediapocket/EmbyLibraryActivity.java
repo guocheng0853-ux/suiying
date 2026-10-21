@@ -20,7 +20,9 @@ public final class EmbyLibraryActivity extends Activity {
  TextView text(String label,int size){TextView t=new TextView(this);t.setText(label);t.setTextSize(size);t.setTextColor(ink());t.setIncludeFontPadding(false);t.setPadding(0,dp(8),0,dp(8));return t;}
  Button button(String label,Runnable action){CinemaButton b=new CinemaButton(this,light);b.setText(label);b.setAllCaps(false);b.setBackground(rounded(card(),12));b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(card()));if(action!=null)b.setOnClickListener(v->action.run());return b;}
  void row(String label,Runnable action){Button b=button(label,action);b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(8);body.addView(b,p);}
- void screen(String label){epoch++;if(pending!=null)pending.cancel(true);body.removeAllViews();title.setText(label);status.setText("");}
+ /** 0.1.112：离开详情页时收起右上角「收藏 / 下载」，服务器列表、媒体库等页面不显示。 */
+ void clearExtras(){try{LinearLayout header=(LinearLayout)root.getChildAt(0);for(int i=header.getChildCount()-1;i>=0;i--){Object tag=header.getChildAt(i).getTag();if("mp-fav".equals(tag)||"mp-dl".equals(tag))header.removeViewAt(i);}}catch(Exception ignored){}}
+ void screen(String label){clearExtras();epoch++;if(pending!=null)pending.cancel(true);body.removeAllViews();title.setText(label);status.setText("");}
  void work(String label,Work task,Runnable retry){int token=++epoch;if(pending!=null)pending.cancel(true);status.setText(label);pending=io.submit(()->{try{Runnable done=task.run();runOnUiThread(()->{if(!dead&&token==epoch){status.setText("");done.run();}});}catch(Exception e){runOnUiThread(()->{if(dead||token!=epoch)return;status.setText(EmbyApi.explain(e));row("重试",retry);});}});}
  void push(Runnable destination,Runnable previous){back.push(previous);destination.run();}
  void servers(){screen("Emby 服务器");JSONArray all=EmbyStore.list(this);if(all.length()==0)body.addView(text("还没有服务器。填写地址和用户名，密码没有可留空。支持 http 或 https，端口可省略。",14));

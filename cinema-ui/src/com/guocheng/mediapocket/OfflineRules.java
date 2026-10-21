@@ -35,6 +35,24 @@ final class OfflineRules {
    case 2:return total>0?"下载中 "+percent(done,total)+" · "+size(done)+" / "+size(total):"下载中 · "+size(done);
    default:return "状态未知";}
  }
+ /** 0.1.112 自己下载时的进度行。status：queued / running / paused / done / failed。 */
+ static String state(String status,long done,long total,long speed,String error){
+  switch(status==null?"":status){
+   case "done":return "已下载 · "+size(total>0?total:done);
+   case "running":return (total>0?"下载中 "+percent(done,total)+" · "+size(done)+" / "+size(total):"下载中 · "+size(done))+(speed>0?" · "+size(speed)+"/s":"")+" · 点一下暂停";
+   case "paused":return "已暂停"+(total>0?" · "+percent(done,total):"")+" · 点一下继续";
+   case "failed":return "下载失败"+(error==null||error.isEmpty()?"":"（"+error+"）")+" · 点一下重试，长按删除";
+   case "queued":return "排队中…"+(done>0?" 已下 "+size(done):"");
+   default:return "状态未知";}
+ }
+ /** HTTP 状态码怎么处理：ok 正常 / refresh 链接可能过期，重新取地址 / retry 稍后重试 / fail 放弃。 */
+ static String classify(int code){if(code==200||code==206)return "ok";if(code==401||code==403||code==404||code==410)return "refresh";if(code==408||code==425||code==429||code>=500)return "retry";return "fail";}
+ /** 「bytes 100-199/1000」→ 1000；没有或是 * 返回 -1。 */
+ static long totalFromContentRange(String header){if(header==null)return -1;int slash=header.lastIndexOf('/');if(slash<0)return -1;try{return Long.parseLong(header.substring(slash+1).trim());}catch(Exception e){return -1;}}
+ /** 第 n 次重试前等多久：2、4、8、16、30、30 秒。 */
+ static long backoff(int attempt){return Math.min(30000L,2000L<<Math.max(0,Math.min(attempt,10)));}
+ /** 开头就拿到网页（登录页、验证页、错误页）说明不是视频。 */
+ static boolean looksLikePage(String contentType,long done){if(done>0||contentType==null)return false;String t=contentType.toLowerCase(Locale.ROOT);return t.startsWith("text/html")||t.startsWith("application/json")||t.startsWith("text/plain");}
  static String percent(long done,long total){if(total<=0)return "";return Math.min(100,Math.round(done*100.0/total))+"%";}
  static String failReason(int r){if(r>=400&&r<600)return "HTTP "+r;switch(r){case 1006:return "存储空间不足";case 1007:return "找不到存储";case 1001:return "文件错误";case 1004:return "网络数据错误";case 1005:return "重定向过多";case 1002:return "服务器返回异常";default:return "错误 "+r;}}
  static String pauseReason(int r){switch(r){case 1:return "等待重试";case 2:return "等待网络";case 3:return "等待 Wi-Fi";default:return "已暂停";}}

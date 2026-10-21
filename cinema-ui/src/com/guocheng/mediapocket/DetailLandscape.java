@@ -13,9 +13,13 @@ final class DetailLandscape {
  /** 根布局不再带左右内边距（否则通栏背景会被 ScrollView 裁成两边留缝）；左右边距改给页头、状态行和正文，并加上挖孔 / 导航栏的安全区。 */
  static void window(Activity a,LinearLayout root,View header,View status,LinearLayout body){
   FullscreenMode.immersive(a);
+  // 0.1.112：内容铺满整个窗口（含挖孔和状态栏下方），四边安全区自己留；窗口底色与页面同色，任何没盖到的缝都看不出来
+  int bg=root.getBackground() instanceof android.graphics.drawable.ColorDrawable?((android.graphics.drawable.ColorDrawable)root.getBackground()).getColor():0xff10343e;
+  a.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(bg));
+  if(Build.VERSION.SDK_INT>=30)a.getWindow().setDecorFitsSystemWindows(false);else{View decor=a.getWindow().getDecorView();decor.setSystemUiVisibility(decor.getSystemUiVisibility()|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
   int top=root.getPaddingTop();root.setPadding(0,top,0,0);
   apply(a,header,status,body,0,0);
-  root.setOnApplyWindowInsetsListener((v,insets)->{int l=insets.getSystemWindowInsetLeft(),r=insets.getSystemWindowInsetRight();
+  root.setOnApplyWindowInsetsListener((v,insets)->{root.setPadding(0,top+insets.getSystemWindowInsetTop(),0,insets.getSystemWindowInsetBottom());int l=insets.getSystemWindowInsetLeft(),r=insets.getSystemWindowInsetRight();
    if(Build.VERSION.SDK_INT>=28&&insets.getDisplayCutout()!=null){l=Math.max(l,insets.getDisplayCutout().getSafeInsetLeft());r=Math.max(r,insets.getDisplayCutout().getSafeInsetRight());}
    apply(a,header,status,body,l,r);return insets;});
  }
