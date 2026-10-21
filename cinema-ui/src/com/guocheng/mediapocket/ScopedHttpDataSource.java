@@ -37,6 +37,7 @@ final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSourc
     // 错误码 2008，Exo 不重试；倒计时过了再重试就会把整段下下来。
     if(HttpRange.rejectSeek(spec.position,plan.skip)){InputStream openedIn=input;HttpURLConnection openedConn=connection;input=null;connection=null;try{if(openedIn!=null)openedIn.close();}catch(IOException ignored){}if(openedConn!=null)openedConn.disconnect();if(opened){opened=false;transferEnded();}throw new HttpDataSource.HttpDataSourceException(HttpRange.SKIP_MESSAGE,spec,HttpRange.SKIP_ERROR,HttpDataSource.HttpDataSourceException.TYPE_OPEN);}
     if(plan.skip>0)skipFully(input,plan.skip);
+    HttpRange.openedSeek(spec.position,plan.skip);
     remaining=plan.read;return remaining>=0?remaining:C.LENGTH_UNSET;}
    throw new IOException("重定向次数过多");
   }catch(HttpDataSourceException e){throw e;}catch(IOException e){if(c!=null)c.disconnect();if(connection!=null||input!=null||opened)try{close();}catch(HttpDataSourceException ignored){}throw HttpDataSourceException.createForIOException(e,spec,HttpDataSourceException.TYPE_OPEN);}

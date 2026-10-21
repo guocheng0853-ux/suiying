@@ -39,6 +39,7 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
    @Override public void onCues(androidx.media3.common.text.CueGroup group){if(subtitleView!=null){StringBuilder text=new StringBuilder();for(androidx.media3.common.text.Cue cue:group.cues)if(cue.text!=null){if(text.length()>0)text.append("\n");text.append(cue.text);}subtitleView.setText(text.toString());}}
    @Override public void onRenderedFirstFrame(){DebugLog.event("杜比内置","首帧已显示");if(info!=null)info.call(Media3VideoView.this,3,0);}
    @Override public void onPlaybackStateChanged(int state){if(state==Player.STATE_READY)HttpRange.landedSeek(player==null?0:player.getCurrentPosition());if(state==Player.STATE_BUFFERING&&info!=null)info.call(Media3VideoView.this,701,0);if(state==Player.STATE_READY){if(info!=null)info.call(Media3VideoView.this,702,0);if(!notified){notified=true;if(prepared!=null)prepared.call(Media3VideoView.this);}}if(state==Player.STATE_ENDED&&complete!=null)complete.call(Media3VideoView.this);}
+   @Override public void onPositionDiscontinuity(Player.PositionInfo oldPosition,Player.PositionInfo newPosition,int reason){boolean ready=player!=null&&player.getPlaybackState()==Player.STATE_READY;HttpRange.discontinuitySeek(reason,newPosition==null?0:newPosition.positionMs,ready);}
    @Override public void onPlayerError(PlaybackException e){HttpRange.disarmSeek();failure=e.getErrorCodeName();httpStatus=0;Throwable cause=e;for(int depth=0;cause!=null&&depth<12;depth++,cause=cause.getCause()){if(cause instanceof HttpDataSource.InvalidResponseCodeException)httpStatus=((HttpDataSource.InvalidResponseCodeException)cause).responseCode;if(HttpRange.SKIP_MESSAGE.equals(cause.getMessage()))failure=HttpRange.SKIP_MESSAGE;}DebugLog.event("杜比内置","播放错误 · "+failure+" · HTTP="+httpStatus);if(error!=null)error.call(Media3VideoView.this,e.errorCode,httpStatus);}
   });
   DebugLog.event("杜比内置","Media3 1.8.0 · P5约束="+strictP5+" · 系统P5解码声明="+supportsP5());
@@ -60,7 +61,7 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
  public int getCurrentPosition(){return player==null?0:(int)Math.min(Integer.MAX_VALUE,player.getCurrentPosition());}
  public void seekTo(int pos){seekTo(pos,false);}
  /** fromUser 为真时，这次拖动认领的字节请求才受 64 MB 上限约束，直到落到目标或播放失败。续播走 seekTo(int)。 */
- public void seekTo(int pos,boolean fromUser){int at=Math.max(0,pos);if(fromUser)HttpRange.armSeek(at);if(player!=null)player.seekTo(at);}
+ public void seekTo(int pos,boolean fromUser){int at=Math.max(0,pos);if(fromUser){HttpRange.armSeek(at);postDelayed(HttpRange::expireSeek,HttpRange.SeekCap.TIMEOUT_MS);}if(player!=null)player.seekTo(at);}
  public boolean isPlaying(){return player!=null&&player.isPlaying();}
  public int getBufferPercentage(){return player==null?0:player.getBufferedPercentage();}public boolean canPause(){return true;}public boolean canSeekBackward(){return true;}public boolean canSeekForward(){return true;}public int getAudioSessionId(){return player==null?0:player.getAudioSessionId();}
  void stopPlayback(){HttpRange.disarmSeek();if(player!=null){player.release();player=null;}}

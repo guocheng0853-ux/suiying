@@ -13,7 +13,9 @@ final class JellyfinTrickplay {
  void frame(Context c,int ms,Consumer<Bitmap> done){final Context app=c.getApplicationContext();synchronized(this){wantedMs=ms;sink=done;if(busy)return;busy=true;}PreviewFetch.IO.execute(()->pump(app));}
  void pump(Context app){try{while(true){int ms;Consumer<Bitmap> cb;synchronized(this){ms=wantedMs;cb=sink;}if(ms==Integer.MIN_VALUE){synchronized(this){busy=false;}return;}int[] at=TrickplayRules.locate(info,ms);Tile tile=obtain(app,at[0],ms);synchronized(this){if(wantedMs!=ms)continue;}Bitmap bm=tile==null?null:tile.crop(info,at[1],at[2]);synchronized(this){if(wantedMs!=ms){if(bm!=null)bm.recycle();continue;}busy=false;}Bitmap ready=bm;MAIN.post(()->{if(cb!=null)cb.accept(ready);});return;}}catch(Exception ignored){synchronized(this){busy=false;}}}
  Tile obtain(Context c,int index,int ms){synchronized(sheets){Tile have=sheets.get(index);if(have!=null)return have;}if(wantedMs!=ms)return null;try{JSONObject server=EmbyStore.get(c,serverId);if(server==null||wantedMs!=ms)return null;byte[] b=EmbyClient.bytes(c,server,TrickplayRules.path(item,media,info,index));if(b==null||b.length==0||wantedMs!=ms)return null;Tile tile=new Tile(b);synchronized(sheets){sheets.put(index,tile);return sheets.get(index)==null?tile:sheets.get(index);}}catch(Exception e){return null;}}
- void close(){synchronized(this){wantedMs=Integer.MIN_VALUE;sink=null;}synchronized(sheets){for(Tile t:sheets.values())t.close();sheets.clear();}}
+ /** 主线程只作废这一次请求。回收解码器改到预览线程，避免和正在裁剪的那一格抢同一把锁。 */
+ void close(){synchronized(this){wantedMs=Integer.MIN_VALUE;sink=null;}PreviewFetch.IO.execute(this::releaseSheets);}
+ void releaseSheets(){synchronized(sheets){for(Tile t:sheets.values())t.close();sheets.clear();}}
  static final class Tile {
   final byte[] jpeg;BitmapRegionDecoder dec;
   Tile(byte[] jpeg){this.jpeg=jpeg;}

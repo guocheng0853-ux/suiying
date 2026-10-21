@@ -20,7 +20,7 @@
   "dolby_android_device_tested": false,
   "jvm_test_programs_passed": 85,
   "apk_class_resolution": "passed",
-  "unique_classes": 9180,
+  "unique_classes": 9182,
   "dex_files": 3,
   "main_version_code": 131,
   "application_id": "com.guocheng.mediapocket.next",
