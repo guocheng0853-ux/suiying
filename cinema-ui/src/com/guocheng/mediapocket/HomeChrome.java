@@ -161,5 +161,7 @@ final class HomeChrome {
   backdrop.setImageDrawable(null);
   String bg=HomeHeroRules.backdropOf(m);
   if(!bg.isEmpty())TvPosterImages.load(a,backdrop,bg,a.getResources().getDisplayMetrics().widthPixels);
+  // 横屏：片名和简介靠左，叠一道从左往右的压暗；每张海报（包括滑动中的前后页）都带，换页时不会闪
+  if(a.wide()){View side=new View(a);side.setTag("mp-hero-extra");side.setBackground(new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0x99000000,0x55000000,0x14000000,0}));slide.addView(side,1,new FrameLayout.LayoutParams(-1,-1));}
  }
 }
