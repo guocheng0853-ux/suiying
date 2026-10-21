@@ -24,7 +24,7 @@ final class PlayerMedia {
   session.setSessionActivity(PendingIntent.getActivity(a,NOTE_ID,open,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE));
   session.setActive(true);
   receiver=new BroadcastReceiver(){@Override public void onReceive(Context c,Intent i){if(!ACTION.equals(i.getAction()))return;String cmd=i.getStringExtra("cmd");if("toggle".equals(cmd))toggle(a);else if("next".equals(cmd))neighbor(a,1);else if("prev".equals(cmd))neighbor(a,-1);else if("close".equals(cmd))a.finish();}};
-  IntentFilter f=new IntentFilter(ACTION);if(Build.VERSION.SDK_INT>=33)a.registerReceiver(receiver,f,4);else a.registerReceiver(receiver,f);}
+  IntentFilter f=new IntentFilter(ACTION);String perm=a.getPackageName()+".MEDIA_CONTROL";if(Build.VERSION.SDK_INT>=33)a.registerReceiver(receiver,f,perm,null,4);else a.registerReceiver(receiver,f,perm,null);}
 
  static void setPlaying(Activity a,boolean play){if(a instanceof SystemPlayerActivity){SystemPlayerActivity n=(SystemPlayerActivity)a;n.resumeAfterPause=false;if(play)n.video.start();else n.video.pause();}else if(EmbyPlayback.playing(a)!=play)PlayerOverlay.pause(a);}
  static void toggle(Activity a){if(a instanceof SystemPlayerActivity){SystemPlayerActivity n=(SystemPlayerActivity)a;n.resumeAfterPause=false;if(n.video.wantsPlayback())n.video.pause();else n.video.start();}else PlayerOverlay.pause(a);}

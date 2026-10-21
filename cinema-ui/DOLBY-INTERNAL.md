@@ -8,7 +8,7 @@ Emby 的 dolby.kind 随 stream 传入。确认 Profile 5 时拒绝普通 HEVC fa
 
 ## 依赖与构建
 
-build_fusion_runtime.py 先运行 fetch_media3.py，按 media3-dependencies.json 的固定上游 URL 和 SHA256 下载并提取依赖。下载文件不提交 Git。9 个依赖包含 Media3 的 common/container/datasource/decoder/extractor/database/exoplayer/hls 和 ExifInterface。它们采用 Apache-2.0；上游项目：https://github.com/androidx/media ，https://android.googlesource.com/platform/frameworks/support/ 。
+build_fusion_runtime.py 先运行 fetch_media3.py，按 media3-dependencies.json 的固定上游 URL 和 SHA256 核对依赖。9 个原始 classes.jar（Media3 的 common/container/datasource/decoder/extractor/database/exoplayer/hls，以及 ExifInterface）已随 cinema-ui/runtime-libs 提交，总计 3,594,046 字节。`.gitignore` 不再忽略这些 jar。`python3 cinema-ui/fetch_media3.py --download` 只在本地缺失或损坏时修复。本节早先「下载文件不提交 Git」的说法已由 0.1.118 起的入库方式代替。它们采用 Apache-2.0；上游项目：https://github.com/androidx/media ，https://android.googlesource.com/platform/frameworks/support/ 。
 
 构建时排除未使用的 DownloadNotificationHelper（唯一引用 AAR 字符串资源的类），不修改稳定 APK 的资源表；随影离线下载不使用这个类。应用现有依赖和底座提供 core、collection、Guava 等类。
 

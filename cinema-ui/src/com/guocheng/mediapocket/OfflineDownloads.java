@@ -12,6 +12,13 @@ final class OfflineDownloads {
  static SharedPreferences prefs(Context c){return c.getSharedPreferences("data",0);}
  static JSONArray list(Context c){try{return new JSONArray(prefs(c).getString(KEY,"[]"));}catch(Exception e){return new JSONArray();}}
  static synchronized void save(Context c,JSONArray a){prefs(c).edit().putString(KEY,a.toString()).apply();}
+ static final java.util.concurrent.ConcurrentHashMap<String,long[]> LIVE=new java.util.concurrent.ConcurrentHashMap<>();
+ static final java.util.concurrent.ConcurrentHashMap<String,Long> FLUSHED=new java.util.concurrent.ConcurrentHashMap<>();
+ static SharedPreferences progressPrefs(Context c){return c.getSharedPreferences("offline.progress",0);}
+ /** 进度只留在内存里，大约 5 秒才写入独立的 offline.progress，避免每秒重写主设置。 */
+ static void progress(Context c,String id,long done,long total,long speed){LIVE.put(id,new long[]{done,total,speed});long now=android.os.SystemClock.elapsedRealtime();Long last=FLUSHED.get(id);if(!OfflineProgress.due(last==null?-1L:last,now))return;FLUSHED.put(id,now);progressPrefs(c).edit().putString(id,done+"|"+total+"|"+speed).apply();}
+ static long[] live(Context c,String id){long[] m=LIVE.get(id);if(m!=null)return m;String s=progressPrefs(c).getString(id,null);if(s==null)return null;String[] p=s.split("\\|");try{return new long[]{Long.parseLong(p[0]),p.length>1?Long.parseLong(p[1]):-1L,p.length>2?Long.parseLong(p[2]):0L};}catch(Exception e){return null;}}
+ static void forgetProgress(Context c,String id){if(id==null)return;LIVE.remove(id);FLUSHED.remove(id);progressPrefs(c).edit().remove(id).apply();}
 
  /** Emby：取直接串流地址（服务器原文件）。只能转码播放的片源不下载。 */
  static void emby(Activity a,JSONObject server,String itemId,String name,JSONObject meta){
@@ -50,7 +57,7 @@ final class OfflineDownloads {
    long now=System.currentTimeMillis();File dir=a.getExternalFilesDir(Environment.DIRECTORY_MOVIES);if(dir==null)dir=new File(a.getFilesDir(),"offline");if(!dir.exists())dir.mkdirs();File dest=new File(dir,OfflineRules.fileName(now,ext));
    JSONObject rec=new JSONObject().put("id",String.valueOf(now)).put("name",name).put("watch",watch).put("file",dest.getAbsolutePath()).put("created",now).put("meta",meta).put("url",url).put("headers",headers==null?new JSONObject():headers).put("src",src).put("status","queued").put("done",0).put("total",-1);
    synchronized(OfflineDownloads.class){JSONArray all=list(a);JSONArray next=new JSONArray().put(rec);for(int i=0;i<all.length();i++)next.put(all.opt(i));save(a,next);}
-   FollowUp.askNotify(a);OfflineService.start(a);Toast.makeText(a,"已开始下载，可在通知栏或「我的 → 离线下载」查看",Toast.LENGTH_LONG).show();
+   FollowUp.askDownloadNotify(a);OfflineService.start(a);Toast.makeText(a,"已开始下载，可在通知栏或「我的 → 离线下载」查看",Toast.LENGTH_LONG).show();
   }catch(Exception e){Toast.makeText(a,"下载失败："+(e.getMessage()==null?e.getClass().getSimpleName():e.getMessage()),Toast.LENGTH_LONG).show();}
  }
  static String key(JSONObject rec){return rec.has("id")?rec.optString("id"):"dm:"+rec.optLong("dm");}
@@ -59,6 +66,8 @@ final class OfflineDownloads {
  static synchronized boolean update(Context c,String id,JSONObject fields){try{JSONArray all=list(c);boolean hit=false;for(int i=0;i<all.length();i++){JSONObject o=all.optJSONObject(i);if(o==null||!key(o).equals(id))continue;for(Iterator<String> it=fields.keys();it.hasNext();){String k=it.next();o.put(k,fields.get(k));}hit=true;}if(hit)save(c,all);return hit;}catch(Exception e){return false;}}
  /** 下一个排队的下载。 */
  static synchronized JSONObject nextQueued(Context c){JSONArray all=list(c);for(int i=all.length()-1;i>=0;i--){JSONObject o=all.optJSONObject(i);if(o!=null&&"queued".equals(o.optString("status")))return o;}return null;}
+ /** 进程重启后，上次停在「下载中」的记录改回排队。调用时没有正在进行的下载。 */
+ static synchronized void reclaimRunning(Context c){try{JSONArray all=list(c);boolean changed=false;for(int i=0;i<all.length();i++){JSONObject o=all.optJSONObject(i);if(o!=null&&"running".equals(o.optString("status"))){o.put("status","queued");changed=true;}}if(changed)save(c,all);}catch(Exception ignored){}}
  /** App 被杀时停在「下载中」的记录改回排队；有排队的就启动下载服务。 */
  static void resumeStale(Context c){boolean any=false;synchronized(OfflineDownloads.class){JSONArray all=list(c);for(int i=0;i<all.length();i++){JSONObject o=all.optJSONObject(i);if(o==null)continue;String st=o.optString("status");if("running".equals(st)&&!OfflineService.running){try{o.put("status","queued");}catch(Exception ignored){}st="queued";}if("queued".equals(st))any=true;}save(c,all);}if(any)OfflineService.start(c);}
  static void pause(Context c,JSONObject rec){try{update(c,key(rec),new JSONObject().put("status","paused"));}catch(Exception ignored){}}
@@ -67,12 +76,12 @@ final class OfflineDownloads {
  /** 进度行和能否播放。旧版（系统下载管理器）的记录照旧查询。 */
  static Object[] describe(Context c,JSONObject rec){
   if(!rec.has("status")){long[] st=legacyStatus(c,rec);return new Object[]{OfflineRules.line((int)st[0],st[1],st[2],(int)st[3]),st[0]==8};}
-  String st=rec.optString("status");long done=rec.optLong("done"),total=rec.optLong("total");File f=new File(rec.optString("file"));if(f.isFile())done=Math.max(done,"done".equals(st)?f.length():Math.min(f.length(),total>0?total:Long.MAX_VALUE));
-  return new Object[]{OfflineRules.state(st,done,total,rec.optLong("speed"),rec.optString("error")),"done".equals(st)&&f.isFile()};}
+  String st=rec.optString("status");long done=rec.optLong("done"),total=rec.optLong("total"),speed=rec.optLong("speed");if(!"done".equals(st)){long[] live=live(c,key(rec));if(live!=null){done=live[0];if(live[1]>0)total=live[1];speed=live[2];}}File f=new File(rec.optString("file"));if(f.isFile())done=Math.max(done,"done".equals(st)?f.length():Math.min(f.length(),total>0?total:Long.MAX_VALUE));
+  return new Object[]{OfflineRules.state(st,done,total,speed,rec.optString("error")),"done".equals(st)&&f.isFile()};}
  static long[] legacyStatus(Context c,JSONObject rec){long[] out={0,0,0,0};try{DownloadManager dm=(DownloadManager)c.getSystemService(Context.DOWNLOAD_SERVICE);try(Cursor cur=dm.query(new DownloadManager.Query().setFilterById(rec.optLong("dm")))){if(cur!=null&&cur.moveToFirst()){out[0]=cur.getInt(cur.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));out[1]=cur.getLong(cur.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));out[2]=cur.getLong(cur.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));out[3]=cur.getInt(cur.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));return out;}}}catch(Exception ignored){}
   File f=new File(rec.optString("file"));if(f.isFile()&&f.length()>0){out[0]=8;out[1]=out[2]=f.length();}else out[0]=16;return out;}
  static void remove(Context c,JSONObject rec){if(rec.has("dm"))try{DownloadManager dm=(DownloadManager)c.getSystemService(Context.DOWNLOAD_SERVICE);dm.remove(rec.optLong("dm"));}catch(Exception ignored){}
-  String id=key(rec);synchronized(OfflineDownloads.class){JSONArray all=list(c),next=new JSONArray();for(int i=0;i<all.length();i++){JSONObject o=all.optJSONObject(i);if(o!=null&&!key(o).equals(id))next.put(o);}save(c,next);}
+  String id=key(rec);synchronized(OfflineDownloads.class){JSONArray all=list(c),next=new JSONArray();for(int i=0;i<all.length();i++){JSONObject o=all.optJSONObject(i);if(o!=null&&!key(o).equals(id))next.put(o);}save(c,next);}forgetProgress(c,id);
   try{File f=new File(rec.optString("file"));if(f.exists())f.delete();}catch(Exception ignored){}}
  /** 用原来的播放器打开本机文件；观看进度和在线播放共用同一个编号。 */
  static void play(Activity a,JSONObject rec){try{File f=new File(rec.optString("file"));if(!f.isFile()){Toast.makeText(a,"文件不在了，可能已被系统清理",Toast.LENGTH_LONG).show();return;}

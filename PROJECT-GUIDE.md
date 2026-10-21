@@ -1,6 +1,6 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前main = 0.1.103（code 104）；正在`fix/detail-timeout-0103`上验证0.1.109（code 110，基于0.1.108）。先读本说明，再读`HANDOFF-CODEX-DEVICE.md`、`DEVICE-VALIDATION.md`及`cinema-ui/README.md`，不要把构建或合并当作完整真机验证通过。
+> 当前版本 0.1.120（versionCode 121）。先读本说明，再读 `cinema-ui/README.md` 顶部更新记录、`HANDOFF-CODEX-DEVICE.md` 和 `DEVICE-VALIDATION.md`。不要把构建或合并当作完整真机验证通过。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 1. 这是什么
@@ -31,7 +31,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（纯逻辑类，`*Rules` 一类不依赖 Android）。`scripts/run_tests.sh` 全跑，当前 66 个 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 75 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |

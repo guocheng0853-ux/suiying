@@ -9,12 +9,12 @@ final class EmbyHome {
   * 刷新时第一个请求单独发（令牌过期会在这里重新登录），其余请求和各库「最新」并行，不再一个接一个等。
   */
  static void show(ScrapedMainActivity a){final int ticket=a.epoch;JSONObject server=selected(a);LinearLayout target=section(a);if(server==null){target.addView(a.heading("Emby"));target.addView(a.text("还没有 Emby 服务器，请到设置里添加",13,a.muted()));target.addView(a.button("添加 Emby 服务器",()->EmbyLibraryActivity.manage(a)));return;}
-  final JSONObject cached=readCache(a,server);
-  if(cached!=null)render(a,server,target,cached);else target.addView(a.text("正在读取 "+EmbyStore.label(server)+" …",12,a.muted()));
+  target.addView(a.text("正在读取 "+EmbyStore.label(server)+" …",12,a.muted()));
   final boolean[] done={false};final long started=System.currentTimeMillis();
-  IO.execute(()->{try{JSONObject data=fetch(a,server,cached!=null?null:partial->a.runOnUiThread(()->{if(done[0]||ticket!=a.epoch||a.isFinishing())return;render(a,server,target,partial);target.addView(a.text("正在读取更多分区…",12,a.muted()));}));done[0]=true;writeCache(a,server,data);DebugLog.event("Emby 首页","读取用时 "+(System.currentTimeMillis()-started)/100/10.0+" 秒"+(cached!=null?"（先显示了缓存）":""));
+  IO.execute(()->{final JSONObject cached=readCache(a,server);if(cached!=null)a.runOnUiThread(()->{if(done[0]||ticket!=a.epoch||a.isFinishing())return;render(a,server,target,cached);});
+   try{JSONObject data=fetch(a,server,cached!=null?null:partial->a.runOnUiThread(()->{if(done[0]||ticket!=a.epoch||a.isFinishing())return;render(a,server,target,partial);target.addView(a.text("正在读取更多分区…",12,a.muted()));}));done[0]=true;writeCache(a,server,data);DebugLog.event("Emby 首页","读取用时 "+(System.currentTimeMillis()-started)/100/10.0+" 秒"+(cached!=null?"（先显示了缓存）":""));
     a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing())return;if(cached!=null&&cached.toString().equals(data.toString()))return;render(a,server,target,data);});
-   }catch(Exception e){done[0]=true;DebugLog.event("Emby 首页","读取失败 · "+EmbyApi.explain(e));if(cached!=null)return;a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing())return;target.removeAllViews();target.addView(a.heading("Emby"));target.addView(a.text(EmbyApi.explain(e),13,a.muted()));target.addView(a.button("重试",()->a.home()));});}});}
+   }catch(Exception e){done[0]=true;DebugLog.event("Emby 首页","读取失败 · "+EmbyApi.explain(e));a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing())return;if(cached!=null){boolean hinted=false;for(int i=0;i<target.getChildCount();i++)if("emby-offline".equals(String.valueOf(target.getChildAt(i).getTag())))hinted=true;if(target.getChildCount()<=1)render(a,server,target,cached);if(!hinted){TextView tag=a.text("离线数据 · 刷新失败，显示的是上次保存的内容",12,a.muted());tag.setTag("emby-offline");target.addView(tag,0);}return;}target.removeAllViews();target.addView(a.heading("Emby"));target.addView(a.text(EmbyApi.explain(e),13,a.muted()));target.addView(a.button("重试",()->a.home()));});}});}
 
  static final ExecutorService FETCH=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"emby-home-fetch");t.setDaemon(true);return t;});
  /** 拉一次首页需要的全部数据，结果是可直接缓存的 JSON：resume / next / heroes / order / libs / latest。 */

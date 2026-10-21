@@ -14,7 +14,7 @@ final class EmbyPlayback {
  /** 按新的 MaxStreamingBitrate 重新向 Emby 要一次播放地址。 */
  static void replayBitrate(Activity a,long bitrate){pendingBitrate=bitrate;replay(a,-1,-1);}
  static void playItem(Activity a,JSONObject server,String itemId,String mediaSourceId,boolean replace){
-  if(a==null||a.isFinishing()||server==null||itemId==null||itemId.isEmpty())return;CinemaWait wait=CinemaWait.show(a,"正在准备播放","正在向 Emby 请求播放信息…",true,true);final boolean[] cancel={false};wait.setOnCancelListener(d->{cancel[0]=true;handoffDone(a);});
+  if(a==null||a.isFinishing()||server==null||itemId==null||itemId.isEmpty()){handoffDone(a);return;}CinemaWait wait=CinemaWait.show(a,"正在准备播放","正在向 Emby 请求播放信息…",true,true);final boolean[] cancel={false};wait.setOnCancelListener(d->{cancel[0]=true;handoffDone(a);});
   final boolean episodeHandoff=SWITCHING.containsKey(a)||(a instanceof SystemPlayerActivity&&((SystemPlayerActivity)a).changing&&!TrackSelection.stream(a).optString("emby.item").equals(itemId));
   final int audio=pendingAudio,sub=pendingSub,keep=EmbyResumeRules.keep(replace,TrackSelection.stream(a).optString("emby.item"),itemId,position(a));final long bitrate=pendingBitrate;pendingAudio=-1;pendingSub=-1;pendingBitrate=-1;
   IO.execute(()->{try{
@@ -43,7 +43,7 @@ final class EmbyPlayback {
     // 0.1.111：杜比视界 P5 在 VLC 里会发紫发绿，按设置改用系统解码 / 服务器转码，或询问
     if(DolbyRules.risky(dolby))DolbyChoice.decide(a,dolby,stream.optString("url"),()->{if(ExternalVideo.open(a,stream.optString("url"),meta.optString("name"),pos,ExternalVideo.headers(stream))){if(replace)a.finish();}else vlc.accept(false);},()->{Intent back=new Intent(a,PlayerActivity.class);back.putExtra("stream",stream.toString());back.putExtra("sources",all.toString());back.putExtra("id",watch);back.putExtra("type",meta.optString("type","movie"));back.putExtra("meta",meta.toString());back.putExtra("addons",a.getSharedPreferences("data",0).getString("addons","[]"));SystemPlayerActivity.open(a,stream,watch,meta.optString("name"),pos,back);if(replace)a.finish();},()->vlc.accept(true),()->vlc.accept(false));else vlc.accept(false);});
   }catch(Exception e){a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();handoffDone(a);if(!a.isFinishing())Toast.makeText(a,EmbyApi.explain(e),Toast.LENGTH_LONG).show();});}});}
- static void handoffDone(Activity a){SWITCHING.remove(a);if(a instanceof SystemPlayerActivity)((SystemPlayerActivity)a).changing=false;}
+ static void handoffDone(Activity a){if(a==null)return;SWITCHING.remove(a);if(a instanceof SystemPlayerActivity)((SystemPlayerActivity)a).changing=false;}
  static void pickVersion(Activity a,JSONObject server,String itemId,JSONArray versions,boolean replace){String[] labels=new String[versions.length()];for(int i=0;i<versions.length();i++)labels[i]=versions.optJSONObject(i).optString("name","版本");new CinemaDialog(a).setTitle("选择版本").setItems(labels,(d,i)->{JSONObject v=versions.optJSONObject(i);if(v!=null)playItem(a,server,itemId,v.optString("id"),replace);}).setNegativeButton("取消",null).show();}
  /** True means the Emby request was handled, including failures that keep the old page. */
  static boolean switchEpisode(Activity a,String id){if(!EmbyApi.isEmbyId(id))return false;if(a instanceof SystemPlayerActivity){((SystemPlayerActivity)a).playEpisode(id);return true;}if(SWITCHING.containsKey(a))return true;JSONObject server=EmbyStore.get(a,EmbyApi.serverOf(id));if(server==null){Toast.makeText(a,"找不到这一集的 Emby 服务器，当前播放未关闭",Toast.LENGTH_LONG).show();return true;}SWITCHING.put(a,true);playItem(a,server,EmbyApi.itemOf(id),"",true);return true;}

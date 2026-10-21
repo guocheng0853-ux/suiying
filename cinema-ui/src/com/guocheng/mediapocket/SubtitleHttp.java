@@ -5,7 +5,7 @@ import java.net.*;import java.io.*;import java.util.*;
  * Cookie / Authorization 只发往声明它们的主机（默认即字幕条目地址的主机）；跨主机重定向时会被去掉。
  */
 final class SubtitleHttp {
- static int effectivePort(URL u){return u.getPort()<0?u.getDefaultPort():u.getPort();}
+ static int effectivePort(URL u){return RequestHeaders.port(u);}
  static boolean credential(String n){return n.equalsIgnoreCase("Cookie")||n.equalsIgnoreCase("Authorization");}
  static byte[] download(String raw,Map<String,String> extra)throws Exception{return download(raw,extra,null);}
  static byte[] download(String raw,Map<String,String> extra,String credentialHost)throws Exception{

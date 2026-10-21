@@ -12,6 +12,7 @@ public class OfflineDownloadRulesTest {
   check(OfflineRules.state("running",50,200,1024,"").startsWith("下载中 25%")&&OfflineRules.state("running",50,200,1024,"").contains("1 KB/s"),"running line");
   check(OfflineRules.state("failed",0,0,0,"HTTP 403，重新获取地址后仍被拒绝").contains("HTTP 403")&&OfflineRules.state("failed",0,0,0,"").contains("点一下重试"),"failed line");
   check(OfflineRules.state("paused",10,100,0,"").contains("10%")&&OfflineRules.state("done",0,2048,0,"").startsWith("已下载 · 2 KB")&&OfflineRules.state("queued",0,-1,0,"").startsWith("排队"),"other lines");
-  System.out.println("PASS: in-app download status classification, Content-Range total, retry backoff, error-page detection and progress lines.");
+  check(!OfflineProgress.due(1000,5999)&&OfflineProgress.due(1000,6000)&&OfflineProgress.due(-1,0)&&OfflineProgress.FLUSH_MS==5000,"progress flush about every 5 seconds");
+  System.out.println("PASS: in-app download status classification, Content-Range total, retry backoff, error-page detection, progress lines and flush throttle.");
  }
 }

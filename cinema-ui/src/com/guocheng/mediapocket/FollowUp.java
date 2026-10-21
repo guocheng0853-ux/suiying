@@ -22,7 +22,7 @@ final class FollowUp {
     Toast.makeText(a,on?(FollowRules.trackable(entry)&&enabled(a)?"已收藏，有新的剧集会提醒你":"已收藏"):"已取消收藏",Toast.LENGTH_SHORT).show();if(on)askNotify(a);}catch(Exception e){Toast.makeText(a,"收藏失败",Toast.LENGTH_SHORT).show();}});
   return t;}
  /** 详情页打开时调用：集数记为已看过，并收起「有更新」标记和通知。 */
- static void opened(Context c,String id,int count){if(id==null||id.isEmpty())return;try{JSONObject s=state(c);if(!s.has(id)&&!FollowRules.contains(favorites(c),id))return;FollowRules.seen(s,id,count);saveState(c,s);}catch(Exception ignored){}}
+ static void opened(Context c,String id,int count){if(id==null||id.isEmpty())return;synchronized(FollowUp.class){try{JSONObject s=state(c);if(!s.has(id)&&!FollowRules.contains(favorites(c),id))return;FollowRules.seen(s,id,count);saveState(c,s);}catch(Exception ignored){}}}
 
  /** Emby 剧集详情：只对已收藏 / 已在追的剧在后台数一次集数。 */
  static void openedEmby(Context c,JSONObject server,String seriesId,String id){if(!state(c).has(id)&&!FollowRules.contains(favorites(c),id))return;Context app=c.getApplicationContext();IO.execute(()->{try{int n=EmbyClient.episodesAll(app,server,seriesId,"").length();synchronized(FollowUp.class){opened(app,id,n);}}catch(Exception ignored){}});}
@@ -55,7 +55,9 @@ final class FollowUp {
   Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(c,CHANNEL):new Notification.Builder(c);
   b.setSmallIcon(android.R.drawable.stat_notify_sync_noanim).setContentTitle(text[0]).setContentText(text[1]).setStyle(new Notification.BigTextStyle().bigText(text[1])).setContentIntent(pi).setAutoCancel(true);
   nm.notify(NOTE_ID,b.build());}catch(Exception ignored){}}
- /** Android 13 起发通知要用户同意；第一次收藏或打开提醒时问一次。 */
- static void askNotify(Activity a){try{if(Build.VERSION.SDK_INT<33)return;if(a.checkSelfPermission("android.permission.POST_NOTIFICATIONS")==android.content.pm.PackageManager.PERMISSION_GRANTED)return;if(prefs(a).getBoolean("followup.asked",false))return;prefs(a).edit().putBoolean("followup.asked",true).apply();a.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},73103);}catch(Exception ignored){}}
+ /** Android 13 起发通知要用户同意。追剧和离线下载分开记，拒绝其中一次不影响另一次再问。 */
+ static void askNotify(Activity a){askNotify(a,"followup.asked",73103);}
+ static void askDownloadNotify(Activity a){askNotify(a,"download.notifyAsked",73104);}
+ static void askNotify(Activity a,String flag,int code){try{if(Build.VERSION.SDK_INT<33||a==null)return;if(a.checkSelfPermission("android.permission.POST_NOTIFICATIONS")==android.content.pm.PackageManager.PERMISSION_GRANTED)return;if(prefs(a).getBoolean(flag,false))return;prefs(a).edit().putBoolean(flag,true).apply();a.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},code);}catch(Exception ignored){}}
  static String label(Context c){return "追剧更新提醒："+(enabled(c)?"开":"关")+"（收藏的剧有新集时通知）";}
 }
