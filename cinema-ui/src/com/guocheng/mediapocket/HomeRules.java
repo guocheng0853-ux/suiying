@@ -130,9 +130,9 @@ final class HomeRules {
  static JSONArray sourceOptions(JSONArray homeSources)throws Exception{return sourceOptions(homeSources,null);}
  static JSONArray sourceOptions(JSONArray homeSources,JSONArray embyServers)throws Exception{
   JSONArray out=new JSONArray();
+  out.put(opt("provider:fusion","聚合 · 全部来源","provider"));
   out.put(opt("provider:stremio","Stremio 目录","provider"));
   out.put(opt("provider:tvbox","影视仓","provider"));
-  out.put(opt("provider:fusion","融合","provider"));
   if(homeSources!=null)for(int i=0;i<homeSources.length();i++){
    JSONObject s=homeSources.optJSONObject(i);if(s==null)continue;
    String id=s.optString("id");if(id.isEmpty())continue;
@@ -186,7 +186,7 @@ final class HomeRules {
   if(id.startsWith("provider:emby:"))return "Emby";
   if(id.equals("provider:stremio"))return "Stremio 目录";
   if(id.equals("provider:tvbox")||id.startsWith("source:"))return "影视仓";
-  if(id.equals("provider:fusion"))return "融合";
+  if(id.equals("provider:fusion"))return "聚合 · 全部来源";
   return "片源";
  }
  /** 解析选项 → [provider, sourceId]。添加/管理返回 null，调用方不得写入片源。source 选项落到 tvbox。 */

@@ -9,7 +9,7 @@ public final class ScrapedMainActivity extends MainActivity {
  JSONArray heroes=new JSONArray();String heroType="series";final Handler carousel=new Handler(Looper.getMainLooper());
  final String[] tabs=HomeRules.TABS;HomeChrome homeChrome;
  @Override public void onCreate(Bundle saved){
-  android.content.SharedPreferences p=getSharedPreferences("data",0);appearance=p.getString("cinemaAppearance","dark");if(!p.getBoolean("ui.goldIntro",false)){p.edit().putBoolean("ui.goldIntro",true).putString("cinemaAppearance","gold").apply();appearance="gold";}DebugLog.install(this);HeaderRoute.accelerate=p.getBoolean("accelerate.v1",true);TorrentBoost.enabled=p.getBoolean("torrentBoost.v1",true);
+  android.content.SharedPreferences p=getSharedPreferences("data",0);appearance=p.getString("cinemaAppearance","dark");if(!p.getBoolean("ui.aggIntro",false)){p.edit().putBoolean("ui.aggIntro",true).putString("fusion.homeProvider","fusion").apply();}if(!p.getBoolean("ui.goldIntro",false)){p.edit().putBoolean("ui.goldIntro",true).putString("cinemaAppearance","gold").apply();appearance="gold";}DebugLog.install(this);HeaderRoute.accelerate=p.getBoolean("accelerate.v1",true);TorrentBoost.enabled=p.getBoolean("torrentBoost.v1",true);
   light=appearance.equals("light")||(appearance.equals("system")&&(getResources().getConfiguration().uiMode&Configuration.UI_MODE_NIGHT_MASK)!=Configuration.UI_MODE_NIGHT_YES);
   gold=!light&&appearance.equals("gold");p.edit().putString("themeMode",light?"light":"dark").putBoolean("ui.gold",gold).apply();
   getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);UiImages.configure(getCacheDir());
@@ -29,10 +29,10 @@ public final class ScrapedMainActivity extends MainActivity {
   stage=new FrameLayout(this);stage.setBackgroundColor(surface());homeAtmosphere=new HomeAtmosphere(this);stage.addView(homeAtmosphere,new FrameLayout.LayoutParams(-1,-1));stage.addView(root,new FrameLayout.LayoutParams(-1,-1));root.setBackgroundColor(surface());body.setClipChildren(false);body.setClipToPadding(false);scroll.setClipToPadding(false);
   topBar.removeAllViews();topBar.setGravity(Gravity.CENTER_VERTICAL);
   frost=new FrostedBar(this,scroll,dp(20));frost.setAlpha(0);frost.fallback=()->{frost=null;styleScrim();};stage.addView(frost,new FrameLayout.LayoutParams(-1,0,Gravity.TOP));
-  appBarScrim=new View(this);appBarScrim.setAlpha(0);stage.addView(appBarScrim,new FrameLayout.LayoutParams(-1,0,Gravity.TOP));stage.addView(topBar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
+  appBarScrim=new View(this);appBarScrim.setAlpha(0);stage.addView(appBarScrim,new FrameLayout.LayoutParams(-1,0,Gravity.TOP));stage.addView(topBar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));pull=new PullRefresh(this,stage);
   topBar.addOnLayoutChangeListener((v,l,t,rr,b,ol,ot,orr,ob)->{if(frost!=null&&frost.getLayoutParams().height!=b-t){frost.getLayoutParams().height=b-t;frost.requestLayout();}if(appBarScrim!=null&&appBarScrim.getLayoutParams().height!=b-t){appBarScrim.getLayoutParams().height=b-t;appBarScrim.requestLayout();}});
   scroll.setOnScrollChangeListener((v,x,y,ox,oy)->updateScrim());
-  nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(4));GradientDrawable navSurface=rounded(light?0xfafcfafd:0xf51b222c,32);navSurface.setStroke(dp(1),light?0xccffffff:0x24ffffff);nav.setBackground(navSurface);nav.setElevation(dp(6));
+  nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(4));GradientDrawable navSurface=rounded(light?0xfafcfafd:gold?0xf5151517:0xf51b222c,32);navSurface.setStroke(dp(1),light?0xccffffff:gold?0x1affffff:0x24ffffff);nav.setBackground(navSurface);nav.setElevation(dp(6));
   homeChrome=new HomeChrome(this);nav.removeAllViews();navItems.clear();navIcons=new HomeNavIcon[tabs.length];for(int i=0;i<tabs.length;i++){final String tab=tabs[i];TextView t=text(tab,11,navColor(false));t.setIncludeFontPadding(false);t.setGravity(Gravity.CENTER);t.setSingleLine(true);t.setEllipsize(TextUtils.TruncateAt.END);t.setPadding(dp(2),dp(3),dp(2),dp(3));t.setLayoutParams(new LinearLayout.LayoutParams(0,dp(56),1));navIcons[i]=new HomeNavIcon(i,dp(24),navColor(false));t.setCompoundDrawablesWithIntrinsicBounds(null,navIcons[i],null,null);t.setCompoundDrawablePadding(dp(3));t.setBackground(rounded(0,28));t.setContentDescription(tab);t.setOnClickListener(v->navClick(tab));navItems.add(t);nav.addView(t);}
   FrameLayout.LayoutParams n=new FrameLayout.LayoutParams(navWidth(),dp(64),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);n.bottomMargin=dp(8);stage.addView(nav,n);
   stage.setOnApplyWindowInsetsListener((v,insets)->{safeTop=insets.getSystemWindowInsetTop();safeBottom=insets.getSystemWindowInsetBottom();safeLeft=insets.getSystemWindowInsetLeft();safeRight=insets.getSystemWindowInsetRight();updateInsets();return insets;});
@@ -55,7 +55,7 @@ public final class ScrapedMainActivity extends MainActivity {
  int navItemHeight(){if(wide())return dp(44);if(navItems.isEmpty())return dp(56);android.graphics.Paint.FontMetrics fm=navItems.get(0).getPaint().getFontMetrics();return Math.max(dp(56),dp(33)+(int)Math.ceil(fm.bottom-fm.top));}
  int navWidth(){if(wide())return Math.min(dp(460),Math.max(dp(48),getResources().getDisplayMetrics().widthPixels-dp(24)));return Math.min(dp(360),Math.max(dp(48),getResources().getDisplayMetrics().widthPixels-dp(24)));}
  int navColor(boolean selected){if(gold)return selected?CinemaTheme.GOLD:CinemaTheme.MUTED;return selected?(light?0xff006fe6:0xff78b7ff):(light?0xff40434c:0xffd2d7df);}
- @Override void selectNav(String selected){String alias=HomeRules.navAlias(selected);super.selectNav(alias);if(navIcons==null)return;for(int i=0;i<tabs.length;i++){boolean yes=tabs[i].equals(alias);TextView item=navItems.get(i);item.setTextColor(navColor(yes));item.setTypeface(android.graphics.Typeface.create(yes?"sans-serif-medium":"sans-serif",android.graphics.Typeface.NORMAL));item.setSelected(yes);item.setBackground(rounded(yes?(light?0xffeeecf0:0xff333d4b):0,28));navIcons[i].tint(navColor(yes));}}
+ @Override void selectNav(String selected){String alias=HomeRules.navAlias(selected);super.selectNav(alias);if(navIcons==null)return;for(int i=0;i<tabs.length;i++){boolean yes=tabs[i].equals(alias);TextView item=navItems.get(i);item.setTextColor(navColor(yes));item.setTypeface(android.graphics.Typeface.create(yes?"sans-serif-medium":"sans-serif",android.graphics.Typeface.NORMAL));item.setSelected(yes);item.setBackground(rounded(yes?(light?0xffeeecf0:gold?CinemaTheme.CHIP:0xff333d4b):0,28));navIcons[i].tint(navColor(yes));}}
  @Override void clear(String title){if(heroSwipe!=null){heroSwipe.dispose();heroSwipe=null;}epoch++;carousel.removeCallbacks(tick);homeCanvas=false;detailPage=false;detailId="";detailChrome=null;super.clear(title);updateInsets();}
  @Override public void onConfigurationChanged(Configuration c){super.onConfigurationChanged(c);updateInsets();}
  @Override void home(){if(keepHome)return;
@@ -63,6 +63,7 @@ public final class ScrapedMainActivity extends MainActivity {
   if(homeChrome==null)homeChrome=new HomeChrome(this);
   FollowUp.homeSection(this);
   if("emby".equals(homeProvider)){EmbyHome.show(this);restoreScroll();return;}
+  if("fusion".equals(homeProvider)){AggregateHome.show(this);restoreScroll();return;}
   {JSONArray raw=array("history"),history=HomeRules.dedupeHistory(raw);if(history.length()!=raw.length())prefs.edit().putString("history",history.toString()).apply();homeChrome.continueWatching(history);}
   if(!homeProvider.equals("stremio")&&sectionOn("fusion"))fusionHome();
   if(!homeProvider.equals("tvbox")){
@@ -110,7 +111,7 @@ public final class ScrapedMainActivity extends MainActivity {
   return c;
  }
  String heroCacheKey(){return "cinema.hero.v2."+homeProvider+"."+prefs.getString("home.source.v1","current");}
- int heroSceneHeight(){if(wide())return Math.round(getResources().getDisplayMetrics().heightPixels*.66f);if(gold)return Math.min(dp(470),(int)(getResources().getDisplayMetrics().widthPixels*1.08));return Math.min(dp(610),(int)(getResources().getDisplayMetrics().widthPixels*1.40));}
+ int heroSceneHeight(){if(wide())return Math.round(getResources().getDisplayMetrics().heightPixels*.66f);if(gold)return Math.min(dp(430),getResources().getDisplayMetrics().widthPixels);return Math.min(dp(610),(int)(getResources().getDisplayMetrics().widthPixels*1.40));}
  boolean wide(){android.util.DisplayMetrics m=getResources().getDisplayMetrics();return m.widthPixels>m.heightPixels;}
  /**
   * 0.1.104 横屏首页（参考 Hills）：海报约占屏高三分之二，片名 / 信息 / 简介靠左叠在海报左下，
@@ -129,7 +130,10 @@ public final class ScrapedMainActivity extends MainActivity {
   if(dots!=null&&dots.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)dots.getLayoutParams();p.width=-1;dots.setLayoutParams(p);}
   heroCaption.setGravity(w?Gravity.START:Gravity.CENTER);heroCaption.setPadding(w?dp(8):dp(24),dp(w?2:10),dp(w?8:24),dp(4));goldHero();
  }
- TextView heroKicker;LinearLayout heroActions;
+ TextView heroKicker;LinearLayout heroActions;PullRefresh pull;
+ @Override public boolean dispatchTouchEvent(MotionEvent e){if(pull!=null)try{pull.track(e);}catch(RuntimeException ignored){}return super.dispatchTouchEvent(e);}
+ /** 下拉刷新：清掉 Stremio / 影视仓目录的缓存时间，让每个分区都重新请求；Emby 本来每次都会重新读。 */
+ void forceRefresh(){android.content.SharedPreferences.Editor ed=prefs.edit();for(String k:prefs.getAll().keySet())if(k.endsWith(".time")&&(k.startsWith("cinema.catalog.")||k.startsWith("fusion.catalog")))ed.remove(k);ed.apply();heroPriority=-1;home();}
  boolean goldBelow(){return gold&&!wide()&&heroActions!=null&&heroActions.getParent()==heroCaption;}
  static void detach(View v){if(v!=null&&v.getParent() instanceof ViewGroup)((ViewGroup)v.getParent()).removeView(v);}
  /**
@@ -167,6 +171,7 @@ public final class ScrapedMainActivity extends MainActivity {
  }
  void placeHero(int height){LinearLayout.LayoutParams lp=(LinearLayout.LayoutParams)hero.getLayoutParams();lp.height=height;lp.bottomMargin=0;hero.setLayoutParams(lp);}
  void createHero(){
+  heroKicker=null;heroActions=null;
   hero=new FrameLayout(this);hero.setTag("mp-full-width");hero.setBackgroundColor(0);int height=heroSceneHeight();LinearLayout.LayoutParams layout=new LinearLayout.LayoutParams(-1,height);layout.setMargins(-body.getPaddingLeft(),0,-body.getPaddingRight(),0);body.addView(hero,layout);heroPage=new FadeFrame(this);hero.addView(heroPage,new FrameLayout.LayoutParams(-1,-1));
   heroImage=new ImageView(this);heroImage.setScaleType(ImageView.ScaleType.CENTER_CROP);heroPage.addView(heroImage,new FrameLayout.LayoutParams(-1,-1));
   heroInfo=new LinearLayout(this);heroInfo.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->syncHeroFade());heroInfo.setOrientation(1);heroInfo.setGravity(Gravity.CENTER);heroInfo.setPadding(dp(24),0,dp(24),dp(14));hero.addView(heroInfo,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
@@ -208,7 +213,7 @@ public final class ScrapedMainActivity extends MainActivity {
   if(hero==null||heroInfo==null)return;
   int end=heroInfo.getTop();
   for(int i=0;i<hero.getChildCount();i++){View child=hero.getChildAt(i);if(child instanceof LinearLayout&&child.getHeight()>0)end=Math.min(end,child.getTop());}
-  for(int i=0;i<hero.getChildCount();i++){View child=hero.getChildAt(i);if(child instanceof FadeFrame)((FadeFrame)child).setCaptionTop(end,dp(180));}
+  for(int i=0;i<hero.getChildCount();i++){View child=hero.getChildAt(i);if(child instanceof FadeFrame)((FadeFrame)child).setCaptionTop(end,dp(goldBelow()?90:180));}
  }
  void prefetchHeroNeighbors(){if(heroes.length()<2)return;final int ticket=epoch;for(int step:new int[]{-1,1}){JSONObject item=heroes.optJSONObject(CarouselRules.index(heroIndex,step,heroes.length()));if(item==null||item.has("fusion.site"))continue;String id=item.optString("id"),type=item.optString("type",heroType),key="cinema.meta."+type+"."+id;if(!id.matches("tt[0-9]+"))continue;try{if(DetailMetadata.useful(new JSONObject(prefs.getString(key,""))))continue;}catch(Exception ignored){}if(!pendingHeroMetadata.add(key))continue;job(()->{try{if(ticket!=epoch)return;JSONObject meta=CinemaCatalogClient.json("https://v3-cinemeta.strem.io/meta/"+type+"/"+Net.esc(id)+".json").getJSONObject("meta");if(!DetailMetadata.useful(meta))return;prefs.edit().putString(key,meta.toString()).apply();runOnUiThread(()->{if(ticket==epoch&&homeCanvas&&heroSwipe!=null&&!heroSwipe.busy())heroSwipe.refresh();});}catch(Exception ignored){}finally{pendingHeroMetadata.remove(key);}});}}
  /** 0.1.46：Stremio 选源改为按插件分组的弹窗，留在详情页；选中后仍走原 play()（原播放器与换源队列）。 */
@@ -288,7 +293,7 @@ public final class ScrapedMainActivity extends MainActivity {
  }
 
  void openItem(JSONObject m){if(m!=null&&m.has("emby.server")){if(m.optBoolean("emby.directPlay"))EmbyPlayback.play(this,m);else EmbyLibraryActivity.open(this,m);return;}if(m.has("fusion.site")){JSONObject item=m;try{item=new JSONObject(m.toString());if(m.has("fusion.video"))item.put("id",m.optString("fusion.video"));}catch(Exception ignored){}FusionCatalog.open(this,item);}else{openingMeta=m;detail(m.optString("id"),m.optString("type",heroType));}}
- void providerSwitch(){LinearLayout row=new LinearLayout(this);row.setPadding(0,dp(12),0,dp(8));String[] labels={"融合","影视仓","Stremio"},keys={"fusion","tvbox","stremio"};for(int i=0;i<3;i++){final String key=keys[i];Button b=button(labels[i],()->{prefs.edit().putString("fusion.homeProvider",key).apply();home();});boolean yes=homeProvider.equals(key);b.setBackgroundTintList(ColorStateList.valueOf(yes?(light?0xffcee4ef:gold?CinemaTheme.CHIP:0xff315c7a):card()));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(42),1);lp.rightMargin=i<2?dp(7):0;row.addView(b,lp);}body.addView(row);}
+ void providerSwitch(){LinearLayout row=new LinearLayout(this);row.setPadding(0,dp(12),0,dp(8));String[] labels={"聚合","影视仓","Stremio"},keys={"fusion","tvbox","stremio"};for(int i=0;i<3;i++){final String key=keys[i];Button b=button(labels[i],()->{prefs.edit().putString("fusion.homeProvider",key).apply();home();});boolean yes=homeProvider.equals(key);b.setBackgroundTintList(ColorStateList.valueOf(yes?(light?0xffcee4ef:gold?CinemaTheme.CHIP:0xff315c7a):card()));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(42),1);lp.rightMargin=i<2?dp(7):0;row.addView(b,lp);}body.addView(row);}
  void openFusion(String category){Intent in=new Intent(this,FusionLibraryActivity.class);if(fusionSession!=null){in.putExtra("config",fusionSession.url);in.putExtra("site",fusionSession.site.optString("key"));}if(!category.isEmpty())in.putExtra("category",category);startActivity(in);}
  void sourceStrip(){
   try{if(HomeSources.list(this).length()==0)return;}catch(Exception ignored){return;}String chosen=prefs.getString("home.source.v1","current");body.addView(heading("影视仓来源"));HorizontalScrollView scroll=new HorizontalScrollView(this);scroll.setHorizontalScrollBarEnabled(false);LinearLayout row=new LinearLayout(this);
