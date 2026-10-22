@@ -1,6 +1,6 @@
 # 随影 MediaPocket
 
-当前候选版本：0.1.131 / versionCode 132。暖纸与陶土界面改版，基于 main 0.1.130，构建与真机验证进行中。详见[更新记录](cinema-ui/README.md)。0.1.108 的既有验证结果保留于[真机记录](DEVICE-VALIDATION.md)，完整清单仍未完成。
+当前候选版本：0.1.131 / versionCode 132。暖纸与陶土界面改版，基于 main 0.1.130，已构建并同签名安装，85/85 测试通过；首页和「我的」已真机查看，其他界面检查进行中。详见[本版验证记录](DEVICE-PAPER-VALIDATION.md)。详见[更新记录](cinema-ui/README.md)。0.1.108 的既有验证结果保留于[真机记录](DEVICE-VALIDATION.md)，完整清单仍未完成。
 
 安卓播放器（Stremio 插件 + 影视仓配置，VLC 播放）。采用"基础 APK + Java 界面/功能扩展"的叠加构建方式，不是 Gradle 工程。
 

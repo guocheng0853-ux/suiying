@@ -37,5 +37,15 @@
   "font_sha256": "e8f396decc1f0963a016a989c3d8852e863d1350996f573860a80767c83a1cd3",
   "font_license": "SIL OFL 1.1",
   "design_reference": "Anthropic-inspired paper and clay; no Anthropic trademarks or proprietary fonts",
-  "candidate_installed": false
+  "candidate_installed": true,
+  "phone_installed_version": "0.1.131",
+  "phone_installed_version_code": 132,
+  "android_ui_checks": {
+    "portrait_home_font_and_navigation": true,
+    "portrait_settings_font_cards_and_switches": true,
+    "detail_page": false,
+    "landscape_home": false,
+    "landscape_player_menu": false
+  },
+  "android_ui_note": "Home and settings visually inspected with fresh UI dumps and logcat. Detail capture was interrupted by system UI; no pass claimed. Playback and Dolby validation remain incomplete."
 }
