@@ -30,6 +30,8 @@ final class AudioEffects {
   rows.add(CinemaMenu.choice("关闭",cur.equals(AudioEffectRules.OFF),()->choose(a,AudioEffectRules.OFF)));
   rows.add(CinemaMenu.choice("对白增强（压低轰鸣，人声更清楚）",cur.equals(AudioEffectRules.DIALOG),()->choose(a,AudioEffectRules.DIALOG)));
   rows.add(CinemaMenu.choice("夜间模式（大幅压低爆炸和重低音）",cur.equals(AudioEffectRules.NIGHT),()->choose(a,AudioEffectRules.NIGHT)));
+  rows.add(CinemaMenu.choice("AKG 风格（低音饱满、高音通透，适合耳机）",cur.equals(AudioEffectRules.AKG),()->choose(a,AudioEffectRules.AKG)));
+  rows.add(CinemaMenu.choice("动漫（配音更清亮，配乐更亮）",cur.equals(AudioEffectRules.ANIME),()->choose(a,AudioEffectRules.ANIME)));
   int n=presetCount();for(int i=0;i<n;i++){final int at=i;String v=AudioEffectRules.PRESET+i;String name=AudioEffectRules.chinese(presetName(i));if(name.equals("平直"))continue;rows.add(CinemaMenu.choice("均衡器 · "+name,cur.equals(v),()->choose(a,v)));}
   CinemaMenu.show(a,"音效",rows);}
  static void choose(Activity a,String value){prefs(a).edit().putString(KEY,value).putInt("audio.media3Preset",-1).apply();Object p=player(a);boolean ok=p!=null&&apply(p,value);if(p!=null&&ok)APPLIED.put(p,value);
