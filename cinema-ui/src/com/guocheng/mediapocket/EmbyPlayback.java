@@ -11,6 +11,19 @@ final class EmbyPlayback {
  static final Map<Activity,Boolean> SWITCHING=new WeakHashMap<>();
  static int pendingAudio=-1,pendingSub=-1;static long pendingBitrate=-1;
  static void play(Activity a,JSONObject meta){if(meta==null)return;JSONObject server=EmbyStore.get(a,meta.optString("emby.server"));String item=meta.optString("emby.item");if(item.isEmpty())item=EmbyApi.itemOf(meta.optString("id"));if(server==null||item.isEmpty()){Toast.makeText(a,"找不到这个 Emby 服务器",Toast.LENGTH_LONG).show();return;}playItem(a,server,item,null,false);}
+ /**
+  * 0.1.133 首页「播放 / 继续播放」一键开播：电影、单集直接请求播放；剧集 / 季先找这部剧的下一集（Shows/NextUp?SeriesId），
+  * 没有就取第一集没看完的，再没有就从第一集开始。找不到可播的集才退回详情页。
+  */
+ static void playSmart(Activity a,JSONObject meta){if(meta==null)return;String type=meta.optString("emby.type");
+  if(!"Series".equals(type)&&!"Season".equals(type)){play(a,meta);return;}
+  JSONObject server=EmbyStore.get(a,meta.optString("emby.server"));String series="Series".equals(type)?meta.optString("emby.item"):meta.optString("emby.series");if(series.isEmpty())series=EmbyApi.itemOf(meta.optString("id"));
+  if(server==null||series.isEmpty()){EmbyLibraryActivity.open(a,meta);return;}final String sid=series;
+  CinemaWait wait=CinemaWait.show(a,"正在准备播放","正在找要看的那一集…",true,true);final boolean[] cancel={false};wait.setOnCancelListener(d->cancel[0]=true);
+  IO.execute(()->{String pick="";try{JSONArray next=EmbyClient.json(a,server,"GET","/Shows/NextUp?UserId="+EmbyApi.enc(server.optString("userId"))+"&SeriesId="+EmbyApi.enc(sid)+"&Limit=1",null).optJSONArray("Items");if(next!=null&&next.length()>0)pick=next.optJSONObject(0).optString("Id");
+    if(pick.isEmpty()){JSONArray all=EmbyClient.episodes(a,server,sid,null).optJSONArray("Items");for(int i=0;all!=null&&i<all.length();i++){JSONObject ep=all.optJSONObject(i);if(ep==null)continue;if(pick.isEmpty())pick=ep.optString("Id");JSONObject ud=ep.optJSONObject("UserData");if(ud==null||!ud.optBoolean("Played")){pick=ep.optString("Id");break;}}}}
+   catch(Exception ignored){}
+   final String chosen=pick;a.runOnUiThread(()->{try{if(wait.isShowing())wait.dismiss();}catch(RuntimeException ignored){}if(cancel[0]||a.isFinishing())return;if(chosen.isEmpty())EmbyLibraryActivity.open(a,meta);else playItem(a,server,chosen,null,false);});});}
  static void playItem(Activity a,JSONObject server,String itemId){playItem(a,server,itemId,null,false);}
  static void replay(Activity a,int audioIndex,int subtitleIndex){JSONObject stream=TrackSelection.stream(a);JSONObject server=EmbyStore.get(a,stream.optString("emby.server"));if(server==null||stream.optString("emby.item").isEmpty())return;pendingAudio=audioIndex;pendingSub=subtitleIndex;playItem(a,server,stream.optString("emby.item"),stream.optString("emby.mediaSource"),true);}
  /** 按新的 MaxStreamingBitrate 重新向 Emby 要一次播放地址。 */

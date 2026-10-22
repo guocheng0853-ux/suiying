@@ -112,26 +112,28 @@ final class PlayerOverlay {
  static void dispatch(Activity a,String action){PlayerChrome.bump(a);if(PlayerOverlayRules.AUDIO.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.AUDIO);else if(PlayerOverlayRules.SUBTITLE.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.SUB);else if(PlayerOverlayRules.EPISODES.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.EPISODES);}
  static void episodes(Activity a){JSONObject meta=meta(a);if(meta.has("fusion.config")&&EpisodeActions.list(meta).isEmpty()){PlaybackSitePicker.selectEpisode(a);return;}ArrayList<JSONObject> list=EpisodeActions.list(meta);if(list.isEmpty()){if(meta.has("fusion.config"))PlaybackSitePicker.selectEpisode(a);else toast(a,"没有可选择的剧集");return;}String cur=id(a);String[] labels=new String[list.size()];int selected=-1;for(int i=0;i<list.size();i++){labels[i]=EpisodeActions.label(list.get(i));if(cur.equals(list.get(i).optString("id")))selected=i;}java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<list.size();i++){final String next=list.get(i).optString("id");rows.add(CinemaMenu.choice(labels[i],cur.equals(next),()->{if(!next.isEmpty()&&!next.equals(cur))AutoNext.handoff(a,meta,next,type(a));}));}CinemaMenu.show(a,"选集",rows);}
  /** 0.1.93：只放播放器级设置。字幕获取、片源/版本/线路、章节、码率、定时、流信息都在右侧面板，不在这里重复。 */
- static void more(Activity a){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();
+ static void more(Activity a){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();java.util.Map<String,String> hint=new java.util.HashMap<>();
   labels.add(DanmuController.label(a));actions.add(()->DanmuController.menu(a));
   // 0.1.97：解码只在顶栏芯片、音轨只在面板，不再打开原版「播放器」菜单；外部播放器单独一项
-  labels.add("线路与片源");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
+  labels.add("线路与片源");hint.put("线路与片源","换线路、换版本、自动换源");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
   labels.add(AudioEffects.label(a));actions.add(()->AudioEffects.menu(a));
   labels.add("字幕样式");actions.add(()->SubtitleStyle.menu(a,null));
-  labels.add("用外部播放器重播（颜色发紫发绿时用）");actions.add(()->externalReplay(a));
-  labels.add("系统解码重播（实验）");actions.add(()->systemReplay(a));
+  // 0.1.133：两个外部播放入口合成一个（从当前位置交给外部播放器）；解释放副标题
+  labels.add("用外部播放器打开");hint.put("用外部播放器打开","从当前位置继续 · 杜比视界颜色发紫发绿时用");actions.add(()->external(a));
+  labels.add("系统解码重播");hint.put("系统解码重播","实验功能 · 画面异常时换安卓自带解码器试试");actions.add(()->systemReplay(a));
   labels.add("定时关闭");actions.add(()->PlayerSidePanel.sleepMenu(a));
-  labels.add("流信息");actions.add(()->PlayerSidePanel.infoDialog(a));
+  labels.add("流信息");hint.put("流信息","分辨率、编码、码率、HDR 类型");actions.add(()->PlayerSidePanel.infoDialog(a));
   labels.add("播放设置");actions.add(()->PlayerFeatureSettings.playback(a));
-  labels.add("用外部播放器打开");actions.add(()->{try{OnlineSubtitleSearch.call(a,"external",new Class<?>[0]);}catch(Exception e){toast(a,"没有可用的外部播放器");}});
   click(findExact(bar(a,"top"),"旋转"),"旋转",labels,actions);
   labels.add("片头标记");actions.add(()->introMenu(a));
   labels.add("调试信息");actions.add(()->DebugLog.show(a));
-  java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<labels.size();i++)rows.add(CinemaMenu.item(labels.get(i),actions.get(i)));CinemaMenu.show(a,"更多",rows);
+  java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<labels.size();i++)rows.add(hint.containsKey(labels.get(i))?CinemaMenu.detail(labels.get(i),hint.get(labels.get(i)),actions.get(i)):CinemaMenu.item(labels.get(i),actions.get(i)));CinemaMenu.show(a,"更多",rows);
  }
  /** 原版「更多播放设置」（自动换源、换下一个源、等待时间、连接详情）的按钮，放到线路页里用。 */
  static Button baseMore(Activity a){Button b=findExact(scroll(bar(a,"bottom")),"更多");return b!=null&&b.getTag() instanceof String&&((String)b.getTag()).startsWith("mp-")?null:b;}
  /** 0.1.111：把当前片源交给安卓自带解码器从当前位置重播（杜比视界 P5 等 VLC 显示异常的片源）。 */
+ /** 0.1.133 合并后的唯一外部播放入口：直链从当前位置交给外部播放器；磁力 / 种子片源走原版的外部播放（经本地流转发）。 */
+ static void external(Activity a){JSONObject stream=TrackSelection.stream(a);String url=stream.optString("url");if(stream.has("infoHash")||MagnetLinks.isMagnet(url)){try{OnlineSubtitleSearch.call(a,"external",new Class<?>[0]);}catch(Exception e){toast(a,"没有可用的外部播放器");}return;}externalReplay(a);}
  /** 0.1.114：把当前片源从当前位置交给其他播放器（Just Player 等，杜比视界颜色正确）。 */
  static void externalReplay(Activity a){try{JSONObject stream=TrackSelection.stream(a);String url=stream.optString("url");if(url.isEmpty()||stream.has("infoHash")||MagnetLinks.isMagnet(url)){toast(a,"磁力 / 种子片源不能交给外部播放器");return;}
   int pos=EmbyPlayback.position(a);Object n=OnlineSubtitleSearch.field(a,"name");String title=n==null?meta(a).optString("name",""):n.toString();

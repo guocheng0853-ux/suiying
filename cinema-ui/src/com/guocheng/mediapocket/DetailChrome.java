@@ -20,7 +20,7 @@ final class DetailChrome {
   View shade=new View(a);shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x18000000,0x00000000,a.surface()}));hero.addView(shade,new FrameLayout.LayoutParams(-1,-1));
   LinearLayout cap=new LinearLayout(a);cap.setOrientation(1);cap.setPadding(dp(16),0,dp(16),dp(12));String logo=meta.optString("logo");
   if(!logo.isEmpty()){ImageView mark=new ImageView(a);mark.setScaleType(ImageView.ScaleType.FIT_START);TvPosterImages.load(a,mark,logo,dp(320));cap.addView(mark,new LinearLayout.LayoutParams(-1,dp(92)));}
-  artworkState=label(hasArt?"正在加载封面…":"暂无封面",12,a.muted());cap.addView(artworkState);hero.addView(cap,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
+  artworkState=label(hasArt?"正在加载封面…":"暂无封面",13,a.ink());cap.addView(artworkState);hero.addView(cap,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
   int width=a.getResources().getDisplayMetrics().widthPixels;LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(width,hasArt?Math.min(dp(390),(int)(width*.90)):a.safeTop+dp(110));hp.setMargins(-a.body.getPaddingLeft(),0,-a.body.getPaddingRight(),dp(8));a.body.addView(hero,hp);
   if(hasArt){TvPosterImages.load(a,artwork,art,width);final int token=a.epoch;artwork.postDelayed(()->checkArtwork(hero,token,0),1200);}
   TextView title=label(DetailMetadata.useful(meta)?meta.optString("name"):"影片资料暂不可用",a.clay?28:25,a.ink());title.setTypeface(a.editorial()?CinemaTheme.paperTitle(a):android.graphics.Typeface.DEFAULT_BOLD);if(a.editorial())title.setLetterSpacing(-.02f);block(title,12);

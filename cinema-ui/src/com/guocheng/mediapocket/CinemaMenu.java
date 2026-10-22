@@ -8,9 +8,11 @@ import java.util.List;
  */
 final class CinemaMenu {
  static final class Item {
-  final String label,value;final boolean selected;final Runnable action;
+  final String label,value;final boolean selected;final Runnable action;String hint;
   Item(String label,String value,boolean selected,Runnable action){this.label=label;this.value=value;this.selected=selected;this.action=action;}
  }
+ /** 0.1.133：带副标题的菜单项——短标题一行，长解释放在下面一行小字里，不再把解释塞进标题导致被省略号截断。 */
+ static Item detail(String label,String hint,Runnable action){Item it=new Item(label,null,false,action);it.hint=hint;return it;}
  static Item item(String label,Runnable action){return new Item(label,null,false,action);}
  static Item value(String label,String value,Runnable action){return new Item(label,value,false,action);}
  static Item choice(String label,boolean selected,Runnable action){return new Item(label,null,selected,action);}
@@ -50,7 +52,9 @@ final class CinemaMenu {
    GradientDrawable line=new GradientDrawable();line.setColor(it.selected?PlayerTheme.selection(a):0x00000000);line.setCornerRadius(dp(a,PlayerTheme.RADIUS_MENU_ROW_DP));
    android.graphics.drawable.RippleDrawable ripple=new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(PlayerTheme.ripple(a)),line,null);row.setBackground(ripple);
    TextView label=new TextView(a);label.setText(it.label);label.setTextColor(it.selected?PlayerTheme.selectedText(a):PlayerTheme.text(a));label.setTextSize(PlayerMotionRules.MENU_LABEL_SP);
-   label.setSingleLine(true);label.setEllipsize(android.text.TextUtils.TruncateAt.END);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
+   label.setSingleLine(true);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+   if(it.hint!=null&&!it.hint.isEmpty()){LinearLayout texts=new LinearLayout(a);texts.setOrientation(LinearLayout.VERTICAL);texts.setPadding(0,dp(a,4),0,dp(a,4));texts.addView(label);TextView sub=new TextView(a);sub.setText(it.hint);sub.setTextColor(PlayerTheme.secondary(a));sub.setTextSize(PlayerMotionRules.MENU_VALUE_SP);sub.setMaxLines(2);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);sub.setPadding(0,dp(a,2),0,0);texts.addView(sub);row.addView(texts,new LinearLayout.LayoutParams(0,-2,1f));}
+   else row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
    if(it.value!=null&&!it.value.isEmpty()){TextView value=new TextView(a);value.setText(it.value);value.setTextColor(PlayerTheme.secondary(a));value.setTextSize(PlayerMotionRules.MENU_VALUE_SP);value.setPadding(dp(a,8),0,0,0);row.addView(value);}
    row.setOnClickListener(v->{
     dismiss(a);
