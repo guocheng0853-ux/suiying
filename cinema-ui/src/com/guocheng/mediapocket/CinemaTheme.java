@@ -9,8 +9,12 @@ final class CinemaTheme {
  static final int BG=0xff0b0b0c,CARD=0xff19191c,INK=0xfff4f1ea,MUTED=0xffa8a397,SOFT=0xffd8d2c4,GOLD=0xffe0b25c,ON_GOLD=0xff1a1408,CHIP=0xff2e2920,TILE_A=0xff1d1c1a,TILE_B=0xff252320;
  /** 0.1.128「暖白陶土」：暖白纸色底、墨色字、陶土橙强调，标题使用内置 Noto Serif SC、正文系统无衬线，留白多、不用装饰渐变（参考 Anthropic 的设计取向，未用其商标与商业字体）。 */
  static final int PAPER=0xfffaf9f5,SHEET=0xfffffefa,SLATE=0xff141413,STONE=0xff68665f,CLAY=0xffd97757,CLAY_DEEP=0xffb5573a,CLAY_CHIP=0xfff1e6de,LINE=0xffdedbd2,TILE_C=0xffe9e5dc,TILE_D=0xffe2ddd2;
- static boolean clay(Context c){return c.getSharedPreferences("data",0).getBoolean("ui.clay",false);}
- static boolean gold(Context c){return c.getSharedPreferences("data",0).getBoolean("ui.gold",false);}
+ /** 0.1.132：外观按「存储的选择 + 当前系统深色模式」现算，跟随系统时各页面打开即是对的一套，不依赖主页先写标记。 */
+ static boolean night(Context c){return (c.getResources().getConfiguration().uiMode&android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES;}
+ static String effective(Context c){return InstallDefaults.effective(c.getSharedPreferences("data",0).getString("cinemaAppearance",InstallDefaults.SYSTEM),night(c));}
+ static boolean clay(Context c){return InstallDefaults.CLAY.equals(effective(c));}
+ static boolean gold(Context c){return InstallDefaults.GOLD.equals(effective(c));}
+ static boolean light(Context c){return clay(c);}
  private static volatile Typeface paperFace;
  /** Bundled Chinese serif; load once so titles do not depend on an OEM's serif fallback. */
  static Typeface paperTitle(Context c){
@@ -20,5 +24,11 @@ final class CinemaTheme {
    return paperFace;
   }
  }
+ /**
+  * 0.1.132 两套外观共用一套字体规范（只换颜色不换字）：
+  * 片名 28–30sp、栏目 / 页面 / 菜单标题 20–24sp 用内置 Noto Serif SC，略收字距；
+  * 小标题 12sp 粗体无衬线、字距 0.08；正文、按钮、信息行、海报名用系统无衬线；播放器内不改字体。
+  */
+ static void section(android.widget.TextView t,Context c,float sp){t.setTypeface(paperTitle(c));t.setTextSize(sp);t.setLetterSpacing(-.01f);}
  static Typeface serif(){return Typeface.create(Typeface.SERIF,Typeface.BOLD);}
 }

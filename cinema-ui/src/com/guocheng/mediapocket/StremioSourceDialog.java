@@ -18,7 +18,7 @@ final class StremioSourceDialog {
 
  StremioSourceDialog(Activity owner,JSONArray all,String id,String type,JSONObject meta,Play play,Runnable add){
   a=owner;this.id=id;this.type=type;host=play;addAddon=add;addons=AddonRegistry.forResource(all==null?new JSONArray():all,"stream",type,id);
-  light=a.getSharedPreferences("data",0).getString("themeMode","dark").equals("light");boolean goldUi=!light&&CinemaTheme.gold(a),clayUi=light&&CinemaTheme.clay(a);ink=light?(clayUi?CinemaTheme.SLATE:0xff202830):goldUi?CinemaTheme.INK:0xfff1f4f6;muted=light?(clayUi?CinemaTheme.STONE:0xff697580):goldUi?CinemaTheme.MUTED:0xffb0c1cc;bg=light?(clayUi?CinemaTheme.PAPER:0xfffafbfc):goldUi?CinemaTheme.CARD:0xff1c1b21;accent=light?(clayUi?CinemaTheme.CLAY_DEEP:0xff2c6b8a):goldUi?CinemaTheme.GOLD:0xffd0bfff;
+  light=CinemaTheme.light(a);boolean goldUi=!light&&CinemaTheme.gold(a),clayUi=light&&CinemaTheme.clay(a);ink=light?(clayUi?CinemaTheme.SLATE:0xff202830):goldUi?CinemaTheme.INK:0xfff1f4f6;muted=light?(clayUi?CinemaTheme.STONE:0xff697580):goldUi?CinemaTheme.MUTED:0xffb0c1cc;bg=light?(clayUi?CinemaTheme.PAPER:0xfffafbfc):goldUi?CinemaTheme.CARD:0xff1c1b21;accent=light?(clayUi?CinemaTheme.CLAY_DEEP:0xff2c6b8a):goldUi?CinemaTheme.GOLD:0xffd0bfff;
   dialog=new Dialog(a);dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
   LinearLayout root=new LinearLayout(a);root.setOrientation(1);root.setPadding(dp(10),dp(6),dp(10),dp(14));GradientDrawable shape=new GradientDrawable();shape.setColor(bg);shape.setCornerRadius(dp(24));root.setBackground(shape);
   TextView handle=text("━━",14,muted);handle.setGravity(Gravity.CENTER);root.addView(handle);

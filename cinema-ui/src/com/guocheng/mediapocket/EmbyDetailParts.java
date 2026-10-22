@@ -18,7 +18,7 @@ final class EmbyDetailParts {
 
  /** 演职员：圆形头像 + 名字 + 角色，横滑。没有头像时显示名字首字。 */
  static View cast(EmbyLibraryActivity a,JSONObject server,JSONObject item){JSONArray people=item.optJSONArray("People");if(people==null||people.length()==0)return null;
-  LinearLayout box=new LinearLayout(a);box.setOrientation(LinearLayout.VERTICAL);TextView head=a.text("演职员",16);head.setTypeface(null,1);head.setPadding(0,a.dp(14),0,a.dp(6));box.addView(head);
+  LinearLayout box=new LinearLayout(a);box.setOrientation(LinearLayout.VERTICAL);TextView head=a.text("演职员",16);if(a.clay||a.gold)CinemaTheme.section(head,a,20);else head.setTypeface(null,1);head.setPadding(0,a.dp(14),0,a.dp(6));box.addView(head);
   HorizontalScrollView hs=new HorizontalScrollView(a);hs.setHorizontalScrollBarEnabled(false);LinearLayout row=new LinearLayout(a);hs.addView(row);box.addView(hs);int shown=0;
   for(int i=0;i<people.length()&&shown<20;i++){JSONObject p=people.optJSONObject(i);if(p==null||p.optString("Name").isEmpty())continue;String type=p.optString("Type");if(!(type.equals("Actor")||type.equals("Director")||type.equals("GuestStar")))continue;shown++;
    LinearLayout cell=new LinearLayout(a);cell.setOrientation(LinearLayout.VERTICAL);cell.setGravity(Gravity.CENTER_HORIZONTAL);int size=a.dp(64);

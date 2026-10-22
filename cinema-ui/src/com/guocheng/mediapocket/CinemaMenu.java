@@ -40,7 +40,7 @@ final class CinemaMenu {
   int screen=decor.getWidth()>0?decor.getWidth():a.getResources().getDisplayMetrics().widthPixels;
   int width=Math.min(dp(a,PlayerTheme.MENU_WIDTH_MAX_DP),screen-dp(a,40));
   if(title!=null&&!title.isEmpty()){
-   TextView head=new TextView(a);head.setText(title);head.setTextColor(PlayerTheme.text(a));head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);head.setTypeface(PlayerTheme.paper(a)?CinemaTheme.paperTitle(a):android.graphics.Typeface.DEFAULT_BOLD);if(PlayerTheme.paper(a))head.setTextSize(24);
+   TextView head=new TextView(a);head.setText(title);head.setTextColor(PlayerTheme.text(a));head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);boolean serifHead=!(a instanceof PlayerActivity)&&!(a instanceof SystemPlayerActivity);head.setTypeface(serifHead?CinemaTheme.paperTitle(a):android.graphics.Typeface.DEFAULT_BOLD);if(serifHead)head.setTextSize(24);
    head.setPadding(dp(a,8),dp(a,6),dp(a,8),dp(a,4));panel.addView(head);
   }
   if(body!=null){if(body.getParent() instanceof ViewGroup)((ViewGroup)body.getParent()).removeView(body);LinearLayout.LayoutParams bl=new LinearLayout.LayoutParams(-1,-2);bl.setMargins(dp(a,8),dp(a,4),dp(a,8),dp(a,8));panel.addView(body,bl);}
