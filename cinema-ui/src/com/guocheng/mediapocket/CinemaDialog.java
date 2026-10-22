@@ -37,16 +37,16 @@ final class CinemaDialog implements DialogInterface {
  }
  CinemaMenu.Item button(CharSequence text,DialogInterface.OnClickListener l,int which){return CinemaMenu.item(text.toString(),()->{done=true;if(l!=null)l.onClick(this,which);});}
  View body(){
-  TextView msg=null;if(message!=null&&message.length()>0){msg=new TextView(a);msg.setText(message);msg.setTextColor(PlayerTheme.TEXT_SECONDARY);msg.setTextSize(14);msg.setLineSpacing(0,1.15f);msg.setTextIsSelectable(true);}
+  TextView msg=null;if(message!=null&&message.length()>0){msg=new TextView(a);msg.setText(message);msg.setTextColor(PlayerTheme.secondary(a));msg.setTextSize(14);msg.setLineSpacing(0,1.15f);msg.setTextIsSelectable(true);}
   if(view!=null)restyle(view);
   if(msg==null)return view;if(view==null)return msg;
   LinearLayout box=new LinearLayout(a);box.setOrientation(LinearLayout.VERTICAL);box.addView(msg);if(view.getParent() instanceof ViewGroup)((ViewGroup)view.getParent()).removeView(view);box.addView(view);return box;
  }
  /** 原来按白底对话框写的输入表单：字改成浅色，输入框下划线改成浅色。 */
- static void restyle(View v){
-  if(v instanceof EditText){EditText e=(EditText)v;e.setTextColor(0xffffffff);e.setHintTextColor(0x80ffffff);e.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0x80ffffff));return;}
+ void restyle(View v){
+  if(v instanceof EditText){EditText e=(EditText)v;e.setTextColor(PlayerTheme.text(a));e.setHintTextColor(PlayerTheme.secondary(a));e.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PlayerTheme.selectedText(a)));return;}
   if(v instanceof Button||v instanceof Spinner)return;
-  if(v instanceof TextView){TextView t=(TextView)v;if(luminance(t.getCurrentTextColor())<0.5)t.setTextColor(PlayerTheme.TEXT_SECONDARY);return;}
+  if(v instanceof TextView){TextView t=(TextView)v;t.setTextColor(PlayerTheme.secondary(a));return;}
   if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)restyle(g.getChildAt(i));}
  }
  static double luminance(int c){return (0.299*((c>>16)&255)+0.587*((c>>8)&255)+0.114*(c&255))/255.0;}

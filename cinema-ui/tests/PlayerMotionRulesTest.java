@@ -7,6 +7,8 @@ import javax.imageio.ImageIO;
 /** 倍速步进、双击累计、拖动映射、预览二分、图片取整、进度去重、片头存储，以及控件对齐。 */
 public class PlayerMotionRulesTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
+ static double luminance(int c){double sum=0;double[] weights={.2126,.7152,.0722};for(int i=0;i<3;i++){double n=((c>>(16-i*8))&255)/255.0;sum+=weights[i]*(n<=.04045?n/12.92:Math.pow((n+.055)/1.055,2.4));}return sum;}
+ static double contrast(int a,int b){double x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
  public static void main(String[] args)throws Exception{
   check(PlayerOverlayRules.stepSpeed(0.5f,1)==0.6f&&PlayerOverlayRules.stepSpeed(2f,1)==2.25f,"speed steps");
   check(PlayerGestureRules.burstDelta(PlayerGestureRules.RIGHT,PlayerGestureRules.RIGHT,20000,1000)==30000,"taps within 1.3s accumulate");
@@ -53,7 +55,7 @@ public class PlayerMotionRulesTest {
   check(laid.speed==null&&!PlayerLayoutMetrics.SHOW_SPEED_PILL,"on-screen speed pill is not laid out");
   check(PlayerLayoutMetrics.SPEED_BTN_SP==18&&PlayerLayoutMetrics.SPEED_SP==14&&PlayerLayoutMetrics.EPISODE_SP==20,"speed text is 18 and 14 sp, episode line is 20 sp");
   check(PlayerMotionRules.CHROME_IN_MS==280&&PlayerMotionRules.CHROME_OUT_MS==260&&PlayerMotionRules.CONTROLS_TIMEOUT_MS==4000&&PlayerMotionRules.PANEL_IN_MS==220&&PlayerMotionRules.PANEL_OUT_MS==180&&PlayerMotionRules.MENU_DIM_MS==180,"motion durations follow the Hills baseline");
-  check(PlayerTheme.PANEL==0xF0121418&&PlayerTheme.PANEL_SOFT==0xCC1C1B22&&PlayerTheme.CARD==0xF0101820&&PlayerTheme.ACCENT==0xffd7e7f5&&PlayerTheme.RADIUS_PANEL_DP==20&&PlayerTheme.RADIUS_CARD_DP==14&&PlayerTheme.RADIUS_MENU_ROW_DP==12,"theme tokens match the Hills baseline");
+  check(contrast(0xfffaf9f5,PlayerTheme.PANEL)>=7&&contrast(PlayerTheme.ACCENT,PlayerTheme.PANEL)>=4.5&&contrast(PlayerTheme.TEXT_SECONDARY,PlayerTheme.PANEL)>=4.5,"player text and selection remain readable on the dark panel");
   check(PlayerStatus.batteryPercent(88).equals("88%")&&PlayerStatus.batteryPercent(0).equals("0%")&&PlayerStatus.batteryPercent(130).equals("100%"),"battery shows a plain percent");
   check(laid.camera.x==laid.margin,"left column uses the safe margin");
   check(laid.prev.cy()==laid.play.cy()&&laid.play.cy()==laid.next.cy()&&laid.play.x-(laid.prev.right())==laid.next.x-(laid.play.right()),"transport sits on one baseline with even gaps");

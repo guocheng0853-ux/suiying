@@ -1,5 +1,5 @@
 package com.guocheng.mediapocket;
-/** 0.1.130：聚合首页和影院暗金只作为新安装的默认值，升级时不覆盖已经在用的选择。 */
+/** 0.1.130：聚合首页和暖白陶土只作为新安装的默认值，升级时不覆盖已经在用的选择。 */
 final class InstallDefaults {
  private InstallDefaults(){}
  static final class Choice {
@@ -10,6 +10,6 @@ final class InstallDefaults {
  static Choice choose(boolean alreadyUsed,String currentAppearance){
   String appearance=currentAppearance==null||currentAppearance.isEmpty()?"dark":currentAppearance;
   if(alreadyUsed)return new Choice(false,false,appearance);
-  return new Choice(true,true,"gold");
+  return new Choice(true,true,"clay");
  }
 }

@@ -35,23 +35,23 @@ final class CinemaMenu {
   final android.app.Dialog dialog=new android.app.Dialog(a,android.R.style.Theme_Translucent_NoTitleBar);
   final FrameLayout scrim=new FrameLayout(a);scrim.setBackgroundColor(PlayerTheme.SCRIM);scrim.setClickable(true);
   final LinearLayout panel=new LinearLayout(a);panel.setOrientation(LinearLayout.VERTICAL);
-  GradientDrawable bg=new GradientDrawable();bg.setColor(PlayerTheme.PANEL);bg.setCornerRadius(dp(a,PlayerTheme.RADIUS_PANEL_DP));panel.setBackground(bg);
-  panel.setPadding(dp(a,10),dp(a,8),dp(a,10),dp(a,10));
+  GradientDrawable bg=new GradientDrawable();bg.setColor(PlayerTheme.surface(a));if(PlayerTheme.paper(a))bg.setStroke(dp(a,1),CinemaTheme.LINE);bg.setCornerRadius(dp(a,PlayerTheme.RADIUS_PANEL_DP));panel.setBackground(bg);
+  panel.setPadding(dp(a,14),dp(a,12),dp(a,14),dp(a,14));
   int screen=decor.getWidth()>0?decor.getWidth():a.getResources().getDisplayMetrics().widthPixels;
   int width=Math.min(dp(a,PlayerTheme.MENU_WIDTH_MAX_DP),screen-dp(a,40));
   if(title!=null&&!title.isEmpty()){
-   TextView head=new TextView(a);head.setText(title);head.setTextColor(0xffffffff);head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);head.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+   TextView head=new TextView(a);head.setText(title);head.setTextColor(PlayerTheme.text(a));head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);head.setTypeface(PlayerTheme.paper(a)?CinemaTheme.paperTitle(a):android.graphics.Typeface.DEFAULT_BOLD);if(PlayerTheme.paper(a))head.setTextSize(24);
    head.setPadding(dp(a,8),dp(a,6),dp(a,8),dp(a,4));panel.addView(head);
   }
   if(body!=null){if(body.getParent() instanceof ViewGroup)((ViewGroup)body.getParent()).removeView(body);LinearLayout.LayoutParams bl=new LinearLayout.LayoutParams(-1,-2);bl.setMargins(dp(a,8),dp(a,4),dp(a,8),dp(a,8));panel.addView(body,bl);}
   for(final Item it:rows){
    LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);
    row.setMinimumHeight(dp(a,PlayerMotionRules.MENU_ROW_DP));row.setPadding(dp(a,10),dp(a,4),dp(a,10),dp(a,4));
-   GradientDrawable line=new GradientDrawable();line.setColor(it.selected?PlayerTheme.ACCENT_DIM:0x00000000);line.setCornerRadius(dp(a,PlayerTheme.RADIUS_MENU_ROW_DP));
-   android.graphics.drawable.RippleDrawable ripple=new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x33ffffff),line,null);row.setBackground(ripple);
-   TextView label=new TextView(a);label.setText(it.label);label.setTextColor(it.selected?PlayerTheme.ACCENT:0xffffffff);label.setTextSize(PlayerMotionRules.MENU_LABEL_SP);
+   GradientDrawable line=new GradientDrawable();line.setColor(it.selected?PlayerTheme.selection(a):0x00000000);line.setCornerRadius(dp(a,PlayerTheme.RADIUS_MENU_ROW_DP));
+   android.graphics.drawable.RippleDrawable ripple=new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(PlayerTheme.ripple(a)),line,null);row.setBackground(ripple);
+   TextView label=new TextView(a);label.setText(it.label);label.setTextColor(it.selected?PlayerTheme.selectedText(a):PlayerTheme.text(a));label.setTextSize(PlayerMotionRules.MENU_LABEL_SP);
    label.setSingleLine(true);label.setEllipsize(android.text.TextUtils.TruncateAt.END);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
-   if(it.value!=null&&!it.value.isEmpty()){TextView value=new TextView(a);value.setText(it.value);value.setTextColor(PlayerTheme.TEXT_SECONDARY);value.setTextSize(PlayerMotionRules.MENU_VALUE_SP);value.setPadding(dp(a,8),0,0,0);row.addView(value);}
+   if(it.value!=null&&!it.value.isEmpty()){TextView value=new TextView(a);value.setText(it.value);value.setTextColor(PlayerTheme.secondary(a));value.setTextSize(PlayerMotionRules.MENU_VALUE_SP);value.setPadding(dp(a,8),0,0,0);row.addView(value);}
    row.setOnClickListener(v->{
     dismiss(a);
     // 动作挂在 Activity 的窗口上执行：菜单窗口关掉后它自己的 Handler 回调不一定还在

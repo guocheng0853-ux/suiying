@@ -18,7 +18,7 @@ final class HomeChrome {
   t.setCompoundDrawablesWithIntrinsicBounds(new NavIcon(9,dp(18),a.gold?CinemaTheme.GOLD:a.clay?CinemaTheme.CLAY:0xffa2d0ed),null,null,null);t.setCompoundDrawablePadding(dp(6));
   t.setGravity(Gravity.CENTER_VERTICAL);t.setPadding(dp(10),dp(6),dp(12),dp(6));t.setContentDescription("首页内容来源："+label);
   // 0.1.97：压在海报上时看不清，加半透明深色胶囊底
-  t.setBackground(round(0x66000000,18));
+  t.setBackground(round(a.clay?CinemaTheme.SHEET:0x66000000,a.clay?10:18));
   final JSONArray opts=options;t.setOnClickListener(v->pickSource(opts,id,t));return t;
  }
  void pickSource(JSONArray options,String current,View anchor){
@@ -26,7 +26,7 @@ final class HomeChrome {
   FrameLayout overlay=new FrameLayout(a);View dim=new View(a);dim.setBackgroundColor(0xff000000);dim.setAlpha(0);overlay.addView(dim,new FrameLayout.LayoutParams(-1,-1));
   AnimatedPopup popup=new AnimatedPopup(overlay);popup.setClippingEnabled(false);popup.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));popup.setOutsideTouchable(true);
   LinearLayout list=new LinearLayout(a);list.setOrientation(1);list.setPadding(dp(8),dp(8),dp(8),dp(8));
-  ScrollView scroll=new ScrollView(a);scroll.addView(list);scroll.setBackground(round(a.light?0xfffafafa:0xf2302e3a,14));scroll.setElevation(dp(12));scroll.setClipToOutline(true);
+  ScrollView scroll=new ScrollView(a);scroll.addView(list);scroll.setBackground(round(a.clay?CinemaTheme.PAPER:a.light?0xfffafafa:0xf2302e3a,14));scroll.setElevation(dp(a.clay?3:12));scroll.setClipToOutline(true);
   final boolean[] closing={false};
   final Runnable[] after={null};
   Runnable close=()->{if(closing[0])return;closing[0]=true;if(a.isFinishing()||a.isDestroyed()){popup.finish();if(after[0]!=null)after[0].run();return;}dim.animate().alpha(0).setDuration(HomeMotionRules.MENU_MS).start();scroll.animate().alpha(0).scaleX(HomeMotionRules.menuScale(0)).scaleY(HomeMotionRules.menuScale(0)).setDuration(HomeMotionRules.MENU_MS).setInterpolator(new android.view.animation.AccelerateInterpolator()).withEndAction(()->{popup.finish();if(after[0]!=null&&!a.isFinishing())after[0].run();}).start();};

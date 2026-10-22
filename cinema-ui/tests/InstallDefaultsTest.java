@@ -7,7 +7,7 @@ public final class InstallDefaultsTest {
   InstallDefaults.Choice dark=InstallDefaults.choose(true,null);
   check(!dark.writeProvider&&"dark".equals(dark.appearance),"missing appearance stays dark");
   InstallDefaults.Choice fresh=InstallDefaults.choose(false,"dark");
-  check(fresh.writeProvider&&fresh.writeAppearance&&"gold".equals(fresh.appearance),"new install defaults to fusion gold");
+  check(fresh.writeProvider&&fresh.writeAppearance&&"clay".equals(fresh.appearance),"new install defaults to fusion clay");
   System.out.println("PASS: install defaults only rewrite a fresh install.");
  }
 }

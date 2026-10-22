@@ -31,8 +31,8 @@ final class SettingsLayout {
    body.addView(summary(a));
    for(Map.Entry<Integer,List<Object[]>> g:groups.entrySet()){
     List<Object[]> items=g.getValue();if(items.isEmpty())continue;items.sort((x,y)->Integer.compare((Integer)x[0],(Integer)y[0]));
-    TextView head=a.text(SettingsRules.GROUPS[g.getKey()],13,a.muted());head.setTypeface(Typeface.DEFAULT_BOLD);head.setPadding(a.dp(4),a.dp(18),0,a.dp(6));body.addView(head);
-    LinearLayout card=new LinearLayout(a);card.setOrientation(LinearLayout.VERTICAL);card.setBackground(a.rounded(a.card(),16));card.setPadding(0,a.dp(4),0,a.dp(4));
+    TextView head=a.text(SettingsRules.GROUPS[g.getKey()],13,a.muted());head.setTypeface(a.clay?CinemaTheme.paperTitle(a):Typeface.DEFAULT_BOLD);if(a.clay)head.setTextSize(21);head.setPadding(a.dp(4),a.dp(a.clay?28:18),0,a.dp(a.clay?12:6));body.addView(head);
+    LinearLayout card=new LinearLayout(a);card.setOrientation(LinearLayout.VERTICAL);card.setBackground(a.rounded(a.card(),a.clay?12:16));if(a.clay)((android.graphics.drawable.GradientDrawable)card.getBackground()).setStroke(a.dp(1),CinemaTheme.LINE);card.setPadding(0,a.dp(4),0,a.dp(4));
     boolean first=true;for(Object[] it:items){View v=(View)it[1];String label=(String)it[2];if(!first){View line=new View(a);line.setBackgroundColor((a.muted()&0xffffff)|0x26000000);LinearLayout.LayoutParams dl=new LinearLayout.LayoutParams(-1,Math.max(1,a.dp(1)/2));dl.leftMargin=a.dp(16);card.addView(line,dl);}first=false;card.addView(v instanceof Button&&label!=null?row(a,(Button)v,label):detach(v));}
     body.addView(card,new LinearLayout.LayoutParams(-1,-2));
    }
@@ -41,16 +41,16 @@ final class SettingsLayout {
   }catch(Exception ignored){}
  }
  /** 0.1.124 顶部概览卡片：首页来源、Emby 服务器、收藏、离线下载，点了直达对应设置。 */
- static View summary(ScrapedMainActivity a){LinearLayout card=new LinearLayout(a);card.setOrientation(LinearLayout.HORIZONTAL);card.setBackground(a.rounded(a.card(),16));card.setPadding(a.dp(8),a.dp(14),a.dp(8),a.dp(14));
+ static View summary(ScrapedMainActivity a){LinearLayout card=new LinearLayout(a);card.setOrientation(LinearLayout.HORIZONTAL);card.setBackground(a.rounded(a.card(),a.clay?12:16));if(a.clay)((android.graphics.drawable.GradientDrawable)card.getBackground()).setStroke(a.dp(1),CinemaTheme.LINE);card.setPadding(a.dp(8),a.dp(14),a.dp(8),a.dp(14));
   int servers=EmbyStore.list(a).length(),fav=FollowUp.favorites(a).length(),off=OfflineDownloads.list(a).length();
   stat(a,card,String.valueOf(servers),"Emby 服务器",()->EmbyLibraryActivity.manage(a));stat(a,card,String.valueOf(fav),"收藏",()->a.navClick("收藏"));stat(a,card,String.valueOf(off),"离线下载",()->a.startActivity(new android.content.Intent(a,DownloadsActivity.class)));
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.topMargin=a.dp(8);card.setLayoutParams(lp);return card;}
- static void stat(ScrapedMainActivity a,LinearLayout card,String value,String label,Runnable go){LinearLayout cell=new LinearLayout(a);cell.setOrientation(LinearLayout.VERTICAL);cell.setGravity(Gravity.CENTER);TextView v=a.text(value,22,a.ink());v.setTypeface(Typeface.DEFAULT_BOLD);v.setGravity(Gravity.CENTER);cell.addView(v);TextView l=a.text(label,12,a.muted());l.setGravity(Gravity.CENTER);l.setPadding(0,a.dp(2),0,0);cell.addView(l);android.util.TypedValue tv=new android.util.TypedValue();a.getTheme().resolveAttribute(android.R.attr.selectableItemBackground,tv,true);if(tv.resourceId!=0)cell.setBackgroundResource(tv.resourceId);cell.setOnClickListener(x->go.run());card.addView(cell,new LinearLayout.LayoutParams(0,-2,1f));}
+ static void stat(ScrapedMainActivity a,LinearLayout card,String value,String label,Runnable go){LinearLayout cell=new LinearLayout(a);cell.setOrientation(LinearLayout.VERTICAL);cell.setGravity(Gravity.CENTER);TextView v=a.text(value,22,a.ink());v.setTypeface(a.clay?CinemaTheme.paperTitle(a):Typeface.DEFAULT_BOLD);if(a.clay)v.setTextSize(28);v.setGravity(Gravity.CENTER);cell.addView(v);TextView l=a.text(label,12,a.muted());l.setGravity(Gravity.CENTER);l.setPadding(0,a.dp(2),0,0);cell.addView(l);android.util.TypedValue tv=new android.util.TypedValue();a.getTheme().resolveAttribute(android.R.attr.selectableItemBackground,tv,true);if(tv.resourceId!=0)cell.setBackgroundResource(tv.resourceId);cell.setOnClickListener(x->go.run());card.addView(cell,new LinearLayout.LayoutParams(0,-2,1f));}
  static void add(Map<Integer,List<Object[]>> groups,int group,int order,View v,String label){groups.computeIfAbsent(group,k->new ArrayList<>()).add(new Object[]{order,v,label});}
  static View detach(View v){if(v.getParent() instanceof ViewGroup)((ViewGroup)v.getParent()).removeView(v);return v;}
 
  static View row(ScrapedMainActivity a,Button original,String label){
-  LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);row.setMinimumHeight(a.dp(52));row.setPadding(a.dp(16),a.dp(8),a.dp(12),a.dp(8));
+  LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);row.setMinimumHeight(a.dp(a.clay?60:52));row.setPadding(a.dp(16),a.dp(8),a.dp(12),a.dp(8));
   android.util.TypedValue tv=new android.util.TypedValue();a.getTheme().resolveAttribute(android.R.attr.selectableItemBackground,tv,true);if(tv.resourceId!=0)row.setBackgroundResource(tv.resourceId);
   LinearLayout texts=new LinearLayout(a);texts.setOrientation(LinearLayout.VERTICAL);
   String[] t=SettingsRules.toggle(label);String[] kv=SettingsRules.split(label);
@@ -58,7 +58,7 @@ final class SettingsLayout {
   String note=t!=null?t[2]:"";if(!note.isEmpty()){TextView n=a.text(note,12,a.muted());n.setPadding(0,a.dp(2),0,0);texts.addView(n);}
   row.addView(texts,new LinearLayout.LayoutParams(0,-2,1f));
   final Switch sw;
-  if(t!=null){sw=new Switch(a);sw.setChecked("开".equals(t[1]));sw.setClickable(false);sw.setFocusable(false);row.addView(sw);}
+  if(t!=null){sw=new Switch(a);sw.setChecked("开".equals(t[1]));sw.setClickable(false);sw.setFocusable(false);if(a.clay){int[][] states={new int[]{android.R.attr.state_checked},new int[]{}};sw.setThumbTintList(new android.content.res.ColorStateList(states,new int[]{CinemaTheme.CLAY_DEEP,CinemaTheme.STONE}));sw.setTrackTintList(new android.content.res.ColorStateList(states,new int[]{CinemaTheme.CLAY_CHIP,CinemaTheme.LINE}));}row.addView(sw);}
   else{sw=null;String value=kv[1];TextView right=a.text((value.isEmpty()?"":value+"  ")+"›",14,a.muted());right.setPadding(a.dp(8),0,0,0);right.setMaxWidth(a.dp(200));right.setSingleLine(true);right.setEllipsize(android.text.TextUtils.TruncateAt.END);row.addView(right);}
   row.setOnClickListener(v->{remember(a);original.performClick();if(sw!=null)row.post(()->{String[] now=SettingsRules.toggle(original.getText().toString());if(now!=null)sw.setChecked("开".equals(now[1]));});});
   row.setOnLongClickListener(v->{remember(a);return original.performLongClick();});

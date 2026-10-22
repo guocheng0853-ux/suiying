@@ -2,7 +2,7 @@ package com.guocheng.mediapocket;
 /** 音量 / 亮度药丸的尺寸和安全区位置。横竖屏都避开挖孔和系统栏。 */
 final class LevelHudMetrics {
  static final int PAD_H=14,PAD_V=10,ICON=22,BAR_H=6,GAP=10,TEXT_W=48,WIDTH=208,HEIGHT=48,RADIUS=24;
- static final int FG=0xFFFFFFFF,TRACK=0x33FFFFFF,FILL=0xFFFFFFFF,BOOST=0xFFFFB74D,PILL=0xF21A1C22,STROKE=0x66FFFFFF;
+ static final int FG=0xFFFAF9F5,TRACK=0x33FAF9F5,FILL=0xFFE6A58D,BOOST=0xFFD97757,PILL=0xF2141413,STROKE=0x44B0AEA5;
  static final int FADE_IN_MS=160,FADE_OUT_MS=280,HOLD_MS=1000;
  private LevelHudMetrics(){}
  static int top(float density,int cutTop,boolean portrait){float d=density<=0f?1f:density;return Math.max(0,cutTop)+Math.round((portrait?28:16)*d);}
