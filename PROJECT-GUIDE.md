@@ -1,6 +1,6 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前版本 0.1.120（versionCode 121）。先读本说明，再读 `cinema-ui/README.md` 顶部更新记录、`HANDOFF-CODEX-DEVICE.md` 和 `DEVICE-VALIDATION.md`。不要把构建或合并当作完整真机验证通过。
+> 当前版本 0.1.130（versionCode 131）。先读本说明，再读 `cinema-ui/README.md` 顶部更新记录、`HANDOFF-CODEX-DEVICE.md` 和 `DEVICE-VALIDATION.md`。不要把构建或合并当作完整真机验证通过。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 1. 这是什么
@@ -42,7 +42,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 
 ## 4. 构建与测试
 
-**Linux**：`sh scripts/setup_build_tools.sh`（一次）→ `python3 cinema-ui/build_ui.py` → `python3 cinema-ui/verify_apk.py` → `sh scripts/run_tests.sh`。
+**Linux**：`sh scripts/setup_build_tools.sh`（一次）→ `python3 cinema-ui/build_ui.py`（无密钥时加 `--unsigned`，否则拒绝写出未签名的正式包）→ `python3 cinema-ui/verify_apk.py` → `sh scripts/run_tests.sh`。
 流水线：ecj 编 stubs / src → D8 转 dex（min-api 26）→ dexlib2 补丁原版 dex 并自检 → aapt2 打清单 → zipalign（`-P 16`，16KB 页对齐）→ apksigner 签名 → verify。
 **Windows（用户这台电脑）**：用本地的 `cinema-ui/build/build_win.py`（不在仓库，build_ui.py 的 Windows 适配，用 SDK 的 aapt2 / zipalign / d8 / apksigner）。Python 用 `uv.exe run --no-project python`。中文 Windows 上 JDK 默认 GBK：读写文件一律指定 UTF-8。详见 HANDOFF-NEXT-AI.md。
 

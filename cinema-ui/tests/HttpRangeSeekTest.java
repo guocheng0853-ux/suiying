@@ -1,0 +1,65 @@
+package com.guocheng.mediapocket;
+public final class HttpRangeSeekTest {
+ static void check(boolean ok,String what){if(!ok)throw new AssertionError(what);}
+ public static void main(String[] a){
+  long huge=HttpRange.MAX_SKIP+1;
+  HttpRange.SeekCap idle=new HttpRange.SeekCap();
+  check(!idle.rejects(80L*1024*1024,huge),"open, resume and moov are not capped");
+  HttpRange.SeekCap cap=new HttpRange.SeekCap();
+  int before=cap.generation;
+  cap.arm(600000);
+  check(cap.generation==before+1&&cap.targetMs==600000,"arm records generation and target");
+  check(!cap.rejects(0,huge)&&cap.byteAt==Long.MIN_VALUE,"a header read does not claim the seek");
+  check(!cap.rejects(2048,2048)&&cap.byteAt==2048,"a small skip is allowed and noted");
+  check(cap.rejects(90L*1024*1024,huge),"the oversized ignored-range read is the seek");
+  check(cap.rejects(90L*1024*1024,huge),"a later retry of that position is still rejected");
+  check(!cap.rejects(2048,2048),"a different position is not capped");
+  cap.landed(cap.targetMs+20000);
+  check(cap.armed,"ready far from the target keeps the seek armed");
+  cap.landed(cap.targetMs+500);
+  check(!cap.armed&&!cap.rejects(90L*1024*1024,huge),"landing disarms, so a later rebuffer is not capped");
+  cap.arm(1000);
+  check(cap.generation==before+2&&cap.byteAt==Long.MIN_VALUE,"a new seek drops the previous byte position");
+  check(HttpRange.SKIP_ERROR==2008,"skip failure uses the non-retriable position error");
+  HttpRange.SeekCap stuck=new HttpRange.SeekCap();
+  stuck.arm(8000,0);
+  stuck.discontinuity(HttpRange.SeekCap.REASON_SEEK,8000,false);
+  check(stuck.armed,"a seek still buffering keeps the cap until the open");
+  check(stuck.rejects(90L*1024*1024,huge,1000),"that open is still capped");
+  stuck.discontinuity(0,8000,false);
+  check(!stuck.armed,"a discontinuity that is not this seek disarms");
+  stuck.arm(8000,0);
+  stuck.discontinuity(HttpRange.SeekCap.REASON_SEEK,0,true);
+  check(stuck.armed,"ready far from the target does not disarm");
+  stuck.discontinuity(HttpRange.SeekCap.REASON_SEEK,8000,true);
+  check(!stuck.armed&&!stuck.rejects(90L*1024*1024,huge,1000),"an in-buffer seek disarms without waiting for READY");
+  stuck.arm(8000,0);
+  stuck.discontinuity(HttpRange.SeekCap.REASON_SEEK_ADJUSTMENT,8100,true);
+  check(!stuck.armed,"a seek adjustment that lands while ready disarms");
+  stuck.arm(8000,0);
+  stuck.opened(0,0);
+  check(stuck.armed,"opening the header does not disarm");
+  long probe=HttpRange.SeekCap.PROBE_SKIP;
+  stuck.rejects(probe,probe,1000);
+  stuck.opened(probe,probe);
+  check(stuck.armed,"a probe open leaves the cap armed");
+  check(stuck.rejects(90L*1024*1024,huge,1500),"the oversized read is still the seek");
+  stuck.arm(8000,0);
+  long body=probe+1;
+  stuck.rejects(body,body,1000);
+  stuck.opened(body,body);
+  check(!stuck.armed,"the first successful open of the seek body disarms");
+  stuck.arm(8000,0);
+  stuck.opened(5L*1024*1024,0);
+  check(!stuck.armed,"a honored range at a positive position disarms");
+  stuck.arm(8000,0);
+  stuck.expire(HttpRange.SeekCap.TIMEOUT_MS);
+  check(stuck.armed,"the deadline itself is still inside the window");
+  stuck.expire(HttpRange.SeekCap.TIMEOUT_MS+1);
+  check(!stuck.armed,"expire disarms after the timeout");
+  stuck.arm(8000,0);
+  check(stuck.rejects(90L*1024*1024,huge,HttpRange.SeekCap.TIMEOUT_MS),"inside the window the seek is still rejected");
+  check(!stuck.rejects(90L*1024*1024,huge,HttpRange.SeekCap.TIMEOUT_MS+1)&&!stuck.armed,"timeout disarms so a later rebuffer is not capped");
+  System.out.println("PASS: 64MB skip cap follows the seek, and disarms on in-buffer discontinuity, successful open, and timeout.");
+ }
+}

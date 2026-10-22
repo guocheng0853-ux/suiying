@@ -3,6 +3,8 @@ import android.app.*;import android.content.Intent;import android.os.SystemClock
 /** 开播、向 Emby 回报进度，以及剧集自动下一集。网络在后台线程。 */
 final class EmbyPlayback {
  static final ExecutorService IO=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"emby-play");t.setDaemon(true);return t;});
+ /** 409 时不要在开播线程上 sleep，也不要再 release 一次（第一次 take 已经把会话清掉了）。 */
+ static final ScheduledExecutorService RETRY=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"emby-play-delay");t.setDaemon(true);return t;});
  static final Map<Activity,State> ALL=new WeakHashMap<>();
  static final class State {String serverId,item,media,session;boolean direct,started,paused,marked,seeked,stopped;long resumeMs,runtimeTicks,lastReport,lastPos,maxPos;String lastProgress;}
  private EmbyPlayback(){}
@@ -17,13 +19,15 @@ final class EmbyPlayback {
   if(a==null||a.isFinishing()||server==null||itemId==null||itemId.isEmpty()){handoffDone(a);return;}CinemaWait wait=CinemaWait.show(a,"正在准备播放","正在向 Emby 请求播放信息…",true,true);final boolean[] cancel={false};wait.setOnCancelListener(d->{cancel[0]=true;handoffDone(a);});
   final boolean episodeHandoff=SWITCHING.containsKey(a)||(a instanceof SystemPlayerActivity&&((SystemPlayerActivity)a).changing&&!TrackSelection.stream(a).optString("emby.item").equals(itemId));
   final int audio=pendingAudio,sub=pendingSub,keep=EmbyResumeRules.keep(replace,TrackSelection.stream(a).optString("emby.item"),itemId,position(a));final long bitrate=pendingBitrate;pendingAudio=-1;pendingSub=-1;pendingBitrate=-1;
-  IO.execute(()->{try{
-   EmbySessions.release(a);
+  final boolean[] retried={false};
+  IO.execute(new Runnable(){public void run(){try{
+   if(cancel[0]||a.isFinishing()){a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();handoffDone(a);});return;}
+   if(!retried[0])EmbySessions.release(a);
    String[] bases=EmbyCue.bases(server.optString("url"),server.optJSONArray("backups"));if(bases.length==0)bases=new String[]{server.optString("url")};
    Exception last=null;JSONObject working=null,item=null,info=null;EmbyApi.Choice choice=null;
    for(String base:bases){JSONObject attempt=new JSONObject(server.toString());attempt.put("url",base);attempt.remove("backups");try{
      item=EmbyClient.item(a,attempt,itemId);JSONObject user=item.optJSONObject("UserData");long resume=keep>10000?keep:EmbyApi.ticksToMs(user==null?0:user.optLong("PlaybackPositionTicks"));
-     try{info=EmbyClient.playbackInfo(a,attempt,itemId,EmbyApi.msToTicks(resume),mediaSourceId,audio,sub,bitrate);}catch(java.io.IOException busy){if(!EmbyApi.conflict(busy))throw busy;DebugLog.event("Emby","HTTP 409，2 秒后重试一次");EmbySessions.release(a);Thread.sleep(2000);info=EmbyClient.playbackInfo(a,attempt,itemId,EmbyApi.msToTicks(resume),mediaSourceId,audio,sub,bitrate);}
+     try{info=EmbyClient.playbackInfo(a,attempt,itemId,EmbyApi.msToTicks(resume),mediaSourceId,audio,sub,bitrate);}catch(java.io.IOException busy){if(!EmbyApi.conflict(busy)||retried[0])throw busy;retried[0]=true;DebugLog.event("Emby","HTTP 409，2 秒后重试一次");RETRY.schedule(()->IO.execute(this),2,TimeUnit.SECONDS);return;}
      JSONArray versions=EmbyCue.versions(info.optJSONArray("MediaSources"));
      if((mediaSourceId==null||mediaSourceId.isEmpty())&&versions.length()>1&&!episodeHandoff){JSONObject chosenItem=item,chosenInfo=info,route=attempt;a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();handoffDone(a);if(cancel[0]||a.isFinishing())return;pickVersion(a,route,itemId,versions,replace);});return;}
      choice=EmbyApi.select(attempt.optString("url"),itemId,attempt.optString("token"),info,mediaSourceId,EmbyApi.clientOf(attempt));working=attempt;break;
@@ -43,7 +47,7 @@ final class EmbyPlayback {
      Intent in=new Intent(a,PlayerActivity.class);in.putExtra("stream",first.toString());in.putExtra("sources",list.toString());in.putExtra("id",watch);in.putExtra("type",meta.optString("type","movie"));in.putExtra("meta",meta.toString());in.putExtra("addons",a.getSharedPreferences("data",0).getString("addons","[]"));a.startActivity(in);a.overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out);if(replace)a.finish();};
     // 0.1.111：杜比视界 P5 在 VLC 里会发紫发绿，按设置改用系统解码 / 服务器转码，或询问
     if(DolbyRules.risky(dolby))DolbyChoice.decide(a,dolby,stream.optString("url"),()->{if(ExternalVideo.open(a,stream.optString("url"),meta.optString("name"),pos,ExternalVideo.headers(stream))){if(replace)a.finish();}else vlc.accept(false);},()->{Intent back=new Intent(a,PlayerActivity.class);back.putExtra("stream",stream.toString());back.putExtra("sources",all.toString());back.putExtra("id",watch);back.putExtra("type",meta.optString("type","movie"));back.putExtra("meta",meta.toString());back.putExtra("addons",a.getSharedPreferences("data",0).getString("addons","[]"));SystemPlayerActivity.open(a,stream,watch,meta.optString("name"),pos,back);if(replace)a.finish();},()->vlc.accept(true),()->vlc.accept(false));else vlc.accept(false);});
-  }catch(Exception e){a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();handoffDone(a);if(!a.isFinishing())Toast.makeText(a,EmbyApi.explain(e),Toast.LENGTH_LONG).show();});}});}
+  }catch(Exception e){a.runOnUiThread(()->{if(wait.isShowing())wait.dismiss();handoffDone(a);if(!a.isFinishing())Toast.makeText(a,EmbyApi.explain(e),Toast.LENGTH_LONG).show();});}}});}
  static void handoffDone(Activity a){if(a==null)return;SWITCHING.remove(a);if(a instanceof SystemPlayerActivity)((SystemPlayerActivity)a).changing=false;}
  static void pickVersion(Activity a,JSONObject server,String itemId,JSONArray versions,boolean replace){String[] labels=new String[versions.length()];for(int i=0;i<versions.length();i++)labels[i]=versions.optJSONObject(i).optString("name","版本");new CinemaDialog(a).setTitle("选择版本").setItems(labels,(d,i)->{JSONObject v=versions.optJSONObject(i);if(v!=null)playItem(a,server,itemId,v.optString("id"),replace);}).setNegativeButton("取消",null).show();}
  /** True means the Emby request was handled, including failures that keep the old page. */
@@ -61,5 +65,5 @@ final class EmbyPlayback {
  static void mark(Activity a,State s){IO.execute(()->{try{JSONObject server=EmbyStore.get(a,s.serverId);if(server!=null)EmbyClient.played(a,server,s.item);}catch(Exception ignored){}});}
  static int position(Activity a){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"getCurrentPosition",new Class<?>[0]);return r instanceof Integer?(Integer)r:-1;}catch(Exception e){return -1;}}
  static boolean playing(Activity a){try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"isPlaying",new Class<?>[0]);return Boolean.TRUE.equals(r);}catch(Exception e){return false;}}
- static boolean seek(Activity a,int ms){try{Object video=OnlineSubtitleSearch.field(a,"video");if(video==null)return false;try{OnlineSubtitleSearch.call(video,"seekTo",new Class<?>[]{int.class},ms);}catch(Exception e){OnlineSubtitleSearch.call(video,"seek",new Class<?>[]{int.class},ms);}return true;}catch(Exception e){return false;}}
+ static boolean seek(Activity a,int ms){try{Object video=OnlineSubtitleSearch.field(a,"video");if(video==null)return false;try{OnlineSubtitleSearch.call(video,"seekTo",new Class<?>[]{int.class,boolean.class},ms,Boolean.TRUE);return true;}catch(NoSuchMethodException missing){}try{OnlineSubtitleSearch.call(video,"seekTo",new Class<?>[]{int.class},ms);}catch(Exception e){OnlineSubtitleSearch.call(video,"seek",new Class<?>[]{int.class},ms);}return true;}catch(Exception e){return false;}}
 }

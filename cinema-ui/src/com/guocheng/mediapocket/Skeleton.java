@@ -8,17 +8,26 @@ final class Skeleton {
  private Skeleton(){}
  static int dp(Context c,int v){return Math.round(v*c.getResources().getDisplayMetrics().density);}
  static View block(Context c,int color,int w,int h,int radius){View v=new View(c);GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(c,radius));v.setBackground(g);v.setLayoutParams(new LinearLayout.LayoutParams(w,h));return v;}
- static <T extends View> T pulse(T v){ObjectAnimator a=ObjectAnimator.ofFloat(v,"alpha",1f,.45f);a.setDuration(700);a.setRepeatMode(ValueAnimator.REVERSE);a.setRepeatCount(ValueAnimator.INFINITE);a.start();v.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View x){if(!a.isStarted())a.start();}public void onViewDetachedFromWindow(View x){a.cancel();}});v.setTag("mp-skeleton");return v;}
+ /** 和字幕样式的 0x7f0a7302、预览条的 0x7f0a7301 错开，避免暂停骨架时把别的标记清掉。 */
+ static final int TAG_ANIM=0x7f0a7303;
+ /** 只让灰色小块呼吸。容器本身保持不透明，避免整行离屏合成。 */
+ static <T extends View> T pulse(T v){pulseBlocks(v);v.setTag("mp-skeleton");return v;}
+ static void pulseBlocks(View v){if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;if(g.getChildCount()==0)start(v);else for(int i=0;i<g.getChildCount();i++)pulseBlocks(g.getChildAt(i));}else start(v);}
+ static void start(View v){ObjectAnimator a=ObjectAnimator.ofFloat(v,"alpha",1f,.45f);a.setDuration(700);a.setRepeatMode(ValueAnimator.REVERSE);a.setRepeatCount(ValueAnimator.INFINITE);a.start();v.setTag(TAG_ANIM,a);v.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View x){if(a.isPaused())a.resume();else if(!a.isStarted())a.start();}public void onViewDetachedFromWindow(View x){a.cancel();}});}
+ static void pause(View v){walk(v,true);}static void resume(View v){walk(v,false);}
+ static void walk(View v,boolean pause){if(v==null)return;Object tag=v.getTag(TAG_ANIM);if(tag instanceof ObjectAnimator){ObjectAnimator a=(ObjectAnimator)tag;if(pause){if(a.isStarted())a.pause();}else if(a.isPaused())a.resume();}if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)walk(g.getChildAt(i),pause);}}
 
  /** 首页一个分区：标题条 + 一行横向卡片（landscape=true 为继续观看的横版卡）。 */
  static View shelf(Context c,int color,boolean landscape,int count){LinearLayout box=new LinearLayout(c);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(0,dp(c,14),0,dp(c,6));
   View title=block(c,color,dp(c,120),dp(c,18),6);((LinearLayout.LayoutParams)title.getLayoutParams()).bottomMargin=dp(c,10);box.addView(title);
-  LinearLayout row=new LinearLayout(c);int w=landscape?dp(c,200):dp(c,110),h=landscape?Math.round(w/1.72f):Math.round(w*1.5f);
+  LinearLayout row=new LinearLayout(c);int w=cardWidth(c,landscape),h=landscape?Math.round(w/1.72f):Math.round(w*1.5f);
   for(int i=0;i<count;i++){LinearLayout cell=new LinearLayout(c);cell.setOrientation(LinearLayout.VERTICAL);cell.addView(block(c,color,w,h,10));View t=block(c,color,Math.round(w*.7f),dp(c,10),4);((LinearLayout.LayoutParams)t.getLayoutParams()).topMargin=dp(c,8);cell.addView(t);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(w,-2);lp.rightMargin=dp(c,10);row.addView(cell,lp);}
   HorizontalScrollView hs=new HorizontalScrollView(c);hs.setHorizontalScrollBarEnabled(false);hs.addView(row);box.addView(hs);return pulse(box);}
 
  /** 只有一行卡片、不带标题（标题已经由分区自己画了）。 */
- static View row(Context c,int color,boolean landscape,int count){LinearLayout row=new LinearLayout(c);row.setPadding(0,0,0,dp(c,6));int w=landscape?dp(c,200):dp(c,110),h=landscape?Math.round(w/1.72f):Math.round(w*1.5f);
+ /** 和首页海报卡片同一套宽度：一屏大约三张，上限 150dp，高度 1.5 倍。横版续播卡另算。 */
+ static int cardWidth(Context c,boolean landscape){android.util.DisplayMetrics m=c.getResources().getDisplayMetrics();int available=m.widthPixels-dp(c,32);int width=landscape?(available-dp(c,10))/2:(available-dp(c,20))/3;return Math.max(dp(c,48),Math.min(width,dp(c,landscape?220:150)));}
+ static View row(Context c,int color,boolean landscape,int count){LinearLayout row=new LinearLayout(c);row.setPadding(0,0,0,dp(c,6));int w=cardWidth(c,landscape),h=landscape?Math.round(w/1.72f):Math.round(w*1.5f);
   for(int i=0;i<count;i++){LinearLayout cell=new LinearLayout(c);cell.setOrientation(LinearLayout.VERTICAL);cell.addView(block(c,color,w,h,10));View t=block(c,color,Math.round(w*.7f),dp(c,10),4);((LinearLayout.LayoutParams)t.getLayoutParams()).topMargin=dp(c,8);cell.addView(t);LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(w,-2);lp.rightMargin=dp(c,10);row.addView(cell,lp);}
   HorizontalScrollView hs=new HorizontalScrollView(c);hs.setHorizontalScrollBarEnabled(false);hs.addView(row);return pulse(hs);}
  /** 海报网格（媒体库、影视仓分类）。 */

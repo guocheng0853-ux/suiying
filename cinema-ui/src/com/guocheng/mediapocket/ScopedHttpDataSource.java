@@ -33,9 +33,11 @@ final class ScopedHttpDataSource extends BaseDataSource implements HttpDataSourc
     if(plan.reject||((code<200||code>299)&&!plan.empty)){byte[] err=readLimited(c.getErrorStream());HttpURLConnection bad=c;c=null;bad.disconnect();throw new InvalidResponseCodeException(code,"",null,responseHeaders,spec,err);}
     if(plan.empty){c.disconnect();c=null;input=new ByteArrayInputStream(new byte[0]);remaining=0;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;return plan.read;}
     input=c.getInputStream();connection=c;c=null;uri=Uri.parse(current.toString());transferStarted(spec);opened=true;
-    // 0.1.121：服务器不支持从中间读时，跳过的部分要整段下载；超过 64 MB 就不硬读（4K 片源拖动会白下几个 GB），直接报原因
-    if(plan.skip>HttpRange.MAX_SKIP)throw new IOException("服务器不支持从中间读取（拖到这里要先下载 "+OfflineRules.size(plan.skip)+"），请从头播放或换一条线路");
+    // 64 MB 上限只拦这一次用户拖动认领的字节位置。续播、第一次打开、读 moov 没有 armSeek，不拦。
+    // 错误码 2008，Exo 不重试；倒计时过了再重试就会把整段下下来。
+    if(HttpRange.rejectSeek(spec.position,plan.skip)){InputStream openedIn=input;HttpURLConnection openedConn=connection;input=null;connection=null;try{if(openedIn!=null)openedIn.close();}catch(IOException ignored){}if(openedConn!=null)openedConn.disconnect();if(opened){opened=false;transferEnded();}throw new HttpDataSource.HttpDataSourceException(HttpRange.SKIP_MESSAGE,spec,HttpRange.SKIP_ERROR,HttpDataSource.HttpDataSourceException.TYPE_OPEN);}
     if(plan.skip>0)skipFully(input,plan.skip);
+    HttpRange.openedSeek(spec.position,plan.skip);
     remaining=plan.read;return remaining>=0?remaining:C.LENGTH_UNSET;}
    throw new IOException("重定向次数过多");
   }catch(HttpDataSourceException e){throw e;}catch(IOException e){if(c!=null)c.disconnect();if(connection!=null||input!=null||opened)try{close();}catch(HttpDataSourceException ignored){}throw HttpDataSourceException.createForIOException(e,spec,HttpDataSourceException.TYPE_OPEN);}

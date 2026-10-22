@@ -56,7 +56,7 @@ public final class BackupActivity extends Activity {
  }
  String read(Uri uri)throws Exception{try(InputStream in=getContentResolver().openInputStream(uri)){if(in==null)throw new IOException("无法读取文件");ByteArrayOutputStream b=new ByteArrayOutputStream();byte[] buf=new byte[16384];int n;long total=0;while((n=in.read(buf))>0){total+=n;if(total>32L*1024*1024)throw new IOException("文件太大，不像随影备份");b.write(buf,0,n);}return b.toString("UTF-8");}}
  void apply(JSONObject root)throws Exception{
-  boolean withSecrets=root.optBoolean("secrets",true);JSONObject prefs=root.getJSONObject("prefs");
+  try{boolean withSecrets=root.optBoolean("secrets",true);JSONObject prefs=root.getJSONObject("prefs");
   for(Iterator<String> files=prefs.keys();files.hasNext();){String name=files.next();if(!name.matches("[A-Za-z0-9._-]{1,80}"))continue;JSONObject section=prefs.optJSONObject(name);if(section==null)continue;
    SharedPreferences sp=getSharedPreferences(name,0);SharedPreferences.Editor e=sp.edit();
    for(Iterator<String> keys=section.keys();keys.hasNext();){String k=keys.next();JSONObject cell=section.optJSONObject(k);if(cell==null||BackupRules.skip(k))continue;String t=cell.optString("t");
@@ -69,6 +69,7 @@ public final class BackupActivity extends Activity {
      case "ss":{JSONArray arr=cell.optJSONArray("v");Set<String> set=new HashSet<>();for(int i=0;arr!=null&&i<arr.length();i++)set.add(arr.optString(i));e.putStringSet(k,set);break;}
      default:break;}}
    if(!e.commit())throw new IOException("写入设置失败："+name);}
+  }finally{EmbyStore.invalidate();}
  }
  void restart(){Intent home=new Intent(this,ScrapedMainActivity.class);home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);startActivity(home);finish();}
  static List<String> prefsFiles(Context c){List<String> out=new ArrayList<>();File dir=new File(c.getApplicationInfo().dataDir,"shared_prefs");String[] names=dir.list();if(names!=null)for(String n:names){if(!n.endsWith(".xml"))continue;String base=n.substring(0,n.length()-4);if(base.startsWith("WebView")||base.startsWith("com.google")||base.startsWith("androidx")||base.equals("offline.progress"))continue;out.add(base);}if(!out.contains("data"))out.add("data");Collections.sort(out);return out;}

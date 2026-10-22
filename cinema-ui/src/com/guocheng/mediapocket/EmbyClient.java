@@ -69,8 +69,8 @@ final class EmbyClient {
   String client=EmbyApi.clientOf(server);boolean clientRetried=false;
   for(int i=0;i<bases.length;i++){
    try{HttpResult r=exchange(method,EmbyApi.join(bases[i],path),EmbyApi.authorization(client,"Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"),bytes,true);
-    if(!clientRetried){EmbyApi.AuthAttempt plan=EmbyApi.authAttempt(client,r.code,r.body,false);if(plan.retry){client=plan.client;server.put("client",client);clientRetried=true;r=exchange(method,EmbyApi.join(bases[i],path),EmbyApi.authorization(client,"Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"),bytes,true);}}
-    if(r.code==401&&retry){authenticate(c,server,server.optString("username"),server.optString("password"));EmbyStore.save(c,server);return call(c,server,method,path,body,false);}
+    if(!clientRetried){EmbyApi.AuthAttempt plan=EmbyApi.authAttempt(client,r.code,r.body,false);if(plan.retry){client=plan.client;server.put("client",client);clientRetried=true;try{EmbyStore.mergeAuth(c,server);}catch(Exception ignored){}r=exchange(method,EmbyApi.join(bases[i],path),EmbyApi.authorization(client,"Android",EmbyStore.deviceId(c),EmbyApi.VERSION,server.optString("token")),server.optString("token"),bytes,true);}}
+    if(r.code==401&&retry){authenticate(c,server,server.optString("username"),server.optString("password"));EmbyStore.mergeAuth(c,server);return call(c,server,method,path,body,false);}
     if(r.code==401)throw new IOException("HTTP 401");
     if(EmbyApi.clientRejected(r.code,r.body))throw new IOException(EmbyApi.authAttempt(client,r.code,r.body,true).error);
     if(r.code>=500&&i+1<bases.length){last=new IOException("HTTP "+r.code);continue;}
