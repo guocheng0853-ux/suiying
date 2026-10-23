@@ -28,6 +28,7 @@ final class FusionCatalog {
   for(int i=0;i<Math.min(list.length(),72);i++){JSONObject v=list.optJSONObject(i);if(v==null||v.optString("vod_id").isEmpty())continue;
    String pic=v.optString("vod_pic");try{if(!pic.isEmpty())pic=TvPosterRules.resolve(s.url,pic);}catch(Exception e){pic="";}
    JSONObject m=new JSONObject().put("id",v.optString("vod_id")).put("type","movie").put("name",v.optString("vod_name","影片")).put("poster",pic).put("background",pic).put("description",plain(v.optString("vod_content"))).put("releaseInfo",v.optString("vod_year")).put("fusion.config",s.url).put("fusion.site",s.site.optString("key")).put("fusion.source",s.site.optString("name","影视仓")).put("fusion.category",category);
+   long stamp=AggregateRules.epoch(v.optString("vod_time"));if(stamp<=0)stamp=AggregateRules.epoch(v.optString("vod_year"));if(stamp>0)m.put("agg.time",stamp);
    String rating=v.optString("vod_douban_score");try{double score=Double.parseDouble(rating);if(score>0&&score<=10)m.put("imdbRating",rating);}catch(Exception ignored){}out.put(m);
   }return out;
  }
