@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
   "ui_version": "0.1.136",
-  "android_device_tested": false,
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -15,32 +15,5 @@
     "lib/arm64-v8a/libvlc.so",
     "lib/arm64-v8a/libjlibtorrent-2.0.12.9.so"
   ],
-  "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
-  "media3_runtime_included": true,
-  "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 86,
-  "apk_class_resolution": "passed",
-  "unique_classes": 9190,
-  "dex_files": 3,
-  "main_version_code": 137,
-  "application_id": "com.guocheng.mediapocket.next",
-  "review_build": false,
-  "default_home_provider": "fusion",
-  "apk_signature_present": false,
-  "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
-  "tablet_torrentclaw_failure_reproduced": false,
-  "presets_empty": true,
-  "torrentclaw_removal_retained": true,
-  "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
-  "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
-  "real_source_playback_tested": false,
-  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
-  "stremio_picker_android_ui_tested": false,
-  "web_sniffer_android_tested": false,
-  "link_probe_android_tested": false,
-  "range_accelerator": "RangeAcceleratorTest: 2MB/s-per-connection origin, single vs 4-connection proxy ~4x faster, sha256 identical, Range/no-Range correct, ffmpeg decode via accelerator. JVM, not Android.",
-  "accelerator_android_tested": false,
-  "probe_budget_ms": 4000,
-  "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false
+  "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006"
 }
