@@ -42,6 +42,8 @@ final class AggregateHome {
   void open(){if(key.equals("fresh")){if(!fusionCategory.isEmpty())a.openFusion(fusionCategory);return;}if(key.equals("anime"))a.genreBrowse("series","Animation");else if(key.equals("doc"))a.genreBrowse("movie","Documentary");else a.genreBrowse(type,"");}
   void skip(String source){waiting.remove(source);if(waiting.isEmpty())schedule();}
   void put(String source,JSONArray items,boolean last){if(items!=null)parts.put(source,items);if(last)waiting.remove(source);schedule();}
+  /** 这个来源结束，但不替换已经放进这一行的条目。 */
+  void complete(String source){waiting.remove(source);schedule();}
   void schedule(){a.carousel.removeCallbacks(paintLater);if(!opened){if(waiting.isEmpty())paintNow();else a.carousel.postDelayed(paintLater,300);}else a.carousel.postDelayed(paintLater,500);}
   void paintNow(){a.carousel.removeCallbacks(paintLater);opened=true;final List<JSONArray> lists=new ArrayList<>();for(String s:order)lists.add(parts.get(s));final List<JSONArray> earlier=new ArrayList<>();for(Row r:rows.values()){if(r==this)break;if(r.lastMerged!=null)earlier.add(r.lastMerged);}final int gen=++paintGen;final boolean done=waiting.isEmpty();final boolean freshRow=key.equals("fresh");
    MERGE.execute(()->{JSONArray merged=AggregateRules.merge(lists,80,taste(freshRow));Set<String> ids=new HashSet<>();List<AggregateRules.Ident> idents=new ArrayList<>();for(JSONArray prev:earlier)AggregateRules.collectShown(prev,ids,idents);JSONArray filtered=AggregateRules.withoutShown(merged,ids,idents);JSONArray capped=new JSONArray();for(int i=0;i<filtered.length()&&i<20;i++)capped.put(filtered.opt(i));ui(()->applyPaint(gen,capped,done));});}
@@ -78,9 +80,9 @@ final class AggregateHome {
 
  // ---------- Emby ----------
  void emby(int index,JSONObject server){final String src=AggregateRules.EMBY+"#"+index;
-  EmbyHome.IO.execute(()->{JSONObject cached=EmbyHome.readCache(a,server);if(cached!=null){EmbySlice slice=slice(server,cached);ui(()->applyEmby(src,slice,true,false));}
-   try{JSONObject data=EmbyHome.fetch(a,server,partial->{EmbySlice early=slice(server,partial);ui(()->applyEmby(src,early,false,false));},EMBY_BUDGET_MS);EmbyHome.writeCache(a,server,data);EmbySlice slice=slice(server,data);ui(()->applyEmby(src,slice,true,true));}
-   catch(Exception e){DebugLog.event("聚合首页","Emby 读取失败 · "+EmbyApi.explain(e));ui(()->finishEmby(src));}});}
+  EmbyHome.IO.execute(()->{JSONObject cached=EmbyHome.readCache(a,server);if(cached!=null){EmbySlice slice=slice(server,cached);ui(()->applyEmby(src,slice,true,false,false));}
+   try{JSONObject data=EmbyHome.fetch(a,server,partial->{EmbySlice early=slice(server,partial);ui(()->applyEmby(src,early,false,false,false));},EMBY_BUDGET_MS);AggregateRules.EmbyKeep plan=AggregateRules.embyKeep(cached,data,false);if(plan.writeCache)EmbyHome.writeCache(a,server,data);EmbySlice slice=slice(server,data);final boolean keepRows=plan.keepRows;ui(()->applyEmby(src,slice,true,true,keepRows));}
+   catch(Exception e){DebugLog.event("聚合首页","Emby 读取失败 · "+EmbyApi.explain(e));AggregateRules.EmbyKeep plan=AggregateRules.embyKeep(cached,null,true);ui(()->finishEmby(src,plan.keepRows));}});}
  static final class EmbySlice {final JSONArray resume,fresh,movies,series,anime,doc;EmbySlice(JSONArray resume,JSONArray fresh,JSONArray movies,JSONArray series,JSONArray anime,JSONArray doc){this.resume=resume;this.fresh=fresh;this.movies=movies;this.series=series;this.anime=anime;this.doc=doc;}
   JSONArray forRow(String key){if("fresh".equals(key))return fresh;if("movie".equals(key))return movies;if("series".equals(key))return series;if("anime".equals(key))return anime;if("doc".equals(key))return doc;return new JSONArray();}}
  /** 各库按类型归行，同时都作为「最近更新」的候选。不再把 30 条混合结果切成电影和剧集。 */
@@ -91,11 +93,14 @@ final class AggregateHome {
    String libraryRow=AggregateRules.rowForEmby(null,name,ctype);if(!"anime".equals(libraryRow)&&!"doc".equals(libraryRow))libraryRow="";JSONArray cards=EmbyHome.metas(a,server,latest.optJSONArray(i),false,ed,wrote);
    for(int j=0;j<cards.length();j++){JSONObject m=cards.optJSONObject(j);if(m==null)continue;fresh.put(m);String row=libraryRow.isEmpty()?AggregateRules.rowForEmby(m,"",""):libraryRow;if("anime".equals(row))anime.put(m);else if("doc".equals(row))doc.put(m);else if("series".equals(row))series.put(m);else movies.put(m);}}
   if(wrote[0])ed.apply();return new EmbySlice(resume,fresh,movies,series,anime,doc);}
- void applyEmby(String src,EmbySlice slice,boolean rowsOn,boolean last){if(slice==null)return;if(slice.resume!=null)embyResume.put(src,slice.resume);scheduleResume();
-  if(rowsOn&&slice.fresh!=null&&slice.fresh.length()>0){embyCatalog.put(src,slice.fresh);rebuildEmbyHero();for(Row r:rows.values())r.put(src,slice.forRow(r.key),last);}
-  else if(rowsOn&&last){for(Row r:rows.values())r.put(src,null,true);}
+ /** keepRows：这次结果是空的或明显弱于已画缓存，只更新继续观看并结束这个来源，不换电影/剧集行，也不改 embyCatalog。 */
+ void applyEmby(String src,EmbySlice slice,boolean rowsOn,boolean last,boolean keepRows){if(slice==null)return;if(slice.resume!=null)embyResume.put(src,slice.resume);scheduleResume();
+  if(keepRows){if(last)for(Row r:rows.values())r.complete(src);}
+  else if(rowsOn&&slice.fresh!=null&&slice.fresh.length()>0){embyCatalog.put(src,slice.fresh);rebuildEmbyHero();for(Row r:rows.values())r.put(src,slice.forRow(r.key),last);}
+  else if(rowsOn&&last){for(Row r:rows.values())r.complete(src);}
   if(last)embyClosed.add(src);scheduleHero();}
- void finishEmby(String src){for(Row r:rows.values())r.put(src,null,true);embyClosed.add(src);scheduleHero();}
+ /** 拉取失败不换行。keepRows 为真表示已有非空缓存，调用方不会写盘；这里也不 put 空列表，已画的电影/剧集留在行里。没有缓存时同样只结束等待。 */
+ void finishEmby(String src,boolean keepRows){for(Row r:rows.values())r.complete(src);embyClosed.add(src);scheduleHero();}
 
  // ---------- 影视仓 ----------
  void tvbox(){final String sourceId=a.prefs.getString("home.source.v1","fty");

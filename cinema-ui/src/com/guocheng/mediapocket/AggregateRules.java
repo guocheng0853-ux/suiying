@@ -204,6 +204,16 @@ final class AggregateRules {
  static String heroKicker(JSONObject m){if(m==null)return "今日推荐";boolean resume="resume".equals(m.optString("agg.hero"));String src=m.optString("agg.source");if(src.isEmpty())src=source(m);return (resume?"继续观看":"推荐")+" · "+label(src);}
  /** 这一次最多再等多少毫秒。deadlineNs ≤ 0 表示不设总时限，用 capMs。到点返回 0。 */
  static int waitMs(long deadlineNs,long nowNs,int capMs){if(deadlineNs<=0)return capMs;long left=(deadlineNs-nowNs)/1000000L;if(left<1)return 0;return left>capMs?capMs:(int)left;}
+ /** Emby 首页缓存里「各库最新」的条目数。空库、缺字段都算 0。 */
+ static int latestCount(JSONObject data){if(data==null)return 0;JSONArray latest=data.optJSONArray("latest");if(latest==null)return 0;int n=0;for(int i=0;i<latest.length();i++){JSONArray lib=latest.optJSONArray(i);if(lib!=null)n+=lib.length();}return n;}
+ /**
+  * 聚合拉取预算用尽时，成功返回的 latest 可能是空的，或只剩一两部。
+  * 已有缓存里有片子，而这次一条都没有，或不到原来的一半，就视为更弱，调用方不得写盘、也不得换掉已经画上的行。
+  */
+ static boolean weakerEmbyLatest(JSONObject cached,JSONObject incoming){int oldN=latestCount(cached);if(oldN<=0)return false;int newN=latestCount(incoming);return newN==0||newN*2<oldN;}
+ /** writeCache：这次可以落盘。keepRows：行和 embyCatalog 保持已画内容，只收尾这个来源。失败时一律不写盘。 */
+ static final class EmbyKeep {final boolean writeCache,keepRows;EmbyKeep(boolean writeCache,boolean keepRows){this.writeCache=writeCache;this.keepRows=keepRows;}}
+ static EmbyKeep embyKeep(JSONObject cached,JSONObject incoming,boolean failed){if(failed)return new EmbyKeep(false,latestCount(cached)>0);boolean keep=weakerEmbyLatest(cached,incoming);return new EmbyKeep(!keep,keep);}
  /** 「最近更新」超过这么久才重新请求（毫秒）；下拉刷新时清掉时间戳强制重读。 */
  static final long FRESH_MS=6*60*60*1000L;
  static boolean stale(long savedAt,long now){return savedAt<=0||now-savedAt>=FRESH_MS;}

@@ -94,6 +94,26 @@ public final class AggregateRulesTest {
   Map<String,JSONArray> grouped=AggregateRules.groupCategories(cats);
   check(grouped.get("anime").length()==1&&grouped.get("anime").getJSONObject(0).optString("type_id").equals("dm")&&grouped.get("movie").length()==2&&grouped.get("fresh").getJSONObject(0).optString("type_id").equals("day"),"all matching categories");
   int movieAt=-1,freshAt=-1,at=0;for(String k:grouped.keySet()){if(k.equals("movie"))movieAt=at;if(k.equals("fresh"))freshAt=at;at++;}check(movieAt>=0&&freshAt>movieAt,"movies fetched before daily");
+  JSONArray cachedLibs=new JSONArray().put(new JSONArray().put(new JSONObject().put("Id","1")).put(new JSONObject().put("Id","2")).put(new JSONObject().put("Id","3")).put(new JSONObject().put("Id","4")));
+  JSONObject cachedHome=new JSONObject().put("latest",cachedLibs).put("resume",new JSONArray().put(new JSONObject().put("Id","r")));
+  JSONObject emptyLatest=new JSONObject().put("latest",new JSONArray().put(new JSONArray())).put("resume",new JSONArray().put(new JSONObject().put("Id","r2")));
+  check(AggregateRules.latestCount(cachedHome)==4&&AggregateRules.latestCount(emptyLatest)==0,"latest count");
+  AggregateRules.EmbyKeep emptyPlan=AggregateRules.embyKeep(cachedHome,emptyLatest,false);
+  check(!emptyPlan.writeCache&&emptyPlan.keepRows,"empty latest keeps the cache");
+  JSONObject weakLatest=new JSONObject().put("latest",new JSONArray().put(new JSONArray().put(new JSONObject().put("Id","x"))));
+  AggregateRules.EmbyKeep weakPlan=AggregateRules.embyKeep(cachedHome,weakLatest,false);
+  check(!weakPlan.writeCache&&weakPlan.keepRows,"weaker latest keeps the cache");
+  JSONObject freshLatest=new JSONObject().put("latest",new JSONArray().put(new JSONArray().put(new JSONObject().put("Id","a")).put(new JSONObject().put("Id","b")).put(new JSONObject().put("Id","c"))));
+  AggregateRules.EmbyKeep freshPlan=AggregateRules.embyKeep(cachedHome,freshLatest,false);
+  check(freshPlan.writeCache&&!freshPlan.keepRows,"similar latest can replace");
+  AggregateRules.EmbyKeep firstPlan=AggregateRules.embyKeep(null,emptyLatest,false);
+  check(firstPlan.writeCache&&!firstPlan.keepRows,"no cache yet");
+  AggregateRules.EmbyKeep failedPlan=AggregateRules.embyKeep(cachedHome,null,true);
+  check(!failedPlan.writeCache&&failedPlan.keepRows,"fetch failure keeps painted rows");
+  check(!AggregateRules.embyKeep(null,null,true).keepRows&&!AggregateRules.embyKeep(null,null,true).writeCache,"failure without cache writes nothing");
+  Map<String,JSONArray> painted=new HashMap<>();painted.put("emby#0",new JSONArray().put(new JSONObject().put("id","m1").put("name","已画")));
+  if(!emptyPlan.keepRows)painted.put("emby#0",new JSONArray());
+  check(painted.get("emby#0").length()==1&&painted.get("emby#0").getJSONObject(0).optString("id").equals("m1"),"empty latest does not clear the emby row");
   System.out.println("PASS: aggregate rows, sequel guard, hero pick, resume order, sort, round-robin, "+ms+"ms for 80 merges.");
  }
 }
