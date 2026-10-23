@@ -17,12 +17,13 @@ public final class ScrapedMainActivity extends MainActivity {
  }
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String imported=ConfigImport.consume(this);if(imported!=null){homeProvider="tvbox";android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();home();}}
  int surface(){return light?(clay?CinemaTheme.PAPER:0xffedf5f5):gold?CinemaTheme.BG:0xff1c1b21;}int card(){return light?(clay?CinemaTheme.SHEET:0xffffffff):gold?CinemaTheme.CARD:0xff27252e;}int ink(){return light?(clay?CinemaTheme.SLATE:0xff173740):gold?CinemaTheme.INK:0xfff5fafb;}int muted(){return light?(clay?CinemaTheme.STONE:0xff52757c):gold?CinemaTheme.MUTED:0xffafcbd2;}int accent(){return light?(clay?CinemaTheme.CLAY_DEEP:0xff67549c):gold?CinemaTheme.GOLD:0xffd0bfff;}
- boolean editorial(){return gold||clay;}int hi(){return clay?CinemaTheme.CLAY_DEEP:CinemaTheme.GOLD;}int onHi(){return clay?0xffffffff:CinemaTheme.ON_GOLD;}
+ boolean editorial(){return gold||clay;}int hi(){return clay?CinemaTheme.CLAY:CinemaTheme.GOLD;}int onHi(){return clay?0xffffffff:CinemaTheme.ON_GOLD;}
+ boolean tablet(){return PaperLayoutRules.tablet(getResources().getConfiguration().smallestScreenWidthDp);}
  int map(int c){if(c==0xff0b0b12||c==0xff101018||c==0xff10101c)return surface();if(c==0xff1b1b29||c==0xff11111c)return card();if(c==0xfff4f3fa)return ink();if(c==0xff9693aa)return muted();if(c==0xff8d68f5||c==0xff6844ce)return accent();return c;}
  GradientDrawable rounded(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
  @Override GradientDrawable bg(int c){return rounded(map(c),12);}
  @Override TextView text(String s,int size,int c){TextView t=super.text(s,size,map(c));t.setIncludeFontPadding(false);return t;}
- @Override TextView heading(String label){TextView t=text(label.replace("TorrentClaw · ","插件 · "),16,ink());t.setTypeface(editorial()?CinemaTheme.paperTitle(this):android.graphics.Typeface.DEFAULT_BOLD);if(editorial()){t.setTextSize(22);t.setLetterSpacing(-.02f);}t.setPadding(0,dp(clay?28:22),0,dp(clay?14:10));return t;}
+ @Override TextView heading(String label){TextView t=text(label.replace("TorrentClaw · ","插件 · "),16,ink());t.setTypeface(editorial()?CinemaTheme.paperTitle(this):android.graphics.Typeface.DEFAULT_BOLD);if(editorial()){t.setTextSize(PaperLayoutRules.sectionSp(tablet()));t.setLetterSpacing(-.02f);}t.setPadding(0,dp(clay?28:22),0,dp(clay?14:10));return t;}
  @Override Button button(String label,Runnable action){CinemaButton b=new CinemaButton(this,light);b.setText(label);b.setMinHeight(dp(44));b.setMinimumHeight(dp(44));b.setBackground(rounded(card(),12));b.setBackgroundTintList(ColorStateList.valueOf(card()));b.setOnClickListener(v->action.run());return b;}
  @Override void shell(){
   FullscreenMode.immersive(this);super.shell();topBar=(LinearLayout)root.getChildAt(0);root.removeView(topBar);root.removeView(nav);
@@ -103,7 +104,7 @@ public final class ScrapedMainActivity extends MainActivity {
   if(c.getChildAt(0) instanceof FrameLayout){FrameLayout frame=(FrameLayout)c.getChildAt(0);frame.setBackground(rounded(card(),10));frame.setClipToOutline(true);frame.setLayoutParams(new LinearLayout.LayoutParams(width,recent?(int)(width/1.72):(int)(width*1.50)));
    if(homeChrome==null)homeChrome=new HomeChrome(this);homeChrome.decorateBadge(frame,metadata);
   }
-  if(c.getChildCount()>1&&c.getChildAt(1) instanceof TextView){TextView title=(TextView)c.getChildAt(1);title.setTextSize(recent?12:11);title.setLines(2);title.setGravity(clay?Gravity.START:Gravity.CENTER);if(editorial())title.setTextSize(13);title.setPadding(dp(1),dp(clay?8:6),dp(1),0);title.setTextColor(ink());}
+  if(c.getChildCount()>1&&c.getChildAt(1) instanceof TextView){TextView title=(TextView)c.getChildAt(1);title.setTextSize(recent?12:11);title.setLines(2);title.setGravity(clay?Gravity.START:Gravity.CENTER);if(editorial()){title.setTextSize(PaperLayoutRules.posterSp(tablet()));title.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));}title.setPadding(dp(1),dp(clay?8:6),dp(1),0);title.setTextColor(ink());}
   if(!recent){String release=metadata.optString("releaseInfo");if(!release.isEmpty()){TextView year=text(release,9,muted());year.setSingleLine();year.setEllipsize(TextUtils.TruncateAt.END);year.setGravity(Gravity.CENTER);year.setPadding(0,dp(3),0,0);c.addView(year);}}
   else if(c.getChildCount()>2&&c.getChildAt(2) instanceof TextView){TextView info=(TextView)c.getChildAt(2);info.setTextSize(10);info.setPadding(0,dp(3),0,0);info.setGravity(Gravity.CENTER);info.setTextColor(accent());}
   if(metadata.has("fusion.site")){c.setOnClickListener(v->openItem(metadata));TextView source=text("影视仓",9,accent());source.setGravity(Gravity.CENTER);source.setPadding(0,dp(3),0,0);c.addView(source);}
@@ -113,14 +114,14 @@ public final class ScrapedMainActivity extends MainActivity {
   return c;
  }
  String heroCacheKey(){return "cinema.hero.v2."+homeProvider+"."+prefs.getString("home.source.v1","current");}
- int heroSceneHeight(){if(wide())return Math.round(getResources().getDisplayMetrics().heightPixels*.66f);if(editorial())return editorialHeroHeight();return Math.min(dp(610),(int)(getResources().getDisplayMetrics().widthPixels*1.40));}
+ int heroSceneHeight(){if(editorial()&&tablet()&&wide())return Math.max(dp(180),Math.round(getResources().getDisplayMetrics().heightPixels*PaperLayoutRules.TABLET_LANDSCAPE_HERO));if(wide())return Math.round(getResources().getDisplayMetrics().heightPixels*.66f);if(editorial())return editorialHeroHeight();return Math.min(dp(610),(int)(getResources().getDisplayMetrics().widthPixels*1.40));}
  /**
   * 0.1.133 首屏紧凑：推荐图高度按屏幕高度倒推，保证首屏能完整看到「继续观看」第一张卡片。
-  * 扣掉：图下文字区约 214dp、栏目标题 44dp、继续观看卡片（剧照 + 两行字）、底栏和手势条；图最矮 200dp，最高不超过原来的上限。
+  * 扣掉：图下文字区、栏目标题 44dp、继续观看卡片（剧照 + 两行字）、底栏和手势条；图最矮 200dp，最高不超过原来的上限。
   */
  int editorialHeroHeight(){android.util.DisplayMetrics m=getResources().getDisplayMetrics();int w=m.widthPixels;int h=Math.max(m.heightPixels,getWindow()!=null&&getWindow().getDecorView().getHeight()>0?getWindow().getDecorView().getHeight():0);
   int card=Math.min((int)((w-dp(32))*.62f),dp(240)),cardBlock=Math.round(card/1.72f)+dp(52);
-  int fit=h-dp(214)-dp(44)-cardBlock-(navItemHeight()+dp(24))-safeBottom;
+  int fit=h-dp(PaperLayoutRules.captionReserveDp())-dp(44)-cardBlock-(navItemHeight()+dp(24))-safeBottom;
   int cap=Math.min(dp(clay?370:430),Math.round(w*(clay?.88f:1f)));return Math.max(dp(200),Math.min(cap,fit));}
  boolean wide(){android.util.DisplayMetrics m=getResources().getDisplayMetrics();return m.widthPixels>m.heightPixels;}
  /**
@@ -144,30 +145,34 @@ public final class ScrapedMainActivity extends MainActivity {
  @Override public boolean dispatchTouchEvent(MotionEvent e){if(pull!=null)try{pull.track(e);}catch(RuntimeException ignored){}return super.dispatchTouchEvent(e);}
  /** 下拉刷新：清掉 Stremio / 影视仓目录的缓存时间，让每个分区都重新请求；Emby 本来每次都会重新读。 */
  void forceRefresh(){CacheFiles.invalidateFreshness();heroPriority=-1;home();}
- boolean goldBelow(){return editorial()&&!wide()&&heroActions!=null&&heroActions.getParent()==heroCaption;}
+ boolean goldBelow(){return editorial()&&PaperLayoutRules.stackCaptionBelow(wide(),tablet())&&heroActions!=null&&heroActions.getParent()==heroCaption;}
  static void detach(View v){if(v!=null&&v.getParent() instanceof ViewGroup)((ViewGroup)v.getParent()).removeView(v);}
  /**
   * 0.1.126 影院暗金竖屏首页（设计稿 A）：大图只放画面，底部渐隐进黑底；
-  * 图下靠左依次是金色小标题、衬线片名、信息行、两行简介、「播放 + 收藏」按钮和轮播点。横屏仍按 Hills 式叠在图上。
+  * 图下靠左依次是小标题、衬线片名、信息行、两行简介、「播放 + 收藏」按钮和轮播点。手机横屏仍叠在图上；平板横屏收在图下。
   */
- void goldHero(){if(!editorial()||hero==null||heroInfo==null||heroCaption==null||heroTitle==null||heroPlay==null)return;boolean below=!wide();
-  if(heroKicker==null){heroKicker=text("",12,hi());heroKicker.setLetterSpacing(.08f);heroKicker.setTypeface(null,1);heroKicker.setPadding(0,0,0,dp(4));}
-  if(heroActions==null){heroActions=new LinearLayout(this);heroActions.setGravity(Gravity.CENTER_VERTICAL);heroActions.setPadding(0,dp(12),0,0);}
+ void goldHero(){if(!editorial()||hero==null||heroInfo==null||heroCaption==null||heroTitle==null||heroPlay==null)return;boolean tab=tablet(),below=PaperLayoutRules.stackCaptionBelow(wide(),tab);
+  if(heroKicker==null){heroKicker=text("",12,accent());heroKicker.setLetterSpacing(.08f);heroKicker.setTypeface(null,1);}
+  heroKicker.setTextColor(accent());heroKicker.setPadding(0,0,0,dp(PaperLayoutRules.kickerBottomDp(tab)));
+  if(heroActions==null){heroActions=new LinearLayout(this);heroActions.setGravity(Gravity.CENTER_VERTICAL);}
+  heroActions.setPadding(0,dp(PaperLayoutRules.actionsTopDp(tab)),0,0);
   detach(heroTitle);detach(heroPlay);detach(heroKicker);detach(heroActions);
+  android.graphics.Typeface prose=android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL);
   if(below){
    heroCaption.addView(heroKicker,0,new LinearLayout.LayoutParams(-1,-2));heroCaption.addView(heroTitle,1,new LinearLayout.LayoutParams(-1,-2));
    heroCaption.addView(heroActions,Math.max(2,heroCaption.indexOfChild(dots)),new LinearLayout.LayoutParams(-1,-2));
-   heroActions.addView(heroPlay,new LinearLayout.LayoutParams(0,dp(48),1f));
-   heroCaption.setGravity(Gravity.START);heroCaption.setPadding(dp(clay?24:20),dp(4),dp(clay?24:20),dp(4));
-   heroTitle.setGravity(Gravity.START);if(editorial()){heroTitle.setTypeface(CinemaTheme.paperTitle(this));heroTitle.setLetterSpacing(-.025f);}heroTitle.setTextSize(30);heroTitle.setLineSpacing(0,1.1f);
-   heroMetaRow.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);heroMetaRow.setPadding(0,dp(4),0,0);heroFacts.setGravity(Gravity.START);heroFacts.setTextSize(13);
-   heroDescription.setGravity(Gravity.START);if(heroDescription.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)heroDescription.getLayoutParams();p.width=-1;p.rightMargin=0;p.topMargin=dp(6);heroDescription.setLayoutParams(p);}
-   dots.setGravity(Gravity.START);dots.setPadding(0,dp(10),0,0);
+   heroActions.addView(heroPlay,new LinearLayout.LayoutParams(0,dp(PaperLayoutRules.buttonHeightDp(tab)),1f));
+   int side=dp(tab?8:(clay?24:20));heroCaption.setGravity(Gravity.START);heroCaption.setPadding(side,dp(PaperLayoutRules.captionTopDp(tab)),side,dp(4));
+   heroTitle.setGravity(Gravity.START);if(editorial()){heroTitle.setTypeface(CinemaTheme.paperTitle(this));heroTitle.setLetterSpacing(-.025f);}heroTitle.setTextSize(30);heroTitle.setLineSpacing(0,1.05f);
+   heroMetaRow.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);heroMetaRow.setPadding(0,dp(PaperLayoutRules.metaTopDp(tab)),0,0);heroFacts.setGravity(Gravity.START);heroFacts.setTextSize(PaperLayoutRules.factsSp(tab));heroFacts.setTypeface(prose);
+   heroDescription.setGravity(Gravity.START);heroDescription.setTextSize(PaperLayoutRules.synopsisSp(tab));heroDescription.setTypeface(prose);if(heroDescription.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)heroDescription.getLayoutParams();p.width=-1;p.rightMargin=0;p.topMargin=dp(PaperLayoutRules.synopsisTopDp(tab));heroDescription.setLayoutParams(p);}
+   dots.setGravity(Gravity.START);dots.setPadding(0,dp(PaperLayoutRules.dotsTopDp(tab)),0,0);
    heroPlay.setGravity(Gravity.CENTER);heroPlay.setTextSize(16);heroPlay.setPadding(dp(16),0,dp(16),0);heroPlay.setBackground(rounded(hi(),clay?12:24));heroPlay.setVisibility(View.VISIBLE);
    heroInfo.setPadding(0,0,0,0);if(heroLogo!=null)heroLogo.setVisibility(View.GONE);
+   if(heroHeart!=null&&heroHeart.getLayoutParams()!=null){heroHeart.getLayoutParams().height=dp(PaperLayoutRules.buttonHeightDp(tab));heroHeart.setLayoutParams(heroHeart.getLayoutParams());}
   }else{
    heroInfo.addView(heroTitle,Math.min(1,heroInfo.getChildCount()));LinearLayout.LayoutParams playLp=new LinearLayout.LayoutParams(-2,-2);playLp.topMargin=dp(8);playLp.gravity=Gravity.START;heroInfo.addView(heroPlay,playLp);
-   heroTitle.setTextSize(26);heroPlay.setPadding(dp(28),dp(10),dp(28),dp(10));heroPlay.setBackground(rounded(hi(),clay?12:22));dots.setGravity(Gravity.START);
+   heroTitle.setTextSize(26);heroFacts.setTypeface(prose);heroDescription.setTypeface(prose);heroPlay.setPadding(dp(28),dp(10),dp(28),dp(10));heroPlay.setBackground(rounded(hi(),clay?12:22));dots.setGravity(Gravity.START);
   }
  }
  void bindGoldHero(JSONObject m){
@@ -177,7 +182,7 @@ public final class ScrapedMainActivity extends MainActivity {
   heroPlay.setText(emby?(m.optLong("emby.resumeMs")>10000?"▶  继续播放":"▶  播放"):"查看详情  ›");heroPlay.setContentDescription(emby?"直接播放":"打开详情");heroPlay.setVisibility(View.VISIBLE);
   heroPlay.setOnClickListener(v->heroAction(m));
   // 0.1.129：收藏按钮只建一次，换页时换绑；文字区高度固定（片名一行、信息一行、简介两行），换页只重绘不重排
-  if(heroHeart==null){heroHeart=FollowUp.heart(this,m,ink());heroHeart.setTextSize(14);GradientDrawable ring=new GradientDrawable();ring.setCornerRadius(dp(clay?12:24));ring.setStroke(dp(1),clay?CinemaTheme.LINE:0xff55524b);heroHeart.setBackground(ring);heroHeart.setPadding(dp(18),0,dp(18),0);LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-2,dp(48));hp.leftMargin=dp(12);heroActions.addView(heroHeart,hp);}else FollowUp.bindHeart(this,heroHeart,m);
+  if(heroHeart==null){heroHeart=FollowUp.heart(this,m,ink());heroHeart.setTextSize(14);GradientDrawable ring=new GradientDrawable();ring.setCornerRadius(dp(clay?12:24));ring.setStroke(dp(1),clay?CinemaTheme.LINE:0xff55524b);heroHeart.setBackground(ring);heroHeart.setPadding(dp(18),0,dp(18),0);LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-2,dp(PaperLayoutRules.buttonHeightDp(tablet())));hp.leftMargin=dp(12);heroActions.addView(heroHeart,hp);}else FollowUp.bindHeart(this,heroHeart,m);
   heroHeart.setVisibility(m.optString("id").isEmpty()?View.INVISIBLE:View.VISIBLE);
   heroTitle.setMaxLines(1);heroTitle.setLines(1);heroFacts.setSingleLine(true);heroFacts.setEllipsize(TextUtils.TruncateAt.END);heroFacts.setVisibility(View.VISIBLE);heroDescription.setVisibility(View.VISIBLE);if(heroCert!=null)heroCert.setVisibility(View.GONE);
  }
@@ -218,8 +223,8 @@ public final class ScrapedMainActivity extends MainActivity {
   String id=m.optString("id"),type=m.optString("type",heroType),key="cinema.meta."+type+"."+id;JSONObject mem=CacheFiles.parsed(key);if(DetailMetadata.useful(mem)){bindHero(mem);return;}
   final int ticket=epoch;job(()->{try{String raw=CacheFiles.of(this).readMigrating(this,key);JSONObject cached=null;try{if(raw!=null&&!raw.isEmpty())cached=new JSONObject(raw);}catch(Exception ignored){}if(DetailMetadata.useful(cached)){JSONObject hit=cached;runOnUiThread(()->{JSONObject active=heroes.optJSONObject(heroIndex);if(ticket==epoch&&homeCanvas&&active!=null&&id.equals(active.optString("id")))bindHero(hit);});return;}JSONObject meta=CinemaCatalogClient.json("https://v3-cinemeta.strem.io/meta/"+type+"/"+Net.esc(id)+".json").getJSONObject("meta");if(!DetailMetadata.useful(meta))return;CacheFiles.of(this).write(key,meta.toString());runOnUiThread(()->{JSONObject active=heroes.optJSONObject(heroIndex);if(ticket==epoch&&homeCanvas&&active!=null&&id.equals(active.optString("id")))bindHero(meta);});}catch(Exception ignored){}});
  }
- void bindHero(JSONObject m){if(heroSwipe!=null&&heroSwipe.busy()){final int token=epoch;final String id=m.optString("id");carousel.postDelayed(()->{JSONObject current=heroes.optJSONObject(heroIndex);if(token==epoch&&homeCanvas&&current!=null&&id.equals(current.optString("id")))bindHero(m);},360);return;}boolean artwork=!HomeHeroRules.backdropOf(m).isEmpty();placeHero(artwork?heroSceneHeight():dp(220));heroScrimStrong=HomeHeroRules.portraitHero(m);String logo=goldBelow()?"":m.optString("logo");heroLogo.setImageDrawable(null);heroLogo.setVisibility(logo.isEmpty()?View.GONE:View.VISIBLE);heroTitle.setVisibility(View.VISIBLE);if(!logo.isEmpty())TvPosterImages.load(this,heroLogo,logo,dp(320));if(homeChrome==null)homeChrome=new HomeChrome(this);homeChrome.dressHero(heroPage,heroImage,m);homeChrome.bindHeroText(m);heroTitle.setTextColor(clay&&wide()?CinemaTheme.PAPER:light?ink():0xffffffff);heroFacts.setTextColor(clay&&wide()?0xffe8e6dc:light?muted():(gold?CinemaTheme.SOFT:0xffe0edf0));heroDescription.setTextColor(clay&&wide()?0xffe8e6dc:light?muted():(gold?CinemaTheme.SOFT:0xffd6e8eb));layoutHeroCaption(artwork);if(homeAtmosphere!=null){homeAtmosphere.sync(heroImage);}bindEmbyPlay(m);}
- void bindEmbyPlay(JSONObject m){if(heroPlay==null)return;if(goldBelow()){bindGoldHero(m);return;}boolean emby=m!=null&&m.has("emby.server");if(emby&&!m.optString("logo").isEmpty())heroTitle.setVisibility(View.GONE);if(!emby){heroPlay.setVisibility(View.GONE);return;}heroPlay.setVisibility(View.VISIBLE);heroPlay.setText(m.optString("emby.play","播放"));heroPlay.setOnClickListener(v->heroAction(m));}
+ void bindHero(JSONObject m){if(heroSwipe!=null&&heroSwipe.busy()){final int token=epoch;final String id=m.optString("id");carousel.postDelayed(()->{JSONObject current=heroes.optJSONObject(heroIndex);if(token==epoch&&homeCanvas&&current!=null&&id.equals(current.optString("id")))bindHero(m);},360);return;}boolean artwork=!HomeHeroRules.backdropOf(m).isEmpty();placeHero(artwork?heroSceneHeight():dp(220));heroScrimStrong=HomeHeroRules.portraitHero(m);String logo=(goldBelow()||clay)?"":m.optString("logo");heroLogo.setImageDrawable(null);heroLogo.setVisibility(logo.isEmpty()?View.GONE:View.VISIBLE);heroTitle.setVisibility(View.VISIBLE);if(!logo.isEmpty())TvPosterImages.load(this,heroLogo,logo,dp(320));if(homeChrome==null)homeChrome=new HomeChrome(this);homeChrome.dressHero(heroPage,heroImage,m);homeChrome.bindHeroText(m);boolean titleOnArt=!goldBelow()&&wide();heroTitle.setTextColor(titleOnArt?(light?CinemaTheme.PAPER:0xffffffff):ink());heroFacts.setTextColor(clay?CinemaTheme.STONE:(light?muted():(gold?CinemaTheme.SOFT:0xffe0edf0)));heroDescription.setTextColor(clay?CinemaTheme.PROSE:(light?muted():(gold?CinemaTheme.SOFT:0xffd6e8eb)));android.graphics.Typeface prose=android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL);heroFacts.setTypeface(prose);heroDescription.setTypeface(prose);layoutHeroCaption(artwork);if(homeAtmosphere!=null){homeAtmosphere.sync(heroImage);}bindEmbyPlay(m);}
+ void bindEmbyPlay(JSONObject m){if(heroPlay==null)return;if(goldBelow()){bindGoldHero(m);return;}boolean emby=m!=null&&m.has("emby.server");if(emby&&heroLogo.getVisibility()==View.VISIBLE)heroTitle.setVisibility(View.GONE);if(!emby){heroPlay.setVisibility(View.GONE);return;}heroPlay.setVisibility(View.VISIBLE);heroPlay.setText(m.optString("emby.play","播放"));heroPlay.setOnClickListener(v->heroAction(m));}
  /** 图只占画面区；评分与简介挪到了图下的 heroCaption，正文分区自然接在它后面。 */
  void layoutHeroCaption(boolean artwork){
   placeHero(artwork?Math.max(heroSceneHeight(),safeTop+dp(210)):Math.max(dp(220),safeTop+dp(64)));
@@ -229,7 +234,7 @@ public final class ScrapedMainActivity extends MainActivity {
   if(hero==null||heroInfo==null)return;
   int end=heroInfo.getTop();
   for(int i=0;i<hero.getChildCount();i++){View child=hero.getChildAt(i);if(child instanceof LinearLayout&&child.getHeight()>0)end=Math.min(end,child.getTop());}
-  int tone=homeAtmosphere!=null?homeAtmosphere.currentTone:surface();int overlay=editorial()?surface():tone;for(int i=0;i<hero.getChildCount();i++){View child=hero.getChildAt(i);if(child instanceof FadeFrame){FadeFrame frame=(FadeFrame)child;frame.setCaptionTop(end,dp(goldBelow()?90:180));frame.setOverlay(overlay);}}
+  int tone=homeAtmosphere!=null?homeAtmosphere.currentTone:surface();int overlay=editorial()?surface():tone;int span=dp(PaperLayoutRules.fadeSpanDp(tablet(),goldBelow()));for(int i=0;i<hero.getChildCount();i++){View child=hero.getChildAt(i);if(child instanceof FadeFrame){FadeFrame frame=(FadeFrame)child;frame.setCaptionTop(end,span);frame.setOverlay(overlay);}}
  }
  void prefetchHeroNeighbors(){if(heroes.length()<2)return;final int ticket=epoch;for(int step:new int[]{-1,1}){JSONObject item=heroes.optJSONObject(CarouselRules.index(heroIndex,step,heroes.length()));if(item==null||item.has("fusion.site"))continue;String id=item.optString("id"),type=item.optString("type",heroType),key="cinema.meta."+type+"."+id;if(!id.matches("tt[0-9]+"))continue;if(DetailMetadata.useful(CacheFiles.parsed(key)))continue;if(!pendingHeroMetadata.add(key))continue;job(()->{try{if(ticket!=epoch)return;String raw=CacheFiles.of(this).readMigrating(this,key);JSONObject meta=null;try{if(raw!=null&&!raw.isEmpty())meta=new JSONObject(raw);}catch(Exception ignored){}if(!DetailMetadata.useful(meta)){meta=CinemaCatalogClient.json("https://v3-cinemeta.strem.io/meta/"+type+"/"+Net.esc(id)+".json").getJSONObject("meta");if(!DetailMetadata.useful(meta))return;CacheFiles.of(this).write(key,meta.toString());}runOnUiThread(()->{if(ticket==epoch&&homeCanvas&&heroSwipe!=null&&!heroSwipe.busy())heroSwipe.refresh();});}catch(Exception ignored){}finally{pendingHeroMetadata.remove(key);}});}}
  /** 0.1.46：Stremio 选源改为按插件分组的弹窗，留在详情页；选中后仍走原 play()（原播放器与换源队列）。 */

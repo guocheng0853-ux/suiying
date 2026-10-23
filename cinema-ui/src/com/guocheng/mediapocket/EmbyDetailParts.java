@@ -9,7 +9,7 @@ final class EmbyDetailParts {
 
  /** 规格标签：圆角描边小胶囊，一行横向排开，放不下可横滑。 */
  static View badges(EmbyLibraryActivity a,List<String> labels){if(labels==null||labels.isEmpty())return null;HorizontalScrollView hs=new HorizontalScrollView(a);hs.setHorizontalScrollBarEnabled(false);LinearLayout row=new LinearLayout(a);row.setGravity(Gravity.CENTER_VERTICAL);
-  for(String l:labels){TextView t=new TextView(a);t.setText(l);t.setTextSize(11);t.setTypeface(Typeface.DEFAULT_BOLD);t.setTextColor(l.equals("杜比视界")||l.startsWith("HDR")||l.equals("4K")||l.equals("全景声")?a.accentFill():a.muted());t.setIncludeFontPadding(false);t.setPadding(a.dp(7),a.dp(3),a.dp(7),a.dp(3));GradientDrawable g=new GradientDrawable();g.setCornerRadius(a.dp(4));g.setStroke(a.dp(1),(t.getCurrentTextColor()&0xffffff)|0x99000000);t.setBackground(g);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.rightMargin=a.dp(6);row.addView(t,p);}
+  for(String l:labels){TextView t=new TextView(a);t.setText(l);t.setTextSize(11);t.setTypeface(Typeface.DEFAULT_BOLD);t.setTextColor(l.equals("杜比视界")||l.startsWith("HDR")||l.equals("4K")||l.equals("全景声")?(a.clay?CinemaTheme.CLAY_DEEP:a.accentFill()):a.muted());t.setIncludeFontPadding(false);t.setPadding(a.dp(7),a.dp(3),a.dp(7),a.dp(3));GradientDrawable g=new GradientDrawable();g.setCornerRadius(a.dp(4));g.setStroke(a.dp(1),(t.getCurrentTextColor()&0xffffff)|0x99000000);t.setBackground(g);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-2,-2);p.rightMargin=a.dp(6);row.addView(t,p);}
   hs.addView(row);hs.setPadding(0,0,0,a.dp(10));return hs;}
 
  /** 操作按钮行：图标在上、文字在下，等分宽度。 */
@@ -43,7 +43,7 @@ final class EmbyDetailParts {
   row.addView(thumb,new LinearLayout.LayoutParams(w,h));
   LinearLayout texts=new LinearLayout(a);texts.setOrientation(LinearLayout.VERTICAL);texts.setPadding(a.dp(12),0,0,0);
   TextView title=new TextView(a);title.setText(MediaBadgeRules.episodeTitle(ep));title.setTextColor(played?a.muted():a.ink());title.setTextSize(14);title.setTypeface(null,1);title.setMaxLines(2);title.setEllipsize(android.text.TextUtils.TruncateAt.END);texts.addView(title);
-  String line=MediaBadgeRules.episodeLine(run,pos,played);if(!line.isEmpty()){TextView l=new TextView(a);l.setText(line);l.setTextColor(pr>0?a.accentFill():a.muted());l.setTextSize(12);l.setPadding(0,a.dp(2),0,a.dp(2));texts.addView(l);}
+  String line=MediaBadgeRules.episodeLine(run,pos,played);if(!line.isEmpty()){TextView l=new TextView(a);l.setText(line);l.setTextColor(pr>0?(a.clay?CinemaTheme.CLAY_DEEP:a.accentFill()):a.muted());l.setTextSize(12);l.setPadding(0,a.dp(2),0,a.dp(2));texts.addView(l);}
   String ov=ep.optString("Overview");if(!ov.isEmpty()){TextView o=new TextView(a);o.setText(ov);o.setTextColor(a.muted());o.setTextSize(12);o.setMaxLines(2);o.setEllipsize(android.text.TextUtils.TruncateAt.END);texts.addView(o);}
   row.addView(texts,new LinearLayout.LayoutParams(0,-2,1f));return row;}
 

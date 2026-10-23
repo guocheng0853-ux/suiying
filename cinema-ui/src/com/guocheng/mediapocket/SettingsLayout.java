@@ -58,7 +58,7 @@ final class SettingsLayout {
   String note=t!=null?t[2]:"";if(!note.isEmpty()){TextView n=a.text(note,12,a.muted());n.setPadding(0,a.dp(2),0,0);texts.addView(n);}
   row.addView(texts,new LinearLayout.LayoutParams(0,-2,1f));
   final Switch sw;
-  if(t!=null){sw=new Switch(a);sw.setChecked("开".equals(t[1]));sw.setClickable(false);sw.setFocusable(false);if(a.clay){int[][] states={new int[]{android.R.attr.state_checked},new int[]{}};sw.setThumbTintList(new android.content.res.ColorStateList(states,new int[]{CinemaTheme.CLAY_DEEP,CinemaTheme.STONE}));sw.setTrackTintList(new android.content.res.ColorStateList(states,new int[]{CinemaTheme.CLAY_CHIP,CinemaTheme.LINE}));}row.addView(sw);}
+  if(t!=null){sw=new Switch(a);sw.setChecked("开".equals(t[1]));sw.setClickable(false);sw.setFocusable(false);if(a.clay){int[][] states={new int[]{android.R.attr.state_checked},new int[]{}};sw.setThumbTintList(new android.content.res.ColorStateList(states,new int[]{CinemaTheme.CLAY,CinemaTheme.STONE}));sw.setTrackTintList(new android.content.res.ColorStateList(states,new int[]{CinemaTheme.CLAY_TRACK,CinemaTheme.LINE}));}row.addView(sw);}
   else{sw=null;String value=kv[1];TextView right=a.text((value.isEmpty()?"":value+"  ")+"›",14,a.muted());right.setPadding(a.dp(8),0,0,0);right.setMaxWidth(a.dp(200));right.setSingleLine(true);right.setEllipsize(android.text.TextUtils.TruncateAt.END);row.addView(right);}
   row.setOnClickListener(v->{remember(a);original.performClick();if(sw!=null)row.post(()->{String[] now=SettingsRules.toggle(original.getText().toString());if(now!=null)sw.setChecked("开".equals(now[1]));});});
   row.setOnLongClickListener(v->{remember(a);return original.performLongClick();});
