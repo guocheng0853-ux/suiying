@@ -53,7 +53,7 @@ final class PlayerRedesign {
  static void bottom(Activity a){
   Object b=OnlineSubtitleSearch.field(a,"bottom");if(!(b instanceof LinearLayout))return;LinearLayout bottom=(LinearLayout)b;
   bottom.setPadding(dp(a,20),dp(a,36),dp(a,20),dp(a,14));
-  Object state=OnlineSubtitleSearch.field(a,"state");if(state instanceof TextView){TextView s=(TextView)state;s.setTextSize(12);s.setTextColor(0xb3ffffff);s.setPadding(dp(a,4),0,0,dp(a,2));}
+  Object state=OnlineSubtitleSearch.field(a,"state");if(state instanceof TextView){TextView s=(TextView)state;s.setTextSize(12);s.setTextColor(PlayerTheme.TEXT_SECONDARY);s.setPadding(dp(a,4),0,0,dp(a,2));}
   for(String name:new String[]{"elapsed","clock"}){Object t=OnlineSubtitleSearch.field(a,name);if(t instanceof TextView){TextView tv=(TextView)t;tv.setTextSize(13);tv.setFontFeatureSettings("tnum");tv.setTextColor(0xe6ffffff);}}
   for(int i=0;i<bottom.getChildCount();i++){
    View child=bottom.getChildAt(i);if(!(child instanceof HorizontalScrollView))continue;View inner=((HorizontalScrollView)child).getChildAt(0);if(!(inner instanceof LinearLayout))continue;

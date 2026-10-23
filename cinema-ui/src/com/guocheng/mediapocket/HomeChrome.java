@@ -89,7 +89,7 @@ final class HomeChrome {
    FrameLayout.LayoutParams bp=new FrameLayout.LayoutParams(-1,dp(a.editorial()?3:4),Gravity.BOTTOM);frame.addView(barHost,bp);
   }
   c.addView(frame,new LinearLayout.LayoutParams(width,(int)(width/1.72f)));
-  TextView title=a.text(HomeRules.cardTitle(meta),a.editorial()?14:12,a.ink());if(a.editorial())title.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
+  int nameSize=a.editorial()?(a.tablet()?PaperLayoutRules.posterSp(true):14):12;TextView title=a.text(HomeRules.cardTitle(meta),nameSize,a.ink());if(a.editorial())title.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));title.setMaxLines(1);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setPadding(dp(1),dp(6),dp(1),0);c.addView(title);
   String line=meta.optString("emby.line");TextView sub=a.text(HomeRules.resumeLine(line.isEmpty()?HomeRules.episodeLabel(epId):line,pos,dur),a.editorial()?12:10,a.editorial()?a.muted():a.accent());sub.setPadding(0,dp(2),0,0);c.addView(sub);
   c.setOnClickListener(v->{if(meta.optBoolean("emby.directPlay"))EmbyPlayback.play(a,meta);else a.openItem(meta);});
   c.setOnLongClickListener(v->{String id=meta.optString("id");if(id.isEmpty())id=meta.optString("Id");String store=HomeRules.hideResume(a.prefs.getString("home.hiddenResume","[]"),id);a.prefs.edit().putString("home.hiddenResume",store).apply();if(EmbyApi.isEmbyId(id)){final String watch=id;EmbyPlayback.IO.execute(()->{try{JSONObject server=EmbyStore.get(a,EmbyApi.serverOf(watch));if(server!=null)EmbyClient.hideFromResume(a,server,EmbyApi.itemOf(watch));}catch(Exception ignored){}});}android.widget.Toast.makeText(a,"已从继续观看移除",0).show();a.home();return true;});
@@ -152,8 +152,8 @@ final class HomeChrome {
   String facts=HomeRules.heroFacts(m),desc=HomeRules.heroDescription(m),cert=HomeRules.heroCert(m);
   boolean fixed=a.goldBelow();// 0.1.129：暗金 / 陶土竖屏的文字区高度固定，空的也只留白不收起，换页不触发整页重排
   if(a.heroFacts!=null){a.heroFacts.setText(facts);a.heroFacts.setVisibility(fixed||!facts.isEmpty()?View.VISIBLE:View.GONE);}
-  if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(fixed||!desc.isEmpty()?View.VISIBLE:View.GONE);a.heroDescription.setTextColor(a.light?a.muted():a.gold?CinemaTheme.SOFT:0xffd6e8eb);}
-  if(a.heroFacts!=null)a.heroFacts.setTextColor(a.light?a.muted():a.gold?CinemaTheme.SOFT:0xffd6e8eb);
+  if(a.heroDescription!=null){a.heroDescription.setText(desc);a.heroDescription.setVisibility(fixed||!desc.isEmpty()?View.VISIBLE:View.GONE);a.heroDescription.setTextColor(a.clay?CinemaTheme.PROSE:(a.light?a.muted():a.gold?CinemaTheme.SOFT:0xffd6e8eb));}
+  if(a.heroFacts!=null)a.heroFacts.setTextColor(a.clay?CinemaTheme.STONE:(a.light?a.muted():a.gold?CinemaTheme.SOFT:0xffd6e8eb));
   if(a.heroCert!=null){a.heroCert.setText(cert);a.heroCert.setVisibility(fixed||cert.isEmpty()?View.GONE:View.VISIBLE);}
   if(a.heroTitle!=null){String logo=m.optString("logo");a.heroTitle.setText(m.optString("name","影片"));if(!fixed)a.heroTitle.setTextSize(logo.isEmpty()?26:16);}
  }

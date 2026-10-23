@@ -56,6 +56,9 @@ public class PlayerMotionRulesTest {
   check(PlayerLayoutMetrics.SPEED_BTN_SP==18&&PlayerLayoutMetrics.SPEED_SP==14&&PlayerLayoutMetrics.EPISODE_SP==20,"speed text is 18 and 14 sp, episode line is 20 sp");
   check(PlayerMotionRules.CHROME_IN_MS==280&&PlayerMotionRules.CHROME_OUT_MS==260&&PlayerMotionRules.CONTROLS_TIMEOUT_MS==4000&&PlayerMotionRules.PANEL_IN_MS==220&&PlayerMotionRules.PANEL_OUT_MS==180&&PlayerMotionRules.MENU_DIM_MS==180,"motion durations follow the Hills baseline");
   check(contrast(0xfffaf9f5,PlayerTheme.PANEL)>=7&&contrast(PlayerTheme.ACCENT,PlayerTheme.PANEL)>=4.5&&contrast(PlayerTheme.TEXT_SECONDARY,PlayerTheme.PANEL)>=4.5,"player text and selection remain readable on the dark panel");
+  String playerSrc=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/guocheng/mediapocket/PlayerTheme.java")),java.nio.charset.StandardCharsets.UTF_8);
+  String sideSrc=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/guocheng/mediapocket/PlayerSidePanel.java")),java.nio.charset.StandardCharsets.UTF_8);
+  check(playerSrc.contains("return selected?ACCENT:0xfffaf9f5")&&playerSrc.contains("return selected?ACCENT_DIM:0x00000000")&&playerSrc.contains("return TEXT_SECONDARY")&&!sideSrc.contains("sans-serif-light"),"side-panel rows use the clay accent and drop the light weight");
   check(PlayerStatus.batteryPercent(88).equals("88%")&&PlayerStatus.batteryPercent(0).equals("0%")&&PlayerStatus.batteryPercent(130).equals("100%"),"battery shows a plain percent");
   check(laid.camera.x==laid.margin,"left column uses the safe margin");
   check(laid.prev.cy()==laid.play.cy()&&laid.play.cy()==laid.next.cy()&&laid.play.x-(laid.prev.right())==laid.next.x-(laid.play.right()),"transport sits on one baseline with even gaps");
