@@ -19,24 +19,32 @@ final class EmbyHome {
    }catch(Exception e){done[0]=true;DebugLog.event("Emby 首页","读取失败 · "+EmbyApi.explain(e));JSONObject offline=cached==null?null:asCards(a,server,cached);a.runOnUiThread(()->{if(ticket!=a.epoch||a.isFinishing())return;if(offline!=null){boolean hinted=false;for(int i=0;i<target.getChildCount();i++)if("emby-offline".equals(String.valueOf(target.getChildAt(i).getTag())))hinted=true;if(target.getChildCount()<=1||target.findViewWithTag("mp-skeleton")!=null)render(a,server,target,offline);if(!hinted){TextView tag=a.text("离线数据 · 刷新失败，显示的是上次保存的内容",12,a.muted());tag.setTag("emby-offline");target.addView(tag,0);}return;}target.removeAllViews();target.addView(a.heading("Emby"));target.addView(a.text(EmbyApi.explain(e),13,a.muted()));target.addView(a.button("重试",()->a.home()));});}});}
 
  static final ExecutorService FETCH=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"emby-home-fetch");t.setDaemon(true);return t;});
- /** 拉一次首页需要的全部数据，结果是可直接缓存的 JSON：resume / next / heroes / order / libs / latest。 */
- static JSONObject fetch(ScrapedMainActivity a,JSONObject server,java.util.function.Consumer<JSONObject> partial)throws Exception{
-  Exception failure=null;JSONArray resume;try{resume=rows(EmbyClient.resume(a,server));}catch(Exception e){resume=new JSONArray();failure=e;}
-  // 没有缓存时：继续观看一回来就先画出来（海报 + 继续观看），其余分区读完再补上
+ /** 拉一次首页。budgetMs 为 0 时每步最多等 30 秒（Emby 自己的首页）。聚合首页传入约 12 秒的总时限，到点用已经拿到的结果收尾。 */
+ static JSONObject fetch(ScrapedMainActivity a,JSONObject server,java.util.function.Consumer<JSONObject> partial)throws Exception{return fetch(a,server,partial,0L);}
+ static int waitMs(long deadlineNs,long nowNs,int capMs){return AggregateRules.waitMs(deadlineNs,nowNs,capMs);}
+ static JSONObject fetch(ScrapedMainActivity a,JSONObject server,java.util.function.Consumer<JSONObject> partial,long budgetMs)throws Exception{
+  long deadline=budgetMs>0?System.nanoTime()+budgetMs*1000000L:0L;Exception failure=null;
+  Future<JSONArray> resumeF=FETCH.submit(()->rows(EmbyClient.resume(a,server)));JSONArray resume;
+  try{resume=resumeF.get(waitMs(deadline,System.nanoTime(),30000),TimeUnit.MILLISECONDS);}
+  catch(TimeoutException e){resumeF.cancel(true);resume=new JSONArray();failure=e;}
+  catch(Exception e){resume=new JSONArray();failure=unwrap(e);}
+  // 继续观看一回来就交给调用方先画。聚合首页也会传入这个回调，不再传空。
   if(partial!=null&&resume.length()>0){JSONArray order=new JSONArray();for(String sec:EmbyCue.homeOrder(null))order.put(sec);partial.accept(new JSONObject().put("resume",resume).put("next",new JSONArray()).put("heroes",EmbyCue.pickHeroes(resume,new JSONArray())).put("order",order).put("libs",new JSONArray()).put("latest",new JSONArray()));}
   Future<JSONObject> nextF=FETCH.submit(()->EmbyClient.nextUp(a,server)),viewsF=FETCH.submit(()->EmbyClient.views(a,server)),orderF=FETCH.submit(()->EmbyClient.homeSections(a,server));
-  JSONArray next;try{next=EmbyCue.withoutResume(rows(nextF.get(30,TimeUnit.SECONDS)),resume);}catch(Exception e){next=new JSONArray();}
-  JSONArray views;try{views=rows(viewsF.get(30,TimeUnit.SECONDS));}catch(Exception e){views=new JSONArray();if(failure==null)failure=e;}
+  JSONArray next;try{next=EmbyCue.withoutResume(rows(awaitObj(nextF,deadline)),resume);}catch(Exception e){next=new JSONArray();}
+  JSONArray views;try{views=rows(awaitObj(viewsF,deadline));}catch(Exception e){views=new JSONArray();if(failure==null)failure=unwrap(e);}
   if(failure!=null&&resume.length()==0&&views.length()==0)throw failure;
-  String[] order;try{order=EmbyCue.homeOrder(rows(orderF.get(30,TimeUnit.SECONDS)));}catch(Exception e){order=EmbyCue.homeOrder(null);}
+  String[] order;try{order=EmbyCue.homeOrder(rows(awaitObj(orderF,deadline)));}catch(Exception e){order=EmbyCue.homeOrder(null);}
   boolean latestWanted=false;for(String s:order)if("latest".equals(s)||"libraries".equals(s))latestWanted=true;
   JSONArray libs=new JSONArray();for(JSONObject lib:libraries(views))if(!EmbyCue.hidden(server,lib.optString("Id")))libs.put(lib);
   JSONArray latest=new JSONArray(),flat=new JSONArray();
   if(latestWanted){ArrayList<Future<JSONObject>> jobs=new ArrayList<>();for(int i=0;i<libs.length();i++){String id=libs.optJSONObject(i).optString("Id");jobs.add(FETCH.submit(()->EmbyClient.latest(a,server,id)));}
-   for(Future<JSONObject> f:jobs){JSONArray items;try{items=rows(f.get(30,TimeUnit.SECONDS));}catch(Exception e){items=new JSONArray();}latest.put(items);for(int i=0;i<items.length();i++)flat.put(items.opt(i));}}
+   for(Future<JSONObject> f:jobs){JSONArray items;try{items=rows(awaitObj(f,deadline));}catch(Exception e){items=new JSONArray();}latest.put(items);for(int i=0;i<items.length();i++)flat.put(items.opt(i));}}
   JSONArray orderJson=new JSONArray();for(String s:order)orderJson.put(s);
   return new JSONObject().put("resume",resume).put("next",next).put("heroes",EmbyCue.pickHeroes(resume,flat)).put("order",orderJson).put("libs",libs).put("latest",latest);
  }
+ static JSONObject awaitObj(Future<JSONObject> f,long deadline)throws Exception{try{return f.get(waitMs(deadline,System.nanoTime(),30000),TimeUnit.MILLISECONDS);}catch(TimeoutException e){f.cancel(true);throw e;}}
+ static Exception unwrap(Exception e){if(e instanceof ExecutionException&&e.getCause() instanceof Exception)return (Exception)e.getCause();return e;}
  /** 原始 Emby 条目换成首页卡片。在后台线程调用，进度写入合并成一次。 */
  static JSONObject asCards(ScrapedMainActivity a,JSONObject server,JSONObject data){if(data==null)return new JSONObject();if(data.optBoolean("converted"))return data;try{
   android.content.SharedPreferences.Editor ed=a.prefs.edit();boolean[] wrote={false};

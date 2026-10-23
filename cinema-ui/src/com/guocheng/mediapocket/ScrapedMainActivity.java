@@ -177,8 +177,10 @@ public final class ScrapedMainActivity extends MainActivity {
  }
  void bindGoldHero(JSONObject m){
   heroLogo.setVisibility(View.GONE);heroTitle.setVisibility(View.VISIBLE);heroTitle.setTextSize(30);
+  JSONObject shown=m;if(heroes!=null&&heroIndex>=0&&heroIndex<heroes.length()){JSONObject slot=heroes.optJSONObject(heroIndex);if(slot!=null&&(slot.has("agg.source")||slot.has("agg.hero")))shown=slot;}
   boolean emby=m.has("emby.server");String type=m.optString("type",heroType);
-  heroKicker.setText(emby?"最新入库 · EMBY":"今日推荐"+(type.equals("series")?" · 剧集":type.equals("movie")?" · 电影":""));
+  if(shown.has("agg.source")||shown.has("agg.hero"))heroKicker.setText(AggregateRules.heroKicker(shown));
+  else heroKicker.setText(emby?"最新入库 · EMBY":"今日推荐"+(type.equals("series")?" · 剧集":type.equals("movie")?" · 电影":""));
   heroPlay.setText(emby?(m.optLong("emby.resumeMs")>10000?"▶  继续播放":"▶  播放"):"查看详情  ›");heroPlay.setContentDescription(emby?"直接播放":"打开详情");heroPlay.setVisibility(View.VISIBLE);
   heroPlay.setOnClickListener(v->heroAction(m));
   // 0.1.129：收藏按钮只建一次，换页时换绑；文字区高度固定（片名一行、信息一行、简介两行），换页只重绘不重排
@@ -209,8 +211,8 @@ public final class ScrapedMainActivity extends MainActivity {
   hero.postDelayed(()->{if(ticket!=epoch||!homeCanvas||heroes.length()>0)return;heroTitle.setText("片库暂时无法加载");heroFacts.setText("点击重试，或从左上角切换片源");hero.setOnClickListener(v->home());},25000);
  }
  void chooseHero(JSONArray items,String type,String genre){if(!homeCanvas)return;offerHeroes(items,type,genre.isEmpty()?(type.equals("series")?2:1):0);}
- /** 优先级更高才换大图。正在滑动时先记下，松手后再换，并保持当前页码。相同优先级不重画。 */
- void offerHeroes(JSONArray items,String type,int priority){if(items==null||items.length()==0||priority<heroPriority)return;if(priority==heroPriority&&heroes.length()>0)return;if(heroSwipe!=null&&heroSwipe.busy()){if(pendingHeroes==null||priority>=pendingHeroPriority){pendingHeroes=items;pendingHeroType=type;pendingHeroPriority=priority;}return;}heroPriority=priority;setHeroes(items,type,heroes.length()>0);}
+ /** 优先级更高才换大图。正在滑动时先记下，松手后再换，并保持当前页码。同一优先级只有前 5 张的 id 变了才换。 */
+ void offerHeroes(JSONArray items,String type,int priority){if(items==null||items.length()==0||priority<heroPriority)return;if(priority==heroPriority&&AggregateRules.sameHeroIds(heroes,items))return;if(heroSwipe!=null&&heroSwipe.busy()){if(pendingHeroes==null||priority>=pendingHeroPriority){pendingHeroes=items;pendingHeroType=type;pendingHeroPriority=priority;}return;}heroPriority=priority;setHeroes(items,type,heroes.length()>0);}
  void applyPendingHero(){JSONArray items=pendingHeroes;if(items==null)return;pendingHeroes=null;offerHeroes(items,pendingHeroType,pendingHeroPriority);}
  void setHeroes(JSONArray items,String type){setHeroes(items,type,false);}
  void setHeroes(JSONArray items,String type,boolean keep){if(heroSwipe!=null)heroSwipe.cancel();final String key=heroCacheKey();final String typeFinal=type==null?"":type;int count=Math.min(5,items==null?0:items.length());int index=keep?Math.min(Math.max(0,heroIndex),Math.max(0,count-1)):0;heroes=new JSONArray();heroType=typeFinal;for(int i=0;i<count;i++){JSONObject m=items.optJSONObject(i);if(m!=null)heroes.put(m);}final JSONArray slim=heroes;final int saveGen=++heroSaveGen;job(()->{String payload=null;try{payload=new JSONObject().put("items",slim).put("type",typeFinal).toString();}catch(Exception ignored){}if(payload==null||saveGen!=heroSaveGen||payload.equals(heroCachePayload))return;heroCachePayload=payload;CacheFiles.of(this).write(key,payload);});heroIndex=heroes.length()==0?0:Math.min(index,heroes.length()-1);if(hero!=null)hero.setOnClickListener(v->{JSONObject selected=heroes.optJSONObject(heroIndex);if(selected!=null)openDetail(selected);});showHero();prefetchHeroNeighbors();carousel.removeCallbacks(tick);if(resumed&&heroes.length()>1)carousel.postDelayed(tick,7000);}

@@ -268,6 +268,8 @@ final class EmbyApi {
    .put("runtime",runtimeLabel(item.optLong("RunTimeTicks"))).put("genres",genres).put("emby.server",sid).put("emby.item",itemId).put("emby.type",type).put("emby.line",line(item));
   if("Episode".equals(type)){m.put("emby.series",item.optString("SeriesId"));if(!item.optString("SeriesName").isEmpty())m.put("name",item.optString("SeriesName"));}
   JSONObject user=item.optJSONObject("UserData");long resume=user==null?0:ticksToMs(user.optLong("PlaybackPositionTicks"));if(resume>0)m.put("emby.resumeMs",resume);m.put("emby.play",EmbyCue.playLabel(resume));
+  long stamp=AggregateRules.epoch(item.optString("DateCreated"));if(stamp<=0)stamp=AggregateRules.epoch(item.optString("PremiereDate"));if(stamp>0)m.put("agg.time",stamp);
+  if(user!=null&&user.optBoolean("Played"))m.put("emby.played",true);
   return m;
  }
  static String line(JSONObject item){if(item==null)return "";if("Episode".equals(item.optString("Type"))){int s=item.optInt("ParentIndexNumber",0),e=item.optInt("IndexNumber",0);String ep=s>0&&e>0?"S"+s+"E"+e:"";String title=item.optString("Name");String series=item.optString("SeriesName");if(!ep.isEmpty()&&!title.isEmpty())return ep+" · "+title;if(!ep.isEmpty())return ep;if(!series.isEmpty())return series;}JSONObject user=item.optJSONObject("UserData");if(user!=null&&user.optLong("PlaybackPositionTicks")>0)return "续播";return "";}
@@ -287,7 +289,7 @@ final class EmbyApi {
    .put("mp.tracks",new JSONObject().put("audio",audio).put("subtitles",new JSONArray()))
    .put("emby.server",server.optString("id")).put("emby.item",itemId).put("emby.mediaSource",choice.mediaSourceId).put("emby.playSession",choice.playSessionId).put("emby.direct",choice.direct).put("emby.resumeMs",Math.max(0L,resumeMs));
  }
- static boolean library(JSONObject view){if(view==null)return false;String t=view.optString("CollectionType");if(t.isEmpty())return true;return t.equals("movies")||t.equals("tvshows")||t.equals("homevideos")||t.equals("boxsets")||t.equals("folders")||t.equals("mixed");}
+ static boolean library(JSONObject view){if(view==null)return false;String t=view.optString("CollectionType"),name=view.optString("Name");if(AggregateRules.blockedLibrary(t,name))return false;if(t.isEmpty())return true;if(t.equals("movies")||t.equals("tvshows")||t.equals("homevideos")||t.equals("boxsets")||t.equals("folders")||t.equals("mixed"))return true;String blob=t+" "+name;return AggregateRules.animeText(blob)||AggregateRules.docText(blob);}
  /** 0.1.121 服务器错误正文里给人看的那句话：JSON 取 Message / message / error，HTML / 纯文本去标签；去掉网址和疑似令牌，最多 80 字。 */
  static String serverReason(String body){if(body==null)return "";String t=body.trim();if(t.isEmpty())return "";
   try{if(t.startsWith("{")){JSONObject o=new JSONObject(t);for(String k:new String[]{"Message","message","error","Error","detail","title"}){String v=o.optString(k);if(!v.isEmpty()){t=v;break;}}}}catch(Exception ignored){}
