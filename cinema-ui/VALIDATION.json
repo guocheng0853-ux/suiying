@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.136",
+  "ui_version": "0.1.137",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
