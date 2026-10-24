@@ -29,8 +29,9 @@ public final class PlayerGlassTest {
   check(PlayerGlass.CIRCLE_DP>=48&&PlayerGlass.CENTER_DP>=48&&PlayerGlass.PLAY_DP>=48&&PlayerMotionRules.MENU_ROW_DP>=48,"circles, center keys and menu rows are at least 48dp");
 
   check(!PlayerGlassRules.seekKeysOn(1_600,1_600)&&PlayerGlassRules.seekKeysOn(1_599,1_600)&&PlayerGlassRules.SEEK_FLASH_MS==1_600L,"seek keys show only inside the flash window");
-  check(PlayerGlassRules.showsOnBar("prev")&&PlayerGlassRules.showsOnBar("next")&&PlayerGlassRules.showsOnBar("speed")&&!PlayerGlassRules.showsOnBar("audio"),"bar keeps transport and speed");
-  check(PlayerGlassRules.tuckedInMore("audio")&&PlayerGlassRules.tuckedInMore("subtitle")&&PlayerGlassRules.tuckedInMore("episodes")&&!PlayerGlassRules.tuckedInMore("prev"),"tracks, subtitles and episodes move into more");
+  check(PlayerGlassRules.showsOnBar("prev")&&PlayerGlassRules.showsOnBar("speed")&&PlayerGlassRules.showsOnBar("audio")&&PlayerGlassRules.showsOnBar("subtitle")&&PlayerGlassRules.showsOnBar("episodes")&&!PlayerGlassRules.showsOnBar("debug"),"Apple TV bar keeps transport and track keys");
+  check(!PlayerGlassRules.tuckedInMore("audio")&&!PlayerGlassRules.tuckedInMore("episodes"),"nothing duplicated in more");
+  check(PlayerGlassRules.clockText(286_000).equals("4:46")&&PlayerGlassRules.clockText(3_723_000).equals("1:02:03")&&PlayerGlassRules.minus(286_000,1_364_000).equals("−17:58")&&PlayerGlassRules.minus(0,0).isEmpty(),"elapsed and minus remaining clocks");
 
   check(PlayerGlassRules.playbackAccent(true)==0xffe0b25c,"gold appearance maps playback accent to #e0b25c");
   check(PlayerGlassRules.playbackAccent(false)==PlayerTheme.ACCENT&&PlayerTheme.ACCENT==0xffe6a58d,"clay playback accent stays warm clay");
@@ -43,8 +44,8 @@ public final class PlayerGlassTest {
   String glass=new String(Files.readAllBytes(Paths.get("src/com/guocheng/mediapocket/PlayerGlass.java")),java.nio.charset.StandardCharsets.UTF_8);
   check(!media.contains("textKey(\"音轨\"")&&!media.contains("textKey(\"字幕\"")&&!media.contains("textKey(\"选集\""),"media3 bar is not a text wall");
   check(media.contains("\"音轨\"")&&media.contains("\"字幕\"")&&media.contains("\"选集\"")&&media.contains("上一集"),"media3 still reaches those actions");
-  check(!overlay.contains("mp-slot-")&&overlay.contains("\"音轨\"")&&overlay.contains("\"字幕\"")&&overlay.contains("上一集"),"vlc uses the same overflow, not a second icon row");
-  check(!glass.contains("MONOSPACE")&&glass.contains("SANS_SERIF")&&glass.contains("tnum"),"seek labels use tabular sans");
+  check(overlay.contains("mp-actions")&&overlay.contains("mp-slot-")&&!overlay.contains("labels.add(\"音轨\")")&&!overlay.contains("labels.add(\"字幕\")"),"0.1.141 Apple TV bar: audio, subtitles, episodes sit on the bottom row and are not repeated in more");
+  check(!glass.contains("MONOSPACE")&&glass.contains("class SkipIcon")&&glass.contains("mp-dim"),"0.1.141 center keys are ringed skip glyphs over a dimmed frame");
   System.out.println("PASS: player glass remaining copy, bright-scene opacity, 48dp targets, seek-key flash, shared bar language, gold accent.");
  }
 }

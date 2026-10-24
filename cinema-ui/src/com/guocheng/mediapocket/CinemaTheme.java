@@ -51,6 +51,6 @@ final class CinemaTheme {
  static void barIcons(android.app.Activity a,boolean darkIcons){if(a==null||a.getWindow()==null)return;android.view.View d=a.getWindow().getDecorView();
   if(android.os.Build.VERSION.SDK_INT>=30){android.view.WindowInsetsController c=a.getWindow().getInsetsController();if(c!=null){int m=android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS|android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;c.setSystemBarsAppearance(darkIcons?m:0,m);}}
   else{int m=android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|(android.os.Build.VERSION.SDK_INT>=26?android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR:0);int f=d.getSystemUiVisibility();d.setSystemUiVisibility(darkIcons?f|m:f&~m);}}
- static void section(android.widget.TextView t,Context c,float sp){t.setTypeface(paperTitle(c));t.setTextSize(sp);t.setLetterSpacing(-.01f);}
+ static void section(android.widget.TextView t,Context c,float sp){t.setTypeface(paperTitle(c));t.setTextSize(sp);t.setLetterSpacing(0f);}
  static Typeface serif(){return Typeface.create(Typeface.SERIF,Typeface.BOLD);}
 }

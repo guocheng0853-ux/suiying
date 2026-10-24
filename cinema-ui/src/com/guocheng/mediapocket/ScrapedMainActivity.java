@@ -17,13 +17,22 @@ public final class ScrapedMainActivity extends MainActivity {
  }
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);String imported=ConfigImport.consume(this);if(imported!=null){homeProvider="tvbox";android.widget.Toast.makeText(this,"已导入影视仓配置",0).show();home();}}
  int surface(){return light?(clay?CinemaTheme.PAPER:0xffedf5f5):gold?CinemaTheme.BG:0xff1c1b21;}int card(){return light?(clay?CinemaTheme.SHEET:0xffffffff):gold?CinemaTheme.CARD:0xff27252e;}int ink(){return light?(clay?CinemaTheme.SLATE:0xff173740):gold?CinemaTheme.INK:0xfff5fafb;}int muted(){return light?(clay?CinemaTheme.STONE:0xff52757c):gold?CinemaTheme.MUTED:0xffafcbd2;}int accent(){return light?(clay?CinemaTheme.CLAY_DEEP:0xff67549c):gold?CinemaTheme.GOLD:0xffd0bfff;}
+ /** 0.1.141 栏目标题右侧的灰色「全部」（替代标题尾巴的「›」）：TextView 铺满宽度时 drawableEnd 落在最右边。 */
+ static final class EndLabel extends Drawable {final android.graphics.Paint p=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);final String s;
+  EndLabel(String s,int color,float px){this.s=s;p.setColor(color);p.setTextSize(px);}
+  @Override public int getIntrinsicWidth(){return (int)Math.ceil(p.measureText(s));}
+  @Override public int getIntrinsicHeight(){android.graphics.Paint.FontMetrics f=p.getFontMetrics();return (int)Math.ceil(f.descent-f.ascent);}
+  @Override public void draw(android.graphics.Canvas c){android.graphics.Rect b=getBounds();android.graphics.Paint.FontMetrics f=p.getFontMetrics();c.drawText(s,b.left,b.top-f.ascent,p);}
+  @Override public void setAlpha(int alpha){p.setAlpha(alpha);}
+  @Override public void setColorFilter(android.graphics.ColorFilter cf){p.setColorFilter(cf);}
+  @Override public int getOpacity(){return android.graphics.PixelFormat.TRANSLUCENT;}}
  boolean editorial(){return gold||clay;}int hi(){return clay?CinemaTheme.CLAY:CinemaTheme.GOLD;}int onHi(){return clay?0xffffffff:CinemaTheme.ON_GOLD;}
  boolean tablet(){return PaperLayoutRules.tablet(getResources().getConfiguration().smallestScreenWidthDp);}
  int map(int c){if(c==0xff0b0b12||c==0xff101018||c==0xff10101c)return surface();if(c==0xff1b1b29||c==0xff11111c)return card();if(c==0xfff4f3fa)return ink();if(c==0xff9693aa)return muted();if(c==0xff8d68f5||c==0xff6844ce)return accent();return c;}
- GradientDrawable rounded(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
+ GradientDrawable rounded(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(Ui.radius(radius)));return d;}
  @Override GradientDrawable bg(int c){return rounded(map(c),12);}
- @Override TextView text(String s,int size,int c){TextView t=super.text(s,size,map(c));t.setIncludeFontPadding(false);return t;}
- @Override TextView heading(String label){TextView t=text(label.replace("TorrentClaw · ","插件 · "),16,ink());t.setTypeface(editorial()?CinemaTheme.paperTitle(this):android.graphics.Typeface.DEFAULT_BOLD);if(editorial()){t.setTextSize(PaperLayoutRules.sectionSp(tablet()));t.setLetterSpacing(-.02f);}t.setPadding(0,dp(clay?28:22),0,dp(clay?14:10));return t;}
+ @Override TextView text(String s,int size,int c){TextView t=super.text(s,size,map(c));t.setTextSize(Ui.sp(size));t.setIncludeFontPadding(false);return t;}
+ @Override TextView heading(String label){boolean more=Ui.hadArrow(label);TextView t=text(Ui.plain(label).replace("TorrentClaw · ","插件："),16,ink());if(more){t.setCompoundDrawablesWithIntrinsicBounds(null,null,new EndLabel("全部",muted(),Ui.SMALL*getResources().getDisplayMetrics().scaledDensity),null);t.setCompoundDrawablePadding(dp(Ui.S2));}t.setTypeface(editorial()?CinemaTheme.paperTitle(this):android.graphics.Typeface.DEFAULT_BOLD);if(editorial()){t.setTextSize(PaperLayoutRules.sectionSp(tablet()));t.setLetterSpacing(0f);}t.setPadding(0,dp(clay?28:22),0,dp(clay?14:10));return t;}
  @Override Button button(String label,Runnable action){CinemaButton b=new CinemaButton(this,light);b.setText(label);b.setMinHeight(dp(44));b.setMinimumHeight(dp(44));b.setBackground(rounded(card(),12));b.setBackgroundTintList(ColorStateList.valueOf(card()));b.setOnClickListener(v->action.run());return b;}
  @Override void shell(){
   FullscreenMode.immersive(this);super.shell();topBar=(LinearLayout)root.getChildAt(0);root.removeView(topBar);root.removeView(nav);
@@ -34,7 +43,7 @@ public final class ScrapedMainActivity extends MainActivity {
   appBarScrim=new View(this);appBarScrim.setAlpha(0);stage.addView(appBarScrim,new FrameLayout.LayoutParams(-1,0,Gravity.TOP));stage.addView(topBar,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));pull=new PullRefresh(this,stage);
   topBar.addOnLayoutChangeListener((v,l,t,rr,b,ol,ot,orr,ob)->{if(frost!=null&&frost.getLayoutParams().height!=b-t){frost.getLayoutParams().height=b-t;frost.requestLayout();}if(appBarScrim!=null&&appBarScrim.getLayoutParams().height!=b-t){appBarScrim.getLayoutParams().height=b-t;appBarScrim.requestLayout();}});
   scroll.setOnScrollChangeListener((v,x,y,ox,oy)->updateScrim());
-  nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(4));GradientDrawable navSurface=rounded(light?(clay?0xfffaf9f5:0xfafcfafd):gold?0xf5151517:0xf51b222c,32);navSurface.setStroke(dp(1),clay?CinemaTheme.LINE:light?0xccffffff:gold?0x1affffff:0x24ffffff);if(clay)navSurface.setCornerRadius(dp(22));nav.setBackground(navSurface);nav.setElevation(dp(clay?0:6));
+  nav.setGravity(Gravity.CENTER);nav.setPadding(dp(4),dp(4),dp(4),dp(4));GradientDrawable navSurface=rounded(light?(clay?0xfffaf9f5:0xfafcfafd):gold?0xf5151517:0xf51b222c,32);navSurface.setStroke(dp(1),clay?CinemaTheme.LINE:light?0xccffffff:gold?0x1affffff:0x24ffffff);if(clay)navSurface.setCornerRadius(dp(Ui.radius(22)));nav.setBackground(navSurface);nav.setElevation(dp(clay?0:6));
   homeChrome=new HomeChrome(this);nav.removeAllViews();navItems.clear();navIcons=new HomeNavIcon[tabs.length];for(int i=0;i<tabs.length;i++){final String tab=tabs[i];TextView t=text(tab,11,navColor(false));t.setIncludeFontPadding(false);t.setGravity(Gravity.CENTER);t.setSingleLine(true);t.setEllipsize(TextUtils.TruncateAt.END);t.setPadding(dp(2),dp(3),dp(2),dp(3));t.setLayoutParams(new LinearLayout.LayoutParams(0,dp(56),1));navIcons[i]=new HomeNavIcon(i,dp(24),navColor(false));t.setCompoundDrawablesWithIntrinsicBounds(null,navIcons[i],null,null);t.setCompoundDrawablePadding(dp(3));t.setBackground(rounded(0,28));t.setContentDescription(tab);t.setOnClickListener(v->navClick(tab));navItems.add(t);nav.addView(t);}
   FrameLayout.LayoutParams n=new FrameLayout.LayoutParams(navWidth(),dp(64),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);n.bottomMargin=dp(8);stage.addView(nav,n);
   stage.setOnApplyWindowInsetsListener((v,insets)->{safeTop=insets.getSystemWindowInsetTop();safeBottom=insets.getSystemWindowInsetBottom();safeLeft=insets.getSystemWindowInsetLeft();safeRight=insets.getSystemWindowInsetRight();updateInsets();return insets;});
@@ -77,7 +86,7 @@ public final class ScrapedMainActivity extends MainActivity {
  }
  void restoreScroll(){if(pendingScroll<0||scroll==null)return;final int y=pendingScroll;pendingScroll=-1;scroll.post(()->{if(homeCanvas)scroll.scrollTo(0,y);});scroll.postDelayed(()->{if(homeCanvas)scroll.scrollTo(0,y);},500);}
  void genreBrowse(String type,String genre){selectNav("搜索");clear(genre.isEmpty()?(type.equals("movie")?"电影":"剧集"):genre);mode=type;LinearLayout target=new LinearLayout(this);target.setOrientation(1);body.addView(target);catalog(target,type,genre);}
- View libraryCard(String name,String subtitle,String type){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(10),dp(8));c.setGravity(Gravity.CENTER_VERTICAL);c.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,type.equals("movie")?new int[]{0xff875e64,0xff3d4a65}:new int[]{0xff425f87,0xff365b64}));((GradientDrawable)c.getBackground()).setCornerRadius(dp(12));TextView a=text(name,17,0xffffffff);a.setTypeface(null,1);a.setPadding(0,0,0,dp(6));TextView b=text(subtitle,10,0xffe0edf2);b.setPadding(0,0,0,0);c.addView(a);c.addView(b);c.setOnClickListener(v->{mode=type;browse();});return c;}
+ View libraryCard(String name,String subtitle,String type){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(10),dp(8));c.setGravity(Gravity.CENTER_VERTICAL);c.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,type.equals("movie")?new int[]{0xff875e64,0xff3d4a65}:new int[]{0xff425f87,0xff365b64}));((GradientDrawable)c.getBackground()).setCornerRadius(dp(Ui.radius(12)));TextView a=text(name,17,0xffffffff);a.setTypeface(null,1);a.setPadding(0,0,0,dp(6));TextView b=text(subtitle,10,0xffe0edf2);b.setPadding(0,0,0,0);c.addView(a);c.addView(b);c.setOnClickListener(v->{mode=type;browse();});return c;}
  boolean sectionOn(String key){return HomeRules.sectionShown(prefs.getString("home.hiddenSections",""),key);}
  void hideSection(String key,String title){prefs.edit().putString("home.hiddenSections",HomeRules.toggleSection(prefs.getString("home.hiddenSections",""),key)).apply();Toast.makeText(this,"已隐藏「"+title+"」，可在「我的 › 首页与外观」恢复",0).show();home();}
  TextView sectionHead(String key,String label){TextView t=heading(label);t.setOnLongClickListener(v->{String name=label.replace(" ›","").trim();java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();rows.add(CinemaMenu.item("隐藏「"+name+"」",()->hideSection(key,name)));CinemaMenu.show(this,name,rows);return true;});return t;}
@@ -106,7 +115,7 @@ public final class ScrapedMainActivity extends MainActivity {
   }
   if(c.getChildCount()>1&&c.getChildAt(1) instanceof TextView){TextView title=(TextView)c.getChildAt(1);title.setTextSize(recent?12:11);title.setLines(2);title.setGravity(clay?Gravity.START:Gravity.CENTER);if(editorial()){title.setTextSize(PaperLayoutRules.posterSp(tablet()));title.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));}title.setPadding(dp(1),dp(clay?8:6),dp(1),0);title.setTextColor(ink());}
   if(!recent){String release=metadata.optString("releaseInfo");if(!release.isEmpty()){TextView year=text(release,9,muted());year.setSingleLine();year.setEllipsize(TextUtils.TruncateAt.END);year.setGravity(Gravity.CENTER);year.setPadding(0,dp(3),0,0);c.addView(year);}}
-  else if(c.getChildCount()>2&&c.getChildAt(2) instanceof TextView){TextView info=(TextView)c.getChildAt(2);info.setTextSize(10);info.setPadding(0,dp(3),0,0);info.setGravity(Gravity.CENTER);info.setTextColor(accent());}
+  else if(c.getChildCount()>2&&c.getChildAt(2) instanceof TextView){TextView info=(TextView)c.getChildAt(2);info.setTextSize(Ui.sp(10));info.setPadding(0,dp(3),0,0);info.setGravity(Gravity.CENTER);info.setTextColor(accent());}
   if(metadata.has("fusion.site")){c.setOnClickListener(v->openItem(metadata));TextView source=text("影视仓",9,accent());source.setGravity(Gravity.CENTER);source.setPadding(0,dp(3),0,0);c.addView(source);}
   if(metadata.has("emby.server")){c.setOnClickListener(v->openItem(metadata));TextView source=text("Emby",9,accent());source.setGravity(Gravity.CENTER);source.setPadding(0,dp(3),0,0);c.addView(source);}
   if(c.getChildAt(0) instanceof FrameLayout){FrameLayout frame=(FrameLayout)c.getChildAt(0);for(int j=0;j<frame.getChildCount();j++)if(frame.getChildAt(j) instanceof ImageView){TvPosterImages.loadPoster(this,(ImageView)frame.getChildAt(j),recent?metadata.optString("background",metadata.optString("poster")):metadata.optString("poster"),width);break;}}
@@ -152,7 +161,7 @@ public final class ScrapedMainActivity extends MainActivity {
   * 图下靠左依次是小标题、衬线片名、信息行、两行简介、「播放 + 收藏」按钮和轮播点。手机横屏仍叠在图上；平板横屏收在图下。
   */
  void goldHero(){if(!editorial()||hero==null||heroInfo==null||heroCaption==null||heroTitle==null||heroPlay==null)return;boolean tab=tablet(),below=PaperLayoutRules.stackCaptionBelow(wide(),tab);
-  if(heroKicker==null){heroKicker=text("",12,accent());heroKicker.setLetterSpacing(.08f);heroKicker.setTypeface(null,1);}
+  if(heroKicker==null){heroKicker=text("",12,accent());heroKicker.setLetterSpacing(0f);heroKicker.setVisibility(View.GONE);/* 0.1.141 花叔Design：片名上方的小标签属模板装饰，不再显示 */heroKicker.setTypeface(null,1);}
   heroKicker.setTextColor(accent());heroKicker.setPadding(0,0,0,dp(PaperLayoutRules.kickerBottomDp(tab)));
   if(heroActions==null){heroActions=new LinearLayout(this);heroActions.setGravity(Gravity.CENTER_VERTICAL);}
   heroActions.setPadding(0,dp(PaperLayoutRules.actionsTopDp(tab)),0,0);
@@ -163,28 +172,28 @@ public final class ScrapedMainActivity extends MainActivity {
    heroCaption.addView(heroActions,Math.max(2,heroCaption.indexOfChild(dots)),new LinearLayout.LayoutParams(-1,-2));
    heroActions.addView(heroPlay,new LinearLayout.LayoutParams(0,dp(PaperLayoutRules.buttonHeightDp(tab)),1f));
    int side=dp(tab?8:(clay?24:20));heroCaption.setGravity(Gravity.START);heroCaption.setPadding(side,dp(PaperLayoutRules.captionTopDp(tab)),side,dp(4));
-   heroTitle.setGravity(Gravity.START);if(editorial()){heroTitle.setTypeface(CinemaTheme.paperTitle(this));heroTitle.setLetterSpacing(-.025f);}heroTitle.setTextSize(30);heroTitle.setLineSpacing(0,1.05f);
+   heroTitle.setGravity(Gravity.START);if(editorial()){heroTitle.setTypeface(CinemaTheme.paperTitle(this));heroTitle.setLetterSpacing(0f);}heroTitle.setTextSize(Ui.sp(30));heroTitle.setLineSpacing(0,1.05f);
    heroMetaRow.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);heroMetaRow.setPadding(0,dp(PaperLayoutRules.metaTopDp(tab)),0,0);heroFacts.setGravity(Gravity.START);heroFacts.setTextSize(PaperLayoutRules.factsSp(tab));heroFacts.setTypeface(prose);
    heroDescription.setGravity(Gravity.START);heroDescription.setTextSize(PaperLayoutRules.synopsisSp(tab));heroDescription.setTypeface(prose);if(heroDescription.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)heroDescription.getLayoutParams();p.width=-1;p.rightMargin=0;p.topMargin=dp(PaperLayoutRules.synopsisTopDp(tab));heroDescription.setLayoutParams(p);}
    dots.setGravity(Gravity.START);dots.setPadding(0,dp(PaperLayoutRules.dotsTopDp(tab)),0,0);
-   heroPlay.setGravity(Gravity.CENTER);heroPlay.setTextSize(16);heroPlay.setPadding(dp(16),0,dp(16),0);heroPlay.setBackground(rounded(hi(),clay?12:24));heroPlay.setVisibility(View.VISIBLE);
+   heroPlay.setGravity(Gravity.CENTER);heroPlay.setTextSize(Ui.sp(16));heroPlay.setPadding(dp(16),0,dp(16),0);heroPlay.setBackground(rounded(hi(),clay?12:24));heroPlay.setVisibility(View.VISIBLE);
    heroInfo.setPadding(0,0,0,0);if(heroLogo!=null)heroLogo.setVisibility(View.GONE);
    if(heroHeart!=null&&heroHeart.getLayoutParams()!=null){heroHeart.getLayoutParams().height=dp(PaperLayoutRules.buttonHeightDp(tab));heroHeart.setLayoutParams(heroHeart.getLayoutParams());}
   }else{
    heroInfo.addView(heroTitle,Math.min(1,heroInfo.getChildCount()));LinearLayout.LayoutParams playLp=new LinearLayout.LayoutParams(-2,-2);playLp.topMargin=dp(8);playLp.gravity=Gravity.START;heroInfo.addView(heroPlay,playLp);
-   heroTitle.setTextSize(26);heroFacts.setTypeface(prose);heroDescription.setTypeface(prose);heroPlay.setPadding(dp(28),dp(10),dp(28),dp(10));heroPlay.setBackground(rounded(hi(),clay?12:22));dots.setGravity(Gravity.START);
+   heroTitle.setTextSize(Ui.sp(26));heroFacts.setTypeface(prose);heroDescription.setTypeface(prose);heroPlay.setPadding(dp(28),dp(10),dp(28),dp(10));heroPlay.setBackground(rounded(hi(),clay?12:22));dots.setGravity(Gravity.START);
   }
  }
  void bindGoldHero(JSONObject m){
-  heroLogo.setVisibility(View.GONE);heroTitle.setVisibility(View.VISIBLE);heroTitle.setTextSize(30);
+  heroLogo.setVisibility(View.GONE);heroTitle.setVisibility(View.VISIBLE);heroTitle.setTextSize(Ui.sp(30));
   JSONObject shown=m;if(heroes!=null&&heroIndex>=0&&heroIndex<heroes.length()){JSONObject slot=heroes.optJSONObject(heroIndex);if(slot!=null&&(slot.has("agg.source")||slot.has("agg.hero")))shown=slot;}
   boolean emby=m.has("emby.server");String type=m.optString("type",heroType);
   if(shown.has("agg.source")||shown.has("agg.hero"))heroKicker.setText(AggregateRules.heroKicker(shown));
   else heroKicker.setText(emby?"最新入库 · EMBY":"今日推荐"+(type.equals("series")?" · 剧集":type.equals("movie")?" · 电影":""));
-  heroPlay.setText(emby?(m.optLong("emby.resumeMs")>10000?"▶  继续播放":"▶  播放"):"查看详情  ›");heroPlay.setContentDescription(emby?"直接播放":"打开详情");heroPlay.setVisibility(View.VISIBLE);
+  heroPlay.setText(emby?(m.optLong("emby.resumeMs")>10000?"▶  继续播放":"▶  播放"):"查看详情");heroPlay.setContentDescription(emby?"直接播放":"打开详情");heroPlay.setVisibility(View.VISIBLE);
   heroPlay.setOnClickListener(v->heroAction(m));
   // 0.1.129：收藏按钮只建一次，换页时换绑；文字区高度固定（片名一行、信息一行、简介两行），换页只重绘不重排
-  if(heroHeart==null){heroHeart=FollowUp.heart(this,m,ink());heroHeart.setTextSize(14);GradientDrawable ring=new GradientDrawable();ring.setCornerRadius(dp(clay?12:24));ring.setStroke(dp(1),clay?CinemaTheme.LINE:0xff55524b);heroHeart.setBackground(ring);heroHeart.setPadding(dp(18),0,dp(18),0);LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-2,dp(PaperLayoutRules.buttonHeightDp(tablet())));hp.leftMargin=dp(12);heroActions.addView(heroHeart,hp);}else FollowUp.bindHeart(this,heroHeart,m);
+  if(heroHeart==null){heroHeart=FollowUp.heart(this,m,ink());heroHeart.setTextSize(Ui.sp(14));GradientDrawable ring=new GradientDrawable();ring.setCornerRadius(dp(clay?12:24));ring.setStroke(dp(1),clay?CinemaTheme.LINE:0xff55524b);heroHeart.setBackground(ring);heroHeart.setPadding(dp(18),0,dp(18),0);LinearLayout.LayoutParams hp=new LinearLayout.LayoutParams(-2,dp(PaperLayoutRules.buttonHeightDp(tablet())));hp.leftMargin=dp(12);heroActions.addView(heroHeart,hp);}else FollowUp.bindHeart(this,heroHeart,m);
   heroHeart.setVisibility(m.optString("id").isEmpty()?View.INVISIBLE:View.VISIBLE);
   heroTitle.setMaxLines(1);heroTitle.setLines(1);heroFacts.setSingleLine(true);heroFacts.setEllipsize(TextUtils.TruncateAt.END);heroFacts.setVisibility(View.VISIBLE);heroDescription.setVisibility(View.VISIBLE);if(heroCert!=null)heroCert.setVisibility(View.GONE);
  }

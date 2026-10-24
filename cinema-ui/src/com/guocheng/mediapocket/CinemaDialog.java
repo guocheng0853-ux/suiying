@@ -37,7 +37,7 @@ final class CinemaDialog implements DialogInterface {
  }
  CinemaMenu.Item button(CharSequence text,DialogInterface.OnClickListener l,int which){return CinemaMenu.item(text.toString(),()->{done=true;if(l!=null)l.onClick(this,which);});}
  View body(){
-  TextView msg=null;if(message!=null&&message.length()>0){msg=new TextView(a);msg.setText(message);msg.setTextColor(PlayerTheme.secondary(a));msg.setTextSize(14);msg.setLineSpacing(0,1.15f);msg.setTextIsSelectable(true);}
+  TextView msg=null;if(message!=null&&message.length()>0){msg=new TextView(a);msg.setText(message);msg.setTextColor(PlayerTheme.secondary(a));msg.setTextSize(Ui.sp(14));msg.setLineSpacing(0,1.15f);msg.setTextIsSelectable(true);}
   if(view!=null)restyle(view);
   if(msg==null)return view;if(view==null)return msg;
   LinearLayout box=new LinearLayout(a);box.setOrientation(LinearLayout.VERTICAL);box.addView(msg);if(view.getParent() instanceof ViewGroup)((ViewGroup)view.getParent()).removeView(view);box.addView(view);return box;

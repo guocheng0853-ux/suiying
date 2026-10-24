@@ -29,8 +29,14 @@ final class PlayerGlassRules {
  /** ±N 在 until 之前可见。播放盘另算，拖进度时整座中岛收起。 */
  static boolean seekKeysOn(long nowMs,long untilMs){return nowMs<untilMs;}
  /** 底栏常驻只留传输：上一集、下一集、倍速。音轨、字幕、选集进「更多」。Media3 和 VLC 同一套。 */
- static boolean showsOnBar(String action){return "prev".equals(action)||"next".equals(action)||"speed".equals(action);}
- static boolean tuckedInMore(String action){return "audio".equals(action)||"subtitle".equals(action)||"episodes".equals(action);}
+ /** 0.1.141 参考 Apple TV：底部右侧一排小图标常驻——上一集、下一集、音轨、字幕、选集、倍速；「更多」里不再重复这几项。 */
+ static boolean showsOnBar(String action){return "prev".equals(action)||"next".equals(action)||"speed".equals(action)||"audio".equals(action)||"subtitle".equals(action)||"episodes".equals(action);}
+ static boolean tuckedInMore(String action){return false;}
+ /** 控件出现时整块画面压暗的不透明度（Apple TV 做法：不靠面板托字，整体压暗约 35%）。 */
+ static final int DIM_ALPHA=0x59;
+ /** 进度条下方的时间：已播「4:46」/「1:02:03」，剩余「−17:58」。 */
+ static String clockText(long ms){long s=Math.max(0,ms)/1000,h=s/3600,m=(s%3600)/60,sec=s%60;return h>0?String.format(Locale.ROOT,"%d:%02d:%02d",h,m,sec):String.format(Locale.ROOT,"%d:%02d",m,sec);}
+ static String minus(long posMs,long durMs){if(durMs<=0)return "";return "−"+clockText(Math.max(0,durMs-Math.max(0,posMs)));}
 
  static double channel(int c){double n=(c&255)/255.0;return n<=0.04045?n/12.92:Math.pow((n+0.055)/1.055,2.4);}
  static double luminance(int rgb){return 0.2126*channel(rgb>>16)+0.7152*channel(rgb>>8)+0.0722*channel(rgb);}

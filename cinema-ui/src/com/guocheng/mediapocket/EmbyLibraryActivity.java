@@ -6,7 +6,7 @@ public final class EmbyLibraryActivity extends Activity {
  interface Work {Runnable run()throws Exception;}
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}int ink(){return light?(clay?CinemaTheme.SLATE:0xff173740):gold?CinemaTheme.INK:0xfff5fafb;}int muted(){return light?(clay?CinemaTheme.STONE:0xff52757c):gold?CinemaTheme.MUTED:0xffafcbd2;}int surface(){return light?(clay?CinemaTheme.PAPER:0xffedf5f5):gold?CinemaTheme.BG:0xff10343e;}int card(){return light?(clay?CinemaTheme.SHEET:0xffffffff):gold?CinemaTheme.CARD:0xff19434e;}
  android.graphics.drawable.Drawable selectable(){android.util.TypedValue tv=new android.util.TypedValue();getTheme().resolveAttribute(android.R.attr.selectableItemBackground,tv,true);return tv.resourceId!=0?getDrawable(tv.resourceId):null;}
- GradientDrawable rounded(int color,int r){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(r));return d;}
+ GradientDrawable rounded(int color,int r){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(Ui.radius(r)));return d;}
  static void manage(android.content.Context c){android.content.Intent in=new android.content.Intent(c,EmbyLibraryActivity.class);in.putExtra("manage",true);c.startActivity(in);}
  static void open(android.content.Context c,JSONObject m){android.content.Intent in=new android.content.Intent(c,EmbyLibraryActivity.class);in.putExtra("server",m.optString("emby.server"));in.putExtra("item",m.optString("emby.item"));c.startActivity(in);}
  static void openLibrary(android.content.Context c,String server,String library){android.content.Intent in=new android.content.Intent(c,EmbyLibraryActivity.class);in.putExtra("server",server);in.putExtra("library",library);c.startActivity(in);}
@@ -18,7 +18,7 @@ public final class EmbyLibraryActivity extends Activity {
   else if(getIntent().getBooleanExtra("manage",false)||EmbyStore.list(this).length()==0)servers();
   else libraries(EmbyStore.list(this).optJSONObject(0));
  }
- TextView text(String label,int size){TextView t=new TextView(this);t.setText(label);t.setTextSize(size);t.setTextColor(ink());t.setIncludeFontPadding(false);t.setPadding(0,dp(8),0,dp(8));return t;}
+ TextView text(String label,int size){TextView t=new TextView(this);t.setText(label);t.setTextSize(Ui.sp(size));t.setTextColor(ink());t.setIncludeFontPadding(false);t.setPadding(0,dp(8),0,dp(8));return t;}
  Button button(String label,Runnable action){CinemaButton b=new CinemaButton(this,light);b.setText(label);b.setAllCaps(false);b.setBackground(rounded(card(),12));b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(card()));if(action!=null)b.setOnClickListener(v->action.run());return b;}
  void row(String label,Runnable action){Button b=button(label,action);b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(8);body.addView(b,p);}
  /** 0.1.112：离开详情页时收起右上角「收藏 / 下载」，服务器列表、媒体库等页面不显示。 */
@@ -64,10 +64,10 @@ public final class EmbyLibraryActivity extends Activity {
   FrameLayout hero=new FrameLayout(this);hero.setTag("mp-detail-hero");ImageView cover=new ImageView(this);cover.setScaleType(ImageView.ScaleType.CENTER_CROP);hero.addView(cover,new FrameLayout.LayoutParams(-1,-1));TvPosterImages.load(this,cover,meta.optString("background",meta.optString("poster")),sw);
   View fade=new View(this);fade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x00000000,0x00000000,(surface()&0xffffff)|0xcc000000,surface()}));hero.addView(fade,new FrameLayout.LayoutParams(-1,-1));
   body.addView(hero,DetailLandscape.heroParams(body,heroH));
-  TextView name=text(meta.optString("name"),gold?26:24);name.setTypeface(clay||gold?CinemaTheme.paperTitle(this):android.graphics.Typeface.DEFAULT_BOLD);if(clay||gold){name.setTextSize(28);name.setLetterSpacing(-.02f);}name.setPadding(0,dp(4),0,dp(2));LinearLayout.LayoutParams nl=new LinearLayout.LayoutParams(-1,-2);nl.topMargin=clay?dp(12):-dp(36);body.addView(name,nl);
+  TextView name=text(meta.optString("name"),gold?26:24);name.setTypeface(clay||gold?CinemaTheme.paperTitle(this):android.graphics.Typeface.DEFAULT_BOLD);if(clay||gold){name.setTextSize(Ui.sp(28));name.setLetterSpacing(0f);}name.setPadding(0,dp(4),0,dp(2));LinearLayout.LayoutParams nl=new LinearLayout.LayoutParams(-1,-2);nl.topMargin=clay?dp(12):-dp(36);body.addView(name,nl);
   String facts=HomeRules.heroFacts(meta);String runtime=meta.optString("runtime");String line=facts+(runtime.isEmpty()?"":(facts.isEmpty()?"":" · ")+runtime);TextView f=null;if(!line.isEmpty()){f=text(line,13);f.setTextColor(muted());f.setPadding(0,0,0,dp(10));body.addView(f);}
   View badgeRow=EmbyDetailParts.badges(this,MediaBadgeRules.badges(item));if(badgeRow!=null)body.addView(badgeRow);
-  Button primary=button("",null);primary.setTextColor(accentInk());primary.setTextSize(16);primary.setTypeface(null,1);primary.setSingleLine(true);primary.setEllipsize(android.text.TextUtils.TruncateAt.END);primary.setBackground(rounded(accentFill(),clay?12:24));primary.setBackgroundTintList(null);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(-1,dp(48));pl.bottomMargin=dp(12);body.addView(primary,pl);
+  Button primary=button("",null);primary.setTextColor(accentInk());primary.setTextSize(Ui.sp(16));primary.setTypeface(null,1);primary.setSingleLine(true);primary.setEllipsize(android.text.TextUtils.TruncateAt.END);primary.setBackground(rounded(accentFill(),clay?12:24));primary.setBackgroundTintList(null);LinearLayout.LayoutParams pl=new LinearLayout.LayoutParams(-1,dp(48));pl.bottomMargin=dp(12);body.addView(primary,pl);
   String type=item.optString("Type");
   if("Movie".equals(type)||"Episode".equals(type)){primary.setText(meta.optLong("emby.resumeMs")>10000?"▶  继续播放":"▶  播放");primary.setOnClickListener(v->EmbyPlayback.playItem(this,server,item.optString("Id")));}
   else{primary.setText("正在读取剧集…");primary.setEnabled(false);}

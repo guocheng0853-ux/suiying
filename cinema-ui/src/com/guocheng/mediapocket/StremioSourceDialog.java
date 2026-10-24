@@ -13,14 +13,14 @@ final class StremioSourceDialog {
  static final String[][] FILTERS={{"画质","all","全部","4k","4K","1080","1080p","720","720p 及以下"},{"HDR","all","全部","hdr","HDR","dv","杜比视界","sdr","SDR"},{"帧率","all","全部","60","60fps"},{"类型","all","全部","direct","直链","p2p","P2P"}};
  final class Group {JSONObject addon;String name;TextView header;LinearLayout content;JSONArray streams=new JSONArray();String status="等待查询";boolean expanded;int request;Future<?> task;}
  int dp(int n){return (int)(n*a.getResources().getDisplayMetrics().density+.5f);}
- TextView text(String s,int size,int color){TextView t=new TextView(a);t.setText(s);t.setTextSize(size);t.setTextColor(color);t.setPadding(dp(12),dp(8),dp(12),dp(8));return t;}
+ TextView text(String s,int size,int color){TextView t=new TextView(a);t.setText(s);t.setTextSize(Ui.sp(size));t.setTextColor(color);t.setPadding(dp(12),dp(8),dp(12),dp(8));return t;}
  Button button(String label,Runnable action){Button b=new Button(a);b.setText(label);b.setTextColor(ink);b.setAllCaps(false);b.setBackgroundColor(Color.TRANSPARENT);b.setOnClickListener(v->action.run());return b;}
 
  StremioSourceDialog(Activity owner,JSONArray all,String id,String type,JSONObject meta,Play play,Runnable add){
   a=owner;this.id=id;this.type=type;host=play;addAddon=add;addons=AddonRegistry.forResource(all==null?new JSONArray():all,"stream",type,id);
   light=CinemaTheme.light(a);boolean goldUi=!light&&CinemaTheme.gold(a),clayUi=light&&CinemaTheme.clay(a);ink=light?(clayUi?CinemaTheme.SLATE:0xff202830):goldUi?CinemaTheme.INK:0xfff1f4f6;muted=light?(clayUi?CinemaTheme.STONE:0xff697580):goldUi?CinemaTheme.MUTED:0xffb0c1cc;bg=light?(clayUi?CinemaTheme.PAPER:0xfffafbfc):goldUi?CinemaTheme.CARD:0xff1c1b21;accent=light?(clayUi?CinemaTheme.CLAY_DEEP:0xff2c6b8a):goldUi?CinemaTheme.GOLD:0xffd0bfff;
   dialog=new Dialog(a);dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-  LinearLayout root=new LinearLayout(a);root.setOrientation(1);root.setPadding(dp(10),dp(6),dp(10),dp(14));GradientDrawable shape=new GradientDrawable();shape.setColor(bg);shape.setCornerRadius(dp(24));root.setBackground(shape);
+  LinearLayout root=new LinearLayout(a);root.setOrientation(1);root.setPadding(dp(10),dp(6),dp(10),dp(14));GradientDrawable shape=new GradientDrawable();shape.setColor(bg);shape.setCornerRadius(dp(Ui.radius(24)));root.setBackground(shape);
   TextView handle=text("━━",14,muted);handle.setGravity(Gravity.CENTER);root.addView(handle);
   LinearLayout top=new LinearLayout(a);top.setGravity(Gravity.CENTER_VERTICAL);TextView heading=text("搜索其他播放源",20,ink);heading.setTypeface(null,1);top.addView(heading,new LinearLayout.LayoutParams(0,-2,1));top.addView(button("全部重试",()->start()));top.addView(button("关闭",()->dialog.dismiss()));root.addView(top);
   String name=meta==null?"":meta.optString("name");String ep=StremioStreams.episodeLabel(id);TextView sub=text(name+(ep.isEmpty()?"":"  ·  "+ep),13,ink);root.addView(sub);
@@ -39,11 +39,11 @@ final class StremioSourceDialog {
   Window w=dialog.getWindow();if(w!=null){w.setBackgroundDrawableResource(android.R.color.transparent);int width=a.getResources().getDisplayMetrics().widthPixels,height=a.getResources().getDisplayMetrics().heightPixels;w.setLayout(Math.min(width,dp(640)),(int)(height*.76));w.setGravity(width<dp(600)?Gravity.BOTTOM:Gravity.CENTER);w.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);WindowManager.LayoutParams lp=w.getAttributes();lp.dimAmount=.5f;w.setAttributes(lp);}
   start();
  }
- Button chip(String label){Button b=new Button(a);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(14),0,dp(14),0);return b;}
+ Button chip(String label){Button b=new Button(a);b.setText(label);b.setAllCaps(false);b.setTextSize(Ui.sp(13));b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(14),0,dp(14),0);return b;}
  String value(int f){return f==0?quality:f==1?hdr:f==2?fps:kind;}
  void pickFilter(int f){String[] opts=FILTERS[f];String[] labels=new String[(opts.length-1)/2];int checked=0;for(int i=0;i<labels.length;i++){labels[i]=opts[2+i*2];if(opts[1+i*2].equals(value(f)))checked=i;}new AlertDialog.Builder(a).setTitle(opts[0]).setSingleChoiceItems(labels,checked,(d,n)->{String next=opts[1+n*2];if(f==0)quality=next;else if(f==1)hdr=next;else if(f==2)fps=next;else kind=next;updateChips();renderAll();d.dismiss();}).setNegativeButton("取消",null).show();}
  void cycle(int f){String[] o=FILTERS[f];int at=1;for(int i=1;i<o.length;i+=2)if(o[i].equals(value(f)))at=i;String next=o[at+2<o.length?at+2:1];if(f==0)quality=next;else if(f==1)hdr=next;else if(f==2)fps=next;else kind=next;updateChips();renderAll();}
- void updateChips(){for(int f=0;f<chips.size();f++){String[] o=FILTERS[f];String label=o[2];for(int i=1;i<o.length;i+=2)if(o[i].equals(value(f)))label=o[i+1];boolean on=!value(f).equals("all");Button c=chips.get(f);c.setText(o[0]+" · "+label+"  ⌄");c.setTextColor(ink);GradientDrawable g=new GradientDrawable();g.setCornerRadius(dp(17));if(on){g.setColor(light?0xffeee8ff:0xff302a3e);g.setStroke(dp(1),accent);}else{g.setColor(0);g.setStroke(dp(1),light?0xffc9d3da:0xff3d5f6b);}c.setBackground(g);}}
+ void updateChips(){for(int f=0;f<chips.size();f++){String[] o=FILTERS[f];String label=o[2];for(int i=1;i<o.length;i+=2)if(o[i].equals(value(f)))label=o[i+1];boolean on=!value(f).equals("all");Button c=chips.get(f);c.setText(o[0]+" · "+label+"  ⌄");c.setTextColor(ink);GradientDrawable g=new GradientDrawable();g.setCornerRadius(dp(Ui.radius(17)));if(on){g.setColor(light?0xffeee8ff:0xff302a3e);g.setStroke(dp(1),accent);}else{g.setColor(0);g.setStroke(dp(1),light?0xffc9d3da:0xff3d5f6b);}c.setBackground(g);}}
  boolean visible(JSONObject s){return StreamInfo.parse(s).matches(quality,hdr,fps,kind);}
  void renderAll(){for(Group g:groups)render(g);}
  boolean valid(int token){return !closed&&!a.isFinishing()&&!a.isDestroyed()&&generation==token;}

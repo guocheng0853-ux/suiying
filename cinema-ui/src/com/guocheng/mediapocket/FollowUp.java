@@ -16,7 +16,7 @@ final class FollowUp {
  static JSONArray favorites(Context c){try{return new JSONArray(prefs(c).getString("favorites","[]"));}catch(Exception e){return new JSONArray();}}
 
  // ---------- 收藏按钮（Emby / 影视仓详情页右上角） ----------
- static TextView heart(Activity a,JSONObject meta,int ink){TextView t=new TextView(a);t.setTextSize(15);t.setTextColor(ink);t.setGravity(Gravity.CENTER);int p=Math.round(12*a.getResources().getDisplayMetrics().density);t.setPadding(p,0,p,0);t.setTag("mp-fav");bindHeart(a,t,meta);return t;}
+ static TextView heart(Activity a,JSONObject meta,int ink){TextView t=new TextView(a);t.setTextSize(Ui.sp(15));t.setTextColor(ink);t.setGravity(Gravity.CENTER);int p=Math.round(12*a.getResources().getDisplayMetrics().density);t.setPadding(p,0,p,0);t.setTag("mp-fav");bindHeart(a,t,meta);return t;}
  /** 0.1.129：给已有的收藏按钮换绑条目（首页大图轮播复用同一个按钮，换页不再新建 View、不触发整页重排）。 */
  static void bindHeart(Activity a,TextView t,JSONObject meta){
   Runnable paint=()->{boolean on=FollowRules.contains(favorites(a),meta.optString("id"));t.setText(on?"♥ 已收藏":"♡ 收藏");t.setContentDescription(on?"取消收藏":"收藏，有更新时提醒");};paint.run();

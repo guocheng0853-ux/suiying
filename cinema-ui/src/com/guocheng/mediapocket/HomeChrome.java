@@ -5,7 +5,7 @@ final class HomeChrome {
  final ScrapedMainActivity a;
  HomeChrome(ScrapedMainActivity a){this.a=a;}
  int dp(int v){return a.dp(v);}
- GradientDrawable round(int color,int radius){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(radius));return g;}
+ GradientDrawable round(int color,int radius){GradientDrawable g=new GradientDrawable();g.setColor(color);g.setCornerRadius(dp(Ui.radius(radius)));return g;}
  /** 顶栏左侧片源下拉（替代「随影」品牌）。 */
  TextView sourceSwitcher(){
   String provider=a.prefs.getString("fusion.homeProvider","stremio"),sourceId=a.prefs.getString("home.source.v1","current");
