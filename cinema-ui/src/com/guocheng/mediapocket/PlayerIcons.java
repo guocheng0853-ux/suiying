@@ -5,6 +5,8 @@ final class PlayerIcons extends Drawable {
  static final int PIP=1,LOCK=2,UNLOCK=3,BACK=4,ASPECT=5,MORE=6,CAMERA=7,PREV=8,PLAY=9,PAUSE=10,NEXT=11,NOTE=12,CC=13,LIST=14,BATTERY=15;
  final int type,size;final Paint stroke=new Paint(Paint.ANTI_ALIAS_FLAG),fill=new Paint(Paint.ANTI_ALIAS_FLAG);
  PlayerIcons(int type,int size){this.type=type;this.size=Math.max(1,size);stroke.setStyle(Paint.Style.STROKE);stroke.setColor(0xffffffff);stroke.setStrokeCap(Paint.Cap.ROUND);stroke.setStrokeJoin(Paint.Join.ROUND);fill.setColor(0xffffffff);fill.setAntiAlias(true);fill.setStyle(Paint.Style.FILL);}
+ /** 0.1.139：白底按钮上的深色图标（中间大播放键）。 */
+ PlayerIcons tint(int color){stroke.setColor(color);fill.setColor(color);invalidateSelf();return this;}
  @Override public int getIntrinsicWidth(){return size;}
  @Override public int getIntrinsicHeight(){return size;}
  @Override public void draw(Canvas c){
