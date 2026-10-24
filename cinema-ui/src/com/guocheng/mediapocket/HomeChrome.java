@@ -72,11 +72,14 @@ final class HomeChrome {
   FrameLayout frame=new FrameLayout(a);frame.setBackground(round(a.card(),10));frame.setClipToOutline(true);
   ImageView img=new ImageView(a);img.setScaleType(ImageView.ScaleType.CENTER_CROP);
   frame.addView(img,new FrameLayout.LayoutParams(-1,-1));
-  // 0.1.123：剧集优先用这一集的剧照（16:9，和卡片同比例），失败再换背景图 / 海报；都没有时卡片上写片名，不再是一块空灰
+  // 0.1.123：剧集优先用这一集的剧照（16:9，和卡片同比例），失败再换背景图 / 海报；0.1.138 再兜一层系列海报——单集图和背景都要服务器抽帧，共享服务器抽帧挂掉时双双 500，系列图是静态文件不受影响
   boolean episode="Episode".equals(meta.optString("emby.type"));String bg=meta.optString("background"),poster=meta.optString("poster");
   String art=episode&&!poster.isEmpty()?poster:(bg.isEmpty()?poster:bg),fallback=art.equals(bg)?poster:bg;
+  String series=meta.optString("emby.seriesPoster");
   TextView placeholder=a.text(HomeRules.cardTitle(meta),13,a.muted());placeholder.setGravity(Gravity.CENTER);placeholder.setPadding(dp(8),0,dp(8),0);frame.addView(placeholder,0,new FrameLayout.LayoutParams(-1,-1));
-  TvPosterImages.loadPoster(a,img,art,fallback,width);
+  java.util.ArrayList<String> chain=new java.util.ArrayList<>();
+  for(String f:new String[]{fallback,series}){if(f!=null&&!f.trim().isEmpty()&&!f.trim().equals(art.trim())&&!chain.contains(f.trim()))chain.add(f.trim());}
+  if(!chain.isEmpty())TvPosterImages.loadPoster(a,img,art,chain.toArray(new String[0]),width);else TvPosterImages.loadPoster(a,img,art,width);
   String epId=meta.optString("lastEpisode",meta.optString("id"));
   int pos=a.prefs.getInt("pos:"+epId,0),dur=a.prefs.getInt("dur:"+epId,0);
   if(pos<=0&&meta.optLong("emby.resumeMs")>0)pos=(int)Math.min(Integer.MAX_VALUE,meta.optLong("emby.resumeMs"));
@@ -125,7 +128,7 @@ final class HomeChrome {
    grid.addView(line,new LinearLayout.LayoutParams(-1,0,1));
   }
   final int token=a.epoch;final String cacheKey="cinema.catalog."+type+"."+genre;
-  a.job(()->{String raw=CacheFiles.memory(cacheKey);if(raw==null)raw=CacheFiles.of(a).readMigrating(a,cacheKey);JSONArray cache=null;try{if(raw!=null&&!raw.isEmpty())cache=new JSONArray(raw);}catch(Exception ignored){}if(cache==null)return;final JSONArray ready=cache;a.runOnUiThread(()->{if(token!=a.epoch||a.isFinishing())return;for(int idx=0;idx<cells.length&&idx<ready.length();idx++){JSONObject m=ready.optJSONObject(idx);if(m!=null)TvPosterImages.loadPoster(a,cells[idx],m.optString("poster"),cell);}});});
+  a.job(()->{String raw=CacheFiles.memory(cacheKey);if(raw==null)raw=CacheFiles.of(a).readMigrating(a,cacheKey);JSONArray cache=null;try{if(raw!=null&&!raw.isEmpty())cache=new JSONArray(raw);}catch(Exception ignored){}if(cache==null)return;final JSONArray ready=cache;a.runOnUiThread(()->{if(token!=a.epoch||a.isFinishing())return;for(int idx=0;idx<cells.length&&idx<ready.length();idx++){JSONObject m=ready.optJSONObject(idx);if(m==null)continue;String cBg=m.optString("background"),cPoster=m.optString("poster"),cSeries=m.optString("emby.seriesPoster");java.util.ArrayList<String> cChain=new java.util.ArrayList<>();for(String f:new String[]{cBg,cSeries}){if(!f.isEmpty()&&!f.equals(cPoster)&&!cChain.contains(f))cChain.add(f);}if(!cPoster.isEmpty()&&!cChain.isEmpty())TvPosterImages.loadPoster(a,cells[idx],cPoster,cChain.toArray(new String[0]),cell);else TvPosterImages.loadPoster(a,cells[idx],cPoster,cell);}});});
   frame.addView(grid,new FrameLayout.LayoutParams(-1,-1));
   View shade=new View(a);shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x0010343e,0xaa10343e}));
   frame.addView(shade,new FrameLayout.LayoutParams(-1,-1));
@@ -165,7 +168,8 @@ final class HomeChrome {
   backdrop.setScaleType(ImageView.ScaleType.CENTER_CROP);
   backdrop.setImageDrawable(null);
   String bg=HomeHeroRules.backdropOf(m);
-  if(!bg.isEmpty())TvPosterImages.load(a,backdrop,bg,PosterSample.backdropWidth(a.getResources().getDisplayMetrics().widthPixels));
+  // 0.1.138：大图也走兜底链（背景 → 海报 → 系列海报），单集背景 500 时不再整幅空白
+  if(!bg.isEmpty()){String hp=m.optString("poster"),hs=m.optString("emby.seriesPoster");java.util.ArrayList<String> hChain=new java.util.ArrayList<>();for(String f:new String[]{hp,hs}){if(!f.isEmpty()&&!f.equals(bg)&&!hChain.contains(f))hChain.add(f);}if(!hChain.isEmpty())TvPosterImages.load(a,backdrop,bg,hChain.toArray(new String[0]),PosterSample.backdropWidth(a.getResources().getDisplayMetrics().widthPixels));else TvPosterImages.load(a,backdrop,bg,PosterSample.backdropWidth(a.getResources().getDisplayMetrics().widthPixels));}
   // 横屏：片名和简介靠左，叠一道从左往右的压暗；每张海报（包括滑动中的前后页）都带，换页时不会闪
   if(a.wide()){View side=new View(a);side.setTag("mp-hero-extra");side.setBackground(new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0x99000000,0x55000000,0x14000000,0}));slide.addView(side,1,new FrameLayout.LayoutParams(-1,-1));}
  }

@@ -266,7 +266,9 @@ final class EmbyApi {
   JSONObject m=new JSONObject().put("id",watchId(sid,itemId)).put("type",media).put("name",name).put("poster",poster).put("background",background).put("logo",logo)
    .put("description",item.optString("Overview")).put("releaseInfo",item.optInt("ProductionYear",0)>0?String.valueOf(item.optInt("ProductionYear")):"").put("imdbRating",rating(item))
    .put("runtime",runtimeLabel(item.optLong("RunTimeTicks"))).put("genres",genres).put("emby.server",sid).put("emby.item",itemId).put("emby.type",type).put("emby.line",line(item));
-  if("Episode".equals(type)){m.put("emby.series",item.optString("SeriesId"));if(!item.optString("SeriesName").isEmpty())m.put("name",item.optString("SeriesName"));}
+  if("Episode".equals(type)){m.put("emby.series",item.optString("SeriesId"));if(!item.optString("SeriesName").isEmpty())m.put("name",item.optString("SeriesName"));
+   // 0.1.138：单集图和背景都要服务器抽帧，共享服务器抽帧挂掉时双双 500；系列海报是静态文件，存一条不带 tag 的兜底
+   String seriesId=item.optString("SeriesId");if(!seriesId.isEmpty())m.put("emby.seriesPoster",imageUrl(base,seriesId,"Primary",token,480,""));}
   JSONObject user=item.optJSONObject("UserData");long resume=user==null?0:ticksToMs(user.optLong("PlaybackPositionTicks"));if(resume>0)m.put("emby.resumeMs",resume);m.put("emby.play",EmbyCue.playLabel(resume));
   long stamp=AggregateRules.epoch(item.optString("DateCreated"));if(stamp<=0)stamp=AggregateRules.epoch(item.optString("PremiereDate"));if(stamp>0)m.put("agg.time",stamp);
   if(user!=null&&user.optBoolean("Played"))m.put("emby.played",true);

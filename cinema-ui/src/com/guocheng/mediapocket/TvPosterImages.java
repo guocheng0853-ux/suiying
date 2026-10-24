@@ -10,15 +10,27 @@ final class TvPosterImages {
  static volatile String lastStatus="尚未加载封面图片";
  static File directory(Context c){return new File(c.getCacheDir(),"tv-posters-v2");}
  static boolean valid(byte[] b){BitmapFactory.Options p=new BitmapFactory.Options();p.inJustDecodeBounds=true;BitmapFactory.decodeByteArray(b,0,b.length,p);return p.outWidth>0&&p.outHeight>0;}
- static final java.util.Map<ImageView,String[]> FALLBACK=new java.util.WeakHashMap<>();
+ static final java.util.Map<ImageView,String[][]> FALLBACK=new java.util.WeakHashMap<>();
  /** 海报：按目标宽抽样，RGB_565。大图和带透明通道的标志仍走 {@link #load}。 */
  static void loadPoster(Context c,ImageView view,String raw,int width){load(c,view,raw,width,true);}
  static void loadPoster(Context c,ImageView view,String raw,String fallback,int width){load(c,view,raw,fallback,width,true);}
+ /** 先加载 raw，失败时按顺序换 fallbacks 里的备用图。raw 为空时直接从第一个非空备用开始。 */
+ static void loadPoster(Context c,ImageView view,String raw,String[] fallbacks,int width){load(c,view,raw,fallbacks,width,true);}
  /** 先加载 raw，失败时自动换 fallback。raw 为空时直接加载 fallback，并清掉上一条目留下的备用图。 */
  static void load(Context c,ImageView view,String raw,String fallback,int width){load(c,view,raw,fallback,width,false);}
- static void load(Context c,ImageView view,String raw,String fallback,int width,boolean poster){synchronized(FALLBACK){FALLBACK.remove(view);}if(raw==null||raw.trim().isEmpty()){start(c,view,fallback,width,poster);return;}if(fallback!=null&&!fallback.trim().isEmpty()&&!fallback.equals(raw)){synchronized(FALLBACK){FALLBACK.put(view,new String[]{fallback,String.valueOf(width),poster?"1":"0"});}}start(c,view,raw,width,poster);}
- static void load(Context c,ImageView view,String raw,int width){synchronized(FALLBACK){FALLBACK.remove(view);}start(c,view,raw,width,false);}
- static void load(Context c,ImageView view,String raw,int width,boolean poster){synchronized(FALLBACK){FALLBACK.remove(view);}start(c,view,raw,width,poster);}
+ static void load(Context c,ImageView view,String raw,String fallback,int width,boolean poster){chain(c,view,raw,fallback==null||fallback.trim().isEmpty()||fallback.equals(raw)?null:new String[]{fallback},width,poster);}
+ static void load(Context c,ImageView view,String raw,String[] fallbacks,int width){load(c,view,raw,fallbacks,width,false);}
+ static void load(Context c,ImageView view,String raw,String[] fallbacks,int width,boolean poster){chain(c,view,raw,fallbacks,width,poster);}
+ static void load(Context c,ImageView view,String raw,int width){chain(c,view,raw,null,width,false);}
+ static void load(Context c,ImageView view,String raw,int width,boolean poster){chain(c,view,raw,null,width,poster);}
+ private static void chain(Context c,ImageView view,String raw,String[] fallbacks,int width,boolean poster){
+  synchronized(FALLBACK){FALLBACK.remove(view);}
+  String first=raw;
+  if(first==null||first.trim().isEmpty()){first=null;for(String f:fallbacks==null?new String[0]:fallbacks){if(f!=null&&!f.trim().isEmpty()){first=f.trim();break;}}if(first==null){view.setTag(null);record("","封面地址为空");return;}}
+  String[] rest=null;
+  if(fallbacks!=null&&fallbacks.length>0){java.util.ArrayList<String> keep=new java.util.ArrayList<>();boolean pastFirst=false;for(String f:fallbacks){if(f==null||f.trim().isEmpty()||f.trim().equals(first==null?"":first.trim()))continue;keep.add(f.trim());}if(!keep.isEmpty())rest=keep.toArray(new String[0]);}
+  if(rest!=null&&rest.length>0)synchronized(FALLBACK){FALLBACK.put(view,new String[][]{{first==null?"":first,String.valueOf(width),poster?"1":"0"},rest});}
+  start(c,view,first==null?"":first,width,poster);}
  static void start(Context c,ImageView view,String raw,int width,boolean poster){
   if(raw==null||raw.trim().isEmpty()){view.setTag(null);record("","封面地址为空");return;}
   final Context app=c.getApplicationContext();final int target=Math.max(1,width);final String tag="tvposter:"+hash(raw)+":"+target+":"+(poster?"565":"8888");
@@ -54,7 +66,10 @@ final class TvPosterImages {
   if(targets==null)return;MAIN.post(()->{for(WeakReference<ImageView> ref:targets){ImageView v=ref.get();if(v!=null&&tag.equals(v.getTag())){
     // 0.1.123：第一次出图时淡入；加载失败且登记了备用图时改加载备用图（例如剧集截图失败 → 剧集海报）
     if(bitmap!=null){boolean fade=v.getDrawable()==null;v.setImageBitmap(bitmap);if(fade){v.setAlpha(0f);v.animate().alpha(1f).setDuration(220).start();}}
-    else{String[] fb;synchronized(FALLBACK){fb=FALLBACK.remove(v);}if(fb!=null&&!fb[0].isEmpty()){try{load(v.getContext(),v,fb[0],Integer.parseInt(fb[1]),fb.length>2&&"1".equals(fb[2]));}catch(Exception ignored){}}else v.setContentDescription(status);}}}});
+    else{String[][] fb;synchronized(FALLBACK){fb=FALLBACK.remove(v);}
+     if(fb!=null&&fb.length>1&&fb[1].length>0&&!fb[1][0].isEmpty()){String next=fb[1][0];String[] remain=new String[fb[1].length-1];System.arraycopy(fb[1],1,remain,0,remain.length);
+      try{loadPoster(v.getContext(),v,next,remain,Integer.parseInt(fb[0][1]));}catch(Exception ignored){v.setContentDescription(status);}}
+     else v.setContentDescription(status);}}}});
  }
  static String reason(Exception e){if(e instanceof SocketTimeoutException)return "连接或读取超时";if(e instanceof UnknownHostException)return "域名解析失败";if(e instanceof javax.net.ssl.SSLException)return "TLS连接失败";String s=e.getMessage();return s!=null&&(s.matches("HTTP [0-9]{3}")||s.equals("返回内容不是图片")||s.equals("图片解码失败"))?s:e.getClass().getSimpleName();}
  static void record(String raw,String result){String host=raw.isEmpty()?"目录数据":"内嵌图片";try{String url=TvPosterRules.parse(raw).url;if(!url.isEmpty()&&!url.startsWith("data:"))host=new URI(url).getHost();}catch(Exception ignored){}lastStatus=String.valueOf(host)+"："+result;REPORT.remove(lastStatus);REPORT.addFirst(lastStatus);while(REPORT.size()>20)REPORT.pollLast();}
