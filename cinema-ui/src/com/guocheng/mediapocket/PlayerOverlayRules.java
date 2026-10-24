@@ -1,13 +1,13 @@
 package com.guocheng.mediapocket;
 import org.json.*;import java.util.*;
 /**
- * 横屏播放控件的纯规则：解码标签、倍速药丸步进、集标题、底栏三个图标各管什么。
- * 底栏从左到右固定为音轨、字幕、选集，不随片源对调。
+ * 横屏播放控件的纯规则：解码标签、倍速药丸步进、集标题。
+ * 音轨、字幕、选集的顺序仍固定，0.1.140 起它们在「更多」里，不排在底栏上。
  */
 final class PlayerOverlayRules {
  static final String AUDIO="audio",SUBTITLE="subtitle",EPISODES="episodes";
  private PlayerOverlayRules(){}
- /** 底栏右侧三个图标，0 起：音符、CC、最右选集。 */
+ /** 「更多」里音轨、字幕、选集的顺序，0 起。底栏不再铺这三颗。 */
  static String bottomAction(int index){return index==0?AUDIO:index==1?SUBTITLE:index==2?EPISODES:"";}
  /** 显式档位优先。hardware 是 HW+，hw 是普通硬解，software 是软解。自动模式才看当前实际走的是软件还是硬件。 */
  static String decoderLabel(String mode,boolean softwareKnown,boolean software){
