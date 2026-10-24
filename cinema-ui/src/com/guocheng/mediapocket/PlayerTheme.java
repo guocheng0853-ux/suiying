@@ -23,14 +23,21 @@ final class PlayerTheme {
  static int surface(Activity a){return paper(a)?CinemaTheme.PAPER:PANEL;}
  static int text(Activity a){return paper(a)?CinemaTheme.SLATE:0xfffaf9f5;}
  static int secondary(Activity a){return paper(a)?CinemaTheme.STONE:TEXT_SECONDARY;}
- static int selectedText(Activity a){return paper(a)?CinemaTheme.CLAY_DEEP:ACCENT;}
- static int selection(Activity a){return paper(a)?CinemaTheme.CLAY_CHIP:ACCENT_DIM;}
+ /** 播放页强调色。影院暗金外观用 #e0b25c，暖白陶土和其他页面仍用暖陶。 */
+ static int playbackAccent(boolean gold){return PlayerGlassRules.playbackAccent(gold);}
+ static int playbackAccentDim(boolean gold){return gold?0x33e0b25c:ACCENT_DIM;}
+ static int playbackAccent(Activity a){return playbackAccent(a instanceof PlayerActivity||a instanceof SystemPlayerActivity?CinemaTheme.gold(a):false);}
+ static int selectedText(Activity a){return paper(a)?CinemaTheme.CLAY_DEEP:playbackAccent(a);}
+ static int selection(Activity a){return paper(a)?CinemaTheme.CLAY_CHIP:(a instanceof PlayerActivity||a instanceof SystemPlayerActivity?playbackAccentDim(CinemaTheme.gold(a)):ACCENT_DIM);}
  static int ripple(Activity a){return paper(a)?0x22141413:0x33faf9f5;}
 
  static int rowText(boolean selected){return selected?ACCENT:0xfffaf9f5;}
+ static int rowText(boolean selected,boolean gold){return selected?playbackAccent(gold):0xfffaf9f5;}
  static int rowFill(boolean selected){return selected?ACCENT_DIM:0x00000000;}
+ static int rowFill(boolean selected,boolean gold){return selected?playbackAccentDim(gold):0x00000000;}
  static int chipText(boolean on){return on?CinemaTheme.SLATE:0xfffaf9f5;}
  static int chipFill(boolean on){return on?ACCENT:0x00000000;}
+ static int chipFill(boolean on,boolean gold){return on?playbackAccent(gold):0x00000000;}
  static int note(){return TEXT_SECONDARY;}
  static GradientDrawable panel(float density,int radiusDp){GradientDrawable d=new GradientDrawable();d.setColor(PANEL);d.setCornerRadius(Math.max(1,Math.round(radiusDp*density)));return d;}
  static GradientDrawable card(float density){GradientDrawable d=new GradientDrawable();d.setColor(CARD);d.setCornerRadius(Math.max(1,Math.round(RADIUS_CARD_DP*density)));return d;}

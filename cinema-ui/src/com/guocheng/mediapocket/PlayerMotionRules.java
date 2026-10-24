@@ -8,6 +8,6 @@ final class PlayerMotionRules {
  static final int CHROME_IN_MS=280,CHROME_OUT_MS=260,CONTROLS_TIMEOUT_MS=4000;
  static final int PANEL_IN_MS=220,PANEL_OUT_MS=180;
  static final int MENU_DIM_MS=180,MENU_OUT_MS=150;
- static final int MENU_ROW_DP=44,MENU_TITLE_SP=15,MENU_LABEL_SP=15,MENU_VALUE_SP=13;
+ static final int MENU_ROW_DP=48,MENU_TITLE_SP=15,MENU_LABEL_SP=15,MENU_VALUE_SP=13;
  private PlayerMotionRules(){}
 }

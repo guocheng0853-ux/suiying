@@ -1,6 +1,6 @@
 # 随影 MediaPocket
 
-当前候选版本：0.1.138 / versionCode 139。继续观看海报兜底（修共享 Emby 服务器单集抽帧图整体 500：卡片与大图兜到系列海报 + 去 tag 重试），真机验证 4/5 报错 → 0 报错。0.1.137 横屏详情页封面出血、0.1.136 聚合首页与 Emby 播放均真机验证通过。详见[本版验证记录](DEVICE-AGG-VALIDATION.md)。详见[本版验证记录](DEVICE-AGG-VALIDATION.md)。详见[更新记录](cinema-ui/README.md)。0.1.131 暖纸与陶土的验证结果保留于[暖纸记录](DEVICE-PAPER-VALIDATION.md)，0.1.108 的既有验证结果保留于[真机记录](DEVICE-VALIDATION.md)，完整清单仍未完成。
+当前候选版本：0.1.140 / versionCode 141。播放器仍是方向 2 的三层悬浮岛，这一轮只精修亮场对比、48dp 热区、正中少抢戏、底栏蒸馏和影院暗金强调色。0.1.139 是三层悬浮面板，0.1.138 继续观看海报兜底已真机验证。详见[更新记录](cinema-ui/README.md)。0.1.131 暖纸与陶土的验证结果保留于[暖纸记录](DEVICE-PAPER-VALIDATION.md)，0.1.108 的既有验证结果保留于[真机记录](DEVICE-VALIDATION.md)，完整清单仍未完成。
 
 安卓播放器（Stremio 插件 + 影视仓配置，VLC 播放）。采用"基础 APK + Java 界面/功能扩展"的叠加构建方式，不是 Gradle 工程。
 
