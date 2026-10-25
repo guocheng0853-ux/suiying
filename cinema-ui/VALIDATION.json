@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.144",
-  "android_device_tested": true,
+  "ui_version": "0.1.145",
+  "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -22,11 +22,11 @@
   "apk_class_resolution": "passed",
   "unique_classes": 9249,
   "dex_files": 3,
-  "main_version_code": 145,
+  "main_version_code": 146,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
-  "apk_signature_present": true,
+  "apk_signature_present": false,
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,
   "presets_empty": true,
@@ -34,7 +34,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "This build: native and Media3 decode controlled local Emby fixture; a real existing server passed all five health stages including video bytes, not real-source decoding. Historical 0.1.143 real 4K playback evidence is separate.",
+  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -42,97 +42,5 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false,
-  "android_device_model": "OPD2401",
-  "android_device_sdk": 36,
-  "android_device_version": "0.1.144 / 145",
-  "android_device_scope": [
-    "five-stage-health",
-    "completed-health-rotation",
-    "health-cancel",
-    "health-http401",
-    "one-shot-native-recovery",
-    "retry-budget",
-    "cancel-late-response",
-    "Media3-recovery",
-    "real-server-health"
-  ],
-  "tablet_acceptance_cases": {
-    "health": {
-      "passed": true,
-      "playback_info": 0,
-      "diagnostic_info": 1,
-      "sessions_started": 0,
-      "media_ok": 1
-    },
-    "health-cancel": {
-      "passed": true,
-      "playback_info": 0,
-      "diagnostic_info": 0,
-      "sessions_started": 0,
-      "media_ok": 0
-    },
-    "health-auth": {
-      "passed": true,
-      "playback_info": 0,
-      "diagnostic_info": 0,
-      "sessions_started": 0,
-      "media_ok": 0
-    },
-    "recover": {
-      "passed": true,
-      "playback_info": 2,
-      "diagnostic_info": 0,
-      "sessions_started": 1,
-      "media_ok": 1
-    },
-    "fail": {
-      "passed": true,
-      "playback_info": 2,
-      "diagnostic_info": 0,
-      "sessions_started": 0,
-      "media_ok": 0
-    },
-    "cancel": {
-      "passed": true,
-      "playback_info": 2,
-      "diagnostic_info": 0,
-      "sessions_started": 0,
-      "media_ok": 0
-    },
-    "media3": {
-      "passed": true,
-      "playback_info": 2,
-      "diagnostic_info": 0,
-      "sessions_started": 1,
-      "media_ok": 1
-    }
-  },
-  "media3_android_device_tested": true,
-  "tablet_native_fixture_progress": [
-    "0:07",
-    "0:20"
-  ],
-  "tablet_media3_fixture_progress": [
-    "0:07",
-    "0:19"
-  ],
-  "tablet_health_rotation_without_duplicate_requests": true,
-  "tablet_real_server_health": "5 stages passed; video data 881ms",
-  "recovery_evidence_note": "Seven controlled-device scenarios passed before a header-wait-only LinkProbe patch. Recovery code unchanged. Final patch repeated full 92-program suite, native health/rotation and real-server health.",
-  "android_settings_restoration_verified": true,
-  "android_original_rotation_restored": "free",
-  "android_font_scale_unchanged": "1.0",
-  "android_density_unchanged": 420,
-  "android_original_input_method_restored": true,
-  "android_night_mode_unchanged": "auto",
-  "android_appearance_unchanged": "follow system",
-  "android_player_preference_unchanged": "Android system",
-  "fixture_removed": true,
-  "fixture_service_stopped": true,
-  "adb_reverse_removed": true,
-  "remaining_server_count": 3,
-  "apk_sha256": "ec3105d75813a2446dd0c261f711004f42a49fe96e87fbb1c34cf2035a43d85a",
-  "apk_size_bytes": 37050933,
-  "device_validation_document": "DEVICE-RECOVERY-0144.md"
+  "torrent_boost_android_tested": false
 }

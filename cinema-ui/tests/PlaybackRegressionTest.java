@@ -21,7 +21,7 @@ public class PlaybackRegressionTest {
    check(subs.length()==1&&subs.getJSONObject(0).getString("url").equals(base+"/sub"),"player pipeline preserves, resolves and deduplicates subtitles");
    check(subs.getJSONObject(0).getJSONObject("header").getString("Cookie").equals("sid=1"),"subtitle-specific headers retained");
    long t=System.nanoTime();LinkProbe.Result result=LinkProbe.probe(base+"/slow",Map.of(),1000);long elapsed=TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-t);
-   check(elapsed<2000&&!result.media,"slow drip must respect total probe budget, elapsed="+elapsed);
+   check(elapsed<2000&&!result.media,"slow drip must respect total probe budget, elapsed="+elapsed);Thread.sleep(150);check(!Thread.currentThread().isInterrupted(),"probe deadline never leaves the caller thread interrupted");
    System.out.println("PASS: wrong range rejected; chunked range retained; subtitle auth and player metadata preserved; slow-drip probe bounded ("+elapsed+"ms).");
   }finally{server.stop(0);}
  }

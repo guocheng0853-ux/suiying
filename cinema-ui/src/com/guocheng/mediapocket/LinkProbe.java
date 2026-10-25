@@ -91,8 +91,11 @@ public final class LinkProbe {
    // Response headers use the remaining budget; only body reads use short slices.
    // Applying the 250ms body slice here rejected healthy servers before their headers arrived.
    c.setReadTimeout((int)Math.max(1,remaining));
-   final HttpURLConnection conn=c;final Thread reader=Thread.currentThread();
-   ScheduledFuture<?> kill=TIMER.schedule(()->{try{conn.disconnect();}catch(Exception ignored){}reader.interrupt();},remaining,TimeUnit.MILLISECONDS);
+   // The kill timer only unsticks connect / response headers. It never interrupts the caller: an interrupt that
+   // lands after the finally below clears the flag leaks to the pool thread and fails its next probe at once.
+   // Once the body is being read, the 250ms read slices and the deadline checks stop the loop by themselves.
+   final HttpURLConnection conn=c;final java.util.concurrent.atomic.AtomicBoolean reading=new java.util.concurrent.atomic.AtomicBoolean();
+   ScheduledFuture<?> kill=TIMER.schedule(()->{if(!reading.get())try{conn.disconnect();}catch(Exception ignored){}},remaining,TimeUnit.MILLISECONDS);
    if(!headers.containsKey("User-Agent"))c.setRequestProperty("User-Agent","Mozilla/5.0");
    for(Map.Entry<String,String> e:headers.entrySet())c.setRequestProperty(e.getKey(),e.getValue());
    c.setRequestProperty("Accept-Encoding","identity");
@@ -100,7 +103,7 @@ public final class LinkProbe {
     int code;try{code=c.getResponseCode();}catch(SocketTimeoutException ste){if(System.nanoTime()>=deadline||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时");throw ste;}
     c.setReadTimeout((int)Math.min(Math.max(1,TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime())),250));
     if(code>=300&&code<400&&c.getHeaderField("Location")!=null){current=new URL(u,c.getHeaderField("Location")).toString();continue;}
-    InputStream in=code>=400?c.getErrorStream():c.getInputStream();ByteArrayOutputStream b=new ByteArrayOutputStream();
+    reading.set(true);InputStream in=code>=400?c.getErrorStream():c.getInputStream();ByteArrayOutputStream b=new ByteArrayOutputStream();
     // 非播放列表只需首 4KB 判断容器；m3u8 需要完整读到 limit 内
     if(in!=null)try(InputStream s=in){byte[] buf=new byte[8192];int r,cap=limit;while(b.size()<cap){long leftMs=TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime());if(leftMs<=0||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时或已取消");try{r=s.read(buf,0,Math.min(buf.length,cap-b.size()));}catch(SocketTimeoutException ste){if(System.nanoTime()>=deadline||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时或已取消");continue;}if(r==-1)break;b.write(buf,0,r);if(b.size()>=16&&cap>4096&&!HeaderRoute.Sniff.isPlaylist(b.toByteArray(),16))cap=4096;}}
     return new Response(code,c.getContentType(),c.getURL().toString(),b.toByteArray());
