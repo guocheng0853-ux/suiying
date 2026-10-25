@@ -88,8 +88,9 @@ public final class LinkProbe {
    long remaining=TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime());if(remaining<=0||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时");
    URL u=new URL(current);if(!(u.getProtocol().equals("http")||u.getProtocol().equals("https")))throw new IOException("跳转到不支持的协议");
    HttpURLConnection c=(HttpURLConnection)u.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout((int)Math.min(remaining,10000));
-   // Slice read timeouts so a slow drip cannot stretch past the hard budget between disconnect checks.
-   c.setReadTimeout((int)Math.min(Math.max(1,remaining),250));
+   // Response headers use the remaining budget; only body reads use short slices.
+   // Applying the 250ms body slice here rejected healthy servers before their headers arrived.
+   c.setReadTimeout((int)Math.max(1,remaining));
    final HttpURLConnection conn=c;final Thread reader=Thread.currentThread();
    ScheduledFuture<?> kill=TIMER.schedule(()->{try{conn.disconnect();}catch(Exception ignored){}reader.interrupt();},remaining,TimeUnit.MILLISECONDS);
    if(!headers.containsKey("User-Agent"))c.setRequestProperty("User-Agent","Mozilla/5.0");
@@ -97,6 +98,7 @@ public final class LinkProbe {
    c.setRequestProperty("Accept-Encoding","identity");
    try{
     int code;try{code=c.getResponseCode();}catch(SocketTimeoutException ste){if(System.nanoTime()>=deadline||Thread.currentThread().isInterrupted())throw new SocketTimeoutException("检查超时");throw ste;}
+    c.setReadTimeout((int)Math.min(Math.max(1,TimeUnit.NANOSECONDS.toMillis(deadline-System.nanoTime())),250));
     if(code>=300&&code<400&&c.getHeaderField("Location")!=null){current=new URL(u,c.getHeaderField("Location")).toString();continue;}
     InputStream in=code>=400?c.getErrorStream():c.getInputStream();ByteArrayOutputStream b=new ByteArrayOutputStream();
     // 非播放列表只需首 4KB 判断容器；m3u8 需要完整读到 limit 内

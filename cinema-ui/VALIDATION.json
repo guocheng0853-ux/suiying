@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.143",
+  "ui_version": "0.1.144",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -18,26 +18,11 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 8,
-  "internal_followup_first_run": {
-    "total": 89,
-    "passed": 88,
-    "timeout_test": "RangeAcceleratorTest",
-    "timeout_seconds": 180
-  },
-  "internal_followup_isolated_retest": {
-    "test": "RangeAcceleratorTest",
-    "passed": true,
-    "single_seconds": 8.2,
-    "accelerated_seconds": 2.1,
-    "decoded_frames": 400,
-    "initial_timeout_cause": "unconfirmed"
-  },
-  "internal_followup_document": "INTERNAL-0143-VALIDATION.md",
+  "jvm_test_programs_passed": 92,
   "apk_class_resolution": "passed",
-  "unique_classes": 9221,
+  "unique_classes": 9249,
   "dex_files": 3,
-  "main_version_code": 144,
+  "main_version_code": 145,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
@@ -48,8 +33,8 @@
   "torrentclaw_removal_retained": true,
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
-  "real_source_playback_tested": true,
-  "real_source_note": "OPD2401 Android 16: real Emby episode S5E1 rendered 3840x1608 direct-stream video on the existing system-player preference. After initial API/network and player 1/-1 failures, refresh via reconnect recovered playback; sampled progress 2:30 to 2:54. One episode only; initial failure root cause unconfirmed. Controlled 503-to-MP4 retry evidence is separate.",
+  "real_source_playback_tested": false,
+  "real_source_note": "This build: native and Media3 decode controlled local Emby fixture; a real existing server passed all five health stages including video bytes, not real-source decoding. Historical 0.1.143 real 4K playback evidence is separate.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -60,64 +45,94 @@
   "torrent_boost_android_tested": false,
   "android_device_model": "OPD2401",
   "android_device_sdk": 36,
-  "android_installed_version": "0.1.143 / 144",
-  "tablet_ui_tested": true,
-  "tablet_failure_card_ui_tested": true,
-  "tablet_source_picker_button_tested": true,
-  "tablet_retry_button_android_tested": true,
-  "tablet_retry_button_note": "Terminal stop clears resolved URL; retry now reopens retained stream via copied Intent. 503-to-MP4 recovery passed on OPD2401, failure card hidden and video progress 0:11.",
+  "android_device_version": "0.1.144 / 145",
+  "android_device_scope": [
+    "five-stage-health",
+    "completed-health-rotation",
+    "health-cancel",
+    "health-http401",
+    "one-shot-native-recovery",
+    "retry-budget",
+    "cancel-late-response",
+    "Media3-recovery",
+    "real-server-health"
+  ],
+  "tablet_acceptance_cases": {
+    "health": {
+      "passed": true,
+      "playback_info": 0,
+      "diagnostic_info": 1,
+      "sessions_started": 0,
+      "media_ok": 1
+    },
+    "health-cancel": {
+      "passed": true,
+      "playback_info": 0,
+      "diagnostic_info": 0,
+      "sessions_started": 0,
+      "media_ok": 0
+    },
+    "health-auth": {
+      "passed": true,
+      "playback_info": 0,
+      "diagnostic_info": 0,
+      "sessions_started": 0,
+      "media_ok": 0
+    },
+    "recover": {
+      "passed": true,
+      "playback_info": 2,
+      "diagnostic_info": 0,
+      "sessions_started": 1,
+      "media_ok": 1
+    },
+    "fail": {
+      "passed": true,
+      "playback_info": 2,
+      "diagnostic_info": 0,
+      "sessions_started": 0,
+      "media_ok": 0
+    },
+    "cancel": {
+      "passed": true,
+      "playback_info": 2,
+      "diagnostic_info": 0,
+      "sessions_started": 0,
+      "media_ok": 0
+    },
+    "media3": {
+      "passed": true,
+      "playback_info": 2,
+      "diagnostic_info": 0,
+      "sessions_started": 1,
+      "media_ok": 1
+    }
+  },
+  "media3_android_device_tested": true,
+  "tablet_native_fixture_progress": [
+    "0:07",
+    "0:20"
+  ],
+  "tablet_media3_fixture_progress": [
+    "0:07",
+    "0:19"
+  ],
+  "tablet_health_rotation_without_duplicate_requests": true,
+  "tablet_real_server_health": "5 stages passed; video data 881ms",
+  "recovery_evidence_note": "Seven controlled-device scenarios passed before a header-wait-only LinkProbe patch. Recovery code unchanged. Final patch repeated full 92-program suite, native health/rotation and real-server health.",
+  "android_settings_restoration_verified": true,
   "android_original_rotation_restored": "free",
   "android_font_scale_unchanged": "1.0",
   "android_density_unchanged": 420,
+  "android_original_input_method_restored": true,
   "android_night_mode_unchanged": "auto",
-  "apk_size_bytes": 37038645,
-  "tablet_evidence": "DEVICE-TABLET-VALIDATION.md",
-  "apk_sha256": "a1c0001bbdf339df571c1b68e06b8099cb3e2a13cbef9963182be1ecf6020296",
-  "tablet_controlled_video_recovery_tested": true,
-  "tablet_recovery_progress": "0:11",
-  "jvm_test_scope": "Targeted regression after final retry fix; previous full-suite history is recorded separately.",
-  "retry_fix_tests": [
-    {
-      "test": "PlaybackFailureRulesTest",
-      "passed": true
-    },
-    {
-      "test": "PlaybackReviewRulesTest",
-      "passed": true
-    },
-    {
-      "test": "EmbyResumeRulesTest",
-      "passed": true
-    },
-    {
-      "test": "ExternalPlayRulesTest",
-      "passed": true
-    },
-    {
-      "test": "TrackSelectionTest",
-      "passed": true
-    },
-    {
-      "test": "PlaybackPrefsTest",
-      "passed": true
-    },
-    {
-      "test": "PlayerOverlayRulesTest",
-      "passed": true
-    },
-    {
-      "test": "PlaybackOrientationRulesTest",
-      "passed": true
-    }
-  ],
-  "tablet_emby_direct_stream_tested": true,
-  "tablet_emby_progress": [
-    "2:30",
-    "2:54"
-  ],
-  "tablet_emby_resolution": "3840x1608",
-  "tablet_emby_recovery_document": "EMBY-0143-RECOVERY.md",
-  "tablet_emby_initial_failure_root_cause": "unconfirmed",
-  "tablet_emby_transcode_success_tested": false,
-  "tablet_media3_switch_tested": false
+  "android_appearance_unchanged": "follow system",
+  "android_player_preference_unchanged": "Android system",
+  "fixture_removed": true,
+  "fixture_service_stopped": true,
+  "adb_reverse_removed": true,
+  "remaining_server_count": 3,
+  "apk_sha256": "ec3105d75813a2446dd0c261f711004f42a49fe96e87fbb1c34cf2035a43d85a",
+  "apk_size_bytes": 37050933,
+  "device_validation_document": "DEVICE-RECOVERY-0144.md"
 }

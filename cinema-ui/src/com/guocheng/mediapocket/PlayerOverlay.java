@@ -197,13 +197,14 @@ final class PlayerOverlay {
   if(raw instanceof View)((View)raw).setVisibility(View.GONE);
   boolean rendered=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"rendered")),terminal=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal"));
   boolean failure=PlaybackReviewRules.failure(rendered,terminal,message);
-  boolean blocked=PlayerSidePanel.open(a)||CinemaMenu.isOpen(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode());
+  boolean blocked=!a.hasWindowFocus()||PlayerSidePanel.open(a)||CinemaMenu.isOpen(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode());
+  EmbyAutoRecovery.nativeTick(a,failure,blocked,message);
   connectHud(a,blocked||(!failure&&(rendered||terminal||message.trim().isEmpty()))?"":failure?PlaybackReviewRules.failureMessage(message):PlaybackReviewRules.loading(message),failure);
  }
  static void connectHud(Activity a,String text,boolean failure){
   View host=root(a);if(!(host instanceof FrameLayout))return;FrameLayout root=(FrameLayout)host;
   View old=root.findViewWithTag("mp-connect");if(old!=null)old.setVisibility(View.GONE);
-  LinearLayout box=root.findViewWithTag("mp-playback-feedback");if(failure&&!text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);PlaybackFailureCard.show(a,root,text,()->retrySource(a),()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));return;}PlaybackFailureCard.hide(root);if(text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);return;}
+  LinearLayout box=root.findViewWithTag("mp-playback-feedback");if(failure&&!text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);PlaybackFailureCard.show(a,root,text,()->{if(EmbyAutoRecovery.pending(a))EmbyAutoRecovery.cancel(a);else retrySource(a);},()->{EmbyAutoRecovery.cancel(a);PlayerSidePanel.open(a,PlayerSidePanel.ROUTES);});return;}PlaybackFailureCard.hide(root);if(text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);return;}
   if(box==null){box=new LinearLayout(a);box.setTag("mp-playback-feedback");box.setOrientation(LinearLayout.VERTICAL);box.setGravity(Gravity.CENTER);box.setPadding(dp(a,16),dp(a,12),dp(a,16),dp(a,12));box.setBackground(PlayerTheme.card(a.getResources().getDisplayMetrics().density));root.addView(box,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));}
   String key="load:"+text;if(!key.equals(box.getContentDescription())){box.removeAllViews();box.setContentDescription(key);
    ProgressBar progress=new ProgressBar(a);progress.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(PlayerTheme.playbackAccent(CinemaTheme.gold(a))));box.addView(progress,new LinearLayout.LayoutParams(dp(a,28),dp(a,28)));
@@ -211,7 +212,7 @@ final class PlayerOverlay {
 
   }box.setVisibility(View.VISIBLE);
  }
- static void retrySource(Activity a){try{JSONObject stream=TrackSelection.stream(a);if(!stream.optString("emby.server").isEmpty()&&!stream.optString("emby.item").isEmpty()){EmbyPlayback.replay(a,-1,-1);return;}
+ static void retrySource(Activity a){try{EmbyAutoRecovery.manual(a);JSONObject stream=TrackSelection.stream(a);if(!stream.optString("emby.server").isEmpty()&&!stream.optString("emby.item").isEmpty()){EmbyPlayback.replay(a,-1,-1);return;}
   // stopAttempt clears the resolved URL on terminal failure. Reopen from the retained
   // stream instead of retryCurrentDecoder(), which returns without retrying a null URL.
   android.content.Intent retry=new android.content.Intent(a.getIntent());retry.setClass(a,PlayerActivity.class);retry.putExtra("stream",stream.toString());a.startActivity(retry);a.overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out);a.finish();
