@@ -1,11 +1,11 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前候选版本 0.1.142（versionCode 143，基于 design/huashu-appletv / 903da65 的 0.1.141）。先读本说明、cinema-ui/README.md 顶部、docs/handoff/critique-all-0141.md 和 DEVICE-POLISH-VALIDATION.md；按新包、实测场景判断验证范围。
+> 当前候选版本 0.1.143（versionCode 144），在 0.1.142 全页精修上重做播放失败提示卡。先读本说明、cinema-ui/README.md 顶部、DEVICE-TABLET-VALIDATION.md；此前评审和手机实播见 docs/handoff/critique-all-0141.md、DEVICE-POLISH-VALIDATION.md，按对应包与设备判断验证范围。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 1. 这是什么
 
-随影是用户自用的 Android 影视播放器：Stremio 插件目录、影视仓（TVBox）配置、Emby 媒体库三类片源，VLC 播放，支持选集、字幕（在线搜索 / Whisper 语音生成）、弹幕、P2P、投屏、外部播放器。只在用户自己的手机上用（一加 PJZ110，Android 17，1440×3168）。
+随影是用户自用的 Android 影视播放器：Stremio 插件目录、影视仓（TVBox）配置、Emby 媒体库三类片源，VLC 播放，支持选集、字幕（在线搜索 / Whisper 语音生成）、弹幕、P2P、投屏、外部播放器。实测设备包括一加 PJZ110 手机（Android 17，1440×3168）和 OPD2401 平板（Android 16，2120×3000）。
 
 ## 2. 架构：基础 APK + Java 扩展层（不是 Gradle 工程）
 
@@ -31,7 +31,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 85 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 89 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |

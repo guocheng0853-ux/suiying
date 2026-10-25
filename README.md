@@ -1,6 +1,6 @@
 # 随影 MediaPocket
 
-当前候选版本：0.1.142 / versionCode 143。基于 0.1.141 全页 Impeccable 精修：按钮对比、48dp 触控、设置长值与无障碍、登录标签、空态及跨页主题。已同签名装机，VLC 与 Media3 真实视频及进度验证通过，完整边界见 [本版验收](DEVICE-POLISH-VALIDATION.md)，设计评审见 [全页 critique](docs/handoff/critique-all-0141.md)。
+当前候选版本：0.1.143 / versionCode 144。播放失败提示移至底部安全区，重做标题、说明与「重新连接 / 选择片源」双操作卡片。已同签名安装到 OPD2401 平板，详见 [平板验收](DEVICE-TABLET-VALIDATION.md)。继承 0.1.142 的全页精修；该版手机 VLC / Media3 实播证据见 [手机验收](DEVICE-POLISH-VALIDATION.md)，不代替本版平板实播结果。
 
 安卓播放器（Stremio 插件 + 影视仓配置，VLC 播放）。采用"基础 APK + Java 界面/功能扩展"的叠加构建方式，不是 Gradle 工程。
 
