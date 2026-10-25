@@ -211,7 +211,11 @@ final class PlayerOverlay {
 
   }box.setVisibility(View.VISIBLE);
  }
- static void retrySource(Activity a){try{JSONObject stream=TrackSelection.stream(a);if(!stream.optString("emby.server").isEmpty()&&!stream.optString("emby.item").isEmpty()){EmbyPlayback.replay(a,-1,-1);return;}Object budget=OnlineSubtitleSearch.field(a,"budget");if(budget!=null)OnlineSubtitleSearch.call(budget,"manualRestart",new Class<?>[]{long.class},android.os.SystemClock.elapsedRealtime());OnlineSubtitleSearch.call(a,"retryCurrentDecoder",new Class<?>[0]);}catch(Exception e){toast(a,"暂时无法重新连接，请选择其他片源");PlayerSidePanel.open(a,PlayerSidePanel.ROUTES);}}
+ static void retrySource(Activity a){try{JSONObject stream=TrackSelection.stream(a);if(!stream.optString("emby.server").isEmpty()&&!stream.optString("emby.item").isEmpty()){EmbyPlayback.replay(a,-1,-1);return;}
+  // stopAttempt clears the resolved URL on terminal failure. Reopen from the retained
+  // stream instead of retryCurrentDecoder(), which returns without retrying a null URL.
+  android.content.Intent retry=new android.content.Intent(a.getIntent());retry.setClass(a,PlayerActivity.class);retry.putExtra("stream",stream.toString());a.startActivity(retry);a.overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out);a.finish();
+ }catch(Exception e){toast(a,"暂时无法重新连接，请选择其他片源");PlayerSidePanel.open(a,PlayerSidePanel.ROUTES);}}
  static void nextSource(Activity a){try{Object queue=OnlineSubtitleSearch.field(a,"queue");if(queue==null||!Boolean.TRUE.equals(OnlineSubtitleSearch.call(queue,"hasNext",new Class<?>[0]))){toast(a,"当前地址列表已用完，请选择其他片源");PlayerSidePanel.open(a,PlayerSidePanel.ROUTES);return;}Object budget=OnlineSubtitleSearch.field(a,"budget");if(budget!=null)OnlineSubtitleSearch.call(budget,"manualRestart",new Class<?>[]{long.class},android.os.SystemClock.elapsedRealtime());OnlineSubtitleSearch.call(a,"advance",new Class<?>[]{String.class},"手动换下一个源");}catch(Exception e){toast(a,"暂时无法切换，请选择其他片源");PlayerSidePanel.open(a,PlayerSidePanel.ROUTES);}}
  static void retire(Activity a){View scroll=scroll(bar(a,"bottom"));if(scroll instanceof View){((View)scroll).setVisibility(View.GONE);hideRetired((View)scroll);}Object auto=OnlineSubtitleSearch.field(a,"autoButton");if(auto instanceof View)((View)auto).setVisibility(View.GONE);}
  static void hideRetired(View v){if(v instanceof Button&&PlayerOverlayRules.retiredBottom(text(v),desc(v)))v.setVisibility(View.GONE);if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)hideRetired(g.getChildAt(i));}}

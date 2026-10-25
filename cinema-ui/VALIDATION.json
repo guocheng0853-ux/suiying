@@ -18,9 +18,21 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 89,
-  "internal_followup_first_run": {"total": 89, "passed": 88, "timeout_test": "RangeAcceleratorTest", "timeout_seconds": 180},
-  "internal_followup_isolated_retest": {"test": "RangeAcceleratorTest", "passed": true, "single_seconds": 8.2, "accelerated_seconds": 2.1, "decoded_frames": 400, "initial_timeout_cause": "unconfirmed"},
+  "jvm_test_programs_passed": 8,
+  "internal_followup_first_run": {
+    "total": 89,
+    "passed": 88,
+    "timeout_test": "RangeAcceleratorTest",
+    "timeout_seconds": 180
+  },
+  "internal_followup_isolated_retest": {
+    "test": "RangeAcceleratorTest",
+    "passed": true,
+    "single_seconds": 8.2,
+    "accelerated_seconds": 2.1,
+    "decoded_frames": 400,
+    "initial_timeout_cause": "unconfirmed"
+  },
   "internal_followup_document": "INTERNAL-0143-VALIDATION.md",
   "apk_class_resolution": "passed",
   "unique_classes": 9221,
@@ -37,7 +49,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "OPD2401: real Emby playback failed in 0.1.142; 0.1.143 detail requests also failed. No successful real-source video/progress evidence for this build. Failure card verified through a controlled device-local unreachable video URL.",
+  "real_source_note": "OPD2401 real Emby playback remains unverified after connection failures. Controlled local HTTP fixture: 503, restore MP4, native retry button tap issued a new GET and video advanced to 0:11. Not proof of Emby recovery.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -52,13 +64,50 @@
   "tablet_ui_tested": true,
   "tablet_failure_card_ui_tested": true,
   "tablet_source_picker_button_tested": true,
-  "tablet_retry_button_android_tested": false,
-  "tablet_retry_button_note": "Foreground repeatedly interrupted by another application's system install guide before retry tap; focus guard stopped input.",
+  "tablet_retry_button_android_tested": true,
+  "tablet_retry_button_note": "Terminal stop clears resolved URL; retry now reopens retained stream via copied Intent. 503-to-MP4 recovery passed on OPD2401, failure card hidden and video progress 0:11.",
   "android_original_rotation_restored": "free",
   "android_font_scale_unchanged": "1.0",
   "android_density_unchanged": 420,
   "android_night_mode_unchanged": "auto",
   "apk_size_bytes": 37038645,
   "tablet_evidence": "DEVICE-TABLET-VALIDATION.md",
-  "apk_sha256": "4d4e7554531e50c89b1d1f377e39e1d662f50694358f54751aa0ab86d01fce80"
+  "apk_sha256": "a1c0001bbdf339df571c1b68e06b8099cb3e2a13cbef9963182be1ecf6020296",
+  "tablet_controlled_video_recovery_tested": true,
+  "tablet_recovery_progress": "0:11",
+  "jvm_test_scope": "Targeted regression after final retry fix; previous full-suite history is recorded separately.",
+  "retry_fix_tests": [
+    {
+      "test": "PlaybackFailureRulesTest",
+      "passed": true
+    },
+    {
+      "test": "PlaybackReviewRulesTest",
+      "passed": true
+    },
+    {
+      "test": "EmbyResumeRulesTest",
+      "passed": true
+    },
+    {
+      "test": "ExternalPlayRulesTest",
+      "passed": true
+    },
+    {
+      "test": "TrackSelectionTest",
+      "passed": true
+    },
+    {
+      "test": "PlaybackPrefsTest",
+      "passed": true
+    },
+    {
+      "test": "PlayerOverlayRulesTest",
+      "passed": true
+    },
+    {
+      "test": "PlaybackOrientationRulesTest",
+      "passed": true
+    }
+  ]
 }

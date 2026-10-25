@@ -18,4 +18,4 @@
 
 ## 边界与本地记录
 
-平板“重新连接”点击验证仍待完成，真实Emby来源实播仍未通过；按用户要求不继续占用平板。日志保留在忽略目录 `cinema-ui/build/internal-0143-tests.log`、`internal-0143-range-retry.log`、`internal-0143-apk.log` 和各测试类日志，不提交本地设备日志或私有配置。
+此轮内测结束时平板“重新连接”点击验证尚待完成，真实Emby来源实播未通过。后续平板补验发现终止失败会清空url，旧retryCurrentDecoder虽然存在却直接返回；最终修复与恢复播放证据见 `DEVICE-TABLET-VALIDATION.md`，本记录不作为修复后新包的完整89项回归证明。日志保留在忽略目录 `cinema-ui/build/internal-0143-tests.log`、`internal-0143-range-retry.log`、`internal-0143-apk.log` 和各测试类日志，不提交本地设备日志或私有配置。
