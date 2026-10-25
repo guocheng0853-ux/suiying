@@ -6,7 +6,9 @@ final class EmbyAutoRecovery {
  static final Map<Activity,Attempt> ALL=new WeakHashMap<>();
  static int count(Activity a){JSONObject s=TrackSelection.stream(a);return s.optString("emby.item").equals(a.getIntent().getStringExtra(EmbyRecoveryRules.ITEM))?a.getIntent().getIntExtra(EmbyRecoveryRules.COUNT,0):0;}
  static boolean pending(Activity a){Attempt t=ALL.get(a);return t!=null&&t.pending&&!t.cancelled;}
- static void cancel(Activity a){Attempt t=ALL.get(a);if(t!=null){t.cancelled=true;t.pending=false;}}
+ static void cancel(Activity a){cancel(a,false);}
+ static void suspend(Activity a){cancel(a,true);}
+ private static void cancel(Activity a,boolean interrupted){Attempt t=ALL.get(a);if(t!=null){int before=count(a);if(EmbyRecoveryRules.afterCancel(t.pending&&!t.cancelled,interrupted,before)<before){a.getIntent().removeExtra(EmbyRecoveryRules.COUNT);a.getIntent().removeExtra(EmbyRecoveryRules.ITEM);}t.cancelled=true;t.pending=false;}}
  static void dispose(Activity a){cancel(a);ALL.remove(a);}
  static void manual(Activity a){cancel(a);ALL.remove(a);a.getIntent().removeExtra(EmbyRecoveryRules.COUNT);a.getIntent().removeExtra(EmbyRecoveryRules.ITEM);}
  static boolean valid(Activity a,Attempt t){return t!=null&&!t.cancelled&&!a.isFinishing()&&!a.isDestroyed();}
@@ -19,11 +21,11 @@ final class EmbyAutoRecovery {
   Attempt t=new Attempt(fallback);ALL.put(a,t);DebugLog.event("Emby","自动恢复：重新获取播放信息（1/1）");
   EmbyPlayback.playItem(a,server,stream.optString("emby.item"),stream.optString("emby.mediaSource"),true,t);return true;
  }
- static void failed(Activity a,Attempt t){if(!valid(a,t))return;t.pending=false;DebugLog.event("Emby","自动恢复未成功，保留手动恢复入口");if(t.fallback!=null)t.fallback.run();}
+ static void failed(Activity a,Attempt t){if(!valid(a,t))return;if(!a.hasWindowFocus()){suspend(a);return;}t.pending=false;DebugLog.event("Emby","自动恢复未成功，保留手动恢复入口");if(t.fallback!=null)t.fallback.run();}
  static void complete(Activity a,Attempt t){if(t!=null)t.pending=false;}
  static void nativeTick(Activity a,boolean failure,boolean blocked,String raw){
   boolean active=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"active"));
-  if(blocked||!active){cancel(a);return;}
+  if(blocked||!active){suspend(a);return;}
   start(a,TrackSelection.stream(a),failure,active,blocked,raw,null);
  }
  private EmbyAutoRecovery(){}

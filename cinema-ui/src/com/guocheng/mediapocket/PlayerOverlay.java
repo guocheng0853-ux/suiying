@@ -197,9 +197,9 @@ final class PlayerOverlay {
   if(raw instanceof View)((View)raw).setVisibility(View.GONE);
   boolean rendered=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"rendered")),terminal=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal"));
   boolean failure=PlaybackReviewRules.failure(rendered,terminal,message);
-  boolean blocked=!a.hasWindowFocus()||PlayerSidePanel.open(a)||CinemaMenu.isOpen(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode());
-  EmbyAutoRecovery.nativeTick(a,failure,blocked,message);
-  connectHud(a,blocked||(!failure&&(rendered||terminal||message.trim().isEmpty()))?"":failure?PlaybackReviewRules.failureMessage(message):PlaybackReviewRules.loading(message),failure);
+  boolean covered=PlayerSidePanel.open(a)||CinemaMenu.isOpen(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode());
+  EmbyAutoRecovery.nativeTick(a,failure,covered||!a.hasWindowFocus(),message);
+  connectHud(a,!PlaybackReviewRules.feedbackVisible(covered,failure,rendered,terminal,message)?"":failure?PlaybackReviewRules.failureMessage(message):PlaybackReviewRules.loading(message),failure);
  }
  static void connectHud(Activity a,String text,boolean failure){
   View host=root(a);if(!(host instanceof FrameLayout))return;FrameLayout root=(FrameLayout)host;

@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.145",
-  "android_device_tested": false,
+  "ui_version": "0.1.146",
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -20,13 +20,13 @@
   "dolby_android_device_tested": false,
   "jvm_test_programs_passed": 92,
   "apk_class_resolution": "passed",
-  "unique_classes": 9249,
+  "unique_classes": 9250,
   "dex_files": 3,
-  "main_version_code": 146,
+  "main_version_code": 147,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
-  "apk_signature_present": false,
+  "apk_signature_present": true,
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,
   "presets_empty": true,
@@ -34,7 +34,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
+  "real_source_note": "This version decoded controlled local H.264 fixture in native and Media3 players. No real-source or Dolby P5 transcode-recovery decoding claimed.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -42,5 +42,70 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false
+  "torrent_boost_android_tested": false,
+  "android_device_model": "OPD2401",
+  "android_device_sdk": 36,
+  "android_device_version": "0.1.146 / 147",
+  "android_device_scope": [
+    "native-focus",
+    "media3-focus",
+    "cancel",
+    "completed-budget",
+    "split"
+  ],
+  "tablet_acceptance_cases": {
+    "native-focus": {
+      "passed": true,
+      "playback_info": 3,
+      "sessions_started": 1,
+      "media_ok": 1
+    },
+    "media3-focus": {
+      "passed": true,
+      "playback_info": 3,
+      "sessions_started": 1,
+      "media_ok": 1
+    },
+    "cancel": {
+      "passed": true,
+      "playback_info": 2,
+      "sessions_started": 0,
+      "media_ok": 0
+    },
+    "completed-budget": {
+      "passed": true,
+      "playback_info": 2,
+      "sessions_started": 0,
+      "media_ok": 0
+    },
+    "split": {
+      "passed": true,
+      "playback_info": 2,
+      "sessions_started": 0,
+      "media_ok": 0
+    }
+  },
+  "media3_android_device_tested": true,
+  "tablet_native_fixture_video_seen": true,
+  "tablet_media3_fixture_video_seen": true,
+  "tablet_native_later_progress": "0:11",
+  "tablet_media3_later_progress": "0:10",
+  "tablet_split_loading_and_failure_visible_without_focus": true,
+  "tablet_split_source_button_tested": true,
+  "tablet_split_terminal_formed_before_focus_switch": true,
+  "real_p5_transcode_recovery_android_tested": false,
+  "transcode_choice_test_scope": "Source regression checks and JVM tests of actual Emby transcode flags; real P5 interruption/recovery not tested.",
+  "android_settings_restoration_verified": true,
+  "android_font_scale_unchanged": "1.0",
+  "android_density_unchanged": 420,
+  "android_rotation_restored": "free",
+  "android_original_input_method_restored": true,
+  "fixture_removed": true,
+  "fixture_service_stopped": true,
+  "adb_reverse_removed": true,
+  "remaining_server_count": 3,
+  "fullscreen_restored": true,
+  "apk_sha256": "0193ccdf3f45729d28a31bac5c8e4dd9e64807d7f55ecf1228ab0b3d4647cfd6",
+  "apk_size_bytes": 37050933,
+  "device_validation_document": "DEVICE-RECOVERY-0146.md"
 }

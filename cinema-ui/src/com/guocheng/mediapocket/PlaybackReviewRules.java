@@ -24,6 +24,8 @@ final class PlaybackReviewRules {
   String s=raw==null?"":raw.toLowerCase(java.util.Locale.ROOT);
   return terminal&&(!rendered||s.contains("失败")||s.contains("超时")||s.contains("无法")||s.contains("error"));
  }
+ /** Feedback belongs to a visible player even while another split-screen window owns focus. */
+ static boolean feedbackVisible(boolean covered,boolean failure,boolean rendered,boolean terminal,String raw){return !covered&&(failure||(!rendered&&!terminal&&raw!=null&&!raw.trim().isEmpty()));}
  static String failureMessage(String raw){String s=raw==null?"":raw;if(s.contains("解码")||s.contains("格式"))return "这个视频暂时无法播放，可以换个片源试试";return "没连上这个片源，可以换一个试试";}
  static String loading(String raw){
   Matcher m=Pattern.compile("(?:缓冲|buffer)[^0-9]{0,8}([0-9]{1,3})%",Pattern.CASE_INSENSITIVE).matcher(raw==null?"":raw);

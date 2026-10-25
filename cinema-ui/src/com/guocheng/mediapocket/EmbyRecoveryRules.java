@@ -10,6 +10,8 @@ final class EmbyRecoveryRules {
   return true;
  }
  static int carry(boolean replace,String previous,String next,int count){return replace&&previous!=null&&previous.equals(next)?Math.min(1,Math.max(0,count)):0;}
+ /** Only an unfinished attempt interrupted by the system gives its budget back. Explicit cancel keeps it spent. */
+ static int afterCancel(boolean pending,boolean interrupted,int count){return pending&&interrupted?0:Math.min(1,Math.max(0,count));}
  static int resume(int current,long retained,long initial){return (int)Math.min(Integer.MAX_VALUE,current>0?current:retained>0?retained:Math.max(0,initial));}
  private EmbyRecoveryRules(){}
 }
