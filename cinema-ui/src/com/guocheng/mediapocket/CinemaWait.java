@@ -7,11 +7,11 @@ import android.app.Activity;import android.app.ProgressDialog;import android.con
  */
 final class CinemaWait {
  final Activity a;final TextView text;CinemaMenu.Open handle;ProgressDialog system;DialogInterface.OnCancelListener cancelListener;boolean cancelled;
- private CinemaWait(Activity a,CharSequence message){this.a=a;text=new TextView(a);text.setText(message==null?"":message);text.setTextColor(PlayerTheme.TEXT_SECONDARY);text.setTextSize(14);}
+ private CinemaWait(Activity a,CharSequence message){this.a=a;text=new TextView(a);text.setText(message==null?"":message);text.setTextColor(PlayerTheme.secondary(a));text.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);text.setTextSize(14);}
  static CinemaWait show(Activity a,CharSequence title,CharSequence message,boolean indeterminate,boolean cancelable){
   CinemaWait w=new CinemaWait(a,message);
   LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);
-  ProgressBar spin=new ProgressBar(a);int s=CinemaMenu.dp(a,24);row.addView(spin,new LinearLayout.LayoutParams(s,s));
+  ProgressBar spin=new ProgressBar(a);spin.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(PlayerTheme.selectedText(a)));int s=CinemaMenu.dp(a,24);row.addView(spin,new LinearLayout.LayoutParams(s,s));
   LinearLayout.LayoutParams tl=new LinearLayout.LayoutParams(0,-2,1f);tl.leftMargin=CinemaMenu.dp(a,12);row.addView(w.text,tl);
   if(CinemaMenu.open(a,title==null?null:title.toString(),row,null,()->{w.cancelled=true;if(w.cancelListener!=null)w.cancelListener.onCancel(null);})){w.handle=CinemaMenu.OPEN.get(a);}
   else{try{w.system=ProgressDialog.show(a,title,message,indeterminate,cancelable);w.system.setOnCancelListener(d->{w.cancelled=true;if(w.cancelListener!=null)w.cancelListener.onCancel(d);});}catch(Exception ignored){}}

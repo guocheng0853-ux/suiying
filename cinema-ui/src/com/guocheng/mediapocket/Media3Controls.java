@@ -30,7 +30,7 @@ final class Media3Controls {
   rate=button("1×",this::speed);rate.setTextSize(Ui.SMALL);rate.setTextColor(PlayerTheme.playbackAccent(CinemaTheme.gold(a)));rate.setFontFeatureSettings("tnum");rate.setPadding(dp(Ui.S2),0,0,0);epRow.addView(rate,new LinearLayout.LayoutParams(-2,dp(Ui.TOUCH)));
   remain=label("",Ui.SMALL);remain.setVisibility(View.GONE);epRow.addView(remain);
   bottom.addView(epRow);
-  seek=new SeekBar(a);seek.setMax(10000);seek.setPadding(0,0,0,0);styleSeek();LinearLayout.LayoutParams sk=new LinearLayout.LayoutParams(-1,dp(32));sk.topMargin=dp(Ui.S1);bottom.addView(seek,sk);
+  seek=new SeekBar(a);seek.setMax(10000);seek.setPadding(0,0,0,0);styleSeek();LinearLayout.LayoutParams sk=new LinearLayout.LayoutParams(-1,dp(Ui.TOUCH));sk.topMargin=dp(Ui.S1);bottom.addView(seek,sk);
   LinearLayout times=new LinearLayout(a);time=label("0:00",Ui.SMALL);time.setTextColor(0xD9FFFFFF);time.setFontFeatureSettings("tnum");times.addView(time,new LinearLayout.LayoutParams(0,-2,1));left=label("",Ui.SMALL);left.setTextColor(0xD9FFFFFF);left.setFontFeatureSettings("tnum");left.setGravity(Gravity.END);times.addView(left,new LinearLayout.LayoutParams(0,-2,1));bottom.addView(times);
   root.addView(bottom,new FrameLayout.LayoutParams(-1,-2,Gravity.BOTTOM));
   side=new LinearLayout(a);side.setOrientation(LinearLayout.VERTICAL);side.addView(icon(PlayerIcons.CAMERA,"截图",()->PlayerOverlay.capture(a)),touchLp(0));FrameLayout.LayoutParams sl=new FrameLayout.LayoutParams(-2,-2,Gravity.START|Gravity.CENTER_VERTICAL);sl.leftMargin=dp(16);root.addView(side,sl);

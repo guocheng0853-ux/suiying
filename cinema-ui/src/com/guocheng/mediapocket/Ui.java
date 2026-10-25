@@ -17,5 +17,7 @@ final class Ui {
  static int radius(int legacy){if(legacy<=0)return 0;if(legacy>=100)return legacy;if(legacy<=8)return R_S;if(legacy<=14)return R_M;return R_L;}
  /** 栏目标题、按钮去掉尾巴箭头「›」「→」（花叔Design：按钮尾巴箭头属模板装饰）。返回去掉后的文字。 */
  static String plain(String label){if(label==null)return "";String s=label.replaceAll("\\s*[›→]\\s*$","");return s;}
+ /** Choose the existing warm ink/paper pair by measured contrast, not a brightness cutoff. */
+ static int onFill(int fill){int dark=0xff141413,light=0xfffaf9f5;double d=PlayerGlassRules.contrast(dark,fill),l=PlayerGlassRules.contrast(light,fill);if(Math.max(d,l)>=4.5)return d>=l?dark:light;return PlayerGlassRules.contrast(0xff000000,fill)>=PlayerGlassRules.contrast(0xffffffff,fill)?0xff000000:0xffffffff;}
  static boolean hadArrow(String label){return label!=null&&label.matches(".*[›→]\\s*$");}
 }

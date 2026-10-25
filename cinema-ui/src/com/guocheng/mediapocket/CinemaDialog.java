@@ -44,7 +44,7 @@ final class CinemaDialog implements DialogInterface {
  }
  /** 原来按白底对话框写的输入表单：字改成浅色，输入框下划线改成浅色。 */
  void restyle(View v){
-  if(v instanceof EditText){EditText e=(EditText)v;e.setTextColor(PlayerTheme.text(a));e.setHintTextColor(PlayerTheme.secondary(a));e.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PlayerTheme.selectedText(a)));return;}
+  if(v instanceof EditText){EditText e=(EditText)v;e.setMinimumHeight(Math.round(Ui.TOUCH*a.getResources().getDisplayMetrics().density));e.setTextColor(PlayerTheme.text(a));e.setHintTextColor(PlayerTheme.secondary(a));e.setBackgroundTintList(android.content.res.ColorStateList.valueOf(PlayerTheme.selectedText(a)));return;}
   if(v instanceof Button||v instanceof Spinner)return;
   if(v instanceof TextView){TextView t=(TextView)v;t.setTextColor(PlayerTheme.secondary(a));return;}
   if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)restyle(g.getChildAt(i));}

@@ -14,7 +14,7 @@ final class EmbyDetailParts {
 
  /** 操作按钮行：图标在上、文字在下，等分宽度。 */
  static LinearLayout actions(EmbyLibraryActivity a){LinearLayout row=new LinearLayout(a);row.setGravity(Gravity.CENTER);row.setPadding(0,0,0,a.dp(6));return row;}
- static TextView action(EmbyLibraryActivity a,LinearLayout row,String icon,String label,Runnable run){TextView t=new TextView(a);t.setGravity(Gravity.CENTER);t.setTextColor(a.ink());t.setTextSize(Ui.sp(12));t.setText(icon+"\n"+label);t.setLineSpacing(a.dp(2),1f);t.setPadding(0,a.dp(6),0,a.dp(6));t.setBackground(a.selectable());t.setContentDescription(label);t.setOnClickListener(v->run.run());row.addView(t,new LinearLayout.LayoutParams(0,-2,1f));return t;}
+ static TextView action(EmbyLibraryActivity a,LinearLayout row,String icon,String label,Runnable run){TextView t=new TextView(a);t.setGravity(Gravity.CENTER);t.setTextColor(a.ink());t.setTextSize(Ui.sp(12));t.setText(icon+"\n"+label);t.setLineSpacing(a.dp(2),1f);t.setPadding(0,a.dp(6),0,a.dp(6));t.setBackground(a.selectable());CinemaControls.action(t,label);t.setOnClickListener(v->run.run());row.addView(t,new LinearLayout.LayoutParams(0,-2,1f));return t;}
 
  /** 演职员：圆形头像 + 名字 + 角色，横滑。没有头像时显示名字首字。 */
  static View cast(EmbyLibraryActivity a,JSONObject server,JSONObject item){JSONArray people=item.optJSONArray("People");if(people==null||people.length()==0)return null;

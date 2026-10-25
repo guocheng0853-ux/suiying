@@ -21,7 +21,7 @@ final class PaperLayoutRules {
  static int synopsisTopDp(boolean tablet){return tablet?2:4;}
  static int actionsTopDp(boolean tablet){return tablet?6:8;}
  static int dotsTopDp(boolean tablet){return tablet?4:6;}
- static int buttonHeightDp(boolean tablet){return 44;}
+ static int buttonHeightDp(boolean tablet){return Ui.TOUCH;}
  /** Assumed caption block when sizing the portrait hero so the next row still fits. */
- static int captionReserveDp(){return 196;}
+ static int captionReserveDp(){return 200;}
 }

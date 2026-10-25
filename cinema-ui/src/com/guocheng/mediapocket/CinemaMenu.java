@@ -42,7 +42,7 @@ final class CinemaMenu {
   int screen=decor.getWidth()>0?decor.getWidth():a.getResources().getDisplayMetrics().widthPixels;
   int width=Math.min(dp(a,PlayerTheme.MENU_WIDTH_MAX_DP),screen-dp(a,40));
   if(title!=null&&!title.isEmpty()){
-   TextView head=new TextView(a);head.setText(title);head.setTextColor(PlayerTheme.text(a));head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);boolean serifHead=!(a instanceof PlayerActivity)&&!(a instanceof SystemPlayerActivity);head.setTypeface(serifHead?CinemaTheme.paperTitle(a):android.graphics.Typeface.DEFAULT_BOLD);if(serifHead)head.setTextSize(24);
+   TextView head=new TextView(a);head.setText(title);head.setTextColor(PlayerTheme.text(a));head.setTextSize(PlayerMotionRules.MENU_TITLE_SP);boolean serifHead=!(a instanceof PlayerActivity)&&!(a instanceof SystemPlayerActivity);head.setTypeface(serifHead?CinemaTheme.paperTitle(a):android.graphics.Typeface.DEFAULT_BOLD);if(serifHead)head.setTextSize(Ui.SECTION);
    head.setPadding(dp(a,8),dp(a,6),dp(a,8),dp(a,4));panel.addView(head);
   }
   if(body!=null){if(body.getParent() instanceof ViewGroup)((ViewGroup)body.getParent()).removeView(body);LinearLayout.LayoutParams bl=new LinearLayout.LayoutParams(-1,-2);bl.setMargins(dp(a,8),dp(a,4),dp(a,8),dp(a,8));panel.addView(body,bl);}
@@ -52,10 +52,11 @@ final class CinemaMenu {
    GradientDrawable line=new GradientDrawable();line.setColor(it.selected?PlayerTheme.selection(a):0x00000000);line.setCornerRadius(dp(a,PlayerTheme.RADIUS_MENU_ROW_DP));
    android.graphics.drawable.RippleDrawable ripple=new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(PlayerTheme.ripple(a)),line,null);row.setBackground(ripple);
    TextView label=new TextView(a);label.setText(it.label);label.setTextColor(it.selected?PlayerTheme.selectedText(a):PlayerTheme.text(a));label.setTextSize(PlayerMotionRules.MENU_LABEL_SP);
-   label.setSingleLine(true);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+   label.setMaxLines(2);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
    if(it.hint!=null&&!it.hint.isEmpty()){LinearLayout texts=new LinearLayout(a);texts.setOrientation(LinearLayout.VERTICAL);texts.setPadding(0,dp(a,4),0,dp(a,4));texts.addView(label);TextView sub=new TextView(a);sub.setText(it.hint);sub.setTextColor(PlayerTheme.secondary(a));sub.setTextSize(PlayerMotionRules.MENU_VALUE_SP);sub.setMaxLines(2);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);sub.setPadding(0,dp(a,2),0,0);texts.addView(sub);row.addView(texts,new LinearLayout.LayoutParams(0,-2,1f));}
    else row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
-   if(it.value!=null&&!it.value.isEmpty()){TextView value=new TextView(a);value.setText(it.value);value.setTextColor(PlayerTheme.secondary(a));value.setTextSize(PlayerMotionRules.MENU_VALUE_SP);value.setPadding(dp(a,8),0,0,0);row.addView(value);}
+   if(it.value!=null&&!it.value.isEmpty()){TextView value=new TextView(a);value.setText(it.value);value.setTextColor(PlayerTheme.secondary(a));value.setTextSize(PlayerMotionRules.MENU_VALUE_SP);value.setPadding(dp(a,8),0,0,0);value.setMaxWidth(Math.round(width*.38f));value.setMaxLines(2);value.setEllipsize(android.text.TextUtils.TruncateAt.END);row.addView(value);}
+   CinemaControls.group(row,it.label+(it.value==null?"":"，"+it.value)+(it.hint==null?"":"，"+it.hint));row.setSelected(it.selected);
    row.setOnClickListener(v->{
     dismiss(a);
     // 动作挂在 Activity 的窗口上执行：菜单窗口关掉后它自己的 Handler 回调不一定还在

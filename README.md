@@ -1,6 +1,6 @@
 # 随影 MediaPocket
 
-当前候选版本：0.1.140 / versionCode 141。播放器仍是方向 2 的三层悬浮岛，这一轮只精修亮场对比、48dp 热区、正中少抢戏、底栏蒸馏和影院暗金强调色。0.1.139 是三层悬浮面板，0.1.138 继续观看海报兜底已真机验证。详见[更新记录](cinema-ui/README.md)。0.1.131 暖纸与陶土的验证结果保留于[暖纸记录](DEVICE-PAPER-VALIDATION.md)，0.1.108 的既有验证结果保留于[真机记录](DEVICE-VALIDATION.md)，完整清单仍未完成。
+当前候选版本：0.1.142 / versionCode 143。基于 0.1.141 全页 Impeccable 精修：按钮对比、48dp 触控、设置长值与无障碍、登录标签、空态及跨页主题。已同签名装机，VLC 与 Media3 真实视频及进度验证通过，完整边界见 [本版验收](DEVICE-POLISH-VALIDATION.md)，设计评审见 [全页 critique](docs/handoff/critique-all-0141.md)。
 
 安卓播放器（Stremio 插件 + 影视仓配置，VLC 播放）。采用"基础 APK + Java 界面/功能扩展"的叠加构建方式，不是 Gradle 工程。
 

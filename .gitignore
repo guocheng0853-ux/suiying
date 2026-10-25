@@ -13,3 +13,6 @@ cinema-ui/assets/fusion-default.json
 
 # Media3 与 ExifInterface 的 jar 从 0.1.118 起随 cinema-ui/runtime-libs 提交。
 # 不要再忽略它们。fetch_media3.py --download 只在本地缺失或校验失败时修复。
+
+# Local design-review snapshots contain machine-specific paths
+.impeccable/
