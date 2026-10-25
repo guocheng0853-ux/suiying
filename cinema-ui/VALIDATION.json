@@ -48,8 +48,8 @@
   "torrentclaw_removal_retained": true,
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
-  "real_source_playback_tested": false,
-  "real_source_note": "OPD2401 real Emby playback remains unverified after connection failures. Controlled local HTTP fixture: 503, restore MP4, native retry button tap issued a new GET and video advanced to 0:11. Not proof of Emby recovery.",
+  "real_source_playback_tested": true,
+  "real_source_note": "OPD2401 Android 16: real Emby episode S5E1 rendered 3840x1608 direct-stream video on the existing system-player preference. After initial API/network and player 1/-1 failures, refresh via reconnect recovered playback; sampled progress 2:30 to 2:54. One episode only; initial failure root cause unconfirmed. Controlled 503-to-MP4 retry evidence is separate.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -109,5 +109,15 @@
       "test": "PlaybackOrientationRulesTest",
       "passed": true
     }
-  ]
+  ],
+  "tablet_emby_direct_stream_tested": true,
+  "tablet_emby_progress": [
+    "2:30",
+    "2:54"
+  ],
+  "tablet_emby_resolution": "3840x1608",
+  "tablet_emby_recovery_document": "EMBY-0143-RECOVERY.md",
+  "tablet_emby_initial_failure_root_cause": "unconfirmed",
+  "tablet_emby_transcode_success_tested": false,
+  "tablet_media3_switch_tested": false
 }
