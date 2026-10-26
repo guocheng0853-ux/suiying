@@ -18,7 +18,7 @@
 
 `health_public_requests`、`health_body_started`与对应`events.at_ms`用于区分请求到达和正文开始，时间相对最近一次reset，不能与客户端单调时钟直接相减。连续取消/重启的正文停顿复现与平台范围见`docs/handoff/continued-0146-http.md`和`docs/handoff/continued-test-0146.md`。
 
-0.1.147复测辅助：`health_body_client_closed`和`playback_client_closed`通过socket peek记录EOF/reset，不消费请求字节；configure用于保留这些事件。`catalog=series`提供Shows/Recovery series/Season 1和两集合成剧集；`playback_conflicts=1`让下一次实际PlaybackInfo返回409，之后恢复。事件只含合成item/session、响应码和相对时间。新增能力已完成独立烟测，Android修复结论仍按[本机交接](../docs/handoff/handoff-0147-local-acceptance.md)记录。
+0.1.147复测辅助：`health_body_client_closed`和`playback_client_closed`通过socket peek记录EOF/reset，不消费请求字节；configure用于保留这些事件。`catalog=series`提供Shows/Recovery series/Season 1和两集合成剧集；`playback_conflicts=1`让下一次实际PlaybackInfo返回409，之后恢复。事件只含合成item/session、响应码和相对时间。新增能力可用`python3 scripts/fixture_smoke_0147.py PATH_TO_TEST_MP4`独立烟测（证明服务能力，不证明Android修复）。平板通过标准见[acceptance-0147-pass-criteria.md](../docs/handoff/acceptance-0147-pass-criteria.md)；现场接续见[本机交接](../docs/handoff/handoff-0147-local-acceptance.md)。
 
 关键断言：体检不发送播放开始；自动恢复最多有首次+一次刷新这两次播放信息请求；持续失败不继续刷新；取消后即使延迟响应到达，也不启动播放器；旋转完成的体检结果不重复请求。
 

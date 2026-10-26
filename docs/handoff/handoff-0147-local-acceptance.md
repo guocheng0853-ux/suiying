@@ -2,10 +2,13 @@
 
 日期：2026-10-26。用户本轮要求：合入云端补丁、用原签名出包、平板复测C1–C4与回归；随后要求写handoff。本文件记录当前接续点，**完整平板验收尚未完成**。
 
+平板复测通过标准（相对 0.1.146 缺陷断言的改写）见 [acceptance-0147-pass-criteria.md](acceptance-0147-pass-criteria.md)。云端已追加 `scripts/fixture_smoke_0147.py` 与该标准文档；**无 OPD2401 / 本机 ADB**，不能执行 C2–C4 与清理。
+
 ## 1. 当前结论
 
 - 补丁已用`git am`合入并正常推送GitHub main；没有force push。
 - 本机原签名构建、93/93 JVM程序、APK校验、原证书与16KB ZIP对齐全部通过。
+- 云端复核（2026-10-26）：未签名构建 + `scripts/run_tests.sh` 93/93（含 EmbyCancelTest）+ `verify_apk.py` 通过；`scripts/fixture_smoke_0147.py` 独立烟测通过。仍不能写成 Android 取消已通过。
 - 已同签名覆盖安装OPD2401平板，保留用户数据。
 - **平板只完成C1新增场景**：管理列表4条，返回设置后概览与入口立即显示4。
 - C1删除、C2/C3/C4及本版播放回归均尚未执行，不能写成通过。O1没有修改。
@@ -78,7 +81,7 @@
 
 独立烟测通过：默认/正文首字节、主动断连观察、configure保留事件、双集目录、一次409后200。它证明测试服务能力，不证明Android客户端修复。
 
-**不要直接把旧`continued_cases_0146.py`当新版通过标准。** 它含复现旧缺陷的断言（如Media3返回PlayerActivity、等待大于5秒），需要改为0.1.147预期。旧`continued_cleanup_0146.py`还会期望删除后出现旧数量，不能照搬。
+**不要直接把旧`continued_cases_0146.py`当新版通过标准。** 它含复现旧缺陷的断言（如Media3返回PlayerActivity、等待大于5秒），需要改为0.1.147预期。旧`continued_cleanup_0146.py`还会期望删除后出现旧数量，不能照搬。通过门槛与顺序以 [acceptance-0147-pass-criteria.md](acceptance-0147-pass-criteria.md) 为准。fixture 能力可用 `python3 scripts/fixture_smoke_0147.py /path/to/clip.mp4` 自检。
 
 ## 6. 接下来按顺序做
 

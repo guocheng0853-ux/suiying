@@ -1,6 +1,6 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前候选版本 0.1.147（versionCode 148），合入C1–C4修复。本机原签名构建、93/93 JVM与APK校验已通过，平板已安装，仅完成C1新增计数；其余真机验收与最终清理未完。接续先读`docs/handoff/handoff-0147-local-acceptance.md`；0.1.146缺陷步骤参考`docs/handoff/continued-test-0146.md`，O1未修改。
+> 当前候选版本 0.1.147（versionCode 148），合入C1–C4修复。本机原签名构建、93/93 JVM与APK校验已通过，平板已安装，仅完成C1新增计数；其余真机验收与最终清理未完。接续先读`docs/handoff/handoff-0147-local-acceptance.md`与`docs/handoff/acceptance-0147-pass-criteria.md`；0.1.146缺陷步骤参考`docs/handoff/continued-test-0146.md`，O1未修改。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 协作约定
