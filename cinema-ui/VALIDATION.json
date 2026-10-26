@@ -107,5 +107,39 @@
   "fullscreen_restored": true,
   "apk_sha256": "0193ccdf3f45729d28a31bac5c8e4dd9e64807d7f55ecf1228ab0b3d4647cfd6",
   "apk_size_bytes": 37050933,
-  "device_validation_document": "DEVICE-RECOVERY-0146.md"
+  "device_validation_document": "DEVICE-RECOVERY-0146.md",
+  "continuation_test_document": "docs/handoff/continued-test-0146.md",
+  "continuation_runtime_unchanged": true,
+  "continuation_open_issues": [
+    "C1: stale server count",
+    "C2: cancelled health bodies retain workers",
+    "C3: manual Media3 recovery returns to PlayerActivity",
+    "C4: cancelled playback request delays new request"
+  ],
+  "continuation_navigation_observation": "O1: native side-panel system Back exits playback; product expectation pending",
+  "continuation_device_cases_completed": [
+    "stale-add",
+    "stale-delete",
+    "health-body",
+    "health-body-repeat",
+    "media3-manual",
+    "cancel-requeue",
+    "healthy-open-baseline",
+    "health-rotate-back",
+    "player-exit",
+    "auto-off",
+    "auto-switch-persistence",
+    "side-panel-back"
+  ],
+  "continuation_cleanup_verified": true,
+  "continuation_original_auto_switch_verified_after_restart": true,
+  "continuation_observed_timings_ms": {
+    "health_restart_client_observation": [
+      8641,
+      8687
+    ],
+    "new_playback_request_client_observation": 12171,
+    "healthy_playback_request_client_observation": 343
+  },
+  "continuation_timing_scope": "Client observations include ADB and polling overhead; not exact worker queue measurements."
 }
