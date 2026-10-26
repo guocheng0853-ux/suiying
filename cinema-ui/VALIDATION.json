@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.147",
+  "ui_version": "0.1.148",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -18,11 +18,11 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 93,
+  "jvm_test_programs_passed": 94,
   "apk_class_resolution": "passed",
-  "unique_classes": 9252,
+  "unique_classes": 9259,
   "dex_files": 3,
-  "main_version_code": 148,
+  "main_version_code": 149,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
@@ -34,7 +34,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "0.1.147: synthetic Emby fixture C1–C4 + healthy play / episode switch / 409 retry verified on OPD2401; real Dolby/HDR/transcode not tested.",
+  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -43,41 +43,6 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "android_device_model": "OPD2401",
-  "android_device_sdk": 36,
-  "android_device_version": "0.1.147 / 148",
-  "android_device_scope": [
-    "C1-add/delete server count refresh",
-    "C2 health-body cancel queue",
-    "C3 Media3 manual refresh stays SystemPlayerActivity",
-    "C4 delayed cancel then manual reconnect",
-    "synthetic healthy play",
-    "synthetic series episode switch",
-    "playback_conflicts 409 then 200",
-    "native-focus recovery with advancing decoded video",
-    "media3-focus recovery retains SystemPlayerActivity with advancing video",
-    "explicit cancel does not reopen or refund budget",
-    "exit during pending recovery does not reopen",
-    "completed failure does not refund recovery budget"
-  ],
-  "android_device_acceptance_status": "passed synthetic C1-C4 and listed recovery checks; split partial with O2 early-focus clipping observation; cleaned up",
-  "device_validation_document": "docs/handoff/handoff-0147-local-acceptance.md",
-  "apk_sha256": "2b13ca5985635e8c007a21bcd3c139362cb0d1240b7f3bce375057610b48dbfb",
-  "apk_size_bytes": 37050933,
-  "original_signing_certificate_verified": true,
-  "zipalign_16k_verified": true,
-  "fixture_removed": true,
-  "fixture_service_stopped": true,
-  "adb_reverse_removed": true,
-  "remaining_server_count": 3,
-  "final_settings_restoration_verified": true,
-  "android_device_partial_cases": [
-    "split: source button and settled terminal feedback pass; early focus-loss clipping remains an open observation"
-  ],
-  "device_boundary_validation_document": "docs/handoff/continued-test-0147.md",
-  "device_boundary_summary": "docs/handoff/acceptance-0147-summary.json",
-  "open_device_observations": [
-    "O1 unchanged, not revalidated in this continuation",
-    "O2 early split focus-loss clipping observed; root cause unconfirmed"
-  ]
+  "device_test_scope": "OPD2401 Android16: synthetic healthy playback, three side panels Back then exit, real AC3 synthetic audio fallback to VlcPlayback with progress; O2 and additional playback regressions pending",
+  "signed_apk_sha256": "81562035acb6fc0626f52d82e5cb37a673a94bab63ebe3b37ecadeacf6c3116b"
 }
