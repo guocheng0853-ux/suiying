@@ -10,10 +10,9 @@ public class PlaybackBackendRulesTest {
   check(!PlaybackBackendRules.softwareAudio(true,false,true,true,false),"an existing VLC playback never restarts for audio");
   check(PlaybackBackendRules.transcodeOnly(true,"p5")&&PlaybackBackendRules.transcodeOnly(true,"dv"),"failed compatibility transcode cannot auto-open incompatible DV");
   check(!PlaybackBackendRules.transcodeOnly(true,"dv-compatible")&&!PlaybackBackendRules.transcodeOnly(false,"p5"),"ordinary compatible routes retain fallback behavior");
-  check(PlaybackBackendRules.switchOnce(true,false,false,true,false),"explicit VLC request overrides a false default for this playback");
-  check(!PlaybackBackendRules.switchOnce(true,true,false,true,false),"failed switching never loops on every UI tick");
-  check(!PlaybackBackendRules.switchOnce(true,false,false,false,false),"wait for the resolved source before switching");
-  check(!PlaybackBackendRules.switchOnce(true,false,true,true,false)&&!PlaybackBackendRules.switchOnce(true,false,false,true,true),"already-VLC and finishing activities remain untouched");
-  System.out.println("PASS: unsupported audio fallback, explicit VLC, strict P5 and one-shot switch guards");
+  check(PlaybackBackendRules.preferVlc(true,false),"explicit VLC request overrides a false default before creation");
+  check(PlaybackBackendRules.preferVlc(false,true),"default VLC remains respected");
+  check(!PlaybackBackendRules.preferVlc(false,false),"ordinary platform playback stays selected");
+  System.out.println("PASS: unsupported audio fallback, explicit VLC and strict P5 guards");
  }
 }

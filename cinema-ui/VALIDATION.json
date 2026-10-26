@@ -43,6 +43,7 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "device_test_scope": "OPD2401 Android16: synthetic healthy playback, three side panels Back then exit, real AC3 synthetic audio fallback to VlcPlayback with progress; O2 and additional playback regressions pending",
-  "signed_apk_sha256": "81562035acb6fc0626f52d82e5cb37a673a94bab63ebe3b37ecadeacf6c3116b"
+  "signed_apk_sha256": "bf59c3c66394360043d2f0a329ac560407850173bd9b06c533e5a5dff7d7d82d",
+  "device_test_scope": "OPD2401 Android16: first-frame prepare notice cleanup; explicit VLC with 12s resume and same-item reconnect progress; AC3 synthetic fallback; three panel Back cases, repeated edge-back gesture, then exit. O2 split follow-up pending.",
+  "playback_backend_patch": "two creation-time selections verified; unchanged register count and code units; other instructions preserved"
 }

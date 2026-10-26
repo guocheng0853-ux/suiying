@@ -39,7 +39,7 @@ public final class SystemPlayerActivity extends Activity {
  final Runnable watchdog=new Runnable(){public void run(){if(isFinishing())return;long s=(SystemClock.elapsedRealtime()-opened)/1000;
   if(!rendered&&wait.getVisibility()==View.VISIBLE&&!started)wait.setText("内置播放器正在准备… "+s+" 秒\n大文件第一次打开可能要十几秒");
   if(!asked&&!rendered&&(s>=20||(started&&video!=null&&video.isPlaying()&&video.getCurrentPosition()>8000))){asked=true;DebugLog.event("系统解码","无画面 · "+s+" 秒 · 已准备="+started+" · 位置="+(video==null?-1:video.getCurrentPosition()));
-   new android.app.AlertDialog.Builder(SystemPlayerActivity.this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("内置播放尚未显示画面").setMessage(started?"声音在走但没有画面，手机自带解码器可能不支持这个片源的画面格式。":"等了 "+s+" 秒还没准备好，可能是片源太大或格式不受支持。").setPositiveButton("改用 VLC",(d,w)->toVlc()).setNeutralButton("用外部播放器打开",(d,w)->external()).setNegativeButton("再等等",null).show();}
+   prepareNotice=new android.app.AlertDialog.Builder(SystemPlayerActivity.this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("内置播放尚未显示画面").setMessage(started?"声音在走但没有画面，手机自带解码器可能不支持这个片源的画面格式。":"等了 "+s+" 秒还没准备好，可能是片源太大或格式不受支持。").setPositiveButton("改用 VLC",(d,w)->toVlc()).setNeutralButton("用外部播放器打开",(d,w)->external()).setNegativeButton("再等等",null).show();}
   if(!rendered)tick.postDelayed(this,1000);}};
  /** Refresh expiring Emby addresses without pretending an HTTP failure is a codec failure. */
  void dismissPrepareNotice(){if(prepareNotice!=null){prepareNotice.dismiss();prepareNotice=null;}}
