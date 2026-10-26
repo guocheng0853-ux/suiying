@@ -1,6 +1,7 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
 > 当前候选版本 0.1.147（versionCode 148），合入C1–C4修复。本机原签名构建、93/93 JVM与APK校验已通过；OPD2401已完成C1–C4、正常开播、换集与409重试的合成复测。实测范围以`docs/handoff/handoff-0147-local-acceptance.md`为准，通过标准见`docs/handoff/acceptance-0147-pass-criteria.md`；0.1.146缺陷步骤参考`docs/handoff/continued-test-0146.md`。O1未修改，真实杜比/HDR/服务器转码未验收。
+> 后续7项恢复边界补测通过；分屏部分通过，早期失焦裁切观察O2待复现/归因，见`docs/handoff/continued-test-0147.md`。测试环境已清理、原始设置逐项一致、已安装APK哈希未变。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 协作约定

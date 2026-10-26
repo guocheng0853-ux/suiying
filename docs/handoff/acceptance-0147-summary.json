@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-26",
+  "ui_version": "0.1.147",
+  "version_code": 148,
+  "device": "OPD2401 / Android 16",
+  "runtime_unchanged_since": "c2b26f3",
+  "apk_sha256": "2b13ca5985635e8c007a21bcd3c139362cb0d1240b7f3bce375057610b48dbfb",
+  "synthetic_sources_only": true,
+  "real_dolby_hdr_transcode_tested": false,
+  "passed_boundary_cases": [
+    "native-focus",
+    "media3-focus",
+    "cancel-requeue-live",
+    "health-cancel-live",
+    "cancel",
+    "player-exit",
+    "completed-budget"
+  ],
+  "native_focus_video_timestamps_seconds": [
+    17.667,
+    33.833
+  ],
+  "media3_focus_video_timestamps_seconds": [
+    15.25,
+    30.542
+  ],
+  "c4_cancelled_request_lifetime_ms": 875,
+  "c4_manual_request_observation_ms": 391,
+  "c4_healthy_request_observation_ms": 312,
+  "c2_third_request_observation_ms": 343,
+  "split": {
+    "status": "partial",
+    "no_refresh_while_unfocused": true,
+    "source_button_worked": true,
+    "settled_terminal_card_visible": true,
+    "early_focus_clipping_observed": true,
+    "open_observation": "O2: timing-sensitive clipping, root cause and regression status unconfirmed"
+  },
+  "cleanup": {
+    "passed": true,
+    "remaining_servers": 3,
+    "fixture_removed": true,
+    "fixture_service_stopped": true,
+    "reverse_restored": true,
+    "fullscreen_restored": true,
+    "returned_to_home": true,
+    "app_auto_switch_unchanged_enabled": true,
+    "app_fullscreen_dimensions": [
+      3000,
+      2120
+    ],
+    "all_settings_match_original_0147": true,
+    "installed_apk_matches_signed_build": true,
+    "apk_sha256": "2b13ca5985635e8c007a21bcd3c139362cb0d1240b7f3bce375057610b48dbfb",
+    "settings_checked": [
+      "font_scale",
+      "density",
+      "rotation",
+      "input_method",
+      "enabled_input_methods",
+      "show_ime_with_hard_keyboard",
+      "night",
+      "reverse"
+    ]
+  },
+  "evidence_note": "Local ignored tablet-0147-boundary directory; public summary contains only synthetic metrics and restoration facts."
+}

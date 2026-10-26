@@ -53,9 +53,14 @@
     "C4 delayed cancel then manual reconnect",
     "synthetic healthy play",
     "synthetic series episode switch",
-    "playback_conflicts 409 then 200"
+    "playback_conflicts 409 then 200",
+    "native-focus recovery with advancing decoded video",
+    "media3-focus recovery retains SystemPlayerActivity with advancing video",
+    "explicit cancel does not reopen or refund budget",
+    "exit during pending recovery does not reopen",
+    "completed failure does not refund recovery budget"
   ],
-  "android_device_acceptance_status": "passed synthetic C1–C4 and listed regressions on OPD2401; cleaned up",
+  "android_device_acceptance_status": "passed synthetic C1-C4 and listed recovery checks; split partial with O2 early-focus clipping observation; cleaned up",
   "device_validation_document": "docs/handoff/handoff-0147-local-acceptance.md",
   "apk_sha256": "2b13ca5985635e8c007a21bcd3c139362cb0d1240b7f3bce375057610b48dbfb",
   "apk_size_bytes": 37050933,
@@ -65,5 +70,14 @@
   "fixture_service_stopped": true,
   "adb_reverse_removed": true,
   "remaining_server_count": 3,
-  "final_settings_restoration_verified": true
+  "final_settings_restoration_verified": true,
+  "android_device_partial_cases": [
+    "split: source button and settled terminal feedback pass; early focus-loss clipping remains an open observation"
+  ],
+  "device_boundary_validation_document": "docs/handoff/continued-test-0147.md",
+  "device_boundary_summary": "docs/handoff/acceptance-0147-summary.json",
+  "open_device_observations": [
+    "O1 unchanged, not revalidated in this continuation",
+    "O2 early split focus-loss clipping observed; root cause unconfirmed"
+  ]
 }

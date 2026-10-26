@@ -1,6 +1,7 @@
 # 0.1.147 平板复测通过标准
 
 日期：2026-10-26。承接 [本机验收交接](handoff-0147-local-acceptance.md)。  
+最新执行范围见[补测记录](continued-test-0147.md)：C1–C4及7项边界补测通过；分屏部分通过，早期失焦裁切观察O2未算通过。以下保留为执行标准，不能仅凭该清单判断已经执行。
 **不要**把旧 `continued_cases_0146.py` / `continued_cleanup_0146.py` 当通过标准——它们断言的是 0.1.146 缺陷复现（排队 >5s、Media3 回到 `PlayerActivity`、删除后仍显示旧数量）。
 
 云端已复核：93/93 JVM、`EmbyCancelTest`、fixture 独立烟测（`scripts/fixture_smoke_0147.py`）。**不能代替**平板 ADB 复测。
