@@ -8,10 +8,12 @@ Never point this fixture at a production account or expose it outside loopback.
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit, parse_qs
 from pathlib import Path
-import argparse, json, threading, time, re
+import argparse, json, threading, time, re, select, socket
 
 TOKEN = "fixture-token-only"
 USER, MOVIE, MEDIA = "fixture-user", "fixture-movie", "fixture-media"
+SERIES, SEASON = "fixture-series", "fixture-season"
+EPISODES = ("fixture-episode-1", "fixture-episode-2")
 
 def main():
     parser = argparse.ArgumentParser()
@@ -21,9 +23,16 @@ def main():
     video = args.video.read_bytes()
     state = {"mode": "health", "delay": 20, "health_delay": 0, "health_body_delay": 0, "auth_status": 200, "playback_info": 0,
              "diagnostic_info": 0, "sessions_started": 0, "media_ok": 0,
-             "media_failed": 0, "health_public_requests": 0, "health_body_started": 0, "events": []}
+             "media_failed": 0, "health_public_requests": 0, "health_body_started": 0,
+             "health_body_client_closed": 0, "playback_client_closed": 0,
+             "sessions_stopped": 0, "sessions_progress": 0,
+             "catalog": "movies", "playback_conflicts": 0, "events": []}
     lock = threading.Lock()
     reset_at = [time.monotonic()]
+    generation = [0]
+
+    def event(kind, **values):
+        state["events"].append({"kind": kind, "at_ms": round((time.monotonic() - reset_at[0]) * 1000), **values})
 
     def source(route):
         return {"Id": MEDIA, "Container": "mp4", "SupportsDirectStream": True,
@@ -38,6 +47,25 @@ def main():
                 "UserData": {"PlaybackPositionTicks": 0, "Played": False},
                 "MediaSources": [source("/Videos/fixture-movie/fresh.mp4")]}
 
+    def series():
+        return {"Id": SERIES, "Name": "Recovery series", "Type": "Series", "Overview": "Synthetic two-episode series."}
+
+    def season():
+        return {"Id": SEASON, "SeriesId": SERIES, "Name": "Season 1", "Type": "Season", "IndexNumber": 1}
+
+    def episode(index):
+        item = movie()
+        item.update(Id=EPISODES[index - 1], Name="Fixture episode " + str(index), Type="Episode",
+                    SeriesId=SERIES, SeriesName="Recovery series", SeasonId=SEASON,
+                    ParentIndexNumber=1, IndexNumber=index)
+        return item
+
+    def library():
+        with lock:
+            shows = state["catalog"] == "series"
+        return {"Id": "fixture-library", "Name": "Shows" if shows else "Movies", "Type": "CollectionFolder",
+                "CollectionType": "tvshows" if shows else "movies"}
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *unused):
             pass
@@ -48,7 +76,28 @@ def main():
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 pass  # Cancelling the Android request may close this fixture connection.
 
-        def output(self, value=None, status=200, body_delay=0):
+        def wait_peer(self, seconds, kind, number, epoch):
+            """Peek only: observe EOF/reset without consuming any future request bytes."""
+            end = time.monotonic() + seconds
+            while time.monotonic() < end:
+                try:
+                    ready, _, _ = select.select([self.connection], [], [], max(0, min(.05, end - time.monotonic())))
+                    if not ready:
+                        continue
+                    if self.connection.recv(1, socket.MSG_PEEK):
+                        time.sleep(.02)
+                        continue
+                    reason = "eof"
+                except (ConnectionResetError, ConnectionAbortedError, OSError):
+                    reason = "reset"
+                with lock:
+                    if epoch == generation[0]:
+                        state[kind] += 1
+                        event(kind, number=number, reason=reason)
+                return True
+            return False
+
+        def output(self, value=None, status=200, body_delay=0, health_request=None):
             data = json.dumps(value).encode() if value is not None else b""
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
@@ -60,10 +109,12 @@ def main():
                         self.wfile.write(data[:1])
                         self.wfile.flush()
                         with lock:
-                            state["health_body_started"] += 1
-                            state["events"].append({"kind": "health_body_started", "number": state["health_body_started"],
-                                                    "at_ms": round((time.monotonic() - reset_at[0]) * 1000)})
-                        time.sleep(body_delay)
+                            number, epoch = health_request
+                            if epoch == generation[0]:
+                                state["health_body_started"] += 1
+                                event("health_body_started", number=number)
+                        if self.wait_peer(body_delay, "health_body_client_closed", number, epoch):
+                            return
                         self.wfile.write(data[1:])
                     else:
                         self.wfile.write(data)
@@ -83,17 +134,24 @@ def main():
                 self.output({"stopping": True})
                 threading.Thread(target=self.server.shutdown, daemon=True).start()
                 return
-            if path == "/__fixture__/reset":
+            if path in ("/__fixture__/reset", "/__fixture__/configure"):
                 assert body["mode"] in ("health", "recover", "fail", "delayed")
+                assert body.get("catalog", "movies") in ("movies", "series")
                 with lock:
-                    for key in ("playback_info", "diagnostic_info", "sessions_started", "media_ok", "media_failed", "health_public_requests", "health_body_started"):
-                        state[key] = 0
-                    state["events"] = []
-                    reset_at[0] = time.monotonic()
+                    if path.endswith("/reset"):
+                        for key in ("playback_info", "diagnostic_info", "sessions_started", "media_ok", "media_failed", "health_public_requests", "health_body_started", "health_body_client_closed", "playback_client_closed", "sessions_stopped", "sessions_progress"):
+                            state[key] = 0
+                        state["events"] = []
+                        reset_at[0] = time.monotonic()
+                        generation[0] += 1
                     state["mode"], state["delay"] = body["mode"], int(body.get("delay", 20))
                     state["health_delay"] = int(body.get("health_delay", 0))
                     state["health_body_delay"] = int(body.get("health_body_delay", 0))
                     state["auth_status"] = int(body.get("auth_status", 200))
+                    state["catalog"] = body.get("catalog", "movies")
+                    state["playback_conflicts"] = max(0, int(body.get("playback_conflicts", 0)))
+                    if path.endswith("/configure"):
+                        event("configure")
                 self.output({"ok": True})
                 return
             if path.endswith("/Users/AuthenticateByName"):
@@ -105,11 +163,18 @@ def main():
                     key = "diagnostic_info" if diagnostic else "playback_info"
                     state[key] += 1
                     number, mode, delay = state[key], state["mode"], state["delay"]
-                    state["events"].append({"kind": key, "number": number,
-                                             "is_playback": body.get("IsPlayback"),
-                                             "live": body.get("AutoOpenLiveStream")})
+                    epoch = generation[0]
+                    conflict = not diagnostic and state["playback_conflicts"] > 0
+                    if conflict:
+                        state["playback_conflicts"] -= 1
+                    event(key, number=number, item=path.split("/")[-2], is_playback=body.get("IsPlayback"),
+                          live=body.get("AutoOpenLiveStream"), response=409 if conflict else 200)
+                if conflict:
+                    self.output({"Message": "Synthetic busy playback session"}, 409)
+                    return
                 if not diagnostic and mode == "delayed" and number >= 2:
-                    time.sleep(delay)
+                    if self.wait_peer(delay, "playback_client_closed", number, epoch):
+                        return
                 fresh = diagnostic or mode == "health" or (mode in ("recover", "delayed") and number >= 2)
                 route = "/Videos/fixture-movie/" + ("fresh.mp4" if fresh else "old.mp4")
                 self.output({"PlaySessionId": "fixture-session-" + str(number), "MediaSources": [source(route)]})
@@ -117,6 +182,14 @@ def main():
             if path == "/Sessions/Playing":
                 with lock:
                     state["sessions_started"] += 1
+                    event("session_started", item=body.get("ItemId"), session=body.get("PlaySessionId"))
+            elif path == "/Sessions/Playing/Stopped":
+                with lock:
+                    state["sessions_stopped"] += 1
+                    event("session_stopped", item=body.get("ItemId"), session=body.get("PlaySessionId"))
+            elif path == "/Sessions/Playing/Progress":
+                with lock:
+                    state["sessions_progress"] += 1
             self.output(status=204)
 
         def do_GET(self):
@@ -132,11 +205,11 @@ def main():
                     delay = state["health_delay"]
                     body_delay = state["health_body_delay"]
                     state["health_public_requests"] += 1
-                    state["events"].append({"kind": "health_public_request", "number": state["health_public_requests"],
-                                            "at_ms": round((time.monotonic() - reset_at[0]) * 1000)})
+                    number, epoch = state["health_public_requests"], generation[0]
+                    event("health_public_request", number=number)
                 if delay:
                     time.sleep(delay)
-                self.output({"ServerName": "Local recovery fixture", "Version": "4.9.0", "Id": "fixture-server"}, body_delay=body_delay)
+                self.output({"ServerName": "Local recovery fixture", "Version": "4.9.0", "Id": "fixture-server"}, body_delay=body_delay, health_request=(number, epoch))
                 return
             if path.startswith("/Videos/"):
                 authorized = query.get("api_key", [""])[0] == TOKEN
@@ -174,15 +247,25 @@ def main():
             if path.endswith("/Views"):
                 with lock:
                     code = state["auth_status"]
-                self.output({"Items": [{"Id": "fixture-library", "Name": "Movies", "Type": "CollectionFolder", "CollectionType": "movies"}]}, code)
+                self.output({"Items": [library()]}, code)
             elif path.endswith("/Items/fixture-library"):
-                self.output({"Id": "fixture-library", "Name": "Movies", "Type": "CollectionFolder", "CollectionType": "movies"})
+                self.output(library())
+            elif path.endswith("/Items/" + SERIES):
+                self.output(series())
+            elif path.endswith("/Items/" + SEASON):
+                self.output(season())
+            elif path.split("/")[-1] in EPISODES:
+                self.output(episode(EPISODES.index(path.split("/")[-1]) + 1))
+            elif path.endswith("/Shows/" + SERIES + "/Seasons"):
+                self.output({"Items": [season()], "TotalRecordCount": 1})
+            elif path.endswith("/Shows/" + SERIES + "/Episodes"):
+                self.output({"Items": [episode(1), episode(2)], "TotalRecordCount": 2})
             elif path.endswith("/Items/" + MOVIE):
                 self.output(movie())
             elif path.endswith("/Items/Latest"):
-                self.output([movie()])
+                self.output([series() if library()["CollectionType"] == "tvshows" else movie()])
             elif path.endswith("/Items"):
-                self.output({"Items": [movie()], "TotalRecordCount": 1})
+                self.output({"Items": [series() if library()["CollectionType"] == "tvshows" else movie()], "TotalRecordCount": 1})
             elif path.endswith(("/Genres", "/Items/Resume", "/Shows/NextUp")):
                 self.output({"Items": []})
             else:

@@ -12,10 +12,13 @@
 | `POST /__fixture__/reset` | JSON包含`mode`、可选`delay`、`health_delay`、`health_body_delay`、`auth_status`，同时清零计数 |
 | `GET /__fixture__/state` | 查看播放信息、诊断信息、视频读取和播放开始计数 |
 | `POST /__fixture__/shutdown` | 关闭本机服务，JSON空对象即可 |
+| `POST /__fixture__/configure` | 与reset相同的模式/参数，但保留计数、事件和时钟；未传参数回默认值 |
 
 `mode=health`始终返回可用数据；`recover`首次播放信息指向503，后续返回MP4；`fail`始终503；`delayed`在第二次播放信息请求等待`delay`秒再恢复。`health_delay`延迟公开信息响应头；`health_body_delay`先发送响应头和首字节，再延迟剩余正文，二者需分别验收。`auth_status=401`模拟诊断登录失效。
 
 `health_public_requests`、`health_body_started`与对应`events.at_ms`用于区分请求到达和正文开始，时间相对最近一次reset，不能与客户端单调时钟直接相减。连续取消/重启的正文停顿复现与平台范围见`docs/handoff/continued-0146-http.md`和`docs/handoff/continued-test-0146.md`。
+
+0.1.147复测辅助：`health_body_client_closed`和`playback_client_closed`通过socket peek记录EOF/reset，不消费请求字节；configure用于保留这些事件。`catalog=series`提供Shows/Recovery series/Season 1和两集合成剧集；`playback_conflicts=1`让下一次实际PlaybackInfo返回409，之后恢复。事件只含合成item/session、响应码和相对时间。新增能力已完成独立烟测，Android修复结论仍按[本机交接](../docs/handoff/handoff-0147-local-acceptance.md)记录。
 
 关键断言：体检不发送播放开始；自动恢复最多有首次+一次刷新这两次播放信息请求；持续失败不继续刷新；取消后即使延迟响应到达，也不启动播放器；旋转完成的体检结果不重复请求。
 

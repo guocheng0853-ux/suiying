@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
   "ui_version": "0.1.147",
-  "android_device_tested": false,
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -26,7 +26,7 @@
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
-  "apk_signature_present": false,
+  "apk_signature_present": true,
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,
   "presets_empty": true,
@@ -34,7 +34,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": false,
-  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
+  "real_source_note": "0.1.147: synthetic C1-add UI verified only; playback acceptance not yet performed.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -42,5 +42,22 @@
   "accelerator_android_tested": false,
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
-  "torrent_boost_android_tested": false
+  "torrent_boost_android_tested": false,
+  "android_device_model": "OPD2401",
+  "android_device_sdk": 36,
+  "android_device_version": "0.1.147 / 148",
+  "android_device_scope": [
+    "C1-add server count refresh only"
+  ],
+  "android_device_acceptance_status": "partial; C1-delete, C2-C4 and playback regressions pending",
+  "device_validation_document": "docs/handoff/handoff-0147-local-acceptance.md",
+  "apk_sha256": "2b13ca5985635e8c007a21bcd3c139362cb0d1240b7f3bce375057610b48dbfb",
+  "apk_size_bytes": 37050933,
+  "original_signing_certificate_verified": true,
+  "zipalign_16k_verified": true,
+  "fixture_removed": false,
+  "fixture_service_stopped": false,
+  "adb_reverse_removed": false,
+  "remaining_server_count": 4,
+  "final_settings_restoration_verified": false
 }
