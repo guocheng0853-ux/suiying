@@ -19,10 +19,11 @@ def main():
     parser.add_argument("--port", type=int, default=0)
     args = parser.parse_args()
     video = args.video.read_bytes()
-    state = {"mode": "health", "delay": 20, "health_delay": 0, "auth_status": 200, "playback_info": 0,
+    state = {"mode": "health", "delay": 20, "health_delay": 0, "health_body_delay": 0, "auth_status": 200, "playback_info": 0,
              "diagnostic_info": 0, "sessions_started": 0, "media_ok": 0,
-             "media_failed": 0, "events": []}
+             "media_failed": 0, "health_public_requests": 0, "health_body_started": 0, "events": []}
     lock = threading.Lock()
+    reset_at = [time.monotonic()]
 
     def source(route):
         return {"Id": MEDIA, "Container": "mp4", "SupportsDirectStream": True,
@@ -41,7 +42,13 @@ def main():
         def log_message(self, *unused):
             pass
 
-        def output(self, value=None, status=200):
+        def handle(self):
+            try:
+                super().handle()
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                pass  # Cancelling the Android request may close this fixture connection.
+
+        def output(self, value=None, status=200, body_delay=0):
             data = json.dumps(value).encode() if value is not None else b""
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
@@ -49,8 +56,18 @@ def main():
             self.end_headers()
             if data and self.command != "HEAD":
                 try:
-                    self.wfile.write(data)
-                except (BrokenPipeError, ConnectionResetError):
+                    if body_delay:
+                        self.wfile.write(data[:1])
+                        self.wfile.flush()
+                        with lock:
+                            state["health_body_started"] += 1
+                            state["events"].append({"kind": "health_body_started", "number": state["health_body_started"],
+                                                    "at_ms": round((time.monotonic() - reset_at[0]) * 1000)})
+                        time.sleep(body_delay)
+                        self.wfile.write(data[1:])
+                    else:
+                        self.wfile.write(data)
+                except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                     pass
 
         def do_HEAD(self):
@@ -69,11 +86,13 @@ def main():
             if path == "/__fixture__/reset":
                 assert body["mode"] in ("health", "recover", "fail", "delayed")
                 with lock:
-                    for key in ("playback_info", "diagnostic_info", "sessions_started", "media_ok", "media_failed"):
+                    for key in ("playback_info", "diagnostic_info", "sessions_started", "media_ok", "media_failed", "health_public_requests", "health_body_started"):
                         state[key] = 0
                     state["events"] = []
+                    reset_at[0] = time.monotonic()
                     state["mode"], state["delay"] = body["mode"], int(body.get("delay", 20))
                     state["health_delay"] = int(body.get("health_delay", 0))
+                    state["health_body_delay"] = int(body.get("health_body_delay", 0))
                     state["auth_status"] = int(body.get("auth_status", 200))
                 self.output({"ok": True})
                 return
@@ -111,9 +130,13 @@ def main():
             if path.endswith("/System/Info/Public"):
                 with lock:
                     delay = state["health_delay"]
+                    body_delay = state["health_body_delay"]
+                    state["health_public_requests"] += 1
+                    state["events"].append({"kind": "health_public_request", "number": state["health_public_requests"],
+                                            "at_ms": round((time.monotonic() - reset_at[0]) * 1000)})
                 if delay:
                     time.sleep(delay)
-                self.output({"ServerName": "Local recovery fixture", "Version": "4.9.0", "Id": "fixture-server"})
+                self.output({"ServerName": "Local recovery fixture", "Version": "4.9.0", "Id": "fixture-server"}, body_delay=body_delay)
                 return
             if path.startswith("/Videos/"):
                 authorized = query.get("api_key", [""])[0] == TOKEN
@@ -145,7 +168,7 @@ def main():
                 if self.command != "HEAD":
                     try:
                         self.wfile.write(video[start:end + 1])
-                    except (BrokenPipeError, ConnectionResetError):
+                    except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                         pass
                 return
             if path.endswith("/Views"):
