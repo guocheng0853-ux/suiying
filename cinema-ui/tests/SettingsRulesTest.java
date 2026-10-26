@@ -15,6 +15,17 @@ public class SettingsRulesTest {
   String[] n=SettingsRules.toggle("自动播放下一集：开 · 片尾前 30 秒（长按改提前量）");check(n!=null&&n[1].equals("开"),"auto next toggle");
   check(SettingsRules.toggle("弹幕：未配置")==null&&SettingsRules.toggle("VLC 视频解码：auto")==null&&SettingsRules.toggle("插件管理")==null,"non toggles");
   String[] kv=SettingsRules.split("快进快退：15 秒");check(kv[0].equals("快进快退")&&kv[1].equals("15 秒"),"split");
-  System.out.println("PASS: settings grouping (7 groups + 其他), toggle detection incl. 开启/关闭 and notes, value split.");
+  // 0.1.147 C1：从服务器管理返回时，概览数量变了要重建；没在「我的」页时不重建
+  check(SettingsRules.counts(3,5,0).equals("3/5/0"),"overview counts key");
+  check(!SettingsRules.sameCounts(SettingsRules.counts(3,5,0),SettingsRules.counts(4,5,0)),"added server makes the overview stale");
+  check(!SettingsRules.sameCounts(SettingsRules.counts(4,5,0),SettingsRules.counts(3,5,0)),"deleted server makes the overview stale");
+  check(SettingsRules.sameCounts(SettingsRules.counts(3,5,0),SettingsRules.counts(3,5,0)),"unchanged counts keep the page");
+  check(SettingsRules.sameCounts(null,SettingsRules.counts(3,5,0)),"no overview recorded means nothing to refresh");
+  try{java.nio.file.Path src=java.nio.file.Paths.get("src/com/guocheng/mediapocket");String main=java.nio.file.Files.readString(src.resolve("ScrapedMainActivity.java")),layout=java.nio.file.Files.readString(src.resolve("SettingsLayout.java"));
+   int resume=main.indexOf("@Override protected void onResume()");check(resume>=0&&main.indexOf("refreshSettingsCounts();",resume)>resume&&main.indexOf("refreshSettingsCounts();",resume)<main.indexOf("\n",resume),"onResume re-checks the overview counts");
+   check(main.contains("settingsSummary.getParent()!=body")&&main.contains("SettingsLayout.remember(this);preferences();"),"only the visible 我的 page is rebuilt, keeping its scroll position");
+   check(layout.contains("a.settingsSummary=card;a.settingsCounts=SettingsRules.counts(servers,fav,off);"),"overview records the counts it showed");
+  }catch(java.io.IOException e){throw new AssertionError(e);}
+  System.out.println("PASS: settings grouping (7 groups + 其他), toggle detection incl. 开启/关闭 and notes, value split, overview refresh on return.");
  }
 }

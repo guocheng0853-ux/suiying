@@ -1,6 +1,6 @@
 package com.guocheng.mediapocket;
 import android.content.Context;import org.json.*;import java.io.*;import java.net.*;import java.nio.charset.StandardCharsets;
-/** Emby 请求都在调用方的后台线程里执行。连接 8 秒、读取 15 秒。 */
+/** Emby 请求都在调用方的后台线程里执行。连接 8 秒、读取 15 秒。0.1.147：在 EmbyCall 里执行时可被取消（开播 / 重连）。 */
 final class EmbyClient {
  static final int CONNECT_MS=8000,READ_MS=15000,LIMIT=8*1024*1024;
  private EmbyClient(){}
@@ -82,12 +82,13 @@ final class EmbyClient {
  }
  static byte[] readBytes(String url,String authorization,String token)throws Exception{
   String current=url;
-  for(int hop=0;hop<4;hop++){HttpURLConnection conn=(HttpURLConnection)new URL(current).openConnection();conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(CONNECT_MS);conn.setReadTimeout(READ_MS);
+  for(int hop=0;hop<4;hop++){EmbyCall.check();HttpURLConnection conn=(HttpURLConnection)new URL(current).openConnection();EmbyCall.attach(conn);try{conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(CONNECT_MS);conn.setReadTimeout(READ_MS);
    conn.setRequestProperty("User-Agent","MediaPocket/"+EmbyApi.VERSION);if(authorization!=null)conn.setRequestProperty("X-Emby-Authorization",authorization);
-   int code;try{code=conn.getResponseCode();}catch(Exception e){conn.disconnect();throw e;}
+   int code;try{code=conn.getResponseCode();}catch(Exception e){conn.disconnect();EmbyCall.check();throw e;}
    if(code>=300&&code<400){String loc=conn.getHeaderField("Location");URL next=loc==null?null:new URL(conn.getURL(),loc);conn.disconnect();if(next==null||!next.getHost().equalsIgnoreCase(new URL(current).getHost()))throw new IOException("HTTP "+code);current=next.toString();continue;}
    if(code<200||code>=300){conn.disconnect();throw new IOException("HTTP "+code);}
-   try(InputStream in=conn.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] buf=new byte[8192];int n,cap=24*1024*1024;while((n=in.read(buf))!=-1){if(out.size()+n>cap)throw new IOException("预览文件过大");out.write(buf,0,n);}return out.toByteArray();}finally{conn.disconnect();}
+   EmbyCall.reading(conn);try(InputStream in=conn.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] buf=new byte[8192];int n,cap=24*1024*1024;while((n=in.read(buf))!=-1){EmbyCall.check();if(out.size()+n>cap)throw new IOException("预览文件过大");out.write(buf,0,n);}return out.toByteArray();}finally{conn.disconnect();}
+   }finally{EmbyCall.detach(conn);}
   }
   throw new IOException("服务器跳转次数过多");
  }
@@ -95,17 +96,18 @@ final class EmbyClient {
   String current=url;
   for(int hop=0;hop<4;hop++){
    URL u=new URL(current);if(!(u.getProtocol().equals("http")||u.getProtocol().equals("https")))throw new IOException("服务器地址需要以 http:// 或 https:// 开头");
-   HttpURLConnection conn=(HttpURLConnection)u.openConnection();conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(CONNECT_MS);conn.setReadTimeout(READ_MS);conn.setRequestMethod(method);
+   EmbyCall.check();HttpURLConnection conn=(HttpURLConnection)u.openConnection();EmbyCall.attach(conn);try{conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(CONNECT_MS);conn.setReadTimeout(READ_MS);conn.setRequestMethod(method);
    conn.setRequestProperty("Accept","application/json");conn.setRequestProperty("User-Agent","MediaPocket/"+EmbyApi.VERSION);
    if(authorization!=null&&!authorization.isEmpty())conn.setRequestProperty("X-Emby-Authorization",authorization);
    if(sendToken&&token!=null&&!token.isEmpty())conn.setRequestProperty("X-Emby-Token",token);
-   if(body!=null){conn.setDoOutput(true);conn.setRequestProperty("Content-Type","application/json");try(OutputStream out=conn.getOutputStream()){out.write(body);}}
-   int code;try{code=conn.getResponseCode();}catch(SocketTimeoutException e){conn.disconnect();throw e;}catch(UnknownHostException e){conn.disconnect();throw e;}catch(ConnectException e){conn.disconnect();throw e;}
+   if(body!=null){conn.setDoOutput(true);conn.setRequestProperty("Content-Type","application/json");try(OutputStream out=conn.getOutputStream()){out.write(body);}catch(IOException e){conn.disconnect();EmbyCall.check();throw e;}}
+   int code;try{code=conn.getResponseCode();}catch(IOException e){conn.disconnect();EmbyCall.check();throw e;}
    if(code>=300&&code<400){String loc=conn.getHeaderField("Location");conn.disconnect();if(loc==null||loc.isEmpty())throw new IOException("HTTP "+code);URL next=new URL(u,loc);if(!next.getHost().equalsIgnoreCase(u.getHost()))throw new IOException("服务器跳转到了其他主机");current=next.toString();continue;}
-   InputStream in=code>=400?conn.getErrorStream():conn.getInputStream();String text="";
-   if(in!=null)try(InputStream s=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] buf=new byte[8192];int n;while((n=s.read(buf))!=-1){if(out.size()+n>LIMIT)throw new IOException("服务器响应过大");out.write(buf,0,n);}text=out.toString("UTF-8");}finally{conn.disconnect();}
+   EmbyCall.reading(conn);InputStream in=code>=400?conn.getErrorStream():conn.getInputStream();String text="";
+   if(in!=null)try(InputStream s=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] buf=new byte[8192];int n;while((n=s.read(buf))!=-1){EmbyCall.check();if(out.size()+n>LIMIT)throw new IOException("服务器响应过大");out.write(buf,0,n);}text=out.toString("UTF-8");}catch(IOException e){EmbyCall.check();throw e;}finally{conn.disconnect();}
    else conn.disconnect();
    return new HttpResult(code,text);
+   }finally{EmbyCall.detach(conn);}
   }
   throw new IOException("服务器跳转次数过多");
  }

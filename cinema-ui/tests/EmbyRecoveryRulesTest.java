@@ -23,9 +23,21 @@ public class EmbyRecoveryRulesTest {
   check(!EmbyRecoveryRules.eligible(true,true,true,true,false,budget,"超时"),"another focus cycle after a result cannot retry");
   java.nio.file.Path src=java.nio.file.Paths.get("src/com/guocheng/mediapocket");
   String playback=java.nio.file.Files.readString(src.resolve("EmbyPlayback.java"));
-  int capture=playback.indexOf("final boolean wasTranscode=recovery!=null&&TrackSelection.stream(a).optBoolean(\"emby.transcodeFallback\",false);");
-  check(capture>=0&&capture<playback.indexOf("IO.execute(new Runnable()"),"capture the active transcode route on the UI thread before refreshing");
-  check(playback.contains("if(recovery!=null)vlc.accept(wasTranscode);")&&!playback.contains("if(recovery!=null)vlc.accept(false);"),"automatic refresh preserves the chosen transcode-first route instead of forcing direct P5");
+  int capture=playback.indexOf("final boolean wasTranscode=(recovery!=null||media3Refresh)&&TrackSelection.stream(a).optBoolean(\"emby.transcodeFallback\",false);");
+  check(capture>=0&&capture<playback.indexOf("OPEN.execute(new Runnable()"),"capture the active transcode route on the UI thread before refreshing");
+  check(playback.contains("if(recovery!=null||media3Refresh)vlc.accept(wasTranscode);")&&!playback.contains("if(recovery!=null)vlc.accept(false);"),"automatic and Media3 manual refresh preserve the chosen transcode-first route instead of forcing direct P5");
+  // 0.1.147 C3：Media3 里手动「重新获取地址」同一集，留在 Media3
+  check(EmbyRecoveryRules.keepMedia3(true,true,"item-1","item-1"),"Media3 manual refresh of the same item stays in Media3");
+  check(!EmbyRecoveryRules.keepMedia3(true,true,"item-1","item-2"),"next episode from Media3 keeps the normal player choice");
+  check(!EmbyRecoveryRules.keepMedia3(false,true,"item-1","item-1"),"VLC/native refresh is unchanged");
+  check(!EmbyRecoveryRules.keepMedia3(true,false,"item-1","item-1"),"a fresh playback from a detail page is not a refresh");
+  check(!EmbyRecoveryRules.keepMedia3(true,true,"",""),"unknown current item is not treated as the same film");
+  int capture3=playback.indexOf("final boolean media3Refresh=EmbyRecoveryRules.keepMedia3(a instanceof SystemPlayerActivity,replace,TrackSelection.stream(a).optString(\"emby.item\"),itemId);");
+  check(capture3>=0&&capture3<playback.indexOf("OPEN.execute(new Runnable()"),"Media3 refresh is decided on the UI thread from the playing stream");
+  int consumer=playback.indexOf("if(media3Refresh){SystemPlayerActivity.open(a,first,watch,meta.optString(\"name\"),pos,in);if(replace)a.finish();return;}a.startActivity(in);");
+  check(consumer>0,"manual Media3 refresh reopens SystemPlayerActivity instead of PlayerActivity");
+  String system=java.nio.file.Files.readString(src.resolve("SystemPlayerActivity.java"));
+  check(system.contains("EmbyPlayback.playItem(this,server,item,media,true);"),"retrySource refreshes the same item with replace=true");
   check(playback.contains("if(transcodeFirst&&all.length()>1)"),"a single available route remains usable");
   org.json.JSONObject direct=new org.json.JSONObject().put("emby.direct",true).put("emby.item","fixture-item").put("emby.mediaSource","fixture-source").put("emby.playSession","fixture-session");
   org.json.JSONArray routes=EmbyApi.withTranscode(direct,"https://example.invalid","fixture-token","fixture-device");
@@ -34,6 +46,6 @@ public class EmbyRecoveryRulesTest {
   check(EmbyRecoveryRules.resume(0,123456,10000)==123456,"stopped player keeps the last known position");
   check(EmbyRecoveryRules.resume(20000,123456,10000)==20000,"live position wins over retained state");
   check(EmbyRecoveryRules.resume(-1,0,10000)==10000,"startup failure retains original resume");
-  System.out.println("PASS: one-shot recovery, user settings, background/menu guards, permanent failures and handoff budget.");
+  System.out.println("PASS: one-shot recovery, user settings, background/menu guards, permanent failures, handoff budget and Media3 manual refresh.");
  }
 }

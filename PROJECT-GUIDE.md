@@ -1,7 +1,6 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前候选版本 0.1.146（versionCode 147），修复分屏反馈、自动恢复转码选择与系统失焦中断后的重试次数。先读本说明、cinema-ui/README.md 顶部、DEVICE-RECOVERY-0146.md；历史片源恢复与手机实播记录按对应包、设备判断，不代替本版验收。
-> 继续验收的C1–C4仍未修复，后续工作先读`docs/handoff/continued-test-0146.md`，按该记录的证据范围判断，不把“已记录”当成“已修复”。
+> 当前候选版本 0.1.147（versionCode 148），在0.1.146基础上修复继续验收的C1–C4（设置数量刷新、体检取消排队、Media3手动重取地址、取消重连后等待）。先读本说明、cinema-ui/README.md 顶部、`docs/handoff/continued-test-0146.md`；0.1.147只有JVM测试和云端未签名构建，C1–C4的修复尚未在真机复测，O1仍待确认。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 协作约定
@@ -36,7 +35,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 92 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 93 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |

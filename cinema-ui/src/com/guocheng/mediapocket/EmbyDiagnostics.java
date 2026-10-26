@@ -2,7 +2,8 @@ package com.guocheng.mediapocket;
 import android.content.*;import android.graphics.Typeface;import android.view.*;import android.widget.*;import java.util.*;import java.util.concurrent.*;import org.json.*;
 /** Inline server-management extension; leaving this screen cancels the current check. */
 final class EmbyDiagnostics {
- static final ExecutorService IO=Executors.newFixedThreadPool(2,r->{Thread t=new Thread(r,"emby-health");t.setDaemon(true);return t;});
+ /** 0.1.147（C2）：原来固定 2 个线程，连续取消后旧检查还在等正文，新检查要排队约 9 秒。改成按需开线程，取消的检查自行在超时内退出。 */
+ static final ExecutorService IO=EmbyHealthHttp.WORKERS;
  static final Map<EmbyLibraryActivity,Run> RUNS=new WeakHashMap<>();
  static void cancel(EmbyLibraryActivity a){Run r=RUNS.remove(a);if(r!=null)r.stop();}
  static void show(EmbyLibraryActivity a,JSONObject server){

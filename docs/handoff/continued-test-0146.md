@@ -84,3 +84,7 @@
 **清理状态：已完成。** `Local recovery fixture`已通过应用界面删除，管理列表与重启后的设置页均确认原有3个服务器。合成服务已关闭，专用ADB reverse已移除，应用回到全屏首页。测试前后系统设置逐项相同：字体1.0、density420、rotation free、原WeType、启用输入法列表、硬键盘显示设置及night auto。自动换源原开启值已恢复，并从重新启动的应用与新播放器复核。手机未操作。清理证据为`cleanup.json`、`auto-switch-persistence.json`及`final-settings-refreshed.png`。
 
 问题状态：C1–C4均未修改应用代码修复，O1为待确认导航行为；本轮只增加测试服务能力与验收记录。已先以`f96f151`同步阶段记录，本次补测结果与最终清理另作提交同步至main。
+
+## 0.1.147 修复状态（2026-10-26）
+
+C1–C4已在0.1.147（code 148）改代码修复，改法与JVM测试见`cinema-ui/README.md`顶部；尚未在平板上按本页步骤复测，复测前仍不能写成“已通过”。O1没有改动。

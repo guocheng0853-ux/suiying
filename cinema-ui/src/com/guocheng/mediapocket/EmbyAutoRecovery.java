@@ -2,13 +2,13 @@ package com.guocheng.mediapocket;
 import android.app.Activity;import java.util.*;import org.json.JSONObject;
 /** UI-thread owner of a single refresh; cancelled results can never launch a player. */
 final class EmbyAutoRecovery {
- static final class Attempt {volatile boolean cancelled;boolean pending=true;final Runnable fallback;Attempt(Runnable fallback){this.fallback=fallback;}}
+ static final class Attempt {volatile boolean cancelled;boolean pending=true;final Runnable fallback;/** 0.1.147：取消时一并中止还在路上的播放信息请求。 */final EmbyCall call=new EmbyCall();Attempt(Runnable fallback){this.fallback=fallback;}}
  static final Map<Activity,Attempt> ALL=new WeakHashMap<>();
  static int count(Activity a){JSONObject s=TrackSelection.stream(a);return s.optString("emby.item").equals(a.getIntent().getStringExtra(EmbyRecoveryRules.ITEM))?a.getIntent().getIntExtra(EmbyRecoveryRules.COUNT,0):0;}
  static boolean pending(Activity a){Attempt t=ALL.get(a);return t!=null&&t.pending&&!t.cancelled;}
  static void cancel(Activity a){cancel(a,false);}
  static void suspend(Activity a){cancel(a,true);}
- private static void cancel(Activity a,boolean interrupted){Attempt t=ALL.get(a);if(t!=null){int before=count(a);if(EmbyRecoveryRules.afterCancel(t.pending&&!t.cancelled,interrupted,before)<before){a.getIntent().removeExtra(EmbyRecoveryRules.COUNT);a.getIntent().removeExtra(EmbyRecoveryRules.ITEM);}t.cancelled=true;t.pending=false;}}
+ private static void cancel(Activity a,boolean interrupted){Attempt t=ALL.get(a);if(t!=null){int before=count(a);if(EmbyRecoveryRules.afterCancel(t.pending&&!t.cancelled,interrupted,before)<before){a.getIntent().removeExtra(EmbyRecoveryRules.COUNT);a.getIntent().removeExtra(EmbyRecoveryRules.ITEM);}t.cancelled=true;t.pending=false;t.call.cancel();}}
  static void dispose(Activity a){cancel(a);ALL.remove(a);}
  static void manual(Activity a){cancel(a);ALL.remove(a);a.getIntent().removeExtra(EmbyRecoveryRules.COUNT);a.getIntent().removeExtra(EmbyRecoveryRules.ITEM);}
  static boolean valid(Activity a,Attempt t){return t!=null&&!t.cancelled&&!a.isFinishing()&&!a.isDestroyed();}

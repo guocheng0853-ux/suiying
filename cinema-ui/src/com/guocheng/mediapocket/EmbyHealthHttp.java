@@ -3,14 +3,20 @@ import java.io.*;import java.net.*;import java.util.*;import java.util.concurren
 /** Read-only diagnostics transport. API credentials never follow a different origin. */
 final class EmbyHealthHttp implements EmbyHealthCheck.Backend {
  static final ScheduledExecutorService TIMER=Executors.newSingleThreadScheduledExecutor(r->{Thread t=new Thread(r,"emby-health-timeout");t.setDaemon(true);return t;});
- static final ExecutorService DNS=Executors.newFixedThreadPool(2,r->{Thread t=new Thread(r,"emby-health-dns");t.setDaemon(true);return t;});
+ /** 0.1.147（C2）：体检线程按需开，已取消、还在等正文的旧检查不挡新检查（EmbyDiagnostics.IO）。 */
+ static final ExecutorService WORKERS=EmbyCall.pool("emby-health");
+ /** 0.1.147：解析也按需开线程，卡住的旧解析不会让新体检的第 1 步排队后误报超时。 */
+ static final ExecutorService DNS=EmbyCall.pool("emby-health-dns");
  volatile boolean cancelled,reading;volatile HttpURLConnection current;
  public int resolve(String host)throws Exception{Future<InetAddress[]> f=DNS.submit(()->InetAddress.getAllByName(host));try{return f.get(5,TimeUnit.SECONDS).length;}catch(TimeoutException e){f.cancel(true);throw new SocketTimeoutException();}catch(ExecutionException e){if(e.getCause() instanceof Exception)throw (Exception)e.getCause();throw new IOException();}finally{if(cancelled)f.cancel(true);}}
  // Once the body is being read, never disconnect from another thread: on a keep-alive body the JDK queues the
  // unread remainder for draining while holding the stream lock, and the reader then waits for the whole
  // body (a slow-drip response blocked the checker for 20s). The reader stops itself at the next read via
  // cancelled / the deadline, and every read is bounded by the read timeout.
- public void cancel(){cancelled=true;HttpURLConnection c=current;if(c!=null&&!reading)TIMER.execute(c::disconnect);}
+ // 0.1.147: an explicit cancel also aborts a body read on Android, whose OkHttp-backed connection closes the
+ // socket instead of draining; the deadline timer keeps the original rule. Cancelled checks no longer queue
+ // new ones either way (EmbyDiagnostics.IO grows on demand).
+ public void cancel(){cancelled=true;HttpURLConnection c=current;if(c!=null&&(!reading||EmbyCall.abortableWhileReading(c)))TIMER.execute(c::disconnect);}
  public EmbyHealthCheck.Response request(String method,String url,Map<String,String> headers,String body)throws Exception{return request(method,url,headers,body,10000);}
  EmbyHealthCheck.Response request(String method,String url,Map<String,String> headers,String body,int budget)throws Exception{
   long end=System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(budget);URL first=new URL(url),target=first;

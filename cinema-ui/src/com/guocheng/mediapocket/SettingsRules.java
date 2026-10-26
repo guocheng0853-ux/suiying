@@ -14,6 +14,10 @@ final class SettingsRules {
   {"检查更新","6"},{"自动检查更新","6"},{"故障排查","6"},
  };
  /** 返回 {组号, 组内顺序}；-1 表示丢弃（原版的「界面与播放」小标题）。 */
+ /** 0.1.147（C1）：概览卡片里的数量（Emby 服务器、收藏、离线下载）。 */
+ static String counts(int servers,int favorites,int offline){return servers+"/"+favorites+"/"+offline;}
+ /** 没有记录过（页面不是「我的」）时不算变化，避免在别的页面重建。 */
+ static boolean sameCounts(String built,String now){return built==null||built.equals(now);}
  static int[] place(String label){
   if(label==null)return new int[]{7,999};String s=label.trim();
   if(s.equals("界面与播放"))return new int[]{-1,0};

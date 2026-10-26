@@ -12,6 +12,11 @@ final class EmbyRecoveryRules {
  static int carry(boolean replace,String previous,String next,int count){return replace&&previous!=null&&previous.equals(next)?Math.min(1,Math.max(0,count)):0;}
  /** Only an unfinished attempt interrupted by the system gives its budget back. Explicit cancel keeps it spent. */
  static int afterCancel(boolean pending,boolean interrupted,int count){return pending&&interrupted?0:Math.min(1,Math.max(0,count));}
+ /**
+  * 0.1.147（C3）：在 Media3（系统解码）里刷新同一集的地址，新地址继续用 Media3。
+  * 换到别的集、或从 VLC / 详情页开播不在此列，仍按原来的播放器偏好和杜比判断走。
+  */
+ static boolean keepMedia3(boolean inMedia3,boolean replace,String current,String next){return inMedia3&&replace&&current!=null&&!current.isEmpty()&&current.equals(next);}
  static int resume(int current,long retained,long initial){return (int)Math.min(Integer.MAX_VALUE,current>0?current:retained>0?retained:Math.max(0,initial));}
  private EmbyRecoveryRules(){}
 }
