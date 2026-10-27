@@ -3,6 +3,8 @@ import java.util.Locale;
 /** One automatic refresh per playback chain. Manual retry starts a new chain. */
 final class EmbyRecoveryRules {
  static final String COUNT="mp.emby.recovery.count",ITEM="mp.emby.recovery.item";
+ /** 0.1.155：被系统打断的那次只退还一次额度，之后再被打断就算用掉，避免「（1/1）」反复出现。 */
+ static final String RESUMED="mp.emby.recovery.resumed";
  static boolean eligible(boolean enabled,boolean emby,boolean failure,boolean active,boolean blocked,int count,String raw){
   if(!enabled||!emby||!failure||!active||blocked||count>=1)return false;
   String s=raw==null?"":raw.toLowerCase(Locale.ROOT);

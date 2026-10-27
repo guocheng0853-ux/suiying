@@ -74,7 +74,7 @@ final class EmbyClient {
     if(r.code==401)throw new IOException("HTTP 401");
     if(EmbyApi.clientRejected(r.code,r.body))throw new IOException(EmbyApi.authAttempt(client,r.code,r.body,true).error);
     if(r.code>=500&&i+1<bases.length){last=new IOException("HTTP "+r.code);continue;}
-    if(r.code<200||r.code>=300){String why=EmbyApi.serverReason(r.body);DebugLog.event("Emby","HTTP "+r.code+(why.isEmpty()?"":" · "+why));throw new IOException("HTTP "+r.code+(why.isEmpty()?"":"："+why));}
+    if(r.code<200||r.code>=300){String why=EmbyApi.serverReason(r.body);DebugLog.event("Emby","HTTP "+r.code+(why.isEmpty()?"":" · "+why)+" · "+method+" "+PlaybackEndRules.pathPattern(path));throw new IOException("HTTP "+r.code+(why.isEmpty()?"":"："+why));}
     return r;
    }catch(SocketTimeoutException|UnknownHostException|ConnectException|javax.net.ssl.SSLException e){last=e instanceof IOException?(IOException)e:new IOException(e);}
   }

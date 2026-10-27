@@ -20,6 +20,14 @@ final class EmbyHome {
 
  static final ExecutorService FETCH=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"emby-home-fetch");t.setDaemon(true);return t;});
  /** 拉一次首页。budgetMs 为 0 时每步最多等 30 秒（Emby 自己的首页）。聚合首页传入约 12 秒的总时限，到点用已经拿到的结果收尾。 */
+ /**
+  * 0.1.155：服务器对某个首页接口返回 5xx（例如 Emby 的「Sequence contains no matching element」），
+  * 这一类请求 6 小时内不再发：首页照常用默认分区顺序 / 不显示那个媒体库的最新，不再每次开首页都报一次错。
+  */
+ static final java.util.Map<String,Long> BROKEN=new java.util.concurrent.ConcurrentHashMap<>();
+ static final long BROKEN_MS=6*3600*1000L;
+ static boolean skipping(JSONObject server,String what){Long until=BROKEN.get(server.optString("id")+"|"+what);return until!=null&&until>System.currentTimeMillis();}
+ static JSONObject remember(JSONObject server,String what,java.util.concurrent.Callable<JSONObject> call)throws Exception{try{return call.call();}catch(java.io.IOException e){String m=String.valueOf(e.getMessage());if(m.startsWith("HTTP 5")){BROKEN.put(server.optString("id")+"|"+what,System.currentTimeMillis()+BROKEN_MS);DebugLog.event("Emby","首页"+("sections".equals(what)?"分区顺序":"媒体库最新")+"接口服务器出错，6 小时内先不请求，用默认显示");}throw e;}}
  static JSONObject fetch(ScrapedMainActivity a,JSONObject server,java.util.function.Consumer<JSONObject> partial)throws Exception{return fetch(a,server,partial,0L);}
  static int waitMs(long deadlineNs,long nowNs,int capMs){return AggregateRules.waitMs(deadlineNs,nowNs,capMs);}
  static JSONObject fetch(ScrapedMainActivity a,JSONObject server,java.util.function.Consumer<JSONObject> partial,long budgetMs)throws Exception{
@@ -30,7 +38,7 @@ final class EmbyHome {
   catch(Exception e){resume=new JSONArray();failure=unwrap(e);}
   // 继续观看一回来就交给调用方先画。聚合首页也会传入这个回调，不再传空。
   if(partial!=null&&resume.length()>0){JSONArray order=new JSONArray();for(String sec:EmbyCue.homeOrder(null))order.put(sec);partial.accept(new JSONObject().put("resume",resume).put("next",new JSONArray()).put("heroes",EmbyCue.pickHeroes(resume,new JSONArray())).put("order",order).put("libs",new JSONArray()).put("latest",new JSONArray()));}
-  Future<JSONObject> nextF=FETCH.submit(()->EmbyClient.nextUp(a,server)),viewsF=FETCH.submit(()->EmbyClient.views(a,server)),orderF=FETCH.submit(()->EmbyClient.homeSections(a,server));
+  Future<JSONObject> nextF=FETCH.submit(()->EmbyClient.nextUp(a,server)),viewsF=FETCH.submit(()->EmbyClient.views(a,server)),orderF=FETCH.submit(()->skipping(server,"sections")?new JSONObject():remember(server,"sections",()->EmbyClient.homeSections(a,server)));
   JSONArray next;try{next=EmbyCue.withoutResume(rows(awaitObj(nextF,deadline)),resume);}catch(Exception e){next=new JSONArray();}
   JSONArray views;try{views=rows(awaitObj(viewsF,deadline));}catch(Exception e){views=new JSONArray();if(failure==null)failure=unwrap(e);}
   if(failure!=null&&resume.length()==0&&views.length()==0)throw failure;
@@ -38,7 +46,7 @@ final class EmbyHome {
   boolean latestWanted=false;for(String s:order)if("latest".equals(s)||"libraries".equals(s))latestWanted=true;
   JSONArray libs=new JSONArray();for(JSONObject lib:libraries(views))if(!EmbyCue.hidden(server,lib.optString("Id")))libs.put(lib);
   JSONArray latest=new JSONArray(),flat=new JSONArray();
-  if(latestWanted){ArrayList<Future<JSONObject>> jobs=new ArrayList<>();for(int i=0;i<libs.length();i++){String id=libs.optJSONObject(i).optString("Id");jobs.add(FETCH.submit(()->EmbyClient.latest(a,server,id)));}
+  if(latestWanted){ArrayList<Future<JSONObject>> jobs=new ArrayList<>();for(int i=0;i<libs.length();i++){String id=libs.optJSONObject(i).optString("Id");jobs.add(FETCH.submit(()->skipping(server,"latest:"+id)?new JSONObject():remember(server,"latest:"+id,()->EmbyClient.latest(a,server,id))));}
    for(Future<JSONObject> f:jobs){JSONArray items;try{items=rows(awaitObj(f,deadline));}catch(Exception e){items=new JSONArray();}latest.put(items);for(int i=0;i<items.length();i++)flat.put(items.opt(i));}}
   JSONArray orderJson=new JSONArray();for(String s:order)orderJson.put(s);
   return new JSONObject().put("resume",resume).put("next",next).put("heroes",EmbyCue.pickHeroes(resume,flat)).put("order",orderJson).put("libs",libs).put("latest",latest);
