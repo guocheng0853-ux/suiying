@@ -22,6 +22,7 @@ public class FullscreenRulesTest {
   check(FullscreenRules.visibleNext("smart",3168,1440,1920,1080).equals("fit")&&FullscreenRules.visibleNext("fit",3168,1440,1920,1080).equals("crop")&&FullscreenRules.visibleNext("crop",3168,1440,1920,1080).equals("smart"),"16:9: all three look different");
   check(FullscreenRules.visibleNext("smart",3168,1440,2390,1000).equals("fit")&&FullscreenRules.visibleNext("fit",3168,1440,2390,1000).equals("crop")&&FullscreenRules.visibleNext("crop",3168,1440,2390,1000).equals("fit"),"2.39:1: smart equals crop, so the button toggles between filled and full picture");
   check(FullscreenRules.visibleNext("smart",3168,1440,1440,1080).equals("crop")&&FullscreenRules.visibleNext("crop",3168,1440,1440,1080).equals("smart"),"4:3: smart equals fit, so the button toggles smart and crop");
+  check(FullscreenRules.displayWidth(1440,4,3)==1920&&FullscreenRules.displayWidth(1920,0,0)==1920&&FullscreenRules.displayWidth(0,1,1)==0,"SAR-adjusted width from the video track");
   check(FullscreenRules.visibleNext("smart",0,0,0,0).equals("fit")&&FullscreenRules.visibleNext("stretch",3168,1440,1920,1080).equals("fit"),"unknown size falls back to the plain cycle");
   // 智能满屏：一加 13 横屏 3168×1440（约 2.2:1）
   float[] wide=FullscreenRules.smart(3168,1440,1920,1080);check(Math.abs(wide[1]-1/(1-FullscreenRules.SMART_CROP))<1e-3&&Math.abs(wide[0]-(3168/1440f)/(16/9f))<1e-3,"16:9 fills: uniform up to the crop cap, rest horizontal");

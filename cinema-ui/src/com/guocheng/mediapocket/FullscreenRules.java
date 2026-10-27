@@ -34,6 +34,8 @@ final class FullscreenRules {
   if("smart".equals(mode))return smart(screenW,screenH,videoW,videoH);
   if("crop".equals(mode)&&screenW>0&&screenH>0&&videoW>0&&videoH>0){double s=(double)screenW/screenH,v=(double)videoW/videoH;float k=(float)Math.max(s/v,v/s);return new float[]{k,k};}
   return new float[]{1f,1f};}
+ /** 0.1.154：VLC 没回报画面尺寸时，从视频轨读宽高，按像素宽高比（SAR）换成显示宽度，和底座的换算一致。 */
+ static int displayWidth(int width,int sarNum,int sarDen){if(width<=0)return 0;return sarNum>0&&sarDen>0?(int)((long)width*sarNum/sarDen):width;}
  static boolean sameLook(float[] a,float[] b){return Math.abs(a[0]/b[0]-1)<0.03f&&Math.abs(a[1]/b[1]-1)<0.03f;}
  /**
   * 0.1.153：单击比例按钮跳过「看起来和现在一样」的模式，保证每点一次画面都有变化。
