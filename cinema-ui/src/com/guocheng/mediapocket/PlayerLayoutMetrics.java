@@ -12,7 +12,7 @@ final class PlayerLayoutMetrics {
  static final int TRANSPORT_GAP_DP=12,SIDE_GAP_DP=16,MARGIN_DP=16,TOP_H_DP=PlayerGlassRules.TOUCH_DP,TOP_GAP_DP=4;
  static final int TOP_PAD_DP=8,TOP_CUT_PAD_DP=4,TOP_BOTTOM_PAD_DP=6,TITLE_GAP_DP=4,DECODER_PAD_DP=6;
  static final int BOTTOM_TOP_PAD_DP=12,BOTTOM_PAD_DP=8,TRANSPORT_PAD_DP=4;
- static final int TITLE_SP=16,STATUS_SP=11,DECODER_SP=12,EPISODE_SP=20,TIME_SP=15,SPEED_SP=14,SPEED_BTN_SP=18,STATUS_ROW_DP=26,STATUS_TOP_PAD_DP=4,STATUS_NET_MAX_DP=200,STATUS_TIME_HALF_DP=120;
+ static final int TITLE_SP=16,STATUS_SP=12,DECODER_SP=12,EPISODE_SP=20,TIME_SP=15,SPEED_SP=14,SPEED_BTN_SP=18,STATUS_ROW_DP=26,STATUS_TOP_PAD_DP=4,STATUS_NET_MAX_DP=200,STATUS_TIME_HALF_DP=120;
  /** 黑、约 45% 不透明。不是浅灰。 */
  static final int PILL_COLOR=0x73000000;
  static final float EPISODE_LINE_EM=1.35f;
@@ -20,8 +20,10 @@ final class PlayerLayoutMetrics {
  static int dp(float density,int v){float d=density<=0f?1f:density;return Math.round(v*d);}
  static int episodeLinePx(float density){float d=density<=0f?1f:density;return Math.max(1,Math.round(EPISODE_SP*d*EPISODE_LINE_EM));}
  static int statusY(float density,int cutT){return Math.max(dp(density,STATUS_TOP_PAD_DP),Math.max(0,cutT));}
- static int statusH(float density){return dp(density,STATUS_ROW_DP);}
- static int topY(float density,int cutT){return statusY(density,cutT)+statusH(density)+dp(density,2);}
+ static int statusH(float density){return statusH(density,1f);}
+ static int statusH(float density,float fontScale){return Math.max(dp(density,STATUS_ROW_DP),Math.round(STATUS_SP*Math.max(1f,fontScale)*1.5f*(density<=0f?1f:density)));}
+ static int topY(float density,int cutT){return topY(density,cutT,1f);}
+ static int topY(float density,int cutT,float fontScale){return statusY(density,cutT)+statusH(density,fontScale)+dp(density,2);}
  static int topBarBottom(float density,int cutT){return topY(density,cutT)+dp(density,TOP_H_DP)+dp(density,TOP_BOTTOM_PAD_DP);}
  static int bottomPad(float density,int cutB){return Math.max(dp(density,BOTTOM_PAD_DP),Math.max(0,cutB)+dp(density,BOTTOM_PAD_DP));}
  /** 底栏上沿：上内边距 + 集标题 + 时间行 + 传输行，再加底部安全边距。 */

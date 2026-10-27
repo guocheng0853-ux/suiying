@@ -43,14 +43,14 @@ final class PlayerOverlay {
   }
   Button decoder=decoderChip(a,top);
   View legacyStatus=top.findViewWithTag("mp-status");if(legacyStatus!=null)top.removeView(legacyStatus);
-  Button aspect=ensure(a,top,"mp-aspect",PlayerIcons.ASPECT,"画面比例",v->quickAspect(a));aspect.setOnLongClickListener(v->{aspectPicker(a);return true;});
+  Button aspect=ensure(a,top,"mp-aspect",PlayerIcons.ASPECT,"画面比例",v->quickAspect(a));aspect.setOnLongClickListener(v->{aspectPicker(a);return true;});aspectState(a,a.getSharedPreferences("data",0).getString("aspectMode","fit"));
   Button pip=findExact(top,"画中画");if(pip!=null)fit(a,pip,PlayerIcons.PIP,"画中画");
   Button more=ensure(a,top,"mp-more",PlayerIcons.MORE,"更多",v->more(a));
   View gap=findTag(top,"mp-top-gap");if(gap==null){gap=new View(a);gap.setTag("mp-top-gap");}
   View[] right=new View[]{gap,decoder,aspect,pip,more};for(View v:right){if(v==null)continue;if(v.getParent() instanceof ViewGroup&&v.getParent()!=top)((ViewGroup)v.getParent()).removeView(v);if(v.getParent()==top)top.removeView(v);top.addView(v);}
   slot(a,decoder,0);slot(a,aspect,PlayerLayoutMetrics.TOUCH_DP);slot(a,pip,PlayerLayoutMetrics.TOUCH_DP);slot(a,more,PlayerLayoutMetrics.TOUCH_DP);
   gap.setLayoutParams(new LinearLayout.LayoutParams(0,1,1f));
-  // 0.1.139 悬浮胶囊：返回 / 比例 / 画中画 / 更多是玻璃圆，解码档位是玻璃胶囊；按钮间距 8dp
+  // 无底图标使用统一48dp点击区；解码文字沿用同一行高。
   for(int i=0;i<top.getChildCount();i++){View v=top.getChildAt(i);if(!(v instanceof Button)||v.getVisibility()!=View.VISIBLE)continue;PlayerGlass.dress(a,v,v==decoder?"pill":"circle");if(v.getLayoutParams() instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams l=(LinearLayout.LayoutParams)v.getLayoutParams();int s=dp(a,Ui.TOUCH);if(v!=decoder)l.width=s;l.height=s;l.leftMargin=dp(a,Ui.S1);v.setLayoutParams(l);if(v!=decoder)PlayerGlass.centerIcon(a,(Button)v,s);}}
  }
  /** 必须是 Button：底座只把 Button / SeekBar 的点击交出来，TextView 会被手势层吃掉。宽高都大于 0，并且可点、可聚焦。 */
@@ -77,7 +77,7 @@ final class PlayerOverlay {
  }
  /**
   * 0.1.141 参考 Apple TV 的底部：剧名（小灰字）／集名 …… 右侧一排小图标（上一集、下一集、音轨、字幕、选集、倍速）；
-  * 下面通栏进度条；进度条下左已播、右剩余「−17:58」。原来的传输行收起，播放 / 暂停在画面正中。可反复调用。
+  * 下面通栏进度条；进度条下左已播、右「剩…，…看完」。原来的传输行收起，播放 / 暂停在画面正中。可反复调用。
   */
  static final int R_SERIF=0x7f0c0141;
  static void appleBottom(Activity a,LinearLayout bottom){
@@ -109,15 +109,10 @@ final class PlayerOverlay {
  static GradientDrawable trackDrawable(int color,int h){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(h);d.setSize(h,h);return d;}
  static void shot(Activity a){View root=root(a);if(!(root instanceof FrameLayout)||root.findViewWithTag("mp-shot")!=null)return;Button b=icon(a,PlayerIcons.CAMERA,"截图",v->capture(a));b.setTag("mp-shot");int s=dp(a,PlayerLayoutMetrics.TOUCH_DP);((FrameLayout)root).addView(b,new FrameLayout.LayoutParams(s,s,Gravity.START|Gravity.TOP));}
 
- static final Map<Activity,String> LOGO_URL=new WeakHashMap<>();
+
  static TextView titleText(LinearLayout top){if(top==null)return null;for(int i=0;i<top.getChildCount();i++){View v=top.getChildAt(i);if(v instanceof TextView&&!(v instanceof Button)&&!"mp-decoder".equals(v.getTag())&&!"mp-status".equals(v.getTag())&&!"mp-logo".equals(v.getTag()))return (TextView)v;}return null;}
- static void logo(Activity a,LinearLayout top){TextView title=titleText(top);if(title==null)return;/* 0.1.141 Apple TV 式：片名只在底部，顶栏不放标题和台标 */if(title.getVisibility()!=View.GONE)title.setVisibility(View.GONE);ImageView mark=findTag(top,"mp-logo");if(mark!=null&&mark.getVisibility()!=View.GONE)mark.setVisibility(View.GONE);if(title!=null)return;String url=meta(a).optString("logo");ImageView logo=findTag(top,"mp-logo");
-  if(url.isEmpty()){if(logo!=null)logo.setVisibility(View.GONE);if(title.getVisibility()==View.INVISIBLE)title.setVisibility(View.VISIBLE);LOGO_URL.remove(a);return;}
-  if(logo==null){logo=new ImageView(a);logo.setTag("mp-logo");logo.setScaleType(ImageView.ScaleType.FIT_CENTER);ViewGroup parent=(ViewGroup)title.getParent();parent.addView(logo,Math.max(1,parent.indexOfChild(title)+1));}
-  LinearLayout.LayoutParams lp=logo.getLayoutParams() instanceof LinearLayout.LayoutParams?(LinearLayout.LayoutParams)logo.getLayoutParams():new LinearLayout.LayoutParams(-2,dp(a,30));lp.height=dp(a,30);lp.width=dp(a,120);lp.gravity=Gravity.CENTER_VERTICAL;lp.leftMargin=dp(a,PlayerLayoutMetrics.TITLE_GAP_DP);lp.rightMargin=0;logo.setLayoutParams(lp);
-  String key=String.valueOf(url.hashCode());if(key.equals(String.valueOf(LOGO_URL.get(a))))return;LOGO_URL.put(a,key);logo.setImageDrawable(null);final String fUrl=url;
-  OnlineSubtitleSearch.IO.execute(()->{try{byte[] bytes=TvPosterHttp.download(TvPosterRules.parse(fUrl),10000);android.graphics.Bitmap bmp=android.graphics.BitmapFactory.decodeByteArray(bytes,0,bytes.length);if(bmp==null)throw new java.io.IOException("bad");
-   a.runOnUiThread(()->{LinearLayout t2=bar(a,"top");if(t2==null)return;ImageView target=findTag(t2,"mp-logo");if(target==null||!key.equals(String.valueOf(LOGO_URL.get(a))))return;target.setImageBitmap(bmp);target.setVisibility(View.VISIBLE);TextView tt=titleText(t2);if(tt!=null)tt.setVisibility(View.INVISIBLE);});}catch(Exception ignored){LOGO_URL.remove(a);}});}
+ /** Titles live in the bottom row; retire an old top title or logo. */
+ static void logo(Activity a,LinearLayout top){TextView title=titleText(top);if(title!=null)title.setVisibility(View.GONE);View mark=findTag(top,"mp-logo");if(mark!=null)mark.setVisibility(View.GONE);}
  static void titles(Activity a){LinearLayout top=bar(a,"top");if(top==null)return;String series=PlayerOverlayRules.seriesTitle(name(a),meta(a));logo(a,top);for(int i=0;i<top.getChildCount();i++){View v=top.getChildAt(i);if(v instanceof TextView&&!(v instanceof Button)&&!"mp-decoder".equals(v.getTag())&&!"mp-status".equals(v.getTag())&&!"mp-logo".equals(v.getTag())){if(!series.equals(text(v)))((TextView)v).setText(series);break;}}
   TextView line=findTag(bar(a,"bottom"),"mp-episode");if(line==null)return;String episode=PlaybackReviewRules.series(meta(a),type(a))?PlayerOverlayRules.episodeLine(meta(a),id(a),name(a)):PlayerOverlayRules.seriesTitle(name(a),meta(a));if(!episode.equals(line.getText()))line.setText(episode);line.setVisibility(episode.isEmpty()?View.GONE:View.VISIBLE);
  }
@@ -131,8 +126,9 @@ final class PlayerOverlay {
  /** 先改标签和中间提示，再按档位重开。失败时把原因 toast 出来，不再静默返回。 */
  static void applyDecode(Activity a,String next){String base="software".equals(next)?"software":"hardware";a.getSharedPreferences("data",0).edit().putString("decodeMode",base).putString("decodeTier",next).apply();decoder(a);toast(a,PlayerOverlayRules.decodeHud(next));String reason=DecoderSwitch.reopen(a,next);if(reason!=null)toast(a,"切换解码失败："+reason);}
  static void decodePicker(Activity a){String[] values=PlayerOverlayRules.decodeChoices();String[] labels=new String[values.length];String cur=currentTier(a);int at=0;for(int i=0;i<values.length;i++){labels[i]=PlayerOverlayRules.decodeChoiceLabel(values[i]);if(values[i].equals(cur))at=i;}java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<values.length;i++){final String v=values[i];rows.add(CinemaMenu.choice(labels[i],values[i].equals(cur),()->applyDecode(a,v)));}CinemaMenu.show(a,"视频解码",rows);}
+ static void aspectState(Activity a,String mode){View root=root(a);if(root==null)return;View key=root.findViewWithTag("mp-aspect");if(key==null)return;String state=FullscreenRules.LABELS[FullscreenRules.index(mode)].split(" · ")[0];if(Build.VERSION.SDK_INT>=30)key.setStateDescription(state);else key.setContentDescription("画面比例，当前"+state);}
  static void quickAspect(Activity a){try{FullscreenMode.quick(a);}catch(Exception e){toast(a,"比例设置失败");}}
- static void aspectPicker(Activity a){String cur=a.getSharedPreferences("data",0).getString("aspectMode","fit");int at=FullscreenRules.index(cur);java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<FullscreenRules.LABELS.length;i++){final int n=i;rows.add(CinemaMenu.choice(FullscreenRules.LABELS[i],i==at,()->{try{FullscreenMode.apply(a,FullscreenRules.MODES[n],true);PlayerChrome.refresh(a);}catch(Exception e){toast(a,"比例设置失败");}}));}CinemaMenu.show(a,"画面比例",rows);}
+ static void aspectPicker(Activity a){String cur=a.getSharedPreferences("data",0).getString("aspectMode","fit");int at=FullscreenRules.index(cur);java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<FullscreenRules.LABELS.length;i++){final int n=i;rows.add(CinemaMenu.choice(FullscreenRules.LABELS[i],i==at,()->{try{FullscreenMode.apply(a,FullscreenRules.MODES[n],true);PlayerChrome.refresh(a);if(n!=at)FullscreenMode.feedback(a,FullscreenRules.LABELS[n]);}catch(Exception e){toast(a,"比例设置失败");}}));}CinemaMenu.show(a,"画面比例",rows);}
  /** 0.1.97：第一次真正开始播放后弹一次手势说明（画中画、锁屏、菜单或面板打开时不弹），之后不再出现。 */
  static void gestureGuide(Activity a){
   android.content.SharedPreferences p=a.getSharedPreferences("data",0);if(p.getBoolean("hint.gestures.v1",false))return;
@@ -230,6 +226,7 @@ final class PlayerOverlay {
   StringBuilder sb=new StringBuilder();String rate=PlaybackPrefs.statusNet(p)?netText:"";if(!rate.isEmpty())sb.append(rate);String buffer=PlaybackPrefs.showBufferSpeed(p)?PlayerSwitches.buffer(a):"";if(!buffer.isEmpty()){if(sb.length()>0)sb.append("  ");sb.append(buffer);}
   if(!sb.toString().equals(speed.getText()))speed.setText(sb.toString());speed.setVisibility(sb.length()==0?View.GONE:View.VISIBLE);
   String batt=PlaybackPrefs.statusBattery(p)?PlayerStatus.batteryPercent(percent):"";if(!batt.equals(pct.getText()))pct.setText(batt);pct.setVisibility(batt.isEmpty()?View.GONE:View.VISIBLE);bolt.setVisibility(batt.isEmpty()?View.GONE:View.VISIBLE);
+  speed.setSingleLine(true);speed.setEllipsize(android.text.TextUtils.TruncateAt.END);int statusWidth=root.getWidth()>0?root.getWidth():a.getResources().getDisplayMetrics().widthPixels;int rightRoom=Math.max(0,statusWidth/2-dp(a,24)-(int)Math.ceil(time.getPaint().measureText(t)/2f));int batteryWidth=batt.isEmpty()?0:(int)Math.ceil(pct.getPaint().measureText(batt))+dp(a,21);speed.setMaxWidth(Math.max(0,rightRoom-batteryWidth));
   int[] cut=insets(root);float density=a.getResources().getDisplayMetrics().density;int stY=PlayerLayoutMetrics.statusY(density,cut[1]),side=PlayerLayoutMetrics.sideMargin(density,cut[0],cut[2]);
   FrameLayout.LayoutParams tp=(FrameLayout.LayoutParams)time.getLayoutParams();if(tp.topMargin!=stY){tp.topMargin=stY;tp.gravity=Gravity.TOP|Gravity.CENTER_HORIZONTAL;time.setLayoutParams(tp);}
   FrameLayout.LayoutParams np=(FrameLayout.LayoutParams)net.getLayoutParams();if(np.topMargin!=stY||np.rightMargin!=side){np.topMargin=stY;np.rightMargin=side;np.gravity=Gravity.TOP|Gravity.END;net.setLayoutParams(np);}
@@ -240,13 +237,12 @@ final class PlayerOverlay {
   ImageView bolt=new ImageView(a);bolt.setTag("mp-status-bolt");bolt.setImageDrawable(new PlayerIcons(PlayerIcons.BATTERY,dp(a,13)));bolt.setPadding(dp(a,4),0,0,0);box.addView(bolt,new LinearLayout.LayoutParams(-2,-2));
   TextView pct=label(a,PlayerLayoutMetrics.STATUS_SP);pct.setTag("mp-status-pct");pct.setShadowLayer(dp(a,4),0,0,0xcc000000);box.addView(pct);
   root.addView(box,new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.END));}return box;}
- static void pad(Activity a){LinearLayout top=bar(a,"top"),bottom=bar(a,"bottom");int[] cut=insets(root(a));float density=a.getResources().getDisplayMetrics().density;int side=PlayerLayoutMetrics.sideMargin(density,cut[0],cut[2]),topPad=PlayerLayoutMetrics.topY(density,cut[1]),bottomPad=PlayerLayoutMetrics.bottomPad(density,cut[3]);
+ static void pad(Activity a){LinearLayout top=bar(a,"top"),bottom=bar(a,"bottom");int[] cut=insets(root(a));float density=a.getResources().getDisplayMetrics().density;int side=PlayerLayoutMetrics.sideMargin(density,cut[0],cut[2]),topPad=PlayerLayoutMetrics.topY(density,cut[1],a.getResources().getConfiguration().fontScale),bottomPad=PlayerLayoutMetrics.bottomPad(density,cut[3]);
   if(top!=null)top.setPadding(side,topPad,side,dp(a,PlayerLayoutMetrics.TOP_BOTTOM_PAD_DP));if(bottom!=null){bottom.setPadding(side,dp(a,PlayerLayoutMetrics.BOTTOM_TOP_PAD_DP),side,bottomPad);PlayerGlass.panel(a,bottom,side,bottomPad);}
   placeSides(a,side,side);
  }
  static int[] insets(View root){int[] r=new int[]{0,0,0,0};if(root==null)return r;WindowInsets in=root.getRootWindowInsets();if(in==null)return r;if(Build.VERSION.SDK_INT>=30){android.graphics.Insets c=in.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());return new int[]{c.left,c.top,c.right,c.bottom};}return new int[]{in.getSystemWindowInsetLeft(),in.getSystemWindowInsetTop(),in.getSystemWindowInsetRight(),in.getSystemWindowInsetBottom()};}
  static void placeSides(Activity a,int left,int right){LinearLayout top=bar(a,"top"),bottom=bar(a,"bottom");View root=root(a);boolean pip=Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode();boolean chrome=top!=null&&!pip&&!PlayerGestures.locked(a)&&top.getVisibility()==View.VISIBLE;View shot=root==null?null:root.findViewWithTag("mp-shot");if(shot!=null)shot.setVisibility(chrome?View.VISIBLE:View.GONE);if(top==null||bottom==null||root==null||top.getBottom()<=0||bottom.getTop()<=top.getBottom())return;int w=root.getWidth()<=0?a.getResources().getDisplayMetrics().widthPixels:root.getWidth(),h=root.getHeight()<=0?a.getResources().getDisplayMetrics().heightPixels:root.getHeight();int[] cut=insets(root);PlayerLayoutMetrics.Overlay m=PlayerLayoutMetrics.measure(w,h,a.getResources().getDisplayMetrics().density,cut[0],cut[1],cut[2],cut[3],true,true,true,false,top.getBottom(),bottom.getTop());int side=m.margin;move(shot,side,m.camera.y,m.touch);PlayerGestures g=PlayerGestures.ALL.get(a);move(g==null?null:g.lockButton,side,m.lock.y,m.touch);
-  PlayerChrome chromeBar=PlayerChrome.ALL.get(a);if(chromeBar!=null&&chromeBar.speed!=null&&m.speed!=null){FrameLayout.LayoutParams lp=lp(chromeBar.speed);if(lp!=null){if(lp.width!=m.speed.w||lp.height!=m.speed.h||lp.topMargin!=m.speed.y||lp.rightMargin!=side||lp.gravity!=(Gravity.END|Gravity.TOP)){lp.gravity=Gravity.END|Gravity.TOP;lp.width=m.speed.w;lp.height=m.speed.h;lp.topMargin=m.speed.y;lp.rightMargin=side;lp.leftMargin=0;lp.bottomMargin=0;chromeBar.speed.setLayoutParams(lp);}}}
  }
  static void move(View v,int x,int y,int w){if(v==null)return;FrameLayout.LayoutParams lp=lp(v);if(lp==null)return;int gravity=Gravity.START|Gravity.TOP;v.setTranslationX(0);v.setTranslationY(0);if(lp.leftMargin==x&&lp.topMargin==y&&lp.width==w&&lp.height==w&&lp.gravity==gravity)return;lp.gravity=gravity;lp.width=w;lp.height=w;lp.leftMargin=x;lp.rightMargin=0;lp.topMargin=y;lp.bottomMargin=0;v.setLayoutParams(lp);}
  static FrameLayout.LayoutParams lp(View v){return v.getLayoutParams() instanceof FrameLayout.LayoutParams?(FrameLayout.LayoutParams)v.getLayoutParams():null;}

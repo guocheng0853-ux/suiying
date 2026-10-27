@@ -25,6 +25,7 @@ public final class PlayerGlassTest {
    check(PlayerGlassRules.contrast(accent,PlayerGlassRules.composite(panel,255))>=4.5,"panel accent "+gold);}
   check(PlayerGlassRules.panelAlpha(0,true)==PlayerGlassRules.AIRY_ALPHA,"dark gold panel stays airy");
 
+  check(PlayerGlassRules.contrast(PlayerGlassRules.WHITE,(0xff000000|((255-PlayerGlassRules.DIM_ALPHA)*0x010101)))>=4.5,"white center controls remain legible over a white test scene");
   check(PlayerGlassRules.TOUCH_DP>=48&&PlayerLayoutMetrics.TOUCH_DP>=48&&PlayerLayoutMetrics.TOP_H_DP>=48&&PlayerLayoutMetrics.TIME_ROW_DP>=48,"playback rows are at least 48dp");
   check(PlayerGlass.CIRCLE_DP>=48&&PlayerGlass.CENTER_DP>=48&&PlayerGlass.PLAY_DP>=48&&PlayerMotionRules.MENU_ROW_DP>=48,"circles, center keys and menu rows are at least 48dp");
 

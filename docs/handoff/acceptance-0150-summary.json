@@ -1,0 +1,49 @@
+{
+  "version": "0.1.150",
+  "code": 151,
+  "date": "2026-10-27",
+  "baseline": "c3266ca",
+  "device": "OPD2401 / Android16",
+  "build": {
+    "version": "0.1.150",
+    "code": 151,
+    "tests": 94,
+    "size": 37055029,
+    "sha256": "d4d1025df2c000133241c89308d6193f9d6873ab26dd088fdc9fddd4a6354bbe",
+    "original_certificate_verified": true,
+    "zipalign_16k_verified": true
+  },
+  "initial_installed_candidate_sha256": "597bced778217866f2d0ade7a5c13a48a6dc5fb30a273627d7f3cb04029868a0",
+  "initial_candidate_device_checks": {
+    "vlc_and_media3_white_scene": "passed",
+    "media3_more_deduplicated": "passed",
+    "bottom_audio_subtitles_episodes_accessible": "passed",
+    "vlc_aspect_hud_and_accessibility_announcement": "passed",
+    "font_scale_2_app_only_window_360dp": "passed_with_existing_time_ellipsis_or_wrap",
+    "talkback_both_engines_retained_9s": "passed",
+    "talkback_both_engines_lock_unlock": "passed"
+  },
+  "discovered_issue": {
+    "description": "Media3 screenshot action overlaps rewind in narrow app window",
+    "fix": "Reuse existing side action placement",
+    "final_apk_device_retest": "pending_device_reconnection"
+  },
+  "cleanup": {
+    "synthetic_preferences_history_restored": true,
+    "original_server_count": 3,
+    "accessibility_restore_commands_completed": true,
+    "system_font_scale_modified": false,
+    "density_rotation_ime_night_modified": false,
+    "post_cleanup_exact_setting_comparison": "pending_device_reconnection",
+    "temporary_helper_uninstall": "pending_device_reconnection",
+    "foreign_adb_forwards_restore": "pending_device_reconnection",
+    "local_fixture_server_stopped": true
+  },
+  "not_tested": [
+    "phone hardware",
+    "real Dolby or HDR playback in this version",
+    "successful real-account server transcode",
+    "manual spoken TalkBack content assessment",
+    "final APK device installation after screenshot-position fix"
+  ]
+}

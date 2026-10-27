@@ -9,7 +9,7 @@ final class PlayerGlassRules {
  static final int GLASS_RGB=0x1C1A18,AIRY_ALPHA=0x8C,STRONG_ALPHA=0xB3;
  /** 底栏「剩…看完」。比纯白收一档，叠在加厚玻璃上仍要 ≥4.5:1。 */
  static final int REMAIN_TEXT=0xFFE7E2D6,WHITE=0xFFFFFFFF;
- /** 点开控件后，±N 只露这么久，之后正中只留播放盘。 */
+ /** 旧版短暂快进反馈的兼容时长；当前控制层显示时三个播放键一起出现。 */
  static final long SEEK_FLASH_MS=1600L;
  static final double MIN_CONTRAST=4.5;
 
@@ -32,9 +32,9 @@ final class PlayerGlassRules {
  /** 0.1.141 参考 Apple TV：底部右侧一排小图标常驻——上一集、下一集、音轨、字幕、选集、倍速；「更多」里不再重复这几项。 */
  static boolean showsOnBar(String action){return "prev".equals(action)||"next".equals(action)||"speed".equals(action)||"audio".equals(action)||"subtitle".equals(action)||"episodes".equals(action);}
  static boolean tuckedInMore(String action){return false;}
- /** 控件出现时整块画面压暗的不透明度（Apple TV 做法：不靠面板托字，整体压暗约 35%）。 */
- static final int DIM_ALPHA=0x59;
- /** 进度条下方的时间：已播「4:46」/「1:02:03」，剩余「−17:58」。 */
+ /** 控件出现时整块画面压暗的不透明度（Apple TV 做法：不靠面板托字，整体压暗约55%，保证白场中央白色控件对比度）。 */
+ static final int DIM_ALPHA=0x8C;
+ /** 已播时间格式「4:46」/「1:02:03」；播放栏剩余提示使用 remaining。 */
  static String clockText(long ms){long s=Math.max(0,ms)/1000,h=s/3600,m=(s%3600)/60,sec=s%60;return h>0?String.format(Locale.ROOT,"%d:%02d:%02d",h,m,sec):String.format(Locale.ROOT,"%d:%02d",m,sec);}
  static String minus(long posMs,long durMs){if(durMs<=0)return "";return "−"+clockText(Math.max(0,durMs-Math.max(0,posMs)));}
 

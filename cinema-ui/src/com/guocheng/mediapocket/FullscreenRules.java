@@ -11,8 +11,8 @@ final class FullscreenRules {
  static String next(String mode){return MODES[(index(mode)+1)%MODES.length];}
  /** 顶栏比例按钮单击：适应 → 拉伸 → 裁切 → 适应。16:9 等其它模式点一下回到适应。 */
  static String quickNext(String mode){if("fit".equals(mode))return "stretch";if("stretch".equals(mode))return "crop";return "fit";}
- /** 点比例按钮只切换模式，不在画面上写名称。null 表示静默。快进、亮度、双击恢复不走这里。 */
- static String cycleHud(String label){return null;}
+ /** 用户切换后给短反馈；自动恢复布局不调用，避免重复提示。 */
+ static String cycleHud(String label){if(label==null||label.trim().isEmpty())return null;int at=label.indexOf(" · ");return "画面比例 · "+(at<0?label:label.substring(0,at)).trim();}
  static int index(String mode){for(int i=0;i<MODES.length;i++)if(MODES[i].equals(mode))return i;return 0;}
  static float clamp(float v){if(Float.isNaN(v)||Float.isInfinite(v))return 1f;return Math.max(MIN,Math.min(MAX,v));}
  /** 原始像素：视频宽 / 适应屏幕后的宽，最多 1（不超出屏幕）。 */

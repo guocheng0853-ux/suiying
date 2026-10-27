@@ -2,10 +2,10 @@ package com.guocheng.mediapocket;
 import android.app.Activity;import android.content.res.ColorStateList;import android.graphics.*;import android.graphics.drawable.*;import android.view.*;import android.widget.*;import java.util.*;
 /**
  * 0.1.141 播放控制层，参考 Apple TV App 的播放页（按花叔Design 规范收敛，见 docs/design/huashu-audit-0141.md）：
- *  · 控件出现时整块画面压暗约 35%，不再用一块块玻璃面板托字；顶部、底部再各加一道渐暗。
+ *  · 控件出现时整块画面压暗约 55%，不再用一块块玻璃面板托字；顶部、底部再各加一道渐暗。
  *  · 顶部：左返回，右解码 / 比例 / 画中画 / 更多，全部是不带底的白色图标，可点区域 48dp。
  *  · 正中：后退 N 秒、播放 / 暂停、前进 N 秒三个白色图形，没有圆底，始终三个一起出现。
- *  · 底部（各播放器自己排）：左集名，右一排小图标；通栏进度条；进度条下左已播、右剩余「−17:58」。
+ *  · 底部（各播放器自己排）：左集名，右一排小图标；通栏进度条；进度条下左已播、右「剩…，…看完」。
  * 方法名沿用 0.1.139 / 0.1.140，调用方不用改；VLC 播放器原版只把点击交给 Button / SeekBar，可点控件一律是 Button。
  */
 final class PlayerGlass {
@@ -29,7 +29,7 @@ final class PlayerGlass {
  static void applySeek(Activity a,Button back,Button play,Button forward,boolean on){for(Button b:new Button[]{back,forward})if(b!=null&&b.getVisibility()!=View.VISIBLE)b.setVisibility(View.VISIBLE);}
 
  /** 整块画面压暗层，紧贴在视频画面之上、所有控件之下。videoChild 是根布局里装着视频画面的那个直接子 View。 */
- static View dim(Activity a,FrameLayout root,View videoChild){View found=root.findViewWithTag("mp-dim");if(found!=null)return found;View d=new View(a);d.setTag("mp-dim");d.setBackgroundColor(PlayerGlassRules.DIM_ALPHA<<24);d.setClickable(false);d.setFocusable(false);d.setVisibility(View.GONE);int at=videoChild==null?0:root.indexOfChild(videoChild)+1;root.addView(d,Math.max(0,Math.min(at,root.getChildCount())),new FrameLayout.LayoutParams(-1,-1));return d;}
+ static View dim(Activity a,FrameLayout root,View videoChild){View found=root.findViewWithTag("mp-dim");if(found!=null)return found;View d=new View(a);d.setTag("mp-dim");d.setBackgroundColor(PlayerGlassRules.DIM_ALPHA<<24);d.setClickable(false);d.setFocusable(false);d.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);d.setVisibility(View.GONE);int at=videoChild==null?0:root.indexOfChild(videoChild)+1;root.addView(d,Math.max(0,Math.min(at,root.getChildCount())),new FrameLayout.LayoutParams(-1,-1));return d;}
  static void showDim(View dim,boolean on){if(dim==null)return;int v=on?View.VISIBLE:View.GONE;if(dim.getVisibility()!=v)dim.setVisibility(v);}
 
  /** 正中三个键：后退 N 秒、播放 / 暂停、前进 N 秒，都是 Button。返回 {后退, 播放, 前进}。 */
