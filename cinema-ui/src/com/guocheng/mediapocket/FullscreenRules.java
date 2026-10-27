@@ -27,7 +27,19 @@ final class FullscreenRules {
  /** 顶栏比例按钮单击与长按面板同一顺序。 */
  static String quickNext(String mode){return next(mode);}
  /** 点比例按钮只切换模式，不在画面上写名称。null 表示静默。快进、亮度、双击恢复不走这里。 */
+ /** 点比例按钮只切换模式，不在画面上写名称（0.1.67 起的约定）。 */
  static String cycleHud(String label){return null;}
+ /** 0.1.153：某个模式在「完整画面」基础上的 {横向, 纵向} 缩放，用来判断两种模式对当前片子看起来是否一样。 */
+ static float[] look(String mode,int screenW,int screenH,int videoW,int videoH){
+  if("smart".equals(mode))return smart(screenW,screenH,videoW,videoH);
+  if("crop".equals(mode)&&screenW>0&&screenH>0&&videoW>0&&videoH>0){double s=(double)screenW/screenH,v=(double)videoW/videoH;float k=(float)Math.max(s/v,v/s);return new float[]{k,k};}
+  return new float[]{1f,1f};}
+ static boolean sameLook(float[] a,float[] b){return Math.abs(a[0]/b[0]-1)<0.03f&&Math.abs(a[1]/b[1]-1)<0.03f;}
+ /**
+  * 0.1.153：单击比例按钮跳过「看起来和现在一样」的模式，保证每点一次画面都有变化。
+  * 0.1.152 只剩三种后，智能满屏 / 完整画面 / 填满裁切对某些片子会两两重合（2.39:1 电影的智能满屏就是填满裁切；4:3 的智能满屏就是完整画面），点了像没反应。
+  */
+ static String visibleNext(String mode,int screenW,int screenH,int videoW,int videoH){String cur=mode(mode,true);float[] now=look(cur,screenW,screenH,videoW,videoH);String next=next(cur);for(int n=0;n<MODES.length-1;n++){if(!sameLook(look(next,screenW,screenH,videoW,videoH),now))return next;next=next(next);}return next(cur);}
  static int index(String mode){for(int i=0;i<MODES.length;i++)if(MODES[i].equals(mode))return i;return 0;}
  static float clamp(float v){if(Float.isNaN(v)||Float.isInfinite(v))return 1f;return Math.max(MIN,Math.min(MAX,v));}
  /** 原始像素：视频宽 / 适应屏幕后的宽，最多 1（不超出屏幕）。 */

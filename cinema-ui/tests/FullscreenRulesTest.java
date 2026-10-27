@@ -17,7 +17,12 @@ public class FullscreenRulesTest {
   check(FullscreenRules.zoomLabel(1f,1f).equals("1.0x")&&FullscreenRules.zoomLabel(1.2f,1f).equals("自定义")&&FullscreenRules.zoomLabel(1.5f,1.5f).equals("1.5x"),"zoom label");
   check(FullscreenRules.pipRatio(4000,100)<2.39f&&FullscreenRules.pipRatio(0,0)>1.7f,"pip ratio clamp");
   check(FullscreenRules.clamp(9f)==3f&&FullscreenRules.clamp(0.1f)==0.5f&&FullscreenRules.clamp(Float.NaN)==1f,"clamp");
-  check(FullscreenRules.cycleHud(FullscreenRules.LABELS[0])==null,"aspect button stays silent");
+  check(FullscreenRules.cycleHud(FullscreenRules.LABELS[0])==null,"aspect button stays silent (0.1.67)");
+  // 0.1.153 单击跳过看起来一样的模式
+  check(FullscreenRules.visibleNext("smart",3168,1440,1920,1080).equals("fit")&&FullscreenRules.visibleNext("fit",3168,1440,1920,1080).equals("crop")&&FullscreenRules.visibleNext("crop",3168,1440,1920,1080).equals("smart"),"16:9: all three look different");
+  check(FullscreenRules.visibleNext("smart",3168,1440,2390,1000).equals("fit")&&FullscreenRules.visibleNext("fit",3168,1440,2390,1000).equals("crop")&&FullscreenRules.visibleNext("crop",3168,1440,2390,1000).equals("fit"),"2.39:1: smart equals crop, so the button toggles between filled and full picture");
+  check(FullscreenRules.visibleNext("smart",3168,1440,1440,1080).equals("crop")&&FullscreenRules.visibleNext("crop",3168,1440,1440,1080).equals("smart"),"4:3: smart equals fit, so the button toggles smart and crop");
+  check(FullscreenRules.visibleNext("smart",0,0,0,0).equals("fit")&&FullscreenRules.visibleNext("stretch",3168,1440,1920,1080).equals("fit"),"unknown size falls back to the plain cycle");
   // 智能满屏：一加 13 横屏 3168×1440（约 2.2:1）
   float[] wide=FullscreenRules.smart(3168,1440,1920,1080);check(Math.abs(wide[1]-1/(1-FullscreenRules.SMART_CROP))<1e-3&&Math.abs(wide[0]-(3168/1440f)/(16/9f))<1e-3,"16:9 fills: uniform up to the crop cap, rest horizontal");
   check(wide[0]/wide[1]<=1+FullscreenRules.SMART_STRETCH+1e-4,"16:9 stretch stays under 10%");
