@@ -1,7 +1,7 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 当前候选版本 0.1.147（versionCode 148），合入C1–C4修复。本机原签名构建、93/93 JVM与APK校验已通过；OPD2401已完成C1–C4、正常开播、换集与409重试的合成复测。实测范围以`docs/handoff/handoff-0147-local-acceptance.md`为准，通过标准见`docs/handoff/acceptance-0147-pass-criteria.md`；0.1.146缺陷步骤参考`docs/handoff/continued-test-0146.md`。O1未修改，真实杜比/HDR/服务器转码未验收。
-> 后续7项恢复边界补测通过；分屏部分通过，早期失焦裁切观察O2待复现/归因，见`docs/handoff/continued-test-0147.md`。测试环境已清理、原始设置逐项一致、已安装APK哈希未变。
+> 当前版本0.1.149（code150）：基于main的0.1.148 / PR #31，修正ColorOS分屏中播放器强制横屏造成的错误全屏兼容边界。原签名、94/94 JVM、APK校验和16KB对齐通过，已覆盖安装OPD2401；分屏失焦、失败卡片、连续缩放、Media3分屏与播放中回全屏通过，设置与测试环境已恢复。见`docs/handoff/acceptance-0149.md`及其脱敏汇总。
+> 0.1.148已修复音频兼容/VLC入口、准备提示与O1侧栏返回。真实P5严格Media3声画已由用户在0.1.147独立样本确认，不能冒充0.1.149重测；真实转码受账号关闭权限限制，仍未通过成功转码验收。早期C1–C4及边界记录保留于0.1.147交接。
 > 本仓库是**公开**的：本文不含任何令牌、密码以外的秘密和服务器地址；签名文件不在仓库里（见第 5 节）。
 
 ## 协作约定
@@ -36,7 +36,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 93 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 94 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |

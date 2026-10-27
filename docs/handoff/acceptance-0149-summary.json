@@ -1,0 +1,40 @@
+{
+  "version": "0.1.149",
+  "code": 150,
+  "base_main": "19f135b",
+  "device": "OPD2401 / Android16",
+  "jvm_programs_passed": 94,
+  "apk_sha256": "69627087af25d3ee6c3560fb3518499c528fb14ec820232677802e33b8b6a626",
+  "original_signing_certificate_verified": true,
+  "zipalign_16k_verified": true,
+  "o2_split_resize_failure_card": "passed",
+  "media3_split_and_active_exit_to_fullscreen": "passed",
+  "tested_internal_candidate_dex_identical": true,
+  "native_focus_recovery_and_pip_same_code_candidate": "passed",
+  "inherited_0148_playback_fixes": "see acceptance-0149.md for exact scope",
+  "real_p5_user_confirmation": "0.1.147 strict Media3 path: normal audio and color; not a 0.1.149 subjective retest",
+  "real_server_transcode": "not passed: account disallows audio/video transcode and remux",
+  "cleanup": {
+    "passed": true,
+    "original_servers_preserved": 3,
+    "synthetic_history_removed": 1,
+    "original_playback_preferences_restored": true,
+    "system_settings_match_before": {
+      "rotation": true,
+      "font_scale": true,
+      "density": true,
+      "input_method": true,
+      "enabled_input_methods": true,
+      "show_ime_with_hard_keyboard": true,
+      "night": true,
+      "reverse": true
+    },
+    "temporary_tool_uninstalled": true,
+    "own_forward_and_reverse_removed": true,
+    "fixture_servers_stopped": true,
+    "installed_apk_sha256": "69627087af25d3ee6c3560fb3518499c528fb14ec820232677802e33b8b6a626",
+    "version": "0.1.149",
+    "code": 150,
+    "phone_not_touched": true
+  }
+}

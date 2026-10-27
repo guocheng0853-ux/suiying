@@ -2,6 +2,8 @@ package com.guocheng.mediapocket;
 public class PlaybackOrientationRulesTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
  public static void main(String[]args){
+  check(PlaybackOrientation.windowRequest(true,6)==-1&&PlaybackOrientation.windowRequest(true,7)==-1,"split windows follow system geometry for both landscape and portrait video");
+  check(PlaybackOrientation.windowRequest(false,6)==6&&PlaybackOrientation.windowRequest(false,1)==1,"fullscreen keeps video or manual orientation");
   check(PlaybackOrientation.playback()==6,"entering playback requests sensor landscape");
   check(PlaybackOrientation.remember(-1)==-1,"unspecified host orientation is restored");
   check(PlaybackOrientation.remember(6)==-1,"recreated player does not treat sensor landscape as the app orientation");

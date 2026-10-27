@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.148",
+  "ui_version": "0.1.149",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -22,7 +22,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 9259,
   "dex_files": 3,
-  "main_version_code": 149,
+  "main_version_code": 150,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
@@ -43,7 +43,11 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "signed_apk_sha256": "bf59c3c66394360043d2f0a329ac560407850173bd9b06c533e5a5dff7d7d82d",
-  "device_test_scope": "OPD2401 Android16: first-frame prepare notice cleanup; explicit VLC with 12s resume and same-item reconnect progress; AC3 synthetic fallback; three panel Back cases, repeated edge-back gesture, then exit. O2 split follow-up pending.",
-  "playback_backend_patch": "two creation-time selections verified; unchanged register count and code units; other instructions preserved"
+  "signed_apk_sha256": "69627087af25d3ee6c3560fb3518499c528fb14ec820232677802e33b8b6a626",
+  "device_test_scope": "OPD2401 Android16: split initial focus loss, terminal card, 1090/1490 resize, no unfocused refresh, Media3 split and active exit to fullscreen; inherited 0148 audio/Back validation and identical-DEX candidate PiP checks documented separately",
+  "device_acceptance_record": "docs/handoff/acceptance-0149.md",
+  "device_cleanup_verified": true,
+  "original_servers_preserved": 3,
+  "phone_tested_this_release": false,
+  "playback_backend_patch": "two creation-time selections verified with unchanged register count/code units and all other instructions preserved"
 }
