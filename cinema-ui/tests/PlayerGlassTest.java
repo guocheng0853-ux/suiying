@@ -46,6 +46,12 @@ public final class PlayerGlassTest {
   check(media.contains("\"音轨\"")&&media.contains("\"字幕\"")&&media.contains("\"选集\"")&&media.contains("上一集"),"media3 still reaches those actions");
   check(overlay.contains("mp-actions")&&overlay.contains("mp-slot-")&&!overlay.contains("labels.add(\"音轨\")")&&!overlay.contains("labels.add(\"字幕\")"),"0.1.141 Apple TV bar: audio, subtitles, episodes sit on the bottom row and are not repeated in more");
   check(!glass.contains("MONOSPACE")&&glass.contains("class SkipIcon")&&glass.contains("mp-dim"),"0.1.141 center keys are ringed skip glyphs over a dimmed frame");
+  String m3=new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("src/com/guocheng/mediapocket/Media3Controls.java")),"UTF-8");
+  check(!PlayerGlassRules.SKIP_KEYS&&glass.contains("if(!PlayerGlassRules.SKIP_KEYS)for(int i:new int[]{0,2})"),"0.1.151 center shows play/pause only; double tap seeks");
+  check(!PlayerGlassRules.speedAccent(1f)&&PlayerGlassRules.speedAccent(1.25f)&&PlayerGlassRules.speedAccent(0.9f),"0.1.151 speed label is accent only when not 1.0x");
+  check(String.join(",",PlayerGlassRules.BAR_ORDER).equals("subtitle,audio,episodes,next,rate"),"0.1.151 bottom order");
+  check(overlay.contains("\"mp-slot-\"+PlayerOverlayRules.SUBTITLE,\"mp-slot-\"+PlayerOverlayRules.AUDIO,\"mp-slot-\"+PlayerOverlayRules.EPISODES,\"mp-next\",\"mp-fixed-rate\"")&&overlay.contains("labels.add(\"截图\")")&&overlay.contains("decoder.setVisibility(View.GONE)"),"0.1.151 VLC: decoder and screenshot live in more; bar order subtitle-audio-episodes-next-rate");
+  check(!m3.contains("\"上一集\"")&&!m3.contains("button(\"DV\"")&&m3.contains("CinemaMenu.item(\"截图\"")&&m3.contains("side.addView(icon(PlayerIcons.LOCK"),"0.1.151 Media3: lock on the left rail, screenshot in more, no DV chip or previous key");
   System.out.println("PASS: player glass remaining copy, bright-scene opacity, 48dp targets, seek-key flash, shared bar language, gold accent.");
  }
 }

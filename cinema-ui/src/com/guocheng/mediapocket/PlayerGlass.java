@@ -26,7 +26,7 @@ final class PlayerGlass {
  // 旧的「±N 短暂露面」不再需要：Apple TV 三个键始终一起出现
  static void flashSeek(View row){}
  static boolean seekVisible(View row){return true;}
- static void applySeek(Activity a,Button back,Button play,Button forward,boolean on){for(Button b:new Button[]{back,forward})if(b!=null&&b.getVisibility()!=View.VISIBLE)b.setVisibility(View.VISIBLE);}
+ static void applySeek(Activity a,Button back,Button play,Button forward,boolean on){int v=PlayerGlassRules.SKIP_KEYS?View.VISIBLE:View.GONE;for(Button b:new Button[]{back,forward})if(b!=null&&b.getVisibility()!=v)b.setVisibility(v);}
 
  /** 整块画面压暗层，紧贴在视频画面之上、所有控件之下。videoChild 是根布局里装着视频画面的那个直接子 View。 */
  static View dim(Activity a,FrameLayout root,View videoChild){View found=root.findViewWithTag("mp-dim");if(found!=null)return found;View d=new View(a);d.setTag("mp-dim");d.setBackgroundColor(PlayerGlassRules.DIM_ALPHA<<24);d.setClickable(false);d.setFocusable(false);d.setVisibility(View.GONE);int at=videoChild==null?0:root.indexOfChild(videoChild)+1;root.addView(d,Math.max(0,Math.min(at,root.getChildCount())),new FrameLayout.LayoutParams(-1,-1));return d;}
@@ -37,9 +37,11 @@ final class PlayerGlass {
   View found=host.findViewWithTag("mp-center");LinearLayout row;
   if(found instanceof LinearLayout)row=(LinearLayout)found;else{row=new LinearLayout(a);row.setTag("mp-center");row.setGravity(Gravity.CENTER);row.setOrientation(LinearLayout.HORIZONTAL);
    row.addView(skipKey(a,false,seconds,back),centerLp(a,CENTER_DP,true));
-   Button p=new Button(a);p.setTag("mp-center-play");p.setAllCaps(false);p.setText("");p.setMinWidth(0);p.setMinimumWidth(0);p.setMinHeight(0);p.setMinimumHeight(0);p.setContentDescription("播放或暂停");p.setOnClickListener(play);p.setStateListAnimator(null);p.setBackground(plain(a));row.addView(p,centerLp(a,PLAY_DP,true));
+   Button p=new Button(a);p.setTag("mp-center-play");p.setAllCaps(false);p.setText("");p.setMinWidth(0);p.setMinimumWidth(0);p.setMinHeight(0);p.setMinimumHeight(0);p.setContentDescription("播放或暂停");p.setOnClickListener(play);p.setStateListAnimator(null);p.setBackground(plain(a));row.addView(p,centerLp(a,PLAY_DP,false));
    row.addView(skipKey(a,true,seconds,forward),centerLp(a,CENTER_DP,false));
    host.addView(row,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));}
+  // 0.1.151：双击左右三分之一已经能跳秒，正中只留播放 / 暂停；两颗跳秒键保留对象（调用方按下标取），但不显示
+  if(!PlayerGlassRules.SKIP_KEYS)for(int i:new int[]{0,2}){View k=row.getChildAt(i);if(k!=null&&k.getVisibility()!=View.GONE)k.setVisibility(View.GONE);}
   return new Button[]{(Button)row.getChildAt(0),(Button)row.getChildAt(1),(Button)row.getChildAt(2)};}
  static Button skipKey(Activity a,boolean forward,int seconds,View.OnClickListener l){Button b=new Button(a);b.setAllCaps(false);b.setText("");b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setContentDescription((forward?"前进 ":"后退 ")+seconds+" 秒");b.setOnClickListener(l);b.setStateListAnimator(null);b.setBackground(plain(a));
   int s=dp(a,SKIP_ICON_DP);SkipIcon icon=new SkipIcon(forward,seconds,a.getResources().getDisplayMetrics().density);icon.setBounds(0,0,s,s);b.setCompoundDrawables(null,icon,null,null);int pad=Math.max(0,(dp(a,CENTER_DP)-s)/2);b.setPadding(0,pad,0,0);b.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.TOP);return b;}

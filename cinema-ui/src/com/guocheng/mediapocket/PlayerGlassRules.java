@@ -2,6 +2,14 @@ package com.guocheng.mediapocket;
 import java.util.*;
 /** 0.1.140 播放器玻璃、剩余时间和底栏取舍的纯逻辑（不依赖 Android，便于测试）。 */
 final class PlayerGlassRules {
+ /** 0.1.151：正中不再显示 ±N 跳秒键（双击左右三分之一跳秒）。 */
+ static final boolean SKIP_KEYS=false;
+ /** 原速时倍速标签的白（72%）。 */
+ static final int QUIET_TEXT=0xB8FFFFFF;
+ /** 倍速标签：1.0× 用普通白字，改过倍速才用强调色，提醒「现在不是原速」。 */
+ static boolean speedAccent(float speed){return Math.abs(speed-1f)>0.001f;}
+ /** 底栏图标顺序：字幕、音轨、选集、下一集，最后是倍速；上一集收进选集面板。 */
+ static final String[] BAR_ORDER={"subtitle","audio","episodes","next","rate"};
  private PlayerGlassRules(){}
  /** 播放相关可点区域。Android 规范是 48dp，旧的 40 / 44 不够。 */
  static final int TOUCH_DP=48;

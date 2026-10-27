@@ -13,7 +13,7 @@ final class PlayerTheme {
  static final int ACCENT_DIM=0x33d97757;
  static final int SCRIM=0x66000000;
  static final int TEXT_SECONDARY=0xffb0aea5;
- static final int TRACK=0x33FFFFFF,TRACK_BUFFER=0x66FFFFFF,TRACK_PLAYED=0xffe6a58d;
+ static final int TRACK=0x33FFFFFF,TRACK_BUFFER=0x80FFFFFF,TRACK_PLAYED=0xffe6a58d;
  static final int MARK_INTRO=0xcc6eb6e0,MARK_CREDITS=0xccd0bfff,MARK_CHAPTER=0xeeffffff;
  static final int RADIUS_PANEL_DP=20,RADIUS_CARD_DP=14,RADIUS_MENU_ROW_DP=12,RADIUS_HUD_DP=12;
  static final int MENU_WIDTH_MAX_DP=360;
