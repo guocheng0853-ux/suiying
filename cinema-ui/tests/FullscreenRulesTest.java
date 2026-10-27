@@ -1,5 +1,31 @@
 package com.guocheng.mediapocket;
 public class FullscreenRulesTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
- public static void main(String[]args){check(FullscreenRules.mode("crop",false).equals("stretch"),"upgrade stops previous crop mode");check(FullscreenRules.mode("fit",false).equals("stretch"),"requested full-frame default");check(FullscreenRules.zoom("stretch",1.35f)==1f,"old pinch zoom must not crop full frame");check(FullscreenRules.mode("fit",true).equals("fit"),"later explicit original-ratio selection retained");check(FullscreenRules.zoom("fit",1.25f)==1.25f,"manual zoom in other modes retained");check(FullscreenRules.mode("invalid",true).equals("stretch"),"invalid mode defaults safely");check(FullscreenRules.mode("original",true).equals("original"),"original mode remembered");check(FullscreenRules.layoutMode("original").equals("fit")&&FullscreenRules.layoutMode("crop").equals("crop"),"layout mapping");check(FullscreenRules.originalScale(1920,1280)>0.66f&&FullscreenRules.originalScale(1000,1920)==1f,"original pixel scale capped");float[] h=FullscreenRules.axisScale(300,200,10,10);check(h[0]==1.5f&&h[1]==1f,"horizontal pinch only X");float[] v=FullscreenRules.axisScale(10,10,150,100);check(v[0]==1f&&v[1]==1.5f,"vertical pinch only Y");float[] dg=FullscreenRules.axisScale(240,200,120,100);check(dg[0]==1.2f&&dg[1]==1.2f,"diagonal both");check(FullscreenRules.zoomLabel(1f,1f).equals("1.0x")&&FullscreenRules.zoomLabel(1.2f,1f).equals("自定义")&&FullscreenRules.zoomLabel(1.5f,1.5f).equals("1.5x"),"zoom label");check(FullscreenRules.pipRatio(4000,100)<2.39f&&FullscreenRules.pipRatio(0,0)>1.7f,"pip ratio clamp");check(FullscreenRules.ICONS.length==FullscreenRules.MODES.length,"icons");check(FullscreenRules.clamp(9f)==3f&&FullscreenRules.clamp(0.1f)==0.5f&&FullscreenRules.clamp(Float.NaN)==1f,"clamp");check(FullscreenRules.MODES.length==FullscreenRules.LABELS.length,"labels");check(FullscreenRules.next("fit").equals("crop")&&FullscreenRules.next("original").equals("fit"),"cycle order");check(FullscreenRules.cycleHud(FullscreenRules.LABELS[0])==null&&FullscreenRules.cycleHud("16:9")==null&&FullscreenRules.cycleHud("填满屏幕 · 保持比例，裁切边缘")==null,"aspect button does not announce the mode");System.out.println("PASS: zoom label, PiP ratio, free two-axis pinch, cycle order, six aspect modes, axis-independent pinch, clamp, full-frame default migration, old crop/pinch reset, subsequent explicit aspect choice retained.");}
+ public static void main(String[]args){
+  // 0.1.152 只留三种画面模式，旧设置（拉伸、16:9、4:3、原始、无效值）读到时按智能满屏处理
+  check(String.join(",",FullscreenRules.MODES).equals("smart,fit,crop"),"three modes only");
+  check(FullscreenRules.MODES.length==FullscreenRules.LABELS.length&&FullscreenRules.ICONS.length==FullscreenRules.MODES.length,"labels and icons");
+  for(String old:new String[]{"stretch","16:9","4:3","original","invalid",null})check(FullscreenRules.mode(old,true).equals("smart")&&FullscreenRules.mode(old,false).equals("smart"),"legacy "+old+" becomes smart");
+  check(FullscreenRules.mode("fit",true).equals("fit")&&FullscreenRules.mode("crop",false).equals("crop"),"explicit fit / crop kept");
+  check(FullscreenRules.layoutMode("smart").equals("fit")&&FullscreenRules.layoutMode("fit").equals("fit")&&FullscreenRules.layoutMode("crop").equals("crop")&&FullscreenRules.layoutMode("stretch").equals("fit"),"layout mapping");
+  check(FullscreenRules.next("smart").equals("fit")&&FullscreenRules.next("fit").equals("crop")&&FullscreenRules.next("crop").equals("smart")&&FullscreenRules.quickNext("stretch").equals("fit"),"cycle order");
+  check(FullscreenRules.zoom("fit",1.25f)==1.25f,"manual zoom retained");
+  check(FullscreenRules.originalScale(1920,1280)>0.66f&&FullscreenRules.originalScale(1000,1920)==1f,"original pixel scale capped");
+  float[] h=FullscreenRules.axisScale(300,200,10,10);check(h[0]==1.5f&&h[1]==1f,"horizontal pinch only X");
+  float[] v=FullscreenRules.axisScale(10,10,150,100);check(v[0]==1f&&v[1]==1.5f,"vertical pinch only Y");
+  float[] dg=FullscreenRules.axisScale(240,200,120,100);check(dg[0]==1.2f&&dg[1]==1.2f,"diagonal both");
+  check(FullscreenRules.zoomLabel(1f,1f).equals("1.0x")&&FullscreenRules.zoomLabel(1.2f,1f).equals("自定义")&&FullscreenRules.zoomLabel(1.5f,1.5f).equals("1.5x"),"zoom label");
+  check(FullscreenRules.pipRatio(4000,100)<2.39f&&FullscreenRules.pipRatio(0,0)>1.7f,"pip ratio clamp");
+  check(FullscreenRules.clamp(9f)==3f&&FullscreenRules.clamp(0.1f)==0.5f&&FullscreenRules.clamp(Float.NaN)==1f,"clamp");
+  check(FullscreenRules.cycleHud(FullscreenRules.LABELS[0])==null,"aspect button stays silent");
+  // 智能满屏：一加 13 横屏 3168×1440（约 2.2:1）
+  float[] wide=FullscreenRules.smart(3168,1440,1920,1080);check(Math.abs(wide[1]-1/(1-FullscreenRules.SMART_CROP))<1e-3&&Math.abs(wide[0]-(3168/1440f)/(16/9f))<1e-3,"16:9 fills: uniform up to the crop cap, rest horizontal");
+  check(wide[0]/wide[1]<=1+FullscreenRules.SMART_STRETCH+1e-4,"16:9 stretch stays under 10%");
+  float[] scope=FullscreenRules.smart(3168,1440,2390,1000);check(scope[0]==scope[1]&&scope[0]>1f&&scope[0]<1.1f,"2.39:1 film: crop the sides only, no stretch");
+  float[] old=FullscreenRules.smart(3168,1440,1440,1080);check(old[0]==1f&&old[1]==1f,"4:3 is too far: keep full picture, do not distort");
+  float[] same=FullscreenRules.smart(3168,1440,3168,1440);check(same[0]==1f&&same[1]==1f,"native ratio untouched");
+  check(FullscreenRules.smart(0,0,1920,1080)[0]==1f,"unknown size");
+  int[] box=Media3ControlRules.box(3168,1440,1920,1080,"smart");check(box[0]>=3168&&box[1]>=1440&&box[1]<=1440*1.14,"Media3 smart box covers the screen with bounded crop");
+  System.out.println("PASS: three aspect modes, legacy modes to smart fill, smart fill for 2.2:1 screens, pinch axes, pip clamp.");
+ }
 }

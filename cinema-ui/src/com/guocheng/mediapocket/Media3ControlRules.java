@@ -5,6 +5,7 @@ final class Media3ControlRules {
   if(parentW<=0||parentH<=0)return new int[]{0,0};
   if(videoW<=0||videoH<=0||"stretch".equals(mode))return new int[]{parentW,parentH};
   if("original".equals(mode)){double scale=Math.min(1,Math.min(parentW/(double)videoW,parentH/(double)videoH));return new int[]{Math.max(1,(int)Math.round(videoW*scale)),Math.max(1,(int)Math.round(videoH*scale))};}
+  if("smart".equals(mode)){int[] fit=box(parentW,parentH,videoW,videoH,"fit");float[] f=FullscreenRules.smart(parentW,parentH,videoW,videoH);return new int[]{Math.max(1,Math.round(fit[0]*f[0])),Math.max(1,Math.round(fit[1]*f[1]))};}
   double ratio="16:9".equals(mode)?16.0/9:"4:3".equals(mode)?4.0/3:videoW/(double)videoH;
   boolean crop="crop".equals(mode);double width=parentW,height=width/ratio;
   if(crop?height<parentH:height>parentH){height=parentH;width=height*ratio;}

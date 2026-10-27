@@ -28,7 +28,7 @@ final class DebugLog {
  static String report(Context c){
   install(c);SharedPreferences p=c.getSharedPreferences("data",0);StringBuilder s=new StringBuilder();
   s.append("随影调试信息 · ").append(stamp()).append("\n版本：").append(version(c)).append("\n设备：").append(Build.MANUFACTURER).append(' ').append(Build.MODEL).append(" · Android ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n");
-  s.append("开关：多线程加速=").append(p.getBoolean("accelerate.v1",true)).append(" · P2P 加速=").append(p.getBoolean("torrentBoost.v1",true)).append(" · 比例=").append(p.getString("aspectMode","fit")).append(" · 倍速=").append(p.getFloat("playbackSpeed",1f)).append(" · 字幕偏好=").append(p.getString("subtitleLanguage","zho")).append(" · 自动换源=").append(p.getBoolean("autoSwitch",true)).append("\n");
+  s.append("开关：多线程加速=").append(p.getBoolean("accelerate.v1",true)).append(" · P2P 加速=").append(p.getBoolean("torrentBoost.v1",true)).append(" · 比例=").append(p.getString("aspectMode","smart")).append(" · 倍速=").append(p.getFloat("playbackSpeed",1f)).append(" · 字幕偏好=").append(p.getString("subtitleLanguage","zho")).append(" · 自动换源=").append(p.getBoolean("autoSwitch",true)).append("\n");
   s.append("首页来源：").append(p.getString("fusion.homeProvider","?")).append(" · 影视仓接口已配置=").append(!p.getString("tvbox.active","").isEmpty()).append("\n\n");
   s.append("【崩溃记录】\n").append(tail("crash.log",12000)).append("\n\n【运行日志（最近）】\n").append(tail("events.log",16000)).append("\n\n【播放地址检查】\n").append(PlaybackCheck.report(c)).append("\n\n【字幕诊断】\n").append(sanitize(p.getString("subtitleReport","（无）")));
   return s.toString();
