@@ -137,7 +137,7 @@
    - 跑 M1 / L1 的验收，M2 视片源条件。
    - 把实际做了什么写进验证记录，不要把「目录加载成功」当成播放成功。
 5. 推送前：
-   - `git grep -nE "guocheng126|490cd2aca5|lijunfei|李俊飞|69yun69"` 必须为空。
+   - 按本机私有清单做敏感词 `git grep`，结果必须为空（清单本身不写进公开仓库）。
    - 不提交 `signing.jks`、真实 `fusion-default.json`、服务器 IP、Whisper 令牌、本机用户路径。
    - 直接提交到 `main`，提交身份为 Ethan。
 

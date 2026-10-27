@@ -204,6 +204,8 @@ final class HomeRules {
  }
  /** 从播放页回到已经画好的首页时，不要再走 home() 重拉整页。 */
  static boolean keepOnResume(boolean homeVisible,int childCount){return homeVisible&&childCount>0;}
+ /** 0.1.150：从播放器回来时，首页或详情页（含 Stremio 电影详情）都保持原样，不被基类 onResume 刷回首页。 */
+ static boolean keepOnResume(boolean homeVisible,boolean detailVisible,int childCount){return (homeVisible||detailVisible)&&childCount>0;}
  /** 首页分区默认都显示。hidden 是逗号分隔的分区 id，出现就隐藏。 */
  static boolean sectionShown(String hidden,String key){if(key==null||key.isEmpty()||hidden==null||hidden.isEmpty())return true;for(String part:hidden.split(","))if(key.equals(part))return false;return true;}
  static String toggleSection(String hidden,String key){

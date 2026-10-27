@@ -8,6 +8,14 @@ public class SourceCardRulesTest {
   check(SourceCardRules.best(all,"auto")==1,"best playable 4K picked, unplayable 4K DV skipped");
   JSONArray lang=new JSONArray().put(s("A","Movie 1080p English","https://a/1")).put(s("B","Movie 1080p 国语 中字","https://a/2"));
   check(SourceCardRules.best(lang,"zh")==1,"audio preference breaks ties");check(SourceCardRules.best(lang,"en")==0,"english pref");
+  JSONArray dv=new JSONArray().put(s("P5","Movie 2160p DV HEVC","https://a/p5.mkv")).put(s("P8","Movie 2160p DV HDR10+ HEVC","https://a/p8.mkv")).put(s("FHD","Movie 1080p x264","https://a/fhd.mp4"));
+  check(SourceCardRules.best(dv,"auto")==1,"DV with HDR10 layer stays a top 4K pick");
+  JSONArray p5=new JSONArray().put(s("P5","Movie 2160p DoVi HEVC","https://a/p5.mkv")).put(s("FHD","Movie 1080p x264","https://a/fhd.mp4"));
+  check(SourceCardRules.best(p5,"auto")==1,"pure DV (likely P5) ranks after any other playable source on VLC");
+  check(SourceCardRules.best(new JSONArray().put(s("P5","Movie 2160p DV","https://a/p5.mkv")),"auto")==0,"pure DV still picked when it is the only one");
+  check(SourceCardRules.poolSize(0)==1&&SourceCardRules.poolSize(5)==5&&SourceCardRules.poolSize(30)==SourceCardRules.MAX_PARALLEL,"parallel queries match addon count");
+  check(SourceCardRules.FETCH_MS<=8000,"one addon waits at most 8 s");
+  Object mine=new Object(),other=new Object();check(SourceCardRules.replaceAuto(null,null)&&SourceCardRules.replaceAuto(mine,mine)&&!SourceCardRules.replaceAuto(other,mine),"progressive pick never overrides a manual choice");
   check(SourceCardRules.best(new JSONArray(),"auto")==-1,"none");check(SourceCardRules.best(null,"auto")==-1,"null");
   check(SourceCardRules.sourceLine(null,"loading",0,false).equals("正在查找片源…"),"loading");check(SourceCardRules.sourceLine(null,"none",0,false).equals("暂无片源"),"none text");check(SourceCardRules.sourceLine(null,"loading",0,true).equals("先选择剧集"),"series without episode");
   JSONObject b=all.getJSONObject(1).put("behaviorHints",new JSONObject().put("filename","Movie.2160p.HDR.mkv"));String line=SourceCardRules.sourceLine(b,"ready",120,false);

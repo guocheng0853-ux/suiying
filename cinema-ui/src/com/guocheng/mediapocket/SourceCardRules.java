@@ -9,7 +9,15 @@ final class SourceCardRules {
   case "yue":return n.contains("粤")||n.contains("cantonese")||n.contains("🇭🇰");
   case "en":return n.contains("english")||n.contains(" eng ")||n.contains("🇬🇧")||n.contains("🇺🇸");default:return false;}}
  /** 推荐分：在 StreamInfo.score 基础上，命中音轨语言偏好加分（低于分辨率档差，高于 HDR）。 */
- static int score(JSONObject s,String audioPref){StreamInfo i=StreamInfo.parse(s);int v=i.score(StremioStreams.playable(s));if(!"auto".equals(audioPref)&&speaks(StreamInfo.text(s),audioPref))v+=80;return v;}
+ static int score(JSONObject s,String audioPref){StreamInfo i=StreamInfo.parse(s);int v=i.score(StremioStreams.playable(s));if(!"auto".equals(audioPref)&&speaks(StreamInfo.text(s),audioPref))v+=80;if(vlcRisky(i))v-=VLC_RISK;return v;}
+ /** 只标了杜比视界、没有 HDR10 兜底层（多为 Profile 5）：Stremio 片源走 VLC，会发紫发绿。排在其他所有可播放片源之后，但仍可播放、只剩它时仍会选它。 */
+ static final int VLC_RISK=500_000;
+ static boolean vlcRisky(StreamInfo i){return "DV".equals(i.hdr);}
+ /** 单个插件最长等待；并行数与插件数一致（上限 8）。 */
+ static final int FETCH_MS=8000,MAX_PARALLEL=8;
+ static int poolSize(int addons){return Math.max(1,Math.min(MAX_PARALLEL,addons));}
+ /** 渐进推荐只替换自己上次自动选的；用户手动选过（对象不同）就不动。 */
+ static boolean replaceAuto(Object current,Object lastAuto){return current==null||current==lastAuto;}
  /** 返回最佳片源下标；没有可播放条目时返回 -1。 */
  static int best(JSONArray all,String audioPref){int at=-1,top=Integer.MIN_VALUE;if(all==null)return -1;for(int i=0;i<all.length();i++){JSONObject s=all.optJSONObject(i);if(s==null||!StremioStreams.playable(s))continue;int v=score(s,audioPref);if(v>top){top=v;at=i;}}return at;}
  static String name(JSONObject s){StreamInfo i=StreamInfo.parse(s);if(!i.file.isEmpty())return i.file;String t=s.optString("title");if(t.isEmpty())t=s.optString("description");if(t.isEmpty())t=s.optString("name","片源");return t.split("\n")[0].trim();}
