@@ -6,6 +6,7 @@ import android.app.Activity;import android.content.*;import android.content.pm.A
  * TrueHD / DTS 音轨系统可能解不了（没声音时改用 VLC 或服务器转码）。
  */
 public final class SystemPlayerActivity extends Activity {
+ android.app.AlertDialog prepareNotice;
  Media3VideoView video;Media3Controls chrome;FrameLayout root;LinearLayout top,bottom;JSONObject meta=new JSONObject();String name="",id="",type="movie";TextView wait;long opened;boolean rendered,asked;JSONObject source;String watch,title,serverId,item,media,session;long start;boolean terminal,failed,changing;boolean started,reportedStart,resumed,resumeAfterPause;Runnable autoFailure;int recoveryWhat;String recoveryError="";final Handler tick=new Handler(Looper.getMainLooper());
  final Runnable save=new Runnable(){public void run(){persist(false);if(video!=null&&video.isPlaying())report("progress");tick.postDelayed(this,10000);}};
 
@@ -25,10 +26,10 @@ public final class SystemPlayerActivity extends Activity {
   wait=new TextView(this);wait.setTextColor(0xddffffff);wait.setTextSize(14);wait.setGravity(Gravity.CENTER);wait.setText("内置播放器正在准备…");root.addView(wait,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));
   chrome=new Media3Controls(this,root);String mode=PlaybackPrefs.rememberAspect(getSharedPreferences("data",0))?getSharedPreferences("data",0).getString("aspectMode","fit"):"fit";video.aspect(saved==null?mode:saved.getString("aspect",mode));if(saved!=null)video.zoom(saved.getFloat("zoom",1f));root.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,or,ob)->video.fit());
   tick.post(watchdog);
-  video.setOnInfoListener((mp,what,extra)->{if(what==3){rendered=true;wait.setVisibility(View.GONE);DebugLog.event("系统解码","出画面 · 用时 "+(SystemClock.elapsedRealtime()-opened)/100/10.0+" 秒");}else if(what==701){wait.setText("缓冲中…");wait.setVisibility(View.VISIBLE);}else if(what==702){terminal=false;if(rendered)wait.setVisibility(View.GONE);}else if(what==804||what==805){DebugLog.event("系统解码","音视频轨不支持 · what="+what);}return false;});
+  video.setOnInfoListener((mp,what,extra)->{if(what==3){rendered=true;dismissPrepareNotice();wait.setVisibility(View.GONE);DebugLog.event("系统解码","出画面 · 用时 "+(SystemClock.elapsedRealtime()-opened)/100/10.0+" 秒");}else if(what==701){wait.setText("缓冲中…");wait.setVisibility(View.VISIBLE);}else if(what==702){terminal=false;if(rendered)wait.setVisibility(View.GONE);}else if(what==804||what==805){DebugLog.event("系统解码","音视频轨不支持 · what="+what);}return false;});
   video.setOnPreparedListener(mp->{mp.setOnVideoSizeChangedListener((p2,w,h)->DebugLog.event("系统解码","画面 "+w+"×"+h));DebugLog.event("系统解码","准备完成 · 用时 "+(SystemClock.elapsedRealtime()-opened)/100/10.0+" 秒 · 画面 "+mp.getVideoWidth()+"×"+mp.getVideoHeight());if(mp.getVideoWidth()==0){wait.setText("只解出了声音，没有画面");}if(start>10000&&!started)video.seekTo((int)Math.min(Integer.MAX_VALUE,start));started=true;if(resumed)video.start();else resumeAfterPause=true;report("start");tick.removeCallbacks(save);tick.postDelayed(save,10000);String remembered=ExternalSubtitleStore.remembered(getSharedPreferences("data",0),id);if(!remembered.isEmpty()&&!PlaybackPrefs.subtitlesOff(getSharedPreferences("data",0))&&!getSharedPreferences("data",0).getBoolean("subtitleDisabled:"+id,false))loadSubtitleFile(remembered,"已记住的字幕");});
   video.setOnCompletionListener(mp->{terminal=true;persist(true);if(!chrome.next.end())finish();});
-  video.setOnErrorListener((mp,what,extra)->{failed=true;asked=true;tick.removeCallbacks(watchdog);wait.setVisibility(View.GONE);String shown=HttpRange.SKIP_MESSAGE.equals(mp.failure)?mp.failure:Media3ErrorRules.message(what,extra);DebugLog.event("系统解码","播放失败 · what="+what+" extra="+extra);Runnable fallback=()->playbackError(what,extra,shown);autoFailure=fallback;recoveryWhat=what;recoveryError="HTTP "+extra+" "+mp.failure;wait.setText(shown);wait.setVisibility(View.VISIBLE);recoverOrShowError();return true;});
+  video.setOnErrorListener((mp,what,extra)->{failed=true;asked=true;dismissPrepareNotice();tick.removeCallbacks(watchdog);wait.setVisibility(View.GONE);String shown=HttpRange.SKIP_MESSAGE.equals(mp.failure)?mp.failure:Media3ErrorRules.message(what,extra);DebugLog.event("系统解码","播放失败 · what="+what+" extra="+extra);Runnable fallback=()->playbackError(what,extra,shown);autoFailure=fallback;recoveryWhat=what;recoveryError="HTTP "+extra+" "+mp.failure;wait.setText(shown);wait.setVisibility(View.VISIBLE);recoverOrShowError();return true;});
   try{String url=stream.optString("url");DebugLog.event("系统解码","打开 · "+LinkProbe.host(url));video.setVideoURI(Uri.parse(url),headers(stream));}catch(Exception e){Toast.makeText(this,"无法打开：" + e.getClass().getSimpleName(),Toast.LENGTH_LONG).show();finish();}
  }
  /** Resume an interrupted network refresh only after this window is active again. */
@@ -38,17 +39,19 @@ public final class SystemPlayerActivity extends Activity {
  final Runnable watchdog=new Runnable(){public void run(){if(isFinishing())return;long s=(SystemClock.elapsedRealtime()-opened)/1000;
   if(!rendered&&wait.getVisibility()==View.VISIBLE&&!started)wait.setText("内置播放器正在准备… "+s+" 秒\n大文件第一次打开可能要十几秒");
   if(!asked&&!rendered&&(s>=20||(started&&video!=null&&video.isPlaying()&&video.getCurrentPosition()>8000))){asked=true;DebugLog.event("系统解码","无画面 · "+s+" 秒 · 已准备="+started+" · 位置="+(video==null?-1:video.getCurrentPosition()));
-   new android.app.AlertDialog.Builder(SystemPlayerActivity.this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("内置播放尚未显示画面").setMessage(started?"声音在走但没有画面，手机自带解码器可能不支持这个片源的画面格式。":"等了 "+s+" 秒还没准备好，可能是片源太大或格式不受支持。").setPositiveButton("改用 VLC",(d,w)->toVlc()).setNeutralButton("用外部播放器打开",(d,w)->external()).setNegativeButton("再等等",null).show();}
+   prepareNotice=new android.app.AlertDialog.Builder(SystemPlayerActivity.this,android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("内置播放尚未显示画面").setMessage(started?"声音在走但没有画面，手机自带解码器可能不支持这个片源的画面格式。":"等了 "+s+" 秒还没准备好，可能是片源太大或格式不受支持。").setPositiveButton("改用 VLC",(d,w)->toVlc()).setNeutralButton("用外部播放器打开",(d,w)->external()).setNegativeButton("再等等",null).show();}
   if(!rendered)tick.postDelayed(this,1000);}};
  /** Refresh expiring Emby addresses without pretending an HTTP failure is a codec failure. */
+ void dismissPrepareNotice(){if(prepareNotice!=null){prepareNotice.dismiss();prepareNotice=null;}}
  void retrySource(){
+  dismissPrepareNotice();
   EmbyAutoRecovery.manual(this);persist(false);JSONObject server=EmbyStore.get(this,serverId);
   if(server!=null&&!item.isEmpty()){EmbyPlayback.playItem(this,server,item,media,true);return;}
   start=Math.max(start,video==null?0:video.getCurrentPosition());started=false;rendered=false;asked=false;terminal=false;failed=false;opened=SystemClock.elapsedRealtime();wait.setText("正在重新连接…");wait.setVisibility(View.VISIBLE);
   video.setVideoURI(Uri.parse(source.optString("url")),headers(source));tick.removeCallbacks(watchdog);tick.post(watchdog);
  }
  /** 回到 VLC 播放（从当前位置；进度已写回 pos:）。 */
- void toVlc(){persist(false);Intent vlc=getIntent().getParcelableExtra("vlc");if(vlc!=null){try{startActivity(vlc);}catch(Exception e){Toast.makeText(this,"无法回到 VLC",Toast.LENGTH_LONG).show();}}finish();}
+ void toVlc(){persist(false);Intent vlc=getIntent().getParcelableExtra("vlc");if(vlc!=null){try{vlc.putExtra(PlaybackBackend.VLC,true);startActivity(vlc);}catch(Exception e){Toast.makeText(this,"无法回到 VLC",Toast.LENGTH_LONG).show();}}finish();}
  /** 交给手机上的其他播放器（如 Just Player、MX Player）；Emby 地址自带令牌，影视仓需要请求头的片源可能打不开。 */
  void loadSubtitleFile(String path,String label){String lower=path.toLowerCase(java.util.Locale.ROOT).split("\\?")[0];String mime=lower.endsWith(".ass")||lower.endsWith(".ssa")?"text/x-ssa":lower.endsWith(".vtt")?"text/vtt":"application/x-subrip";video.addSubtitle(path,mime,label);ExternalSubtitleStore.remember(getSharedPreferences("data",0),id,path,"");}
  void external(){persist(false);long pos=video==null?0:video.getCurrentPosition();if(ExternalVideo.open(this,source.optString("url"),title,Math.max(pos,start),ExternalVideo.headers(source)))finish();else Toast.makeText(this,"手机上没有其他播放器，可以装一个 Just Player（支持杜比视界）",Toast.LENGTH_LONG).show();}
@@ -60,7 +63,7 @@ public final class SystemPlayerActivity extends Activity {
  @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);if(video!=null){out.putLong("pos",video.getCurrentPosition());out.putString("aspect",video.aspect);out.putFloat("zoom",video.zoom);}}
  @Override protected void onPause(){EmbyAutoRecovery.suspend(this);resumed=false;if(chrome!=null)chrome.next.suspend();super.onPause();tick.removeCallbacks(save);if(video!=null&&started){persist(false);resumeAfterPause=video.wantsPlayback();video.pause();report("pause");}}
  @Override protected void onResume(){super.onResume();resumed=true;if(hasWindowFocus())tick.post(this::recoverOrShowError);TvSupport.focus(this);if(video!=null)video.restoreViewport();if(started){if(resumeAfterPause){video.start();resumeAfterPause=false;}tick.postDelayed(save,10000);}}
- @Override protected void onDestroy(){EmbyAutoRecovery.dispose(this);tick.removeCallbacksAndMessages(null);if(started)report("stop");PlayerMedia.dispose(this);if(chrome!=null)chrome.dispose();if(video!=null)video.stopPlayback();PreviewFetch.evict();CinemaMenu.dismissNow(this);super.onDestroy();}
+ @Override protected void onDestroy(){dismissPrepareNotice();EmbyAutoRecovery.dispose(this);tick.removeCallbacksAndMessages(null);if(started)report("stop");PlayerMedia.dispose(this);if(chrome!=null)chrome.dispose();if(video!=null)video.stopPlayback();PreviewFetch.evict();CinemaMenu.dismissNow(this);super.onDestroy();}
 
  /** 续播位置写回和 VLC 播放共用的 pos:/dur: 记录。看到最后 3% 记为看完（位置清零）。 */
  void persist(boolean finished){try{if(watch==null||watch.isEmpty()||video==null)return;int pos=video.getCurrentPosition(),dur=video.getDuration();if(dur<=0)return;SharedPreferences.Editor e=getSharedPreferences("data",0).edit();if(finished||pos>dur*0.97)e.putInt("pos:"+watch,0);else if(pos>10000)e.putInt("pos:"+watch,pos);e.putInt("dur:"+watch,dur).apply();}catch(Exception ignored){}}
