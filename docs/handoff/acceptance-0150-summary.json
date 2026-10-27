@@ -40,10 +40,21 @@
     "local_fixture_server_stopped": true
   },
   "not_tested": [
-    "phone hardware",
+    "phone playback and layout",
     "real Dolby or HDR playback in this version",
     "successful real-account server transcode",
     "manual spoken TalkBack content assessment",
-    "final APK device installation after screenshot-position fix"
-  ]
+    "final APK tablet installation after screenshot-position fix"
+  ],
+  "phone_final_apk_installation": {
+    "date": "2026-10-27",
+    "device": "PJZ110",
+    "previous_version": "0.1.142 / code143",
+    "installed_version": "0.1.150 / code151",
+    "method": "adb install -r; no uninstall or data clearing",
+    "installed_apk_sha256": "d4d1025df2c000133241c89308d6193f9d6873ab26dd088fdc9fddd4a6354bbe",
+    "launch_status": "ok",
+    "process_alive_after_3_seconds": true,
+    "scope": "Installation and launch smoke test only; playback and layout are not tested on phone."
+  }
 }

@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
   "ui_version": "0.1.150",
-  "android_device_tested": false,
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -43,7 +43,7 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "android_device_test_note": "Initial 0.1.150 candidate exercised on OPD2401; final APK changes Media3 screenshot placement and awaits reconnection/install/retest. See docs/handoff/acceptance-0150-summary.json.",
+  "android_device_test_note": "Final APK installed on PJZ110 with matching device APK hash and launch smoke check only. Initial candidate playback/UI tested on OPD2401; final screenshot-placement tablet retest and cleanup comparison await reconnection. See docs/handoff/acceptance-0150-summary.json.",
   "apk_sha256": "d4d1025df2c000133241c89308d6193f9d6873ab26dd088fdc9fddd4a6354bbe",
   "original_signing_certificate_verified": true,
   "zipalign_16k_verified": true
