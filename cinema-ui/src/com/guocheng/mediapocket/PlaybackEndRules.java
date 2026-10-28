@@ -3,18 +3,28 @@ import java.util.Locale;
 /** 0.1.155 播放收尾与状态的纯规则（可单测）。 */
 final class PlaybackEndRules {
  private PlaybackEndRules(){}
+ /** libvlc MediaPlayer.State.Ended。EndReached 之后播放器停在这里；提前断流不看状态栏文案。 */
+ static final int VLC_ENDED=6;
+ static boolean endReached(int playerState){return playerState==VLC_ENDED;}
  /**
   * VLC 报「读到结尾」时，判断是不是片源提前断了。底座只在 VLC 给出时长（&gt;15 秒）时才比较，
-  * Emby 转码串流时长常是 0，于是断流也被当成「本集播放完毕」：清掉续播位置，还会弹下一集。
-  * 已知全长：离结尾还差 5 分钟且超过 10% 算提前结束（片尾字幕不算）。全长未知：两分钟内就结束算提前结束。
+  * Emby 转码串流时长常是 0，于是断流也被当成播完：清掉续播位置，还会弹下一集。
+  * 已知全长：离结尾还差 5 分钟且超过 10% 算提前结束（片尾字幕不算）。
+  * 全长未知（没有 Emby runtime，VLC 时长也不可用）：两分钟内结束算提前结束。
+  * 这时一部本身就短于两分钟、又没有时长的片子，和真正的提前断流无法区分，仍按提前断流处理；
+  * 超过两分钟才结束的，当成正常播完。阈值与 0.1.155 相同。
   */
  static boolean premature(long lastPosMs,long runtimeMs,long durationMs){
   long full=runtimeMs>0?runtimeMs:durationMs>15000?durationMs:0;long pos=Math.max(0,lastPosMs);
   if(full<=0)return pos<120000;
   return pos<full-Math.max(300000,full/10);
  }
+ /** 终端且播放器已 Ended，并且位置规则判定为提前。不读界面文字。 */
+ static boolean prematureFlag(boolean terminal,int playerState,long lastPosMs,long runtimeMs,long durationMs){return terminal&&endReached(playerState)&&premature(lastPosMs,runtimeMs,durationMs);}
+ /** 自动下一集只把「已经终端、且不是提前断流」当成播完。 */
+ static boolean naturalFinish(boolean terminal,boolean premature){return terminal&&!premature;}
  static String mmss(long ms){long s=Math.max(0,ms)/1000;long h=s/3600,m=s/60%60,sec=s%60;return h>0?String.format(Locale.ROOT,"%d:%02d:%02d",h,m,sec):String.format(Locale.ROOT,"%d:%02d",m,sec);}
- /** 提前结束后的状态文字；含「失败」，失败卡片和 Emby 自动恢复都会接上。 */
+ /** 提前结束后仍显示给用户和调试日志的说明。失败卡片和 Emby 恢复看显式标记，不看这句话里有没有「失败」。 */
  static String prematureText(long lastPosMs,long runtimeMs){return "读取失败：片源在 "+mmss(lastPosMs)+" 提前结束"+(runtimeMs>0?"（全长 "+mmss(runtimeMs)+"）":"");}
  /** Emby 的 RunTimeTicks（100 纳秒）换成毫秒。 */
  static long ticksToMs(long ticks){return ticks>0?ticks/10000:0;}

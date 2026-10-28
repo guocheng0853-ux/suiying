@@ -20,7 +20,10 @@ final class PlaybackReviewRules {
   else if(blob.toUpperCase(java.util.Locale.ROOT).contains("HDR"))quality+=" · HDR";
   return quality.isEmpty()?(title.isEmpty()?"版本":title):quality.replaceAll("^ · ","");
  }
- static boolean failure(boolean rendered,boolean terminal,String raw){
+ static boolean failure(boolean rendered,boolean terminal,String raw){return failure(rendered,terminal,raw,false);}
+ /** premature 为真时，即使文案仍是播完句、里面没有「失败」，也算失败，失败卡片和 Emby 恢复都走这条。 */
+ static boolean failure(boolean rendered,boolean terminal,String raw,boolean premature){
+  if(terminal&&premature)return true;
   String s=raw==null?"":raw.toLowerCase(java.util.Locale.ROOT);
   return terminal&&(!rendered||s.contains("失败")||s.contains("超时")||s.contains("无法")||s.contains("error"));
  }

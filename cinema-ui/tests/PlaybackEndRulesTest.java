@@ -1,16 +1,32 @@
 package com.guocheng.mediapocket;
 public class PlaybackEndRulesTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
- public static void main(String[] x){
+ public static void main(String[] x)throws Exception{
   long full=49*60000L+30000;
   check(PlaybackEndRules.premature(21000,full,0),"Emby transcode ending 21 s into a 49 min episode is premature even when VLC duration is 0");
   check(!PlaybackEndRules.premature(full-60000,full,0),"ending inside the credits is a real finish");
   check(PlaybackEndRules.premature(full-20*60000L,full,0),"20 min short is premature");
   check(!PlaybackEndRules.premature(full-4*60000L,full,0),"4 min short of a 50 min episode counts as finished (credits)");
   check(PlaybackEndRules.premature(30000,0,0)&&!PlaybackEndRules.premature(10*60000L,0,0),"unknown length: only a very early end is premature");
+  check(PlaybackEndRules.premature(90_000,0,0)&&!PlaybackEndRules.premature(130_000,0,0),"unknown runtime: under 2 min stays premature (a real short clip cannot be told apart); after 2 min stays a natural finish");
   check(!PlaybackEndRules.premature(118*60000L,0,120*60000L),"falls back to VLC duration when Emby runtime is missing");
+  check(PlaybackEndRules.endReached(PlaybackEndRules.VLC_ENDED)&&!PlaybackEndRules.endReached(3)&&!PlaybackEndRules.endReached(5)&&!PlaybackEndRules.endReached(7),"only libvlc Ended is EndReached");
+  check(PlaybackEndRules.prematureFlag(true,PlaybackEndRules.VLC_ENDED,21000,full,0),"Ended far from Emby runtime sets the premature flag");
+  check(!PlaybackEndRules.prematureFlag(true,PlaybackEndRules.VLC_ENDED,full-60000,full,0),"Ended inside the credits does not set the flag");
+  check(!PlaybackEndRules.prematureFlag(true,5,21000,full,0),"a stopped player is not the premature path");
+  check(!PlaybackEndRules.prematureFlag(false,PlaybackEndRules.VLC_ENDED,21000,full,0),"Ended before the player is terminal does not set the flag");
+  check(PlaybackReviewRules.failure(true,true,"本集播放完毕",true),"premature flag opens the failure path without a 失败 substring");
+  check(!PlaybackReviewRules.failure(true,true,"本集播放完毕",false),"completion copy alone is not a failure");
+  check(PlaybackReviewRules.failure(true,true,"播放结束",true)&&!PlaybackReviewRules.failure(true,true,"播放结束",false),"failure card follows the flag, not the wording");
+  check(PlaybackEndRules.naturalFinish(true,false)&&!PlaybackEndRules.naturalFinish(true,true)&&!PlaybackEndRules.naturalFinish(false,true),"auto-next only on a natural finish");
   check(PlaybackEndRules.ticksToMs(29_700_000_000L)==2_970_000L&&PlaybackEndRules.ticksToMs(0)==0,"ticks");
-  String t=PlaybackEndRules.prematureText(763000,full);check(t.contains("失败")&&t.contains("12:43")&&t.contains("49:30"),"premature text feeds the failure card: "+t);
+  String t=PlaybackEndRules.prematureText(763000,full);check(t.contains("12:43")&&t.contains("49:30")&&t.contains("提前结束"),"visible premature sentence keeps the position: "+t);
+  String repair=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/PlaybackRepair.java"));
+  String auto=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/AutoNext.java"));
+  String overlay=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/PlayerOverlay.java"));
+  check(!repair.contains("本集播放完毕")&&repair.contains("getPlayerState")&&repair.contains("prematureFlag"),"repair marks EndReached from player state");
+  check(auto.contains("naturalFinish")&&auto.contains("PlaybackRepair.premature"),"auto-next consults the flag");
+  check(overlay.contains("PlaybackRepair.premature")&&overlay.contains("failure(rendered,terminal,message,premature)")&&overlay.contains("nativeTick(a,failure,"),"failure card and Emby recovery take the flag");
   check(PlaybackEndRules.mmss(3723000).equals("1:02:03"),"hours");
   check(PlaybackEndRules.playingWithoutVout(false,false,true,1920,5000),"playing with a sized video track counts as rendered");
   check(!PlaybackEndRules.playingWithoutVout(false,false,true,0,5000)&&!PlaybackEndRules.playingWithoutVout(false,false,false,1920,5000)&&!PlaybackEndRules.playingWithoutVout(true,false,true,1920,5000)&&!PlaybackEndRules.playingWithoutVout(false,true,true,1920,5000),"no false render");
