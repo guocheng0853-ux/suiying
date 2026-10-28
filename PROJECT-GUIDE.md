@@ -49,7 +49,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 
 **Linux**：`sh scripts/setup_build_tools.sh`（一次）→ `python3 cinema-ui/build_ui.py`（无密钥时加 `--unsigned`，否则拒绝写出未签名的正式包）→ `python3 cinema-ui/verify_apk.py` → `sh scripts/run_tests.sh`。
 流水线：ecj 编 stubs / src → D8 转 dex（min-api 26）→ dexlib2 补丁原版 dex 并自检 → aapt2 打清单 → zipalign（`-P 16`，16KB 页对齐）→ apksigner 签名 → verify。
-**Windows（用户这台电脑）**：用本地的 `cinema-ui/build/build_win.py`（不在仓库，build_ui.py 的 Windows 适配，用 SDK 的 aapt2 / zipalign / d8 / apksigner）。Python 用 `uv.exe run --no-project python`。中文 Windows 上 JDK 默认 GBK：读写文件一律指定 UTF-8。详见 HANDOFF-NEXT-AI.md。
+**Windows（用户这台电脑）**：用 `cinema-ui/build/build_win.py`（2026-10-28 起随仓库维护，build_ui.py 的 Windows 适配，用 SDK 的 aapt2 / zipalign / d8 / apksigner）。Python 用 `uv.exe run --no-project python`。中文 Windows 上 JDK 默认 GBK：读写文件一律指定 UTF-8。需设 `REA_JADX_JAR` 指向 jadx-1.5.6-all.jar（补丁依赖 dexlib2）；SDK 默认走 `%LOCALAPPDATA%\Android\Sdk`，可用 `ANDROID_SDK_BT` 覆盖。改 build_ui.py 的补丁链后**必须同步 build_win.py**——`verify_apk.py` 的补丁标记断言（2026-10-28 起）会兜底拦截缺补丁的包。详见 HANDOFF-NEXT-AI.md。
 
 **每发一个版本，四处同步**：
 1. `cinema-ui/AndroidManifest.xml` 的 `versionCode`（+1）和 `versionName`

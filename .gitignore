@@ -1,10 +1,11 @@
 # 签名密钥绝不入库（公开仓库）
 *.jks
 *.keystore
-# 构建工具与产物
+# 构建工具与产物（cinema-ui/build/ 只入库 build_win.py 这一个脚本，其余是本地产物）
 build-tools/
 deliverables/
-cinema-ui/build/
+cinema-ui/build/*
+!cinema-ui/build/build_win.py
 *.apk
 !cinema-ui/base.apk
 __pycache__/
