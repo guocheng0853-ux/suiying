@@ -13,6 +13,7 @@ public class PlaybackReviewRulesTest {
   check(PlaybackReviewRules.failure(false,true,"播放失败"),"startup failure");
   check(PlaybackReviewRules.failure(true,true,"读取失败"),"mid-playback failure");
   check(!PlaybackReviewRules.failure(true,true,"播放结束"),"normal end is not a failure");
+  check(PlaybackReviewRules.failure(true,true,"本集播放完毕",true)&&!PlaybackReviewRules.failure(true,true,"本集播放完毕"),"premature flag is a failure even when the status line is still a completion sentence");
   check(!PlaybackReviewRules.failure(false,false,"等待片段超时，正在重试"),"recoverable wait is not terminal");
   check(PlaybackReviewRules.feedbackVisible(false,true,true,true,"读取失败"),"failed split-screen player retains its recovery card independently of focus");
   check(PlaybackReviewRules.feedbackVisible(false,false,false,false,"正在连接"),"connecting split-screen player retains its loading feedback");

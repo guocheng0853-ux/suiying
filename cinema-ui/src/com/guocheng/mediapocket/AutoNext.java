@@ -12,7 +12,7 @@ final class AutoNext {
  int intCall(Object v,String name){try{Object r=v==null?null:OnlineSubtitleSearch.call(v,name,new Class<?>[0]);return r instanceof Integer?(Integer)r:-1;}catch(Exception e){return -1;}}
  void poll(boolean pip){if(a.isFinishing())return;if(EmbyPlayerUi.ownsNext(a)){hide();return;}Object idv=OnlineSubtitleSearch.field(a,"id"),type=OnlineSubtitleSearch.field(a,"type"),meta=OnlineSubtitleSearch.field(a,"meta");String id=idv==null?"":idv.toString();
   if(!id.equals(forId)){forId=id;cancelled=false;hide();nextId=meta instanceof JSONObject&&!id.startsWith("tvbox:")?AutoNextRules.next((JSONObject)meta,id):null;}
-  SharedPreferences p=a.getSharedPreferences("data",0);Object video=OnlineSubtitleSearch.field(a,"video");boolean ended=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal"))&&!PlaybackRepair.premature(a);
+  SharedPreferences p=a.getSharedPreferences("data",0);Object video=OnlineSubtitleSearch.field(a,"video");boolean ended=PlaybackEndRules.naturalFinish(Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal")),PlaybackRepair.premature(a));
   boolean want=!pip&&AutoNextRules.offer(PlaybackPrefs.autoNext(p),PlaybackReviewRules.series(meta instanceof JSONObject?(JSONObject)meta:null,type==null?"":type.toString()),nextId!=null,cancelled,ended,intCall(video,"getCurrentPosition"),intCall(video,"getDuration"),PlaybackPrefs.autoNextLead(p));
   if(!want){if(card!=null&&!ended)hide();return;}
   if(card==null){show((JSONObject)meta);shownAt=SystemClock.elapsedRealtime();}

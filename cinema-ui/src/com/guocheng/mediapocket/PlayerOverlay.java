@@ -211,10 +211,11 @@ final class PlayerOverlay {
  static void click(Button b,String label,ArrayList<String> labels,ArrayList<Runnable> actions){if(b==null)return;labels.add(label);actions.add(()->b.performClick());}
 
  static void status(Activity a){
+  boolean premature=PlaybackRepair.premature(a);
   Object raw=OnlineSubtitleSearch.field(a,"state");String message=raw instanceof TextView?text((TextView)raw):"";
   if(raw instanceof View)((View)raw).setVisibility(View.GONE);
   boolean rendered=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"rendered")),terminal=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal"));
-  boolean failure=PlaybackReviewRules.failure(rendered,terminal,message);
+  boolean failure=PlaybackReviewRules.failure(rendered,terminal,message,premature);
   boolean covered=PlayerSidePanel.open(a)||CinemaMenu.isOpen(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode());
   EmbyAutoRecovery.nativeTick(a,failure,covered||!a.hasWindowFocus(),message);
   connectHud(a,!PlaybackReviewRules.feedbackVisible(covered,failure,rendered,terminal,message)?"":failure?PlaybackReviewRules.failureMessage(message):PlaybackReviewRules.loading(message),failure);
