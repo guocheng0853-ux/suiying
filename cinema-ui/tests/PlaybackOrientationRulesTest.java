@@ -4,6 +4,8 @@ public class PlaybackOrientationRulesTest {
  public static void main(String[]args){
   check(PlaybackOrientation.windowRequest(true,6)==-1&&PlaybackOrientation.windowRequest(true,7)==-1,"split windows follow system geometry for both landscape and portrait video");
   check(PlaybackOrientation.windowRequest(false,6)==6&&PlaybackOrientation.windowRequest(false,1)==1,"fullscreen keeps video or manual orientation");
+  check(PlaybackOrientation.windowRequest(false,807,6)==-1&&PlaybackOrientation.windowRequest(false,411,6)==6,"a tablet does not force landscape; a phone still does");
+  check(PlaybackOrientation.windowRequest(true,807,7)==-1,"a tablet split window stays with the system");
   check(PlaybackOrientation.playback()==6,"entering playback requests sensor landscape");
   check(PlaybackOrientation.remember(-1)==-1,"unspecified host orientation is restored");
   check(PlaybackOrientation.remember(6)==-1,"recreated player does not treat sensor landscape as the app orientation");

@@ -84,11 +84,12 @@ final class CinemaMenu {
    w.setLayout(-1,-1);w.setWindowAnimations(0);
    if(body!=null&&hasInput(body))w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE|WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
    if(Build.VERSION.SDK_INT>=28){WindowManager.LayoutParams lp=w.getAttributes();lp.layoutInDisplayCutoutMode=a.getWindow().getAttributes().layoutInDisplayCutoutMode;w.setAttributes(lp);}
+   VideoFullscreen.dialog(a,w);
    // 先不可聚焦地显示并复制沉浸式标志，再恢复可聚焦（返回键），避免弹出时状态栏/导航栏闪出来
    w.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
   }
   try{dialog.show();}catch(Exception e){return false;}
-  if(w!=null){w.getDecorView().setSystemUiVisibility(decor.getSystemUiVisibility());w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);}
+  if(w!=null){w.getDecorView().setSystemUiVisibility(decor.getSystemUiVisibility());w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);VideoFullscreen.dialog(a,w);}
   OPEN.put(a,new Open(dialog,scrim,onCancel));
   scrim.setAlpha(0f);panel.setScaleX(0.92f);panel.setScaleY(0.92f);
   scrim.animate().alpha(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
