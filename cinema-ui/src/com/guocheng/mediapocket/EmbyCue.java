@@ -9,6 +9,8 @@ final class EmbyCue {
  static final long BUTTON_MS=4000L,NEXT_COUNTDOWN_MS=10000L,NEXT_FALLBACK_MS=30000L;
  static final int INTRO_COUNTDOWN_S=5;
  private EmbyCue(){}
+ /** 冷却或 5xx 时，缓存里这个库还有条目就包成调用方本来就认识的 Items；没有上次的内容才是空对象。不另建缓存。converted 过的卡片不能当原始条目。 */
+ static JSONObject cachedLatest(JSONObject cached,String libId){JSONObject empty=new JSONObject();if(cached==null||cached.optBoolean("converted")||libId==null||libId.isEmpty())return empty;JSONArray libs=cached.optJSONArray("libs"),latest=cached.optJSONArray("latest");if(libs==null||latest==null)return empty;for(int i=0;i<libs.length()&&i<latest.length();i++){JSONObject lib=libs.optJSONObject(i);JSONArray items=latest.optJSONArray(i);if(lib==null||items==null||items.length()==0||!libId.equals(lib.optString("Id")))continue;try{return new JSONObject().put("Items",items);}catch(JSONException e){return empty;}}return empty;}
  static final class Span {final long introStart,introEnd,creditsStart;Span(long a,long b,long c){introStart=a;introEnd=b;creditsStart=c;}boolean any(){return introStart>=0||creditsStart>=0;}}
  static String skipMode(String raw){if(AUTO.equals(raw)||"自动".equals(raw))return AUTO;if(OFF.equals(raw)||"关闭".equals(raw))return OFF;return ASK;}
  static Span spans(JSONArray chapters){

@@ -35,6 +35,14 @@ public class PlaybackEndRulesTest {
   check(PlaybackEndRules.pathPattern("/Users/0123456789abcdef0123456789abcdef/HomeSections?api_key=secret").equals("/Users/{id}/HomeSections"),"no ids or query in logs");
   check(PlaybackEndRules.pathPattern("/Items/12345/PlaybackInfo?UserId=x").equals("/Items/{n}/PlaybackInfo"),"numeric ids");
   check(PlaybackEndRules.resetLegacyDecode("software",false)&&!PlaybackEndRules.resetLegacyDecode("software",true)&&!PlaybackEndRules.resetLegacyDecode("hardware",false),"legacy sticky software decode resets once");
+  String[] back=PlaybackEndRules.unwindDecodeSession(true,"auto","");check(back!=null&&"auto".equals(back[0])&&back[1].isEmpty(),"killed session restores the previous decode mode");
+  check(PlaybackEndRules.unwindDecodeSession(true,"","software")[0].isEmpty()&&"software".equals(PlaybackEndRules.unwindDecodeSession(true,"","software")[1]),"missing previous mode is an empty preference");
+  check(PlaybackEndRules.unwindDecodeSession(false,"software","software")==null,"a finished session does not unwind on the next cold start");
+  check(PlaybackEndRules.dropPremature("1|a","2|a")&&PlaybackEndRules.dropPremature("1|a","1|b")&&!PlaybackEndRules.dropPremature("1|a","1|a")&&!PlaybackEndRules.dropPremature(null,"1|a"),"a new attempt drops the premature flag; the first sight does not");
+  String app=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/CinemaApp.java"));
+  check(app.contains("unwindDecodeSession")&&app.contains("decodeSession.open"),"cold start clears a decode session left open by a killed player");
+  check(overlay.contains("decodeSession.open")&&overlay.contains("rehydrateDecode")&&overlay.contains("isChangingConfigurations())return"),"per-play soft decode keeps a session marker and still skips restore across rotation");
+  check(repair.contains("dropPremature")&&repair.contains("PREMATURE.remove")&&repair.contains("endReached")&&!repair.contains("本集播放完毕"),"attempt change clears PREMATURE without going back to status text");
   System.out.println("PASS: premature VLC end keeps resume, render without Vout, image subtitles to player, Emby log path pattern, per-playback decoder.");
  }
 }

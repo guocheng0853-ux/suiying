@@ -1,5 +1,5 @@
 """Windows 版 build_ui.py：工具用本机 Android SDK 与 jadx-1.5.6，逻辑与 build_ui.py 逐段对应。
-2026-10-28 起随仓库维护（补丁链以 build_ui.py 为准；verify_apk.py 会断言全部补丁标记，缺补丁的包过不了终检）。
+2026-10-28 起随仓库维护（补丁链以 build_ui.py 为准，两条脚本必须一起改）。改完必须跑 verify_apk.py：它断言全部 7 个补丁标记（含 PatchPlaybackBackend），缺补丁的包过不了终检。
 用法：uv.exe run --no-project python cinema-ui/build/build_win.py   （无密钥时加 --unsigned）
 环境变量：ANDROID_SDK_BT 覆盖 build-tools 目录（默认 %LOCALAPPDATA%\\Android\\Sdk\\build-tools\\35.0.0）；
          REA_JADX_JAR 指向 jadx-1.5.6-all.jar（必填，仓库不带 jadx）；
@@ -176,7 +176,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
 run(ZIPALIGN,'-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
 
 # 8. 签名 + 校验 + 稳定资产核对
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.156-playback-fixes-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.157-playback-fixes-arm64.apk'
 ks=Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks')))
 unsigned='--unsigned' in sys.argv
 if ks.is_file() and not unsigned:
@@ -194,5 +194,5 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
         if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
             if n in final_dex:continue
             assert base.read(n)==updated.read(n),n;preserved.append(n)
-    (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.156','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2),encoding='utf-8')
+    (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.157','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2),encoding='utf-8')
 print(subprocess.check_output([str(AAPT2),'dump','badging',str(apk)]).decode().splitlines()[0]);print('APK:',apk)

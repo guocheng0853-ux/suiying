@@ -55,6 +55,17 @@ public final class EmbyFeaturesTest {
   check(SpeedHold.tuned(0,1000,0,3f)==3f&&SpeedHold.capsule(2f).equals("加速 2.0×"),"hold base is configurable and the hud is chinese");
   check(!EmbyCue.episodePageDone(0,100,100,161)&&EmbyCue.episodePageDone(100,61,100,161)&&EmbyCue.episodePageDone(0,7,100,-1)&&!EmbyCue.episodePageDone(0,100,100,-1),"episode pages stop on a short page or the reported total");
   String episodes=EmbyCue.episodesPath("u","series","",0,100);check(episodes.contains("StartIndex=0")&&episodes.contains("Limit=100"),"episode query is paged");
+  JSONObject cachedHome=new JSONObject().put("libs",new JSONArray().put(new JSONObject().put("Id","lib"))).put("latest",new JSONArray().put(new JSONArray().put(new JSONObject().put("Name","A")).put(new JSONObject().put("Name","B"))));
+  JSONObject kept=EmbyCue.cachedLatest(cachedHome,"lib");
+  check(kept.optJSONArray("Items")!=null&&kept.optJSONArray("Items").length()==2,"cooldown returns the last saved library items");
+  check(!EmbyCue.cachedLatest(cachedHome,"other").has("Items")&&!EmbyCue.cachedLatest(null,"lib").has("Items")&&!EmbyCue.cachedLatest(new JSONObject(cachedHome.toString()).put("converted",true),"lib").has("Items"),"missing or converted cache stays an empty object");
+  JSONObject incoming=new JSONObject().put("latest",new JSONArray().put(kept.optJSONArray("Items")));
+  AggregateRules.EmbyKeep keptPlan=AggregateRules.embyKeep(cachedHome,incoming,false);
+  check(keptPlan.writeCache&&!keptPlan.keepRows,"last-good latest is not a weaker refresh");
+  AggregateRules.EmbyKeep emptyPlan=AggregateRules.embyKeep(cachedHome,new JSONObject().put("latest",new JSONArray().put(new JSONArray())),false);
+  check(!emptyPlan.writeCache&&emptyPlan.keepRows,"a real empty latest still keeps the painted rows");
+  String homeSrc=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/EmbyHome.java"));
+  check(homeSrc.contains("latestOrKept")&&!homeSrc.contains("skipping(server,\"latest:\"+id)?new JSONObject()"),"latest cooldown no longer returns a silent empty object");
   if(failures>0)throw new RuntimeException(failures+" failed");
   System.out.println("PASS: Emby markers, BIF, NextUp, tracks, backup urls, home sections.");
  }

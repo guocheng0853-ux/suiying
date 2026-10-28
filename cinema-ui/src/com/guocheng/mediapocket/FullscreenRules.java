@@ -53,4 +53,6 @@ final class FullscreenRules {
  static boolean custom(float x,float y){return Math.abs(x-1f)>0.005f||Math.abs(y-1f)>0.005f;}
  static String zoomLabel(float x,float y){if(!custom(x,y))return "1.0x";return Math.abs(x-y)<0.005f?String.format(java.util.Locale.ROOT,"%.1fx",x):"自定义";}
  static float pipRatio(int w,int h){if(w<=0||h<=0)return 16f/9f;return Math.max(1/2.39f+0.001f,Math.min(2.39f-0.001f,(float)w/h));}
+ /** 250ms 轮询里缩放、轴心、平移都没变就不要再写 View。 */
+ static boolean surfaceDirty(float pivotX,float pivotY,float tx,float ty,float sx,float sy,float wantPx,float wantPy,float wantSx,float wantSy){return pivotX!=wantPx||pivotY!=wantPy||tx!=0f||ty!=0f||sx!=wantSx||sy!=wantSy;}
 }
