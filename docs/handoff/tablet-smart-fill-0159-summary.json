@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-29",
+  "baseline": "30b196b",
+  "build": {
+    "version": "0.1.159",
+    "code": 160,
+    "tests": 97,
+    "size": 37067317,
+    "sha256": "2cd3dcf6c411fa968241c197958b7602d124ff43fc59eba20097f080bd9f7d24",
+    "original_certificate_verified": true,
+    "zipalign_16k_verified": true
+  },
+  "device": "OPD2401 / Android16",
+  "synthetic_only": true,
+  "sample": "640x360 H.264/AAC, white scene",
+  "engines": {
+    "vlc": {
+      "fit": {
+        "window": [
+          3000,
+          2120
+        ],
+        "surface": [
+          3000,
+          1688
+        ],
+        "scale": [
+          1,
+          1
+        ],
+        "scaled_surface": [
+          3000,
+          1688
+        ],
+        "playing": true,
+        "rendered": true,
+        "smallest_width_dp": 808
+      },
+      "smart": {
+        "window": [
+          3000,
+          2120
+        ],
+        "surface": [
+          3000,
+          1688
+        ],
+        "scale": [
+          1.25,
+          1.2562962770462036
+        ],
+        "scaled_surface": [
+          3750.0,
+          2120.63
+        ],
+        "playing": true,
+        "rendered": true,
+        "smallest_width_dp": 808
+      },
+      "progress_ms": {
+        "before": 6159,
+        "after": 7152
+      }
+    },
+    "media3": {
+      "fit": {
+        "window": [
+          3000,
+          2120
+        ],
+        "surface": [
+          3000,
+          1688
+        ],
+        "scale": [
+          1,
+          1
+        ],
+        "scaled_surface": [
+          3000,
+          1688
+        ],
+        "playing": true,
+        "rendered": true,
+        "smallest_width_dp": 808
+      },
+      "smart": {
+        "window": [
+          3000,
+          2120
+        ],
+        "surface": [
+          3750,
+          2121
+        ],
+        "scale": [
+          1,
+          1
+        ],
+        "scaled_surface": [
+          3750,
+          2121
+        ],
+        "playing": true,
+        "rendered": true,
+        "smallest_width_dp": 808
+      },
+      "progress_ms": {
+        "before": 5995,
+        "after": 7319
+      }
+    }
+  },
+  "cleanup": {
+    "original_server_count": 3,
+    "preferences_history_restored": true,
+    "temporary_helper_removed": true,
+    "local_fixture_stopped": true,
+    "settings_exactly_match_baseline": true,
+    "test_forward_reverse_removed": true,
+    "installed_apk_hash_matches": true
+  },
+  "phone": "Algorithm regression tests only; phone was not installed or operated in this task.",
+  "not_tested": [
+    "real Dolby/HDR",
+    "real-server transcoding",
+    "actual 4:3 tablet hardware",
+    "frame-embedded black-bar detection",
+    "portrait or split-screen device playback"
+  ]
+}

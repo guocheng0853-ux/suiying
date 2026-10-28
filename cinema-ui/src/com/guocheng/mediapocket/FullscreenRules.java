@@ -2,7 +2,7 @@ package com.guocheng.mediapocket;
 final class FullscreenRules {
  /** 0.1.152 只留三种：智能满屏（默认）、完整画面、填满裁切。拉伸、强制 16:9 / 4:3、原始像素删掉，旧设置读到时按智能满屏处理；临时放大用双指缩放。 */
  static final String[] MODES={"smart","fit","crop"};
- static final String[] LABELS={"智能满屏 · 微裁上下加轻微拉宽，铺满全面屏","完整画面 · 不裁切，两边留黑","填满裁切 · 保持比例，裁掉多出的部分"};
+ static final String[] LABELS={"智能满屏 · 适量裁切加有限拉伸，智能适配屏幕","完整画面 · 不裁切，保留黑边","填满裁切 · 保持比例，裁掉多出的部分"};
  static final float MIN=0.5f,MAX=3f;
  static String mode(String saved,boolean migrated){for(String mode:MODES)if(mode.equals(saved))return mode;return "smart";}
  /**
@@ -12,10 +12,14 @@ final class FullscreenRules {
   *  例：16:9 → 2.2:1，等比放大 1.136（上下各裁 6%）、横向再拉 8.9%；2.39:1 电影 → 左右各裁约 4%，不拉伸。
   */
  static final float SMART_CROP=0.12f,SMART_STRETCH=0.10f;
- static float[] smart(int screenW,int screenH,int videoW,int videoH){
+ /** 平板最多裁去总画面的20%（每边10%），单向拉伸仍不超过10%；超出时保留完整画面。 */
+ static final float TABLET_SMART_CROP=0.20f;
+ static float[] smart(int screenW,int screenH,int videoW,int videoH){return smart(screenW,screenH,videoW,videoH,0);}
+ static float[] smart(int screenW,int screenH,int videoW,int videoH,int smallestWidthDp){
   if(screenW<=0||screenH<=0||videoW<=0||videoH<=0)return new float[]{1f,1f};
   double s=(double)screenW/screenH,v=(double)videoW/videoH;if(Math.abs(s/v-1)<0.005)return new float[]{1f,1f};
-  boolean narrower=v<s;double need=narrower?s/v:v/s,u=Math.min(need,1/(1-SMART_CROP)),rest=need/u;
+  float crop=VideoFullscreenRules.tablet(smallestWidthDp)?TABLET_SMART_CROP:SMART_CROP;
+  boolean narrower=v<s;double need=narrower?s/v:v/s,u=Math.min(need,1/(1-crop)),rest=need/u;
   if(rest>1+SMART_STRETCH+1e-6)return new float[]{1f,1f};
   return narrower?new float[]{(float)need,(float)u}:new float[]{(float)u,(float)need};
  }
@@ -30,8 +34,9 @@ final class FullscreenRules {
  /** 点比例按钮只切换模式，不在画面上写名称（0.1.67 起的约定）。 */
  static String cycleHud(String label){return null;}
  /** 0.1.153：某个模式在「完整画面」基础上的 {横向, 纵向} 缩放，用来判断两种模式对当前片子看起来是否一样。 */
- static float[] look(String mode,int screenW,int screenH,int videoW,int videoH){
-  if("smart".equals(mode))return smart(screenW,screenH,videoW,videoH);
+ static float[] look(String mode,int screenW,int screenH,int videoW,int videoH){return look(mode,screenW,screenH,videoW,videoH,0);}
+ static float[] look(String mode,int screenW,int screenH,int videoW,int videoH,int smallestWidthDp){
+  if("smart".equals(mode))return smart(screenW,screenH,videoW,videoH,smallestWidthDp);
   if("crop".equals(mode)&&screenW>0&&screenH>0&&videoW>0&&videoH>0){double s=(double)screenW/screenH,v=(double)videoW/videoH;float k=(float)Math.max(s/v,v/s);return new float[]{k,k};}
   return new float[]{1f,1f};}
  /** 0.1.154：VLC 没回报画面尺寸时，从视频轨读宽高，按像素宽高比（SAR）换成显示宽度，和底座的换算一致。 */
@@ -41,7 +46,8 @@ final class FullscreenRules {
   * 0.1.153：单击比例按钮跳过「看起来和现在一样」的模式，保证每点一次画面都有变化。
   * 0.1.152 只剩三种后，智能满屏 / 完整画面 / 填满裁切对某些片子会两两重合（2.39:1 电影的智能满屏就是填满裁切；4:3 的智能满屏就是完整画面），点了像没反应。
   */
- static String visibleNext(String mode,int screenW,int screenH,int videoW,int videoH){String cur=mode(mode,true);float[] now=look(cur,screenW,screenH,videoW,videoH);String next=next(cur);for(int n=0;n<MODES.length-1;n++){if(!sameLook(look(next,screenW,screenH,videoW,videoH),now))return next;next=next(next);}return next(cur);}
+ static String visibleNext(String mode,int screenW,int screenH,int videoW,int videoH){return visibleNext(mode,screenW,screenH,videoW,videoH,0);}
+ static String visibleNext(String mode,int screenW,int screenH,int videoW,int videoH,int smallestWidthDp){String cur=mode(mode,true);float[] now=look(cur,screenW,screenH,videoW,videoH,smallestWidthDp);String next=next(cur);for(int n=0;n<MODES.length-1;n++){if(!sameLook(look(next,screenW,screenH,videoW,videoH,smallestWidthDp),now))return next;next=next(next);}return next(cur);}
  static int index(String mode){for(int i=0;i<MODES.length;i++)if(MODES[i].equals(mode))return i;return 0;}
  static float clamp(float v){if(Float.isNaN(v)||Float.isInfinite(v))return 1f;return Math.max(MIN,Math.min(MAX,v));}
  /** 原始像素：视频宽 / 适应屏幕后的宽，最多 1（不超出屏幕）。 */
