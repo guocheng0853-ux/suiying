@@ -13,6 +13,14 @@ public class SourceCardRulesTest {
   JSONArray p5=new JSONArray().put(s("P5","Movie 2160p DoVi HEVC","https://a/p5.mkv")).put(s("FHD","Movie 1080p x264","https://a/fhd.mp4"));
   check(SourceCardRules.best(p5,"auto")==1,"pure DV (likely P5) ranks after any other playable source on VLC");
   check(SourceCardRules.best(new JSONArray().put(s("P5","Movie 2160p DV","https://a/p5.mkv")),"auto")==0,"pure DV still picked when it is the only one");
+  JSONArray mis=new JSONArray().put(new JSONObject().put("name","HDR").put("title","Movie 2160p DV HEVC").put("url","https://a/p5.mkv")).put(s("FHD","Movie 1080p x264","https://a/fhd.mp4"));
+  check(SourceCardRules.best(mis,"auto")==1,"HDR written only on the addon name still ranks pure DV last");
+  JSONArray profile5=new JSONArray().put(s("P5","Movie 2160p Dolby Vision Profile 5 HDR10","https://a/p5.mkv")).put(s("FHD","Movie 1080p x264","https://a/fhd.mp4"));
+  check(SourceCardRules.best(profile5,"auto")==1,"explicit profile 5 ranks after any other playable source");
+  JSONArray profile8=new JSONArray().put(s("P8","Movie 2160p Dolby Vision Profile 8.1 HEVC","https://a/p8.mkv")).put(s("FHD","Movie 1080p x264","https://a/fhd.mp4"));
+  check(SourceCardRules.best(profile8,"auto")==0,"explicit profile 8 stays the top 4K pick");
+  String detail=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/DetailChrome.java"));
+  check(detail.contains("vlcRisky")&&detail.contains("没有可靠的 HDR10 兜底"),"auto-pick logs a demoted Dolby source");
   check(SourceCardRules.poolSize(0)==1&&SourceCardRules.poolSize(5)==5&&SourceCardRules.poolSize(30)==SourceCardRules.MAX_PARALLEL,"parallel queries match addon count");
   check(SourceCardRules.FETCH_MS<=8000,"one addon waits at most 8 s");
   Object mine=new Object(),other=new Object();check(SourceCardRules.replaceAuto(null,null)&&SourceCardRules.replaceAuto(mine,mine)&&!SourceCardRules.replaceAuto(other,mine),"progressive pick never overrides a manual choice");

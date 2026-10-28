@@ -2,13 +2,21 @@ package com.guocheng.mediapocket;
 import org.json.*;import java.util.*;import java.util.regex.*;
 /** 从 Stremio 条目的 name/title/description/behaviorHints 中解析画质信息（纯 Java，可单测）。只是文字推断，不代表文件真实参数。 */
 final class StreamInfo {
- int height;String hdr="",codec="",audio="",fps="";long bytes;int seeds=-1;String file="";boolean p2p;
+ int height;String hdr="",codec="",audio="",fps="";long bytes;int seeds=-1;String file="";boolean p2p;int dvProfile=-1;
  static final Pattern SIZE=Pattern.compile("(\\d+(?:[.,]\\d+)?)\\s*(TB|GB|GiB|MB|MiB)\\b",Pattern.CASE_INSENSITIVE),SEEDS=Pattern.compile("(?:👤|seeds?|seeders?|做种)\\s*[:：]?\\s*(\\d+)",Pattern.CASE_INSENSITIVE),FPS=Pattern.compile("\\b(\\d{2,3}(?:\\.\\d+)?)\\s*fps\\b",Pattern.CASE_INSENSITIVE);
  static String text(JSONObject s){JSONObject h=s.optJSONObject("behaviorHints");return (s.optString("name")+" "+s.optString("title")+" "+s.optString("description")+" "+(h==null?"":h.optString("filename"))).replace('\n',' ');}
+ /** 文件名 + 标题第一行。这段不是空的时候，杜比/HDR 只看这里，不看插件名字、描述和标题后面的体积行。 */
+ static String releaseText(JSONObject s){if(s==null)return "";JSONObject h=s.optJSONObject("behaviorHints");String file=h==null?"":h.optString("filename");String title=s.optString("title");int nl=title.indexOf('\n');if(nl>=0)title=title.substring(0,nl);return (file+" "+title).trim();}
+ /** DVD / DVB 不是杜比视界。Dolby Vision、DoVi、DV、杜比视界都算。 */
+ static boolean dvToken(String raw){if(raw==null||raw.isEmpty())return false;return DolbyRules.mentionsDv(raw)||has(raw.toUpperCase(Locale.ROOT),"\\bDV\\b");}
+ /** 只有写明 HDR10 / HDR10+ / HLG，或同一行里的 HDR，才算有兜底层。单独的 DV 仍是 DV。 */
+ static String classifyHdr(String raw){String u=raw==null?"":raw.toUpperCase(Locale.ROOT);boolean dv=dvToken(raw),hdr10p=has(u,"HDR10\\+|HDR10PLUS"),hdr10=has(u,"HDR10\\b"),hlg=has(u,"\\bHLG\\b"),hdr=has(u,"\\bHDR\\b");return dv&&(hdr10p||hdr10||hdr)?"DV+HDR":dv?"DV":hdr10p?"HDR10+":hdr10?"HDR10":hlg?"HLG":hdr?"HDR":"";}
+ /** Profile 只在同一段文字已经写了杜比视界时才认，避免把 x264 High Profile 5.1 当成杜比 Profile 5。 */
+ static int dvProfile(String raw){return dvToken(raw)?DolbyRules.profileIn(raw):-1;}
  static StreamInfo parse(JSONObject s){StreamInfo i=new StreamInfo();if(s==null)return i;String t=text(s),u=t.toUpperCase(Locale.ROOT);
   if(has(u,"2160P|\\b4K\\b|\\bUHD\\b"))i.height=2160;else if(has(u,"1440P|\\b2K\\b"))i.height=1440;else if(has(u,"1080P|\\bFHD\\b"))i.height=1080;else if(has(u,"720P"))i.height=720;else if(has(u,"576P|480P|\\bSD\\b|DVDRIP"))i.height=480;
-  boolean dv=has(u,"DOLBY ?VISION|\\bDV\\b|\\bDOVI\\b"),hdr10p=has(u,"HDR10\\+|HDR10PLUS"),hdr10=has(u,"HDR10\\b"),hlg=has(u,"\\bHLG\\b"),hdr=has(u,"\\bHDR\\b");
-  i.hdr=dv&&(hdr10p||hdr10||hdr)?"DV+HDR":dv?"DV":hdr10p?"HDR10+":hdr10?"HDR10":hlg?"HLG":hdr?"HDR":"";
+  String release=releaseText(s),hdrFrom=release.isEmpty()?t:release;i.hdr=classifyHdr(hdrFrom);i.dvProfile=dvProfile(hdrFrom);
+  if(i.dvProfile==5&&(i.hdr.startsWith("DV")||i.hdr.isEmpty()))i.hdr="DV";else if(i.dvProfile>5&&("DV".equals(i.hdr)||i.hdr.isEmpty()))i.hdr="DV+HDR";
   i.codec=has(u,"\\bAV1\\b")?"AV1":has(u,"HEVC|X265|H\\.?265")?"HEVC":has(u,"\\bAVC\\b|X264|H\\.?264")?"AVC":has(u,"\\bVP9\\b")?"VP9":"";
   i.audio=has(u,"ATMOS")?"Atmos":has(u,"TRUEHD")?"TrueHD":has(u,"DTS-?HD|DTS:?X")?"DTS-HD":has(u,"\\bDTS\\b")?"DTS":has(u,"DDP|E-?AC-?3|DD\\+")?"DD+":has(u,"\\bAC-?3\\b|\\bDD5")?"AC3":has(u,"\\bAAC\\b")?"AAC":"";
   Matcher f=FPS.matcher(t);if(f.find())i.fps=f.group(1).replaceAll("\\.0+$","");

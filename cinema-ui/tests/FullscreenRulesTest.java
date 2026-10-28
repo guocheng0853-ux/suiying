@@ -1,7 +1,7 @@
 package com.guocheng.mediapocket;
 public class FullscreenRulesTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
- public static void main(String[]args){
+ public static void main(String[]args)throws Exception{
   // 0.1.152 只留三种画面模式，旧设置（拉伸、16:9、4:3、原始、无效值）读到时按智能满屏处理
   check(String.join(",",FullscreenRules.MODES).equals("smart,fit,crop"),"three modes only");
   check(FullscreenRules.MODES.length==FullscreenRules.LABELS.length&&FullscreenRules.ICONS.length==FullscreenRules.MODES.length,"labels and icons");
@@ -31,6 +31,11 @@ public class FullscreenRulesTest {
   float[] old=FullscreenRules.smart(3168,1440,1440,1080);check(old[0]==1f&&old[1]==1f,"4:3 is too far: keep full picture, do not distort");
   float[] same=FullscreenRules.smart(3168,1440,3168,1440);check(same[0]==1f&&same[1]==1f,"native ratio untouched");
   check(FullscreenRules.smart(0,0,1920,1080)[0]==1f,"unknown size");
+  check(!FullscreenRules.surfaceDirty(10,20,0,0,1,1,10,20,1,1),"unchanged surface is not rewritten on the 250ms pulse");
+  check(FullscreenRules.surfaceDirty(10,20,0,0,1,1.02f,10,20,1,1)&&FullscreenRules.surfaceDirty(10,20,3,0,1,1,10,20,1,1),"scale or translation changes still apply");
+  String mode=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/FullscreenMode.java"));
+  String chrome=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/PlayerChrome.java"));
+  check(mode.contains("surfaceDirty")&&chrome.contains("postDelayed(this,250)")&&chrome.contains("learnSize")&&chrome.contains("PlaybackRepair.tick"),"chrome stays on a 250ms pulse and skips a no-op scale write");
   int[] box=Media3ControlRules.box(3168,1440,1920,1080,"smart");check(box[0]>=3168&&box[1]>=1440&&box[1]<=1440*1.14,"Media3 smart box covers the screen with bounded crop");
   System.out.println("PASS: three aspect modes, legacy modes to smart fill, smart fill for 2.2:1 screens, pinch axes, pip clamp.");
  }

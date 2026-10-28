@@ -5,6 +5,7 @@ final class PlaybackRepair {
  private PlaybackRepair(){}
  static final Map<Activity,String> HANDLED=new WeakHashMap<>();
  static final Map<Activity,Boolean> PREMATURE=new WeakHashMap<>();
+ static final Map<Activity,String> ATTEMPT=new WeakHashMap<>();
  static void tick(Activity a){try{markRendered(a);}catch(Throwable ignored){}try{prematureEnd(a);}catch(Throwable ignored){}}
  static boolean premature(Activity a){prematureEnd(a);return Boolean.TRUE.equals(PREMATURE.get(a));}
  /** 视频轨已有尺寸、正在播、时间在走：替底座把 VLC 的「画面输出就绪」标上，下一次时间事件底座自己会走「出画面」流程。 */
@@ -13,12 +14,14 @@ final class PlaybackRepair {
   Object video=OnlineSubtitleSearch.field(a,"video");if(video==null)return;Object ready=OnlineSubtitleSearch.field(video,"outputReady");if(!(ready instanceof Boolean)||(Boolean)ready)return;
   Object player=OnlineSubtitleSearch.field(video,"player");if(player==null)return;
   boolean playing=Boolean.TRUE.equals(OnlineSubtitleSearch.call(player,"isPlaying",new Class<?>[0]));Object time=OnlineSubtitleSearch.call(player,"getTime",new Class<?>[0]);long t=time instanceof Number?((Number)time).longValue():0;
-  Object track=OnlineSubtitleSearch.call(player,"getCurrentVideoTrack",new Class<?>[0]);Object w=track==null?null:OnlineSubtitleSearch.field(track,"width");int width=w instanceof Integer?(Integer)w:0;
+  Object vw=OnlineSubtitleSearch.field(video,"vw");int width=vw instanceof Integer?(Integer)vw:0;
+  if(width<=0){Object track=OnlineSubtitleSearch.call(player,"getCurrentVideoTrack",new Class<?>[0]);Object w=track==null?null:OnlineSubtitleSearch.field(track,"width");width=w instanceof Integer?(Integer)w:0;}
   if(!PlaybackEndRules.playingWithoutVout(false,false,playing,width,t))return;
   SourceSubtitleLoader.set(video,"outputReady",true);DebugLog.event("播放器","VLC 未发画面输出事件，按视频轨与时间推进确认已出画面");
  }
  /** EndReached（播放器 Ended）但离结尾还远：记下显式标记，恢复续播位置。失败卡片、Emby 自动恢复和自动下一集都看这个标记，不弹下一集。 */
  static void prematureEnd(Activity a){
+  String token=String.valueOf(OnlineSubtitleSearch.field(a,"attemptId"))+"|"+String.valueOf(OnlineSubtitleSearch.field(a,"id"));String prev=ATTEMPT.put(a,token);if(PlaybackEndRules.dropPremature(prev,token))PREMATURE.remove(a);
   if(!Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal")))return;
   String key=String.valueOf(OnlineSubtitleSearch.field(a,"attemptId"))+"|"+String.valueOf(OnlineSubtitleSearch.field(a,"id"));if(key.equals(HANDLED.get(a)))return;
   int state=playerState(a);if(!PlaybackEndRules.endReached(state))return;HANDLED.put(a,key);

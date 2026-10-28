@@ -14,5 +14,15 @@ public class StreamInfoTest {
   StreamInfo p=StreamInfo.parse(new JSONObject().put("infoHash","abc"));check(p.p2p&&StreamInfo.link(new JSONObject().put("infoHash","abc")).equals("magnet:?xt=urn:btih:abc"),"magnet");
   check(StreamInfo.minutes("134 min")==134&&StreamInfo.minutes("134")==134&&StreamInfo.minutes("")==0,"minutes");check(i.score(true)>j.score(true)&&j.score(true)>i.score(false),"score");
   check(StreamInfo.parse(new JSONObject().put("title","2 GiB")).bytes==2147483648L,"binary GiB size");
+  JSONObject strayHdr=new JSONObject().put("name","HDR Streams").put("title","Movie.2024.2160p.DV.HEVC");
+  StreamInfo pure=StreamInfo.parse(strayHdr);check("DV".equals(pure.hdr)&&pure.dvProfile<0,"addon name HDR does not invent a base layer: "+pure.hdr);
+  JSONObject strayDv=new JSONObject().put("name","DV").put("title","Movie.2024.2160p.HDR10.HEVC");
+  StreamInfo hdr10=StreamInfo.parse(strayDv);check("HDR10".equals(hdr10.hdr)&&!SourceCardRules.vlcRisky(hdr10),"addon name DV does not demote an HDR10 release");
+  StreamInfo p5=StreamInfo.parse(new JSONObject().put("title","Movie Dolby Vision Profile 5 HDR10 HEVC"));check(p5.dvProfile==5&&"DV".equals(p5.hdr)&&SourceCardRules.vlcRisky(p5),"profile 5 stays risky even if the title also says HDR10");
+  StreamInfo p8=StreamInfo.parse(new JSONObject().put("title","Movie Dolby Vision Profile 8.1 HEVC"));check(p8.dvProfile==8&&"DV+HDR".equals(p8.hdr)&&!SourceCardRules.vlcRisky(p8),"profile 8 is a real fallback, not pure DV");
+  StreamInfo zh=StreamInfo.parse(new JSONObject().put("title","电影 2160p 杜比视界 HEVC"));check("DV".equals(zh.hdr)&&SourceCardRules.vlcRisky(zh),"Chinese Dolby Vision without HDR is pure DV");
+  StreamInfo both=StreamInfo.parse(new JSONObject().put("title","Movie 2160p DV HDR HEVC"));check("DV+HDR".equals(both.hdr)&&!SourceCardRules.vlcRisky(both),"DV HDR on the release line stays a fallback");
+  StreamInfo dvd=StreamInfo.parse(new JSONObject().put("title","Movie DVDRip x264"));check(dvd.hdr.isEmpty()&&!SourceCardRules.vlcRisky(dvd),"DVDRip is not Dolby Vision");
+  StreamInfo avcProfile=StreamInfo.parse(new JSONObject().put("title","Movie 1080p x264 High Profile 5.1"));check(avcProfile.dvProfile<0&&avcProfile.hdr.isEmpty(),"High Profile 5.1 is not Dolby Profile 5");
   System.out.println("PASS: stream title parsing (resolution/HDR/DV/codec/audio/fps/size/seeds), bitrate estimate, filters, ranking, magnet link.");}
 }

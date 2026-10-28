@@ -39,4 +39,11 @@ final class PlaybackEndRules {
  static String pathPattern(String path){if(path==null)return "";String p=path;int q=p.indexOf('?');if(q>=0)p=p.substring(0,q);return p.replaceAll("/[0-9a-fA-F]{16,}(?=/|$)","/{id}").replaceAll("/\\d+(?=/|$)","/{n}");}
  /** 手动切换解码只对当前这次播放有效；旧版本留下的「软解」在升级后回到自动（硬解优先）。 */
  static boolean resetLegacyDecode(String mode,boolean migrated){return !migrated&&"software".equals(mode);}
+ /**
+  * 播放中改过解码会留下 open 标记。正常退出会清掉；进程在播放中被杀则标记还在，
+  * 下次冷启动按切换前的档还原。空串表示原来没有这项偏好。返回 null 表示这次不用动。
+  */
+ static String[] unwindDecodeSession(boolean open,String prevMode,String prevTier){if(!open)return null;return new String[]{prevMode==null?"":prevMode,prevTier==null?"":prevTier};}
+ /** 换了一次播放（attempt 或片源 id）就丢掉上一次的提前断流标记。第一次见到不丢。 */
+ static boolean dropPremature(String previousAttempt,String attempt){return previousAttempt!=null&&!previousAttempt.equals(attempt);}
 }

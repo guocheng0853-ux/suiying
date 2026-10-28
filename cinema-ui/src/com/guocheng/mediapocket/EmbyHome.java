@@ -28,6 +28,7 @@ final class EmbyHome {
  static final long BROKEN_MS=6*3600*1000L;
  static boolean skipping(JSONObject server,String what){Long until=BROKEN.get(server.optString("id")+"|"+what);return until!=null&&until>System.currentTimeMillis();}
  static JSONObject remember(JSONObject server,String what,java.util.concurrent.Callable<JSONObject> call)throws Exception{try{return call.call();}catch(java.io.IOException e){String m=String.valueOf(e.getMessage());if(m.startsWith("HTTP 5")){BROKEN.put(server.optString("id")+"|"+what,System.currentTimeMillis()+BROKEN_MS);DebugLog.event("Emby","首页"+("sections".equals(what)?"分区顺序":"媒体库最新")+"接口服务器出错，6 小时内先不请求，用默认显示");}throw e;}}
+ static JSONObject latestOrKept(ScrapedMainActivity a,JSONObject server,String id)throws Exception{if(skipping(server,"latest:"+id)){JSONObject kept=EmbyCue.cachedLatest(readCache(a,server),id);DebugLog.event("Emby",kept.has("Items")?"媒体库最新接口冷却中，继续显示上次的内容":"媒体库最新接口冷却中，没有上次的内容");return kept;}try{return remember(server,"latest:"+id,()->EmbyClient.latest(a,server,id));}catch(java.io.IOException e){JSONObject kept=EmbyCue.cachedLatest(readCache(a,server),id);if(kept.has("Items"))return kept;throw e;}}
  static JSONObject fetch(ScrapedMainActivity a,JSONObject server,java.util.function.Consumer<JSONObject> partial)throws Exception{return fetch(a,server,partial,0L);}
  static int waitMs(long deadlineNs,long nowNs,int capMs){return AggregateRules.waitMs(deadlineNs,nowNs,capMs);}
  static JSONObject fetch(ScrapedMainActivity a,JSONObject server,java.util.function.Consumer<JSONObject> partial,long budgetMs)throws Exception{
@@ -38,7 +39,7 @@ final class EmbyHome {
   catch(Exception e){resume=new JSONArray();failure=unwrap(e);}
   // 继续观看一回来就交给调用方先画。聚合首页也会传入这个回调，不再传空。
   if(partial!=null&&resume.length()>0){JSONArray order=new JSONArray();for(String sec:EmbyCue.homeOrder(null))order.put(sec);partial.accept(new JSONObject().put("resume",resume).put("next",new JSONArray()).put("heroes",EmbyCue.pickHeroes(resume,new JSONArray())).put("order",order).put("libs",new JSONArray()).put("latest",new JSONArray()));}
-  Future<JSONObject> nextF=FETCH.submit(()->EmbyClient.nextUp(a,server)),viewsF=FETCH.submit(()->EmbyClient.views(a,server)),orderF=FETCH.submit(()->skipping(server,"sections")?new JSONObject():remember(server,"sections",()->EmbyClient.homeSections(a,server)));
+  Future<JSONObject> nextF=FETCH.submit(()->EmbyClient.nextUp(a,server)),viewsF=FETCH.submit(()->EmbyClient.views(a,server)),orderF=FETCH.submit(()->skipping(server,"sections")?new JSONObject():remember(server,"sections",()->EmbyClient.homeSections(a,server))); // 分区顺序冷却仍交空对象：homeOrder(null) 用默认顺序，不是空白首页
   JSONArray next;try{next=EmbyCue.withoutResume(rows(awaitObj(nextF,deadline)),resume);}catch(Exception e){next=new JSONArray();}
   JSONArray views;try{views=rows(awaitObj(viewsF,deadline));}catch(Exception e){views=new JSONArray();if(failure==null)failure=unwrap(e);}
   if(failure!=null&&resume.length()==0&&views.length()==0)throw failure;
@@ -46,7 +47,7 @@ final class EmbyHome {
   boolean latestWanted=false;for(String s:order)if("latest".equals(s)||"libraries".equals(s))latestWanted=true;
   JSONArray libs=new JSONArray();for(JSONObject lib:libraries(views))if(!EmbyCue.hidden(server,lib.optString("Id")))libs.put(lib);
   JSONArray latest=new JSONArray(),flat=new JSONArray();
-  if(latestWanted){ArrayList<Future<JSONObject>> jobs=new ArrayList<>();for(int i=0;i<libs.length();i++){String id=libs.optJSONObject(i).optString("Id");jobs.add(FETCH.submit(()->skipping(server,"latest:"+id)?new JSONObject():remember(server,"latest:"+id,()->EmbyClient.latest(a,server,id))));}
+  if(latestWanted){ArrayList<Future<JSONObject>> jobs=new ArrayList<>();for(int i=0;i<libs.length();i++){String id=libs.optJSONObject(i).optString("Id");jobs.add(FETCH.submit(()->latestOrKept(a,server,id)));}
    for(Future<JSONObject> f:jobs){JSONArray items;try{items=rows(awaitObj(f,deadline));}catch(Exception e){items=new JSONArray();}latest.put(items);for(int i=0;i<items.length();i++)flat.put(items.opt(i));}}
   JSONArray orderJson=new JSONArray();for(String s:order)orderJson.put(s);
   return new JSONObject().put("resume",resume).put("next",next).put("heroes",EmbyCue.pickHeroes(resume,flat)).put("order",orderJson).put("libs",libs).put("latest",latest);

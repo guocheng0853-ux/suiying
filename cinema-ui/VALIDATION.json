@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.156",
+  "ui_version": "0.1.157",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -22,7 +22,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 9269,
   "dex_files": 3,
-  "main_version_code": 157,
+  "main_version_code": 158,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
@@ -34,7 +34,7 @@
   "header_route_patch": "VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)",
   "jvm_playback_chain_test": "HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.",
   "real_source_playback_tested": true,
-  "real_source_note": "Matches device_test_scope: 0.1.155 on PJZ110 played real Stremio and Emby 1080P direct, and OPD2401 played a real episode. Tip had this flag false while that prose described the playback, and verify_apk rewrote android_device_tested to false. 0.1.156 was not played again. dolby_android_device_tested stays false.",
+  "real_source_note": "Matches device_test_scope: 0.1.155 on PJZ110 played real Stremio and Emby 1080P direct, and OPD2401 played a real episode. 0.1.156 and 0.1.157 were not played again. dolby_android_device_tested stays false.",
   "stremio_picker_android_ui_tested": false,
   "web_sniffer_android_tested": false,
   "link_probe_android_tested": false,
@@ -44,11 +44,13 @@
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
   "signed_apk_sha256": "840326ed4217818370c2878298b3a4ac0db6efd28cb856006717fca27de8a5d0",
-  "device_test_scope": "0.1.156 (code 157) was not run on a device. Inherited 0.1.155 (code 156) notes, not a formal acceptance and not a Dolby test: PJZ110 Android17 launch + real Stremio playback + Emby 1080P direct playback verified; OPD2401 Android16 launch + home render + real episode playback verified",
-  "device_acceptance_record": "none for 0.1.156; none for 0.1.155; last formal acceptance is 0.1.149: docs/handoff/acceptance-0149.md",
+  "device_test_scope": "0.1.157 (code 158) was not run on a device. Inherited 0.1.155 (code 156) notes, not a formal acceptance and not a Dolby test: PJZ110 Android17 launch + real Stremio playback + Emby 1080P direct playback verified; OPD2401 Android16 launch + home render + real episode playback verified",
+  "device_acceptance_record": "none for 0.1.157; none for 0.1.156; none for 0.1.155; last formal acceptance is 0.1.149: docs/handoff/acceptance-0149.md",
   "device_cleanup_verified": false,
   "original_servers_preserved": 3,
   "phone_tested_this_release": false,
-  "validation_flags_note": "android_device_tested and real_source_playback_tested follow the 0.1.155 device_test_scope (real Stremio, Emby 1080P, OPD2401 episode) and are not a 0.1.156 retest. phone_tested_this_release is false because 0.1.156 itself was not run on a phone. dolby_android_device_tested is false: Dolby was not device-tested. device_acceptance_record has no formal acceptance for 0.1.155 or 0.1.156. verify_apk keeps these recorded keys and still forces dolby_android_device_tested false. signed_apk_sha256 is still the 0.1.155 package.",
+  "validation_flags_note": "android_device_tested and real_source_playback_tested follow the 0.1.155 device_test_scope (real Stremio, Emby 1080P, OPD2401 episode) and are not a 0.1.157 retest. phone_tested_this_release is false because 0.1.157 itself was not run on a phone. dolby_android_device_tested is false: Dolby was not device-tested. device_acceptance_record has no formal acceptance for 0.1.155, 0.1.156, or 0.1.157. verify_apk keeps these recorded keys and still forces dolby_android_device_tested false. signed_apk_sha256 is still the 0.1.155 package.",
+  "source_rank_rule": "0.1.157: pure DV is demoted on VLC. DV plus HDR/HDR10/HLG on the filename or the first title line is not. Addon name and description do not change that. Explicit Dolby profile 5 is always demoted; profile 7+ counts as DV+HDR. DVD/DVB is not DV.",
+  "build_verify_note": "After editing cinema-ui/build_ui.py or cinema-ui/build/build_win.py, run cinema-ui/verify_apk.py. Both scripts apply the same 7 patches, including PatchPlaybackBackend, and verify_apk asserts all 7 PATCH_MARKS. 0.1.157 did not change the patch chain.",
   "playback_backend_patch": "two creation-time selections verified with unchanged register count/code units and all other instructions preserved"
 }
