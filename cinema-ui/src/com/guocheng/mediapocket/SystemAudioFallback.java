@@ -12,8 +12,9 @@ import org.json.*;
  */
 final class SystemAudioFallback {
  static final String TOAST="音轨格式系统不支持，已切换 VLC";
- static final int PLAYER_TYPE_MEDIAPLAYER=2,PLAYER_STATE_STARTED=2;
+ static final int PLAYER_STATE_STARTED=2;
  static final Map<Activity,Boolean> DONE=new WeakHashMap<>();
+ static final Map<Activity,Integer> TRIES=new WeakHashMap<>();
  static final Map<Activity,Long> SHOWN=new WeakHashMap<>();
  static final Map<Activity,Integer> INFO=new WeakHashMap<>();
  static final Map<Object,Boolean> WATCHED=Collections.synchronizedMap(new WeakHashMap<>());
@@ -34,9 +35,10 @@ final class SystemAudioFallback {
   String hint=PlaybackBackendRules.audioHint(stream==null?"":StreamInfo.text(stream),stream==null?"":stream.optString("mp.magnetName"),stream==null?"":stream.optString("url"),name==null?"":name.toString());
   boolean risky=(stream!=null&&DolbyRules.risky(stream.optString("dolby.kind")))||PlaybackBackendRules.riskyHint(hint);
   Probe probe=probe(player);boolean already=a.getIntent().getBooleanExtra(PlaybackBackend.VLC,false);
-  if(!PlaybackBackendRules.runtimeAudioFallback(true,risky,already,playing,rendered,since,info,probe.known,probe.count,probe.selectionKnown,probe.selectedPlayable,probe.selectedUnsupported,probe.anyPlayable,probe.anyUnsupported,idleMediaPlayer(a),volume(a)))return;
+  if(!PlaybackBackendRules.runtimeAudioFallback(true,risky,already,playing,rendered,since,info,probe.known,probe.count,probe.selectionKnown,probe.selectedPlayable,probe.selectedUnsupported,probe.anyPlayable,probe.anyUnsupported,idleMediaPlayer(a),volume(a),PlaybackBackendRules.cinemaHint(hint)))return;
   Object url=OnlineSubtitleSearch.field(a,"url");if(!(url instanceof String)||((String)url).isEmpty())return;
-  DONE.put(a,Boolean.TRUE);reopen(a);
+  int next=(TRIES.containsKey(a)?TRIES.get(a):0)+1;TRIES.put(a,next);
+  if(PlaybackBackendRules.audioSwitchSettled(reopen(a),next))DONE.put(a,Boolean.TRUE);
  }catch(RuntimeException ignored){}}
  /** 包住原来的 OnInfo，保留 3 / 701 / 702。部分机型解不了音轨时会给 804。 */
  /** 只在读到原来的 OnInfoListener 时才包一层。读不到字段就保持底座的 3 / 701 / 702，改靠音轨 MIME 和音频会话判断。 */
@@ -49,7 +51,8 @@ final class SystemAudioFallback {
  }catch(RuntimeException ignored){}return p;}
  /** 空 mime 不算能播。普通 AAC / MP3 / Opus 不算影院音轨，留给系统播放器。 */
  static boolean playable(String mime,Set<String> types){if(mime==null||mime.isEmpty())return false;if(!PlaybackBackendRules.cinemaMime(mime))return true;return types!=null&&types.contains(mime.toLowerCase(Locale.ROOT));}
- /** 看到本应用的 MediaPlayer 音频会话，且没有一个处于 STARTED。方法用反射，避免 API 26 的类校验在 API 31 方法上失败。看不到会话不等于无声。 */
- static boolean idleMediaPlayer(Activity a){try{AudioManager am=(AudioManager)a.getSystemService(Activity.AUDIO_SERVICE);if(am==null)return false;boolean saw=false,started=false;for(AudioPlaybackConfiguration c:am.getActivePlaybackConfigurations()){Object type=c.getClass().getMethod("getPlayerType").invoke(c);if(!(type instanceof Integer)||((Integer)type)!=PLAYER_TYPE_MEDIAPLAYER)continue;saw=true;Object state=c.getClass().getMethod("getPlayerState").invoke(c);if(state instanceof Integer&&((Integer)state)==PLAYER_STATE_STARTED)started=true;}return saw&&!started;}catch(Throwable e){return false;}}
- static void reopen(Activity a){int pos=0;try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"getCurrentPosition",new Class<?>[0]);if(r instanceof Integer)pos=(Integer)r;}catch(Exception ignored){}Object id=OnlineSubtitleSearch.field(a,"id");if(pos>0&&id!=null)a.getSharedPreferences("data",0).edit().putInt("pos:"+id,pos).apply();try{a.getIntent().putExtra(PlaybackBackend.VLC,true);}catch(RuntimeException ignored){}Toast.makeText(a,TOAST,Toast.LENGTH_SHORT).show();DebugLog.event("音频",TOAST);try{OnlineSubtitleSearch.call(a,"retryCurrentDecoder",new Class<?>[0]);}catch(Exception e){DebugLog.event("音频","切换 VLC 失败");return;}if(pos<=1000)return;int keep=pos;View decor=a.getWindow()==null?null:a.getWindow().getDecorView();if(decor==null)return;decor.postDelayed(()->EmbyPlayback.seek(a,keep),700);decor.postDelayed(()->EmbyPlayback.seek(a,keep),1600);}
+ /** 只统计本应用 uid 下的 MediaPlayer。uid 或类型读不到就不算 idle，避免把别的应用的空闲播放器当成自己无声。 */
+ static boolean idleMediaPlayer(Activity a){try{AudioManager am=(AudioManager)a.getSystemService(Activity.AUDIO_SERVICE);if(am==null)return false;int app=android.os.Process.myUid(),own=0,started=0;for(AudioPlaybackConfiguration c:am.getActivePlaybackConfigurations()){boolean typeKnown=false,uidKnown=false;int type=-1,uid=-1;try{Object raw=c.getClass().getMethod("getPlayerType").invoke(c);if(raw instanceof Integer){type=(Integer)raw;typeKnown=true;}}catch(Throwable ignored){}try{Object raw=c.getClass().getMethod("getClientUid").invoke(c);if(raw instanceof Integer){uid=(Integer)raw;uidKnown=true;}}catch(Throwable ignored){}if(!PlaybackBackendRules.countsAsOwnMediaPlayer(uidKnown,uid,app,typeKnown,type))continue;own++;try{Object state=c.getClass().getMethod("getPlayerState").invoke(c);if(state instanceof Integer&&(Integer)state==PLAYER_STATE_STARTED)started++;}catch(Throwable ignored){}}return PlaybackBackendRules.idleFromOwnPlayers(own,started);}catch(Throwable e){return false;}}
+ /** 换成 VLC 表面才返回 true。调用抛错或底座提前返回时不提示，调用方可以再试。 */
+ static boolean reopen(Activity a){int pos=0;try{Object video=OnlineSubtitleSearch.field(a,"video");Object r=video==null?null:OnlineSubtitleSearch.call(video,"getCurrentPosition",new Class<?>[0]);if(r instanceof Integer)pos=(Integer)r;}catch(Exception ignored){}Object id=OnlineSubtitleSearch.field(a,"id");if(pos>0&&id!=null)a.getSharedPreferences("data",0).edit().putInt("pos:"+id,pos).apply();try{a.getIntent().putExtra(PlaybackBackend.VLC,true);}catch(RuntimeException ignored){}try{OnlineSubtitleSearch.call(a,"retryCurrentDecoder",new Class<?>[0]);}catch(Exception e){DebugLog.event("音频","切换 VLC 失败");return false;}Object video=OnlineSubtitleSearch.field(a,"video");if(video==null||!video.getClass().getName().endsWith("VlcPlayback"))return false;Toast.makeText(a,TOAST,Toast.LENGTH_SHORT).show();DebugLog.event("音频",TOAST);if(pos<=1000)return true;int keep=pos;View decor=a.getWindow()==null?null:a.getWindow().getDecorView();if(decor!=null){decor.postDelayed(()->EmbyPlayback.seek(a,keep),700);decor.postDelayed(()->EmbyPlayback.seek(a,keep),1600);}return true;}
 }
