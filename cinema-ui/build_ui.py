@@ -22,8 +22,8 @@ with zipfile.ZipFile(work/'stubs.jar','w') as z:
 (work/'dex').mkdir(exist_ok=True)
 run(bt/'d8','--min-api','26','--lib',sdk,'--classpath',work/'stubs.jar','--classpath',work/'runtime.jar','--output',work/'dex',work/'ui.jar')
 jadx=tools/'jadx/lib/jadx-1.5.3-all.jar'
-# 改这条补丁链，或 cinema-ui/build/build_win.py 里同一条链，之后必须跑 verify_apk.py。终检断言 7 个 PATCH_MARKS（含 PatchPlaybackBackend）；只改脚本不跑 verify，缺补丁的包会漏出去。
-run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java',root/'tools/PatchHeaderRoute.java',root/'tools/PatchTorrentBoost.java',root/'tools/PatchPieceReads.java',root/'tools/PatchPlaybackOrientation.java',root/'tools/PatchPlaybackBackend.java')
+# 改这条补丁链，或 cinema-ui/build/build_win.py 里同一条链，之后必须跑 verify_apk.py。终检断言 8 个 PATCH_MARKS（含 PatchPlaybackBackend、PatchDecodePolicy）；只改脚本不跑 verify，缺补丁的包会漏出去。
+run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java',root/'tools/PatchHeaderRoute.java',root/'tools/PatchTorrentBoost.java',root/'tools/PatchPieceReads.java',root/'tools/PatchPlaybackOrientation.java',root/'tools/PatchPlaybackBackend.java',root/'tools/PatchDecodePolicy.java')
 with zipfile.ZipFile(root/'base.apk') as base:
  (work/'original-main.dex').write_bytes(base.read('classes.dex'))
 (work/'patched-main.dex').unlink(missing_ok=True)
@@ -76,7 +76,9 @@ assert final_dex[torrent_name][:4]==b'dex\n'
 (work/'patched-orientation.dex').unlink(missing_ok=True)
 run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchPlaybackOrientation',work/'patched-piece-reads.dex',work/'patched-orientation.dex')
 run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchPlaybackBackend',work/'patched-orientation.dex',work/'patched-backend.dex')
-final_dex[torrent_name]=(work/'patched-backend.dex').read_bytes()
+# 0.1.162：自动档先硬解。VlcPlayback 构造改调 DecodePolicyRules，黑屏仍走原来的 retry。
+run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchDecodePolicy',work/'patched-backend.dex',work/'patched-decode.dex')
+final_dex[torrent_name]=(work/'patched-decode.dex').read_bytes()
 assert final_dex[torrent_name][:4]==b'dex\n'
 # 真实默认配置含个人令牌，不入库；缺失时用脱敏样例（打包名仍为 fusion-default.json）
 if not (root/'assets/fusion-default.json').exists():
@@ -115,7 +117,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
     out.write(p,n)
  out.write(root/'RUNTIME-LICENSE.md','assets/Fusion-runtime-license.txt')
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.161-p2p-seed-ranking-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.162-system-audio-vlc-arm64.apk'
 ks=Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks')))
 unsigned='--unsigned' in sys.argv
 if ks.is_file() and not unsigned:
@@ -133,5 +135,5 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
   if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
    if n in final_dex:continue
    assert base.read(n)==updated.read(n),n;preserved.append(n)
- (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.161','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
+ (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.162','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2))
 print(subprocess.check_output([str(bt/'aapt2'),'dump','badging',str(apk)]).decode().splitlines()[0]);print(apk)
