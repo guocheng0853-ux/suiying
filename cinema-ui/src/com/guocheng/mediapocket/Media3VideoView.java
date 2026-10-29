@@ -47,7 +47,7 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
  }
  @Override protected void onSizeChanged(int w,int h,int ow,int oh){super.onSizeChanged(w,h,ow,oh);fit();}
  void restoreViewport(){requestLayout();post(()->{surface.setTranslationX(0);surface.setTranslationY(0);surface.requestLayout();fit();});}
- void fit(){int[] dimensions=Media3ControlRules.box(getWidth(),getHeight(),width,height,aspect,getResources().getConfiguration().smallestScreenWidthDp);if(dimensions[0]<=0||dimensions[1]<=0)return;LayoutParams p=(LayoutParams)surface.getLayoutParams();if(p.width!=dimensions[0]||p.height!=dimensions[1]){p.width=dimensions[0];p.height=dimensions[1];p.gravity=Gravity.CENTER;surface.setLayoutParams(p);}surface.setScaleX(zoom);surface.setScaleY(zoom);}
+ void fit(){float[] place=Media3ControlRules.place(getWidth(),getHeight(),width,height,aspect,getResources().getConfiguration().smallestScreenWidthDp);if(place[0]<=0||place[1]<=0)return;int w=Math.round(place[0]),h=Math.round(place[1]);LayoutParams p=(LayoutParams)surface.getLayoutParams();if(p.width!=w||p.height!=h){p.width=w;p.height=h;p.gravity=Gravity.CENTER;surface.setLayoutParams(p);}if(place[2]!=1f||place[3]!=1f){surface.setPivotX(w/2f);surface.setPivotY(h/2f);}surface.setScaleX(zoom*place[2]);surface.setScaleY(zoom*place[3]);}
  void aspect(String mode){aspect=mode;zoom=1f;fit();}void zoom(float amount){zoom=FullscreenRules.clamp(amount);fit();}
  void speed(float rate){if(player!=null)player.setPlaybackSpeed(PlaybackPrefs.clampRate(rate));}
  float speed(){return player==null?1f:player.getPlaybackParameters().speed;}

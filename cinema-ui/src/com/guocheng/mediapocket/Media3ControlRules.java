@@ -14,5 +14,18 @@ final class Media3ControlRules {
   if(crop?height<parentH:height>parentH){height=parentH;width=height*ratio;}
   return new int[]{Math.max(1,(int)Math.round(width)),Math.max(1,(int)Math.round(height))};
  }
+ /**
+  * What Media3 actually applies: layout width, layout height, scaleX, scaleY (before pinch zoom).
+  * Tablet smart keeps an aspect-correct fit surface and stretches it with independent scales.
+  * Putting the stretch into the surface size would letterbox inside the decoder. Phone smart still
+  * bakes its capped scale into the surface size and leaves the view scale at 1.
+  */
+ static float[] place(int parentW,int parentH,int videoW,int videoH,String mode,int smallestWidthDp){
+  boolean stretch=FullscreenRules.tabletStretch(mode,smallestWidthDp)&&parentW>0&&parentH>0&&videoW>0&&videoH>0;
+  int[] size=stretch?box(parentW,parentH,videoW,videoH,"fit"):box(parentW,parentH,videoW,videoH,mode,smallestWidthDp);
+  float sx=1f,sy=1f;
+  if(stretch){float[] f=FullscreenRules.smart(parentW,parentH,videoW,videoH,smallestWidthDp);sx=f[0];sy=f[1];}
+  return new float[]{size[0],size[1],sx,sy};
+ }
  static int seek(int current,int duration,int delta){long target=(long)current+delta;return (int)Math.max(0,Math.min(duration>0?duration:Integer.MAX_VALUE,target));}
 }

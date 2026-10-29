@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.159",
-  "android_device_tested": true,
+  "ui_version": "0.1.160",
+  "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -22,7 +22,7 @@
   "apk_class_resolution": "passed",
   "unique_classes": 9273,
   "dex_files": 3,
-  "main_version_code": 160,
+  "main_version_code": 161,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
@@ -42,12 +42,10 @@
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
   "real_source_playback_tested": false,
-  "real_source_note": "This release uses synthetic local H.264/AAC playback on OPD2401 only.",
+  "real_source_note": "0.1.160 was not played on a device. Tablet stretch-to-fill is covered by JVM rules only. 0.1.159 synthetic playback does not cover this change.",
   "phone_tested_this_release": false,
-  "device_test_scope": "OPD2401: actual VLC and Media3 fit/smart/fit comparison in 3000x2120 landscape window; playback progress; final installed APK hash. No phone hardware, real Dolby/HDR or real server transcode.",
-  "device_acceptance_record": "docs/handoff/tablet-smart-fill-0159.md",
-  "device_cleanup_verified": true,
-  "apk_sha256": "2cd3dcf6c411fa968241c197958b7602d124ff43fc59eba20097f080bd9f7d24",
-  "original_signing_certificate_verified": true,
-  "zipalign_16k_verified": true
+  "device_test_scope": "0.1.160 (code 161) was not run on a device. JVM rules cover tablet stretch-fill versus the unchanged phone smart-fill.",
+  "device_acceptance_record": "none for 0.1.160; 0.1.159 synthetic notes are docs/handoff/tablet-smart-fill-0159.md",
+  "device_cleanup_verified": false,
+  "validation_flags_note": "android_device_tested is false because 0.1.160 itself was not run on a device. dolby_android_device_tested is false."
 }
