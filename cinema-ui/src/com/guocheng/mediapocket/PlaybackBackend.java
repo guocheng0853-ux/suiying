@@ -15,5 +15,6 @@ final class PlaybackBackend {
  }
  static void decorate(Activity a,Intent in,boolean audioFallback,boolean sameItem){if((sameItem&&a.getIntent().getBooleanExtra(VLC,false))||audioFallback)in.putExtra(VLC,true);}
  /** Called by the two verified base-dex selection sites, before player creation. */
- public static boolean preferVlc(Object owner){if(!(owner instanceof Activity))return false;Activity a=(Activity)owner;return PlaybackBackendRules.preferVlc(a.getIntent().getBooleanExtra(VLC,false),a.getSharedPreferences("data",0).getBoolean("useVlc",false));}
+ public static boolean preferVlc(Object owner){if(!(owner instanceof Activity))return false;Activity a=(Activity)owner;JSONObject stream=streamOf(a);Object name=OnlineSubtitleSearch.field(a,"name");String hint=PlaybackBackendRules.audioHint(stream==null?"":StreamInfo.text(stream),stream==null?"":stream.optString("mp.magnetName"),stream==null?"":stream.optString("url"),name==null?"":String.valueOf(name));boolean risky=stream!=null&&DolbyRules.risky(stream.optString("dolby.kind"));return PlaybackBackendRules.preferVlcForSource(a.getIntent().getBooleanExtra(VLC,false),a.getSharedPreferences("data",0).getBoolean("useVlc",false),hint,risky,supported());}
+ static JSONObject streamOf(Activity a){Object field=OnlineSubtitleSearch.field(a,"stream");if(field instanceof JSONObject)return (JSONObject)field;try{String raw=a.getIntent().getStringExtra("stream");if(raw!=null&&!raw.isEmpty())return new JSONObject(raw);}catch(Exception ignored){}return null;}
 }
