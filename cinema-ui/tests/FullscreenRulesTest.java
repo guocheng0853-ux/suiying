@@ -29,6 +29,16 @@ public class FullscreenRulesTest {
   check(wide[0]/wide[1]<=1+FullscreenRules.SMART_STRETCH+1e-4,"16:9 stretch stays under 10%");
   float[] scope=FullscreenRules.smart(3168,1440,2390,1000);check(scope[0]==scope[1]&&scope[0]>1f&&scope[0]<1.1f,"2.39:1 film: crop the sides only, no stretch");
   float[] old=FullscreenRules.smart(3168,1440,1440,1080);check(old[0]==1f&&old[1]==1f,"4:3 is too far: keep full picture, do not distort");
+  float[] pad=FullscreenRules.smart(3000,2120,1920,1080,600);
+  check(pad[0]>1f&&pad[1]>1f,"OPD2401 16:9 now fills instead of falling back to fit");
+  check(Math.max(pad[0],pad[1])/Math.min(pad[0],pad[1])<=1+FullscreenRules.SMART_STRETCH+1e-4,"tablet distortion remains bounded");
+  check(Math.min(pad[0],pad[1])<=1/(1-FullscreenRules.TABLET_SMART_CROP)+1e-4,"tablet crop stays bounded");
+  float[] ipad=FullscreenRules.smart(2048,1536,1920,1080,768);check(ipad[0]>1f&&ipad[1]>1f,"4:3 tablet fills 16:9");
+  check(FullscreenRules.smart(3000,2120,1920,1080,599)[0]==1f,"phone classification keeps the previous crop cap");
+  float[] phone=FullscreenRules.smart(3168,1440,1920,1080,411);check(phone[0]==wide[0]&&phone[1]==wide[1],"explicit phone classification preserves existing output");
+  float[] filmPad=FullscreenRules.smart(3000,2120,2390,1000,800);check(filmPad[0]==1f&&filmPad[1]==1f,"very wide films keep full picture rather than extreme stretching");
+  check(FullscreenRules.smart(2120,3000,1920,1080,800)[0]==1f&&FullscreenRules.smart(0,2120,1920,1080,800)[0]==1f,"portrait and unknown windows remain safe");
+  check(FullscreenRules.visibleNext("smart",3000,2120,1920,1080,800).equals("fit"),"tablet quick switch compares against the actual filled picture");
   float[] same=FullscreenRules.smart(3168,1440,3168,1440);check(same[0]==1f&&same[1]==1f,"native ratio untouched");
   check(FullscreenRules.smart(0,0,1920,1080)[0]==1f,"unknown size");
   check(!FullscreenRules.surfaceDirty(10,20,0,0,1,1,10,20,1,1),"unchanged surface is not rewritten on the 250ms pulse");
