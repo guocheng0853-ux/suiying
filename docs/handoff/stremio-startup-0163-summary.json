@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-30",
+  "baseline": "5cf660e",
+  "version": "0.1.163",
+  "code": 164,
+  "build": {
+    "version": "0.1.163",
+    "code": 164,
+    "tests": 99,
+    "size": 37075509,
+    "sha256": "3874635e58fd842f659f0047b2c1336f07eb42518a434ff1f01888123a36029e",
+    "original_certificate_verified": true,
+    "zipalign_16k_verified": true
+  },
+  "device": "OPD2401 / Android16",
+  "prior_log_observation": {
+    "installed_version_when_read": "0.1.162",
+    "event_version_not_proven": true,
+    "tail_connected_peers": [
+      10,
+      14
+    ],
+    "tail_download_kbps": [
+      38.1,
+      81.3
+    ],
+    "queue_confirmation": [
+      [
+        2,
+        27
+      ]
+    ],
+    "no_urls_titles_hashes_or_credentials_exported": true
+  },
+  "controlled_android_acceptance": {
+    "controlled_statistics": true,
+    "elapsed_and_slow_window_preconditioned": true,
+    "real_torrent_download_tested": false,
+    "apk_sha256": "3874635e58fd842f659f0047b2c1336f07eb42518a434ff1f01888123a36029e",
+    "selected_source_preserved": true,
+    "metadata_kept": true,
+    "fast_kept": true,
+    "unknown_runtime_kept": true,
+    "auto_off_kept": true,
+    "rendered_kept": true,
+    "stale_kept": true,
+    "backup_direct_at_queue_2": true,
+    "trigger_to_playing_ms": 1391,
+    "progress_ms": [
+      1152,
+      2404
+    ],
+    "no_backup_kept": true
+  },
+  "cleanup": {
+    "restore": {
+      "restored": true,
+      "servers": 3
+    },
+    "fixture_shutdown": {
+      "stopping": true
+    },
+    "preferences": {
+      "default_vlc": true,
+      "source_timeout_s": 30,
+      "source_timeout_type": "Integer",
+      "decode_mode": "hardware",
+      "decode_tier": "auto",
+      "test_journal_exists": false,
+      "synthetic_history_remaining": false
+    },
+    "helper_removed": true,
+    "system_settings_equal": true,
+    "adb_forward_baseline_equal": true,
+    "adb_reverse_baseline_equal": true,
+    "installed_apk_sha256": "3874635e58fd842f659f0047b2c1336f07eb42518a434ff1f01888123a36029e",
+    "app_running": true
+  },
+  "real_playback_feedback": {
+    "source": "human user in this chat",
+    "date": "2026-10-30",
+    "result": "Already displaying video",
+    "timing_comparison": false,
+    "specific_source_and_engine_not_collected": true
+  },
+  "limitations": [
+    "No matched real BT before/after throughput benchmark",
+    "No claim of increased peer bandwidth",
+    "Mid-play buffering recovery retains original behavior",
+    "Unknown metadata/runtime or no backup retains original behavior",
+    "Phone not tested this release",
+    "Real Dolby/HDR and server transcode not retested"
+  ]
+}
