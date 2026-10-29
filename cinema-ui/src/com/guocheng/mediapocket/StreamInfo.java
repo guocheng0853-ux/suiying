@@ -37,8 +37,31 @@ final class StreamInfo {
   if(hdrFilter.equals("hdr")&&hdr.isEmpty())return false;if(hdrFilter.equals("dv")&&!hdr.startsWith("DV"))return false;if(hdrFilter.equals("sdr")&&!hdr.isEmpty())return false;
   if(fpsFilter.equals("60")){double v=0;try{v=Double.parseDouble(fps);}catch(Exception ignored){}if(v<50)return false;}
   if(kind.equals("direct")&&p2p)return false;if(kind.equals("p2p")&&!p2p)return false;return true;}
- /** 推荐分：能播 > 分辨率 > HDR > 做种。 */
- int score(boolean playable){return (playable?1_000_000:0)+height*100+(hdr.isEmpty()?0:50)+Math.min(seeds<0?0:seeds,49);}
+ /**
+  * 推荐分。直链：能播 > 分辨率 > HDR > 做种，再加 {@link #DIRECT_BONUS}（同档直链比种子开播快）。
+  * 种子（0.1.161，用户反馈 Stremio 太慢）：P2P 快不快看做种人数和码率，不看分辨率。原规则下 5 人做种的 4K 原盘能压过
+  * 500 人做种的 1080p，自动选中后开播慢、中途卡。现在按做种人数给「有效分辨率」封顶：≥{@link #SEEDS_4K} 人才按 4K 算，
+  * ≥{@link #SEEDS_1080} 人按 1080p，≥{@link #SEEDS_720} 人按 720p，更少按 480p；体积超过 {@link #HEAVY_BYTES}（原盘 / Remux）
+  * 最多按 1080p 算并扣分。同一档里做种人数按对数加分，权重高于 HDR、和音轨偏好相当。被封顶的高分辨率片子比同档原生片子略低
+  * （同样流畅时选体积小的）。明确 0 人做种的排到其他可播放片源后面；没写做种人数的当 {@link #UNKNOWN_SEEDS} 人。
+  */
+ static final int SEEDS_4K=60,SEEDS_1080=12,SEEDS_720=4,UNKNOWN_SEEDS=8,DIRECT_BONUS=3000,NO_SEEDS_PENALTY=400_000;
+ static final long HEAVY_BYTES=25_000_000_000L;
+ int score(boolean playable){
+  int base=playable?1_000_000:0;
+  if(!p2p)return base+height*100+(hdr.isEmpty()?0:50)+Math.min(seeds<0?0:seeds,49)+(playable?DIRECT_BONUS:0);
+  return base+p2pScore();
+ }
+ /** 种子片源在「能播」之外的分数，见 {@link #score}。 */
+ int p2pScore(){
+  int s=seeds<0?UNKNOWN_SEEDS:seeds;boolean heavy=bytes>HEAVY_BYTES;
+  int cap=effectiveCap(s,heavy),eff=Math.min(height,cap);
+  int v=eff*100+(int)Math.round(60*Math.log1p(Math.min(s,2000)))+(hdr.isEmpty()?0:20);
+  if(height>eff)v-=height-eff;if(heavy)v-=2000;if(seeds==0)v-=NO_SEEDS_PENALTY;
+  return v;
+ }
+ /** 按做种人数（和是否原盘体积）能流畅播放的最高分辨率。 */
+ static int effectiveCap(int seeds,boolean heavy){int cap=seeds>=SEEDS_4K?2160:seeds>=SEEDS_1080?1080:seeds>=SEEDS_720?720:480;return heavy?Math.min(cap,1080):cap;}
  static String magnet(JSONObject s){String h=s.optString("infoHash");return h.isEmpty()?"":"magnet:?xt=urn:btih:"+h;}
  static String link(JSONObject s){String u=s.optString("url");return !u.isEmpty()?u:magnet(s);}
 }
