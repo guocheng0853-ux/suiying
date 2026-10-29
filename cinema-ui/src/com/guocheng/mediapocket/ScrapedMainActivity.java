@@ -274,6 +274,7 @@ public final class ScrapedMainActivity extends MainActivity {
   if(DetailMetadata.useful(meta)){final String metaKey="cinema.meta."+type+"."+id;job(()->{try{CacheFiles.of(this).write(metaKey,meta.toString());}catch(Exception ignored){}});}
   if(!type.equals("movie"))super.renderDetail(meta,id,type);detailChrome=new DetailChrome(this,meta,id,type);detailChrome.apply();updateInsets();if(restoreY>0)scroll.post(()->scroll.scrollTo(0,restoreY));
  }
+ @Override void play(JSONObject stream,String query,String type,JSONObject meta){if(query.equals(sourceEpisode)&&currentSources!=null)currentSources=TorrentStartupRules.backups(currentSources,PlaybackPrefs.audio(prefs));super.play(stream,query,type,meta);}
  void selectSource(String queryId,String type,JSONObject meta,boolean start){selectSource(queryId,type,meta,start,null);}
  void selectSource(String queryId,String type,JSONObject meta,boolean start,java.util.function.Consumer<JSONObject> selected){
   final int ticket=epoch;final String parent=detailId;final boolean ownerDetail=detailPage;

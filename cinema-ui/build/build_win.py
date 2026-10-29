@@ -135,7 +135,7 @@ final_dex[torrent_name]=patcher('PatchPieceReads','patched-torrent.dex','patched
 final_dex[torrent_name]=patcher('PatchPlaybackOrientation','patched-piece-reads.dex','patched-orientation.dex')
 # 0.1.148：PlayerActivity 两处 useVlc 读取改走 PlaybackBackend.preferVlc（音频兼容/VLC 入口）
 patcher('PatchPlaybackBackend','patched-orientation.dex','patched-backend.dex')
-# 0.1.162：自动档先硬解。VlcPlayback 构造改调 DecodePolicyRules，黑屏仍走原来的 retry。
+# 0.1.163：自动档先硬解。VlcPlayback 构造改调 DecodePolicyRules，黑屏仍走原来的 retry。
 final_dex[torrent_name]=patcher('PatchDecodePolicy','patched-backend.dex','patched-decode.dex')
 
 # 6. 真实默认配置含个人令牌，不入库；缺失时用脱敏样例（打包名仍为 fusion-default.json）
@@ -178,7 +178,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
 run(ZIPALIGN,'-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
 
 # 8. 签名 + 校验 + 稳定资产核对
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.162-system-audio-vlc-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.163-stremio-startup-arm64.apk'
 ks=Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks')))
 unsigned='--unsigned' in sys.argv
 if ks.is_file() and not unsigned:
@@ -196,5 +196,5 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
         if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
             if n in final_dex:continue
             assert base.read(n)==updated.read(n),n;preserved.append(n)
-    (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.162','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2),encoding='utf-8')
+    (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.163','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2),encoding='utf-8')
 print(subprocess.check_output([str(AAPT2),'dump','badging',str(apk)]).decode().splitlines()[0]);print('APK:',apk)
