@@ -2,7 +2,7 @@ package com.guocheng.mediapocket;
 final class FullscreenRules {
  /** 0.1.152 只留三种：智能满屏（默认）、完整画面、填满裁切。拉伸、强制 16:9 / 4:3、原始像素删掉，旧设置读到时按智能满屏处理；临时放大用双指缩放。 */
  static final String[] MODES={"smart","fit","crop"};
- static final String[] LABELS={"智能满屏 · 适量裁切加有限拉伸，智能适配屏幕","完整画面 · 不裁切，保留黑边","填满裁切 · 保持比例，裁掉多出的部分"};
+ static final String[] LABELS={"智能满屏 · 自动铺满屏幕","完整画面 · 不裁切，保留黑边","填满裁切 · 保持比例，裁掉多出的部分"};
  static final float MIN=0.5f,MAX=3f;
  static String mode(String saved,boolean migrated){for(String mode:MODES)if(mode.equals(saved))return mode;return "smart";}
  /**
@@ -12,19 +12,28 @@ final class FullscreenRules {
   *  例：16:9 → 2.2:1，等比放大 1.136（上下各裁 6%）、横向再拉 8.9%；2.39:1 电影 → 左右各裁约 4%，不拉伸。
   */
  static final float SMART_CROP=0.12f,SMART_STRETCH=0.10f;
- /** 平板最多裁去总画面的20%（每边10%），单向拉伸仍不超过10%；超出时保留完整画面。 */
- static final float TABLET_SMART_CROP=0.20f;
+ /**
+  * 0.1.160 平板（最短边 ≥ 600dp，与沉浸全屏同一条线）。智能满屏在「完整画面」表面上按窗口宽、高各自缩放，
+  * 刚好铺满，允许拉伸变形。不再使用裁切上限，差距再大也不退回黑边。已经贴边的那一侧倍率是 1，所以不会裁掉画面。
+  * 手机不走这里。
+  */
+ static boolean tabletStretch(String mode,int smallestWidthDp){return "smart".equals(mode)&&VideoFullscreenRules.tablet(smallestWidthDp);}
+ static float[] stretchFill(int screenW,int screenH,int videoW,int videoH){
+  int[] fit=Media3ControlRules.box(screenW,screenH,videoW,videoH,"fit");
+  if(fit[0]<=0||fit[1]<=0)return new float[]{1f,1f};
+  return new float[]{screenW/(float)fit[0],screenH/(float)fit[1]};
+ }
  static float[] smart(int screenW,int screenH,int videoW,int videoH){return smart(screenW,screenH,videoW,videoH,0);}
  static float[] smart(int screenW,int screenH,int videoW,int videoH,int smallestWidthDp){
   if(screenW<=0||screenH<=0||videoW<=0||videoH<=0)return new float[]{1f,1f};
+  if(tabletStretch("smart",smallestWidthDp))return stretchFill(screenW,screenH,videoW,videoH);
   double s=(double)screenW/screenH,v=(double)videoW/videoH;if(Math.abs(s/v-1)<0.005)return new float[]{1f,1f};
-  float crop=VideoFullscreenRules.tablet(smallestWidthDp)?TABLET_SMART_CROP:SMART_CROP;
-  boolean narrower=v<s;double need=narrower?s/v:v/s,u=Math.min(need,1/(1-crop)),rest=need/u;
+  boolean narrower=v<s;double need=narrower?s/v:v/s,u=Math.min(need,1/(1-SMART_CROP)),rest=need/u;
   if(rest>1+SMART_STRETCH+1e-6)return new float[]{1f,1f};
   return narrower?new float[]{(float)need,(float)u}:new float[]{(float)u,(float)need};
  }
  static float zoom(String mode,float saved){return saved;}
- /** VLC 布局只认识 fit/crop/stretch/16:9/4:3；原始尺寸在适应屏幕基础上再缩放。 */
+ /** VLC 布局只认识 fit/crop/stretch/16:9/4:3。智能满屏仍用 fit：平板拉伸加在这块表面的 scaleX/scaleY 上，改成 stretch 会和缩放叠在一起裁掉画面。 */
  static String layoutMode(String mode){return "crop".equals(mode)?"crop":"fit";}
  /** 循环：智能满屏 → 完整画面 → 填满裁切 → 智能满屏。 */
  static String next(String mode){return MODES[(index(mode)+1)%MODES.length];}
