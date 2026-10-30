@@ -45,6 +45,21 @@ final class OfflineRules {
    case "queued":return "排队中…"+(done>0?" 已下 "+size(done):"");
    default:return "状态未知";}
  }
+ /** 去掉查询和片段后，是不是同一个文件。换 token 仍算同一个；另一条线路的路径不算。 */
+ static boolean sameResource(String a,String b){String ka=resourceKey(a),kb=resourceKey(b);return !ka.isEmpty()&&ka.equals(kb);}
+ static String resourceKey(String url){if(url==null)return "";String s=url.trim();int q=s.indexOf('?');if(q>=0)s=s.substring(0,q);int h=s.indexOf('#');if(h>=0)s=s.substring(0,h);return s;}
+ /**
+  * 已有字节能不能接在这次响应后面。返回 0 表示丢掉已有内容、从头写。
+  * 来源不同（另一条线路）即使服务器接受了 Range、总长度也一样，也不能拼进去。
+  * 过期重取之后，还要总长度已经知道并且一致，才允许续传。
+  */
+ static long resumeOffset(boolean sameSource,boolean refreshed,int code,long have,long knownTotal,long responseTotal){
+  if(!sameSource||code!=206||have<=0)return 0;
+  if(responseTotal>0&&have>responseTotal)return 0;
+  if(knownTotal>0&&responseTotal>0&&knownTotal!=responseTotal)return 0;
+  if(refreshed&&!(knownTotal>0&&responseTotal==knownTotal))return 0;
+  return have;
+ }
  /** HTTP 状态码怎么处理：ok 正常 / refresh 链接可能过期，重新取地址 / retry 稍后重试 / fail 放弃。 */
  static String classify(int code){if(code==200||code==206)return "ok";if(code==401||code==403||code==404||code==410)return "refresh";if(code==408||code==425||code==429||code>=500)return "retry";return "fail";}
  /** 「bytes 100-199/1000」→ 1000；没有或是 * 返回 -1。 */

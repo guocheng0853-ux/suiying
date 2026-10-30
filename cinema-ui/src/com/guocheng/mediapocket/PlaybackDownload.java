@@ -39,14 +39,10 @@ final class PlaybackDownload {
    OfflineDownloads.enqueue(a,url,headers,name,watch,OfflineRules.extension("",url),m,src);}catch(Exception e){toast(a,"无法下载："+(e.getMessage()==null?e.getClass().getSimpleName():e.getMessage()));}
  }
  static void fusion(Activity a,JSONObject src,String name,String watch){OfflineDownloads.fusionNow(a,src.optString("config"),src.optString("site"),src.optString("flag"),src.optString("value"),name,watch);}
- /** 和长按下载同一套来源键，避免播放页和详情页各下一份。 */
- static JSONObject source(JSONObject stream,JSONObject meta,String watch){
-  try{if(stream!=null&&!stream.optString("emby.item").isEmpty())return new JSONObject().put("kind","emby").put("server",stream.optString("emby.server")).put("item",stream.optString("emby.item"));
-   JSONObject video=fusionVideo(meta,watch);if(video==null||meta==null)return stream!=null&&!stream.optString("url").isEmpty()?urlSource(stream.optString("url")):null;
-   return new JSONObject().put("kind","fusion").put("config",meta.optString("fusion.config")).put("site",meta.optString("fusion.site")).put("flag",video.optString("fusion.flag")).put("value",video.optString("fusion.value"));
-  }catch(JSONException e){return null;}
- }
- static JSONObject fusionVideo(JSONObject meta,String watch){JSONArray videos=meta==null?null:meta.optJSONArray("videos");if(videos==null||watch==null||watch.isEmpty())return null;for(int i=0;i<videos.length();i++){JSONObject v=videos.optJSONObject(i);if(v!=null&&watch.equals(v.optString("id"))&&!v.optString("fusion.value").isEmpty())return v;}return null;}
+ /** 和长按下载同一套来源键。身份计算在 OfflineQueueRules，播放页只转发。 */
+ static JSONObject source(JSONObject stream,JSONObject meta,String watch){return OfflineQueueRules.downloadSource(stream,meta,watch);}
+ /** 开播和换源时写上真实线路。 */
+ static void rememberLine(JSONObject stream,JSONObject meta,String config,String site,String flag,String value){OfflineQueueRules.rememberLine(stream,meta,config,site,flag,value);}
  static JSONObject urlSource(String url){try{return new JSONObject().put("kind","url").put("url",url==null?"":url);}catch(JSONException e){return new JSONObject();}}
  static JSONObject headers(JSONObject stream){JSONObject req=ExternalVideo.headers(stream);if(req.length()>0)return req;JSONObject header=stream.optJSONObject("header");return header==null?new JSONObject():header;}
  static String name(JSONObject meta,String title){if(title!=null&&!title.trim().isEmpty())return title.trim();if(meta!=null&&!meta.optString("name").isEmpty())return meta.optString("name");return "离线影片";}

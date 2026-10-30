@@ -1,5 +1,5 @@
 package com.guocheng.mediapocket;
-import org.json.*;import java.net.URL;import java.util.*;import java.util.regex.*;
+import org.json.*;import java.net.URL;import java.util.*;
 /**
  * 0.1.164 离线下载入队（不依赖 Android）：去重、跳过不支持的片源、批量保持顺序。
  * 队列数组的约定和 OfflineDownloads 一致：下标 0 是最新入队的，下载从数组末尾往前找排队项，所以先入队的先下。
@@ -129,6 +129,21 @@ final class OfflineQueueRules {
   if(transcodeOnly)return TRANSCODE;
   return earlyRefuse(earlyUrl);
  }
+ /** 一键范围：能下的下标留下，预先拦住的原因留给汇总。手动勾选只传用户选中的下标。 */
+ static final class Scope {
+  final int[] enqueue;final List<String> skips;
+  Scope(int[] enqueue,List<String> skips){this.enqueue=enqueue;this.skips=skips;}
+ }
+ static Scope scope(String[] block,int[] indexes){
+  ArrayList<Integer> keep=new ArrayList<>();ArrayList<String> skips=new ArrayList<>();
+  if(indexes!=null)for(int i:indexes){if(selectable(block,i))keep.add(i);else if(block!=null&&i>=0&&i<block.length&&block[i]!=null)skips.add(block[i]);}
+  int[] out=new int[keep.size()];for(int n=0;n<out.length;n++)out[n]=keep.get(n);return new Scope(out,skips);
+ }
+ /**
+  * 解析返回之后：1 入队，0 跳过并继续，-1 这一集返回时已经取消。
+  * 取消生效的那一集不能入队，调用方还要停掉后面还没解析的集。
+  */
+ static int accept(boolean cancelled,String skip){if(cancelled)return -1;return skip==null?1:0;}
  /** 全选和一键全部只用能勾的下标。 */
  static int[] allowed(String[] block,int[] indexes){
   if(indexes==null||indexes.length==0)return new int[0];
@@ -143,15 +158,24 @@ final class OfflineQueueRules {
  static boolean requestNotifyNow(boolean player){return !player;}
  static boolean deferNotify(boolean player,boolean asked,boolean granted){return player&&!asked&&!granted;}
  static boolean requestNotifyOnResume(boolean player,boolean deferred,boolean asked,boolean granted){return !player&&deferred&&!asked&&!granted;}
- /** 给用户看的错误里去掉完整地址，只留主机名。磁力和解析不出主机的地址不留路径和参数。 */
+ /**
+  * 给用户看的错误里去掉完整地址，只留主机名。磁力和解析不出主机的地址不留路径和参数。
+  * 不用 \\b：汉字在 Unicode 词边界里也算词，紧贴在地址前面时会整段漏掉。
+  */
  static String redact(String text){
   if(text==null||text.isEmpty())return text==null?"":text;
-  Matcher m=Pattern.compile("(?i)\\b(?:https?|rtsp|rtmp)://[^\\s\"']+").matcher(text);
-  StringBuffer sb=new StringBuffer();
-  while(m.find())m.appendReplacement(sb,Matcher.quoteReplacement(hostOf(m.group())));
-  m.appendTail(sb);
-  return sb.toString().replaceAll("(?i)\\bmagnet:\\?\\S+","磁力");
+  StringBuilder out=new StringBuilder();int i=0;
+  while(i<text.length()){int at=findProtocol(text,i);if(at<0){out.append(text.substring(i));break;}out.append(text,i,at);int end=scanUrl(text,at);out.append(hostOf(text.substring(at,end)));i=end;}
+  return redactMagnets(out.toString());
  }
+ static int findProtocol(String text,int from){for(int i=Math.max(0,from);i<text.length();i++){if(i>0&&asciiWord(text.charAt(i-1)))continue;if(region(text,i,"https://")||region(text,i,"http://")||region(text,i,"rtsp://")||region(text,i,"rtmp://"))return i;}return -1;}
+ static int scanUrl(String text,int at){int end=at;while(end<text.length()&&!urlStop(text.charAt(end)))end++;while(end>at&&urlTrail(text.charAt(end-1)))end--;return end;}
+ static String redactMagnets(String text){String key="magnet:?";StringBuilder out=new StringBuilder();int i=0;while(i<text.length()){int at=indexOfIgnore(text,key,i);if(at<0){out.append(text.substring(i));break;}if(at>0&&asciiWord(text.charAt(at-1))){out.append(text,i,at+1);i=at+1;continue;}out.append(text,i,at);int end=at+key.length();while(end<text.length()&&!urlStop(text.charAt(end)))end++;while(end>at&&urlTrail(text.charAt(end-1)))end--;out.append("磁力");i=end;}return out.toString();}
+ static int indexOfIgnore(String text,String key,int from){for(int i=Math.max(0,from);i+key.length()<=text.length();i++)if(text.regionMatches(true,i,key,0,key.length()))return i;return -1;}
+ static boolean region(String text,int i,String p){return i+p.length()<=text.length()&&text.regionMatches(true,i,p,0,p.length());}
+ static boolean asciiWord(char c){return c>='0'&&c<='9'||c>='A'&&c<='Z'||c>='a'&&c<='z';}
+ static boolean urlTrail(char c){return c=='.'||c==','||c==';'||c==':';}
+ static boolean urlStop(char c){if(Character.isWhitespace(c))return true;switch(c){case '"':case '\'':case '<':case '>':case '(':case ')':case '[':case ']':case '{':case '}':case '（':case '）':case '【':case '】':case '「':case '」':case '，':case '。':case '、':case '；':case '：':return true;default:return false;}}
  static String hostOf(String url){try{String h=new URL(url).getHost();return h==null||h.isEmpty()?"服务器":h;}catch(Exception e){return "服务器";}}
  static String summary(int enqueued,List<String> skipReasons){
   LinkedHashMap<String,Integer> counts=new LinkedHashMap<>();
@@ -182,4 +206,34 @@ final class OfflineQueueRules {
  /** 有播放进度的最后一集；一集都没有进度时是第一集。 */
  static int lastTrue(boolean[] flags){int at=0;if(flags==null)return 0;for(int i=0;i<flags.length;i++)if(flags[i])at=i;return at;}
  static String nz(String s){return s==null?"":s;}
+ /**
+  * 播放页下载记下的片源。正在播的 flag/value（stream 优先，其次 meta）优先于选集里按集去重后的第一条线路。
+  * Emby 仍按条目。都没有影视仓线路时，退回当前地址。
+  */
+ static JSONObject downloadSource(JSONObject stream,JSONObject meta,String watch){
+  try{if(stream!=null&&!stream.optString("emby.item").isEmpty())return new JSONObject().put("kind","emby").put("server",stream.optString("emby.server")).put("item",stream.optString("emby.item"));
+   JSONObject playing=playingFusion(stream,meta);if(playing!=null)return playing;
+   JSONObject video=fusionVideo(meta,watch);if(video==null||meta==null)return stream!=null&&!stream.optString("url").isEmpty()?urlSource(stream.optString("url")):null;
+   return new JSONObject().put("kind","fusion").put("config",meta.optString("fusion.config")).put("site",meta.optString("fusion.site")).put("flag",video.optString("fusion.flag")).put("value",video.optString("fusion.value"));
+  }catch(JSONException e){return null;}
+ }
+ /** flag 和 value 必须来自同一份，避免用第一条线路的 value 配上当前线路的 flag。 */
+ static JSONObject playingFusion(JSONObject stream,JSONObject meta)throws JSONException{
+  JSONObject line=lineOf(stream);if(line==null)line=lineOf(meta);if(line==null)return null;
+  String config=line.optString("fusion.config"),site=line.optString("fusion.site");
+  if(config.isEmpty()&&meta!=null)config=meta.optString("fusion.config");
+  if(site.isEmpty()&&meta!=null)site=meta.optString("fusion.site");
+  if(config.isEmpty()||site.isEmpty())return null;
+  return new JSONObject().put("kind","fusion").put("config",config).put("site",site).put("flag",line.optString("fusion.flag")).put("value",line.optString("fusion.value"));
+ }
+ static JSONObject lineOf(JSONObject o){if(o==null||o.optString("fusion.flag").isEmpty()||o.optString("fusion.value").isEmpty())return null;return o;}
+ static JSONObject fusionVideo(JSONObject meta,String watch){JSONArray videos=meta==null?null:meta.optJSONArray("videos");if(videos==null||watch==null||watch.isEmpty())return null;for(int i=0;i<videos.length();i++){JSONObject v=videos.optJSONObject(i);if(v!=null&&watch.equals(v.optString("id"))&&!v.optString("fusion.value").isEmpty())return v;}return null;}
+ static JSONObject urlSource(String url){try{return new JSONObject().put("kind","url").put("url",url==null?"":url);}catch(JSONException e){return new JSONObject();}}
+ /** 开播和换源时把真实线路写进 stream 和 meta。下载读这份，不读 episodeChoices 留下的第一条。 */
+ static void rememberLine(JSONObject stream,JSONObject meta,String config,String site,String flag,String value){
+  try{String f=flag==null?"":flag,v=value==null?"":value;if(f.isEmpty()||v.isEmpty())return;String c=config==null?"":config,s=site==null?"":site;
+   if(stream!=null){if(!c.isEmpty())stream.put("fusion.config",c);if(!s.isEmpty())stream.put("fusion.site",s);stream.put("fusion.flag",f).put("fusion.value",v);}
+   if(meta!=null){if(!c.isEmpty())meta.put("fusion.config",c);if(!s.isEmpty())meta.put("fusion.site",s);meta.put("fusion.flag",f).put("fusion.value",v);}
+  }catch(JSONException ignored){}
+ }
 }

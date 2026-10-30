@@ -23,4 +23,4 @@
 
 纯逻辑在 `OfflineQueueRules`，`OfflineQueueRulesTest` 覆盖：去重（完成 / 排队 / 下载中 / 暂停拦住，失败可再下）、磁力 m3u8 DASH 与转码沿用现有中文原因、未解析的站点编号不提前拒绝、同一批同一片源只留一次、已有队列在前且批内顺序不变、汇总文案、从当前集往后的下标。全部 JVM 测试 100/100 通过（原先 99，新增 1）。审查修订后又跑过一遍，仍是 100/100；同一测试里补了置灰锁定、全选跳过、播放页推迟通知权限，以及汇总只留主机名。
 
-本版没有打签名 APK，没有跑 `verify_apk.py`，没有在 OPD2401 或手机上打开菜单、入队或播放。签名、包名、keystore 未改。
+仓库 `cinema-ui/VALIDATION.json`（提交 `5e9623f`，刷新于功能提交之后）记录 Windows 签名构建：JVM 100、APK 类校验 passed、`apk_signature_present` true、versionCode 165。本交接没有另行核对证书指纹，也没有在 OPD2401 或手机上打开菜单、入队或播放。包名和 keystore 未改。
