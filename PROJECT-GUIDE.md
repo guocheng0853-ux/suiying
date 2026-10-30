@@ -1,5 +1,7 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
+> 0.1.163（code164）Stremio低速开播接力候选，基于main的0.1.162。保留首选，重排备用源，已知P2P持续低于码率且有备选时提前接力；已有画面等情况不干预。原签名、99/99、七补丁/APK与Android受控用例通过，已安装OPD2401并恢复环境。用户实际试播反馈已出画面，但未做真实BT前后测速。见 `docs/handoff/stremio-startup-0163.md`。
+
 > 0.1.162（code 163）：系统播放器解不了影院音轨时改走 VLC，不改「默认用 VLC」。自动档先硬解，黑屏仍回退软解。杜比视界 Profile 5 留在系统 / Media3。没有在 OPD2401 上重播。
 
 > 0.1.160（code161）：平板智能满屏改为拉伸铺满。最短边 ≥ 600dp 时按窗口宽、高各自缩放，刚好铺满，允许变形，不留黑边、不裁边。手机仍用 0.1.152 的 12% 裁切 / 10% 拉伸。本版做了规则测试，没有在 OPD2401 上重播。
@@ -42,7 +44,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 94 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 99 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |
