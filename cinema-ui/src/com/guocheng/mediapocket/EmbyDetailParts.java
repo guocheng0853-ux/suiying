@@ -18,16 +18,16 @@ final class EmbyDetailParts {
 
  /** 演职员：圆形头像 + 名字 + 角色，横滑。没有头像时显示名字首字。 */
  static View cast(EmbyLibraryActivity a,JSONObject server,JSONObject item){JSONArray people=item.optJSONArray("People");if(people==null||people.length()==0)return null;
-  LinearLayout box=new LinearLayout(a);box.setOrientation(LinearLayout.VERTICAL);TextView head=a.text("演职员",16);if(a.clay||a.gold)CinemaTheme.section(head,a,20);else head.setTypeface(null,1);head.setPadding(0,a.dp(14),0,a.dp(6));box.addView(head);
+  LinearLayout box=new LinearLayout(a);box.setOrientation(LinearLayout.VERTICAL);TextView head=a.text("演职人员",16);head.setTextColor(a.gold||!a.light?CinemaTheme.INK:a.ink());head.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));head.setPadding(0,a.dp(18),0,a.dp(8));box.addView(head);
   HorizontalScrollView hs=new HorizontalScrollView(a);hs.setHorizontalScrollBarEnabled(false);LinearLayout row=new LinearLayout(a);hs.addView(row);box.addView(hs);int shown=0;
   for(int i=0;i<people.length()&&shown<20;i++){JSONObject p=people.optJSONObject(i);if(p==null||p.optString("Name").isEmpty())continue;String type=p.optString("Type");if(!(type.equals("Actor")||type.equals("Director")||type.equals("GuestStar")))continue;shown++;
-   LinearLayout cell=new LinearLayout(a);cell.setOrientation(LinearLayout.VERTICAL);cell.setGravity(Gravity.CENTER_HORIZONTAL);int size=a.dp(64);
-   FrameLayout face=new FrameLayout(a);GradientDrawable circle=new GradientDrawable();circle.setShape(GradientDrawable.OVAL);circle.setColor(a.card());face.setBackground(circle);face.setClipToOutline(true);
-   String tag=p.optString("PrimaryImageTag");if(!tag.isEmpty()){ImageView img=new ImageView(a);img.setScaleType(ImageView.ScaleType.CENTER_CROP);face.addView(img,new FrameLayout.LayoutParams(-1,-1));TvPosterImages.loadPoster(a,img,EmbyApi.imageUrl(server.optString("url"),p.optString("Id"),"Primary",server.optString("token"),160,tag),size);}
-   else{TextView initial=new TextView(a);initial.setText(p.optString("Name").substring(0,1));initial.setTextColor(a.muted());initial.setTextSize(Ui.sp(20));initial.setGravity(Gravity.CENTER);face.addView(initial,new FrameLayout.LayoutParams(-1,-1));}
-   cell.addView(face,new LinearLayout.LayoutParams(size,size));
-   TextView name=new TextView(a);name.setText(p.optString("Name"));name.setTextColor(a.ink());name.setTextSize(Ui.sp(12));name.setGravity(Gravity.CENTER);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setPadding(0,a.dp(4),0,0);cell.addView(name,new LinearLayout.LayoutParams(a.dp(76),-2));
-   String role=type.equals("Director")?"导演":p.optString("Role");if(!role.isEmpty()){TextView r=new TextView(a);r.setText(role);r.setTextColor(a.muted());r.setTextSize(Ui.sp(11));r.setGravity(Gravity.CENTER);r.setMaxLines(1);r.setEllipsize(android.text.TextUtils.TruncateAt.END);cell.addView(r,new LinearLayout.LayoutParams(a.dp(76),-2));}
+   LinearLayout cell=new LinearLayout(a);cell.setOrientation(LinearLayout.VERTICAL);cell.setGravity(Gravity.CENTER_HORIZONTAL);int w=a.dp(70),h=a.dp(92);
+   FrameLayout face=new FrameLayout(a);GradientDrawable plate=new GradientDrawable();plate.setCornerRadius(a.dp(10));plate.setColor(a.gold||!a.light?0xff2e2920:a.card());face.setBackground(plate);face.setClipToOutline(true);
+   String tag=p.optString("PrimaryImageTag");   if(!tag.isEmpty()){ImageView img=new ImageView(a);img.setScaleType(ImageView.ScaleType.CENTER_CROP);face.addView(img,new FrameLayout.LayoutParams(-1,-1));TvPosterImages.loadPoster(a,img,EmbyApi.imageUrl(server.optString("url"),p.optString("Id"),"Primary",server.optString("token"),160,tag),w);}
+   else{TextView initial=new TextView(a);initial.setText(p.optString("Name").substring(0,1));initial.setTextColor(a.gold||!a.light?CinemaTheme.MUTED:a.muted());initial.setTextSize(Ui.sp(20));initial.setGravity(Gravity.CENTER);face.addView(initial,new FrameLayout.LayoutParams(-1,-1));}
+   cell.addView(face,new LinearLayout.LayoutParams(w,h));
+   TextView name=new TextView(a);name.setText(p.optString("Name"));name.setTextColor(a.gold||!a.light?CinemaTheme.INK:a.ink());name.setTextSize(Ui.sp(12));name.setGravity(Gravity.CENTER);name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setPadding(0,a.dp(6),0,0);cell.addView(name,new LinearLayout.LayoutParams(a.dp(76),-2));
+   String role=type.equals("Director")?"导演":p.optString("Role");if(!role.isEmpty()){TextView r=new TextView(a);r.setText(role);r.setTextColor(a.gold||!a.light?CinemaTheme.MUTED:a.muted());r.setTextSize(Ui.sp(12));r.setGravity(Gravity.CENTER);r.setMaxLines(1);r.setEllipsize(android.text.TextUtils.TruncateAt.END);cell.addView(r,new LinearLayout.LayoutParams(a.dp(76),-2));}
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(a.dp(76),-2);lp.rightMargin=a.dp(8);row.addView(cell,lp);}
   return shown==0?null:box;}
 

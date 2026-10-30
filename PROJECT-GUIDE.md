@@ -1,5 +1,7 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
+> 0.1.167（code 168）：Emby 与影视仓详情改成同一套沉浸海报（方向 A）。跳号原因：避开 zcode 测试修补，不占用 0.1.166 / versionCode 167。JVM 101 项通过。没有签名包，没有真机点选。见 `docs/handoff/detail-poster-0167.md`。
+
 > 0.1.165（code 166）：播放页下载记下正在播的影视仓线路；过期续传不会把另一条线路拼进已有文件。批量取消会停掉还在解析的那一集。整季汇总计入事先跳过的集数和原因。错误里的地址在汉字紧贴时也只留主机名。JVM 回归已覆盖。没有打本版签名包，没有真机点选。见 `docs/handoff/download-fixes-0165.md`。
 
 > 0.1.164（code 165）：播放页「更多」可下载当前这一集；Emby 季详情和影视仓选集可批量入队。不支持的片源置灰并写明原因，已在队列或已下完的不重复入队。`cinema-ui/VALIDATION.json` 记录 Windows 签名包已出（签名存在、APK 类校验 passed、JVM 100）。没有真机点选这些菜单。见 `docs/handoff/playback-download-0164.md`。
@@ -48,7 +50,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 100 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 101 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |
