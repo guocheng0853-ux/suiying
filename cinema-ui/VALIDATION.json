@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.164",
+  "ui_version": "0.1.165",
   "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -20,9 +20,9 @@
   "dolby_android_device_tested": false,
   "jvm_test_programs_passed": 100,
   "apk_class_resolution": "passed",
-  "unique_classes": 9316,
+  "unique_classes": 9317,
   "dex_files": 3,
-  "main_version_code": 165,
+  "main_version_code": 166,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
