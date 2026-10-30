@@ -14,7 +14,7 @@ public final class DownloadsActivity extends Activity {
   ScrollView scroll=new ScrollView(this);list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   empty=text("还没有下载。\n\n在 Emby 电影或单集详情页点「下载」，或在选集上长按某一集即可下载。磁力和 m3u8 分段流暂不支持。",14,muted());empty.setPadding(0,dp(24),0,0);
 }
- @Override protected void onResume(){super.onResume();OfflineDownloads.resumeStale(this);tick.post(refresh);}
+ @Override protected void onResume(){FollowUp.resumeDownloadNotify(this);super.onResume();OfflineDownloads.resumeStale(this);tick.post(refresh);}
  @Override protected void onPause(){super.onPause();tick.removeCallbacks(refresh);}
  TextView text(String s,int size,int color){TextView t=new TextView(this);t.setText(s);t.setTextSize(Ui.sp(size));t.setTextColor(color);return t;}
  void render(){JSONArray all=OfflineDownloads.list(this);

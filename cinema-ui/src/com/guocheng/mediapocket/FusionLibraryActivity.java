@@ -2,7 +2,7 @@ package com.guocheng.mediapocket;
 import android.app.*;import android.os.*;import android.content.*;import android.view.*;import android.widget.*;import android.graphics.drawable.*;import org.json.*;import java.util.*;import java.util.concurrent.*;
 /** TVBox detail/episode routing uses the stable player. Player code is not replaced. */
 public final class FusionLibraryActivity extends Activity {
- LinearLayout root,body;TextView status;SharedPreferences prefs;boolean light,dead,gold,clay;int epoch;FusionCatalog.Session session;UiImages images=new UiImages();ExecutorService io=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"tvbox-ui");t.setDaemon(true);return t;});android.os.Handler watch=new android.os.Handler(android.os.Looper.getMainLooper());Future<?> pending;ArrayDeque<Runnable> back=new ArrayDeque<>();JSONObject current;
+ LinearLayout root,body;TextView status;SharedPreferences prefs;boolean light,dead,gold,clay;int epoch;FusionCatalog.Session session;UiImages images=new UiImages();ExecutorService io=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"tvbox-ui");t.setDaemon(true);return t;});android.os.Handler watch=new android.os.Handler(android.os.Looper.getMainLooper());Future<?> pending;ArrayDeque<Runnable> back=new ArrayDeque<>();JSONObject current;String batchId="",batchTitle="",batchFlag="";java.util.List<String[]> batchEps;int batchCurrent;
  interface Work {Runnable run()throws Exception;}
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}int ink(){return light?(clay?CinemaTheme.SLATE:0xff173740):gold?CinemaTheme.INK:0xfff5fafb;}int muted(){return light?(clay?CinemaTheme.STONE:0xff52757c):gold?CinemaTheme.MUTED:0xffafcbd2;}int surface(){return light?(clay?CinemaTheme.PAPER:0xffedf5f5):gold?CinemaTheme.BG:0xff10343e;}int card(){return light?(clay?CinemaTheme.SHEET:0xffffffff):gold?CinemaTheme.CARD:0xff19434e;}
  GradientDrawable rounded(int color,int r){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(Ui.radius(r)));return d;}
@@ -67,6 +67,7 @@ public final class FusionLibraryActivity extends Activity {
    for(int g=0;g<groups.length;g++){final int at=g;String flag=g<flags.length&&!flags[g].isEmpty()?flags[g]:"线路 "+(g+1);TextView chip=text(flag,14);chip.setGravity(Gravity.CENTER);chip.setPadding(dp(16),0,dp(16),0);LinearLayout.LayoutParams cl=new LinearLayout.LayoutParams(-2,dp(Ui.TOUCH));cl.rightMargin=dp(8);chips.addView(chip,cl);CinemaControls.action(chip,flag);chip.setOnClickListener(v->{paintChips(chips,at);fillEpisodes(grid,id,title,flag,groups[at]);});}
    paintChips(chips,0);}
   else{TextView h=text(flags.length>0&&!flags[0].isEmpty()?flags[0]:"选集",16);if(clay||gold)CinemaTheme.section(h,this,20);else h.setTypeface(null,1);h.setPadding(0,dp(16),0,dp(4));body.addView(h);}
+  Button batch=button("批量下载",()->OfflineBatchMenu.fusion(this,session,current,batchId,batchTitle,batchFlag,batchEps,batchCurrent));LinearLayout.LayoutParams batchLp=new LinearLayout.LayoutParams(-1,dp(Ui.TOUCH));batchLp.topMargin=dp(8);body.addView(batch,batchLp);
   LinearLayout.LayoutParams gl=new LinearLayout.LayoutParams(-1,-2);gl.topMargin=dp(8);body.addView(grid,gl);
   fillEpisodes(grid,id,title,flags.length>0&&!flags[0].isEmpty()?flags[0]:"线路 1",groups[0]);
  };},()->detail(id));}
@@ -79,6 +80,7 @@ public final class FusionLibraryActivity extends Activity {
  void fillEpisodes(LinearLayout grid,String id,String title,String flag,String group){
   grid.removeAllViews();java.util.List<String[]> eps=new java.util.ArrayList<>();int maxLen=0;
   for(String encoded:group.split("#")){if(eps.size()>=1000)break;String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;eps.add(ep);maxLen=Math.max(maxLen,ep[0].length());}
+  boolean[] started=new boolean[eps.size()];for(int n=0;n<eps.size();n++)started[n]=prefs.getInt("pos:"+watchId(id,eps.get(n)[0]),0)>10000;batchEps=eps;batchFlag=flag;batchId=id;batchTitle=title;batchCurrent=OfflineQueueRules.lastTrue(started);
   int cols=maxLen<=6?4:2;LinearLayout line=null;
   for(int i=0;i<eps.size();i++){final String[] ep=eps.get(i);if(line==null||line.getChildCount()==cols){line=new LinearLayout(this);LinearLayout.LayoutParams ll=new LinearLayout.LayoutParams(-1,-2);ll.bottomMargin=dp(8);grid.addView(line,ll);}
    Button b=button(ep[0],()->play(id,title,flag,ep[0],ep[1]));b.setOnLongClickListener(v->{OfflineDownloads.fusion(this,session,flag,ep[1],title+" · "+ep[0],watchId(id,ep[0]),current);return true;});b.setSingleLine(true);b.setEllipsize(android.text.TextUtils.TruncateAt.END);b.setTextSize(Ui.sp(13));b.setPadding(dp(6),0,dp(6),0);b.setMinWidth(0);b.setMinimumWidth(0);
@@ -92,6 +94,6 @@ public final class FusionLibraryActivity extends Activity {
 
  void matchArtwork(JSONObject m,ImageView cover){EditText input=new EditText(this);input.setText(MediaMatchRules.clean(m.optString("vod_name")));new CinemaDialog(this).setTitle("搜索影片元数据").setView(input).setPositiveButton("搜索",(d,n)->work("正在匹配影片…",()->{JSONArray results=FusionArtwork.search(input.getText().toString());return ()->{if(results.length()==0){status.setText("未匹配到影片，可改用英文名搜索");return;}String[] labels=new String[results.length()];for(int i=0;i<labels.length;i++){JSONObject v=results.optJSONObject(i);labels[i]=v.optString("name")+" · "+v.optString("releaseInfo")+" · "+v.optString("type");}new CinemaDialog(this).setTitle("确认对应影片").setItems(labels,(x,index)->{JSONObject chosen=results.optJSONObject(index);FusionArtwork.save(this,m,chosen);load(cover,chosen.optString("poster"),dp(600));status.setText("匹配已保存 · 字幕将使用此影片身份");}).show();};},()->matchArtwork(m,cover))).setNegativeButton("取消",null).show();}
  @Override public void onBackPressed(){epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);if(!back.isEmpty())back.pop().run();else super.onBackPressed();}
- @Override protected void onResume(){PlaybackOrientation.releaseHost(this);super.onResume();}
+ @Override protected void onResume(){FollowUp.resumeDownloadNotify(this);PlaybackOrientation.releaseHost(this);super.onResume();}
  @Override public void onDestroy(){dead=true;epoch++;watch.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}
 }

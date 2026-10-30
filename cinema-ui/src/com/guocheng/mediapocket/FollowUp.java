@@ -59,7 +59,14 @@ final class FollowUp {
   nm.notify(NOTE_ID,b.build());}catch(Exception ignored){}}
  /** Android 13 起发通知要用户同意。追剧和离线下载分开记，拒绝其中一次不影响另一次再问。 */
  static void askNotify(Activity a){askNotify(a,"followup.asked",73103);}
- static void askDownloadNotify(Activity a){askNotify(a,"download.notifyAsked",73104);}
+ static boolean player(Activity a){return a instanceof PlayerActivity||a instanceof SystemPlayerActivity;}
+ static boolean notifyGranted(Activity a){if(Build.VERSION.SDK_INT<33||a==null)return true;try{return a.checkSelfPermission("android.permission.POST_NOTIFICATIONS")==android.content.pm.PackageManager.PERMISSION_GRANTED;}catch(Exception e){return false;}}
+ /** 播放页只记住「回头再问」，不调用 requestPermissions，避免权限框把播放器打进 onPause。 */
+ static void askDownloadNotify(Activity a){if(a==null)return;boolean playing=player(a),asked=prefs(a).getBoolean("download.notifyAsked",false),granted=notifyGranted(a);
+  if(OfflineQueueRules.deferNotify(playing,asked,granted)){prefs(a).edit().putBoolean("download.notifyDeferred",true).apply();return;}
+  if(!OfflineQueueRules.requestNotifyNow(playing))return;askNotify(a,"download.notifyAsked",73104);}
+ /** 非播放页回到前台时，补问播放页推迟的那一次。 */
+ static void resumeDownloadNotify(Activity a){if(a==null||player(a)||!prefs(a).getBoolean("download.notifyDeferred",false))return;boolean asked=prefs(a).getBoolean("download.notifyAsked",false),granted=notifyGranted(a);prefs(a).edit().putBoolean("download.notifyDeferred",false).apply();if(OfflineQueueRules.requestNotifyOnResume(false,true,asked,granted))askNotify(a,"download.notifyAsked",73104);}
  static void askNotify(Activity a,String flag,int code){try{if(Build.VERSION.SDK_INT<33||a==null)return;if(a.checkSelfPermission("android.permission.POST_NOTIFICATIONS")==android.content.pm.PackageManager.PERMISSION_GRANTED)return;if(prefs(a).getBoolean(flag,false))return;prefs(a).edit().putBoolean(flag,true).apply();a.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},code);}catch(Exception ignored){}}
  static String label(Context c){return "追剧更新提醒："+(enabled(c)?"开":"关")+"（收藏的剧有新集时通知）";}
 }
