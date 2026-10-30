@@ -193,7 +193,7 @@ final class PlayerOverlay {
   click(findExact(bar(a,"top"),"旋转"),"旋转",labels,actions);
   labels.add("片头标记");actions.add(()->introMenu(a));
   labels.add("调试信息");actions.add(()->DebugLog.show(a));
-  java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<labels.size();i++)rows.add(hint.containsKey(labels.get(i))?CinemaMenu.detail(labels.get(i),hint.get(labels.get(i)),actions.get(i)):CinemaMenu.item(labels.get(i),actions.get(i)));CinemaMenu.show(a,"更多",rows);
+  java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<labels.size();i++)rows.add(hint.containsKey(labels.get(i))?CinemaMenu.detail(labels.get(i),hint.get(labels.get(i)),actions.get(i)):CinemaMenu.item(labels.get(i),actions.get(i)));rows.add(0,PlaybackDownload.menu(a,TrackSelection.stream(a),meta(a),id(a),name(a)));CinemaMenu.show(a,"更多",rows);
  }
  /** 原版「更多播放设置」（自动换源、换下一个源、等待时间、连接详情）的按钮，放到线路页里用。 */
  static Button baseMore(Activity a){Button b=findExact(scroll(bar(a,"bottom")),"更多");return b!=null&&b.getTag() instanceof String&&((String)b.getTag()).startsWith("mp-")?null:b;}

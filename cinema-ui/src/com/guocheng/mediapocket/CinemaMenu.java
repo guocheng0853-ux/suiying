@@ -8,11 +8,13 @@ import java.util.List;
  */
 final class CinemaMenu {
  static final class Item {
-  final String label,value;final boolean selected;final Runnable action;String hint;
+  final String label,value;final boolean selected;final Runnable action;String hint;boolean enabled=true;
   Item(String label,String value,boolean selected,Runnable action){this.label=label;this.value=value;this.selected=selected;this.action=action;}
  }
  /** 0.1.133：带副标题的菜单项——短标题一行，长解释放在下面一行小字里，不再把解释塞进标题导致被省略号截断。 */
  static Item detail(String label,String hint,Runnable action){Item it=new Item(label,null,false,action);it.hint=hint;return it;}
+ /** 0.1.164：置灰的一行。点一下只提示原因，不收起菜单，也不执行下载。 */
+ static Item muted(String label,String reason){Item it=detail(label,reason,null);it.enabled=false;return it;}
  static Item item(String label,Runnable action){return new Item(label,null,false,action);}
  static Item value(String label,String value,Runnable action){return new Item(label,value,false,action);}
  static Item choice(String label,boolean selected,Runnable action){return new Item(label,null,selected,action);}
@@ -51,13 +53,15 @@ final class CinemaMenu {
    row.setMinimumHeight(dp(a,PlayerMotionRules.MENU_ROW_DP));row.setPadding(dp(a,10),dp(a,4),dp(a,10),dp(a,4));
    GradientDrawable line=new GradientDrawable();line.setColor(it.selected?PlayerTheme.selection(a):0x00000000);line.setCornerRadius(dp(a,PlayerTheme.RADIUS_MENU_ROW_DP));
    android.graphics.drawable.RippleDrawable ripple=new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(PlayerTheme.ripple(a)),line,null);row.setBackground(ripple);
-   TextView label=new TextView(a);label.setText(it.label);label.setTextColor(it.selected?PlayerTheme.selectedText(a):PlayerTheme.text(a));label.setTextSize(PlayerMotionRules.MENU_LABEL_SP);
+   TextView label=new TextView(a);label.setText(it.label);label.setTextColor(!it.enabled?PlayerTheme.secondary(a):it.selected?PlayerTheme.selectedText(a):PlayerTheme.text(a));label.setTextSize(PlayerMotionRules.MENU_LABEL_SP);
    label.setMaxLines(2);label.setEllipsize(android.text.TextUtils.TruncateAt.END);
    if(it.hint!=null&&!it.hint.isEmpty()){LinearLayout texts=new LinearLayout(a);texts.setOrientation(LinearLayout.VERTICAL);texts.setPadding(0,dp(a,4),0,dp(a,4));texts.addView(label);TextView sub=new TextView(a);sub.setText(it.hint);sub.setTextColor(PlayerTheme.secondary(a));sub.setTextSize(PlayerMotionRules.MENU_VALUE_SP);sub.setMaxLines(2);sub.setEllipsize(android.text.TextUtils.TruncateAt.END);sub.setPadding(0,dp(a,2),0,0);texts.addView(sub);row.addView(texts,new LinearLayout.LayoutParams(0,-2,1f));}
    else row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
    if(it.value!=null&&!it.value.isEmpty()){TextView value=new TextView(a);value.setText(it.value);value.setTextColor(PlayerTheme.secondary(a));value.setTextSize(PlayerMotionRules.MENU_VALUE_SP);value.setPadding(dp(a,8),0,0,0);value.setMaxWidth(Math.round(width*.38f));value.setMaxLines(2);value.setEllipsize(android.text.TextUtils.TruncateAt.END);row.addView(value);}
    CinemaControls.group(row,it.label+(it.value==null?"":"，"+it.value)+(it.hint==null?"":"，"+it.hint));row.setSelected(it.selected);
+   if(!it.enabled)row.setAlpha(.72f);
    row.setOnClickListener(v->{
+    if(!it.enabled){if(it.hint!=null&&!it.hint.isEmpty())Toast.makeText(a,it.hint,Toast.LENGTH_LONG).show();return;}
     dismiss(a);
     // 动作挂在 Activity 的窗口上执行：菜单窗口关掉后它自己的 Handler 回调不一定还在
     if(it.action!=null)decor.postDelayed(()->{if(!a.isFinishing())it.action.run();},PlayerMotionRules.MENU_OUT_MS);
