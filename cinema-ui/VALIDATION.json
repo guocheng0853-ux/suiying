@@ -1,6 +1,6 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.165",
+  "ui_version": "0.1.167",
   "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
@@ -18,11 +18,11 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 100,
+  "jvm_test_programs_passed": 101,
   "apk_class_resolution": "passed",
   "unique_classes": 9316,
   "dex_files": 3,
-  "main_version_code": 166,
+  "main_version_code": 168,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
@@ -43,6 +43,6 @@
   "torrent_boost_android_tested": false,
   "real_source_playback_tested": false,
   "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
-  "signed_apk_sha256": "eefdf90dc6f7e573f0bf7df9b945387dd4596487347dd7164779c31c7f55ff29",
-  "device_test_scope": "2026-10-30 Windows build of 0.1.165 (code 166): PJZ110 Android17 overwrite-install; real-device acceptance of download features: batch menu render + whole-season guard dialog + cancel, player more-menu download entry with correct episode label, real enqueue from player -> active download from Emby (42.5MB at 1.5MB/s) -> tap-pause -> delete with partial-file cleanup verified on storage; playback unaffected during enqueue; 0 crashes. OPD2401 overwrite-install succeeded, launch check skipped (device unplugged by user); OPD2401 menu acceptance 2026-10-31: batch menu render + whole-season guard (24 eps) + cancel, detail download confirm dialog, no crash"
+  "signed_apk_sha256": "ce1cde2a7edaa913e473144e0704eb3892d61057d0f43e12b50e93fdee169aa9",
+  "device_test_scope": "0.1.167 (code 168) 2026-10-31 Windows build: PJZ110 + OPD2401 overwrite-install; immersive detail poster verified on both (backdrop fill, title block, gold play pill, round route/download/fav/more, source card, episode strip, cast avatars, media info); no crash; batch/download actual transfers carried by 0.1.165 acceptance"
 }
