@@ -50,18 +50,21 @@ public final class OfflineService extends Service {
 
  void download(JSONObject rec){String id=OfflineDownloads.key(rec),name=rec.optString("name","离线影片");File file=new File(rec.optString("file"));
   String url=rec.optString("url");JSONObject headers=rec.optJSONObject("headers");if(headers==null)headers=new JSONObject();
-  activeId=id;set(id,"status","running","error","");boolean refreshed=false;int attempt=0;long total=rec.optLong("total",-1);
+  activeId=id;set(id,"status","running","error","");boolean refreshed=false;int attempt=0;long total=rec.optLong("total",-1);String bytesUrl=url;boolean replace=false;
   try{while(true){
    if(giveUp)return;if(stopped(id))return;
-   long done=file.isFile()?file.length():0;HttpURLConnection c=null;
+   long done=replace||!file.isFile()?0:file.length();HttpURLConnection c=null;
    try{c=OfflineHttp.open(url,headers,done);currentConn=c;int code=c.getResponseCode();String kind=OfflineRules.classify(code);
     if(code==416&&done>0){if(total>0&&done>=total){finish(id,file,done);return;}file.delete();continue;}
     if(kind.equals("refresh")){if(refreshed)throw new IllegalStateException("HTTP "+code+"，重新获取地址后仍被拒绝");refreshed=true;DebugLog.event("离线下载","HTTP "+code+"，重新获取地址 · "+LinkProbe.host(url));Object[] fresh=OfflineDownloads.refresh(this,rec);url=(String)fresh[0];headers=(JSONObject)fresh[1];set(id,"url",url,"headers",headers);continue;}
     if(kind.equals("retry"))throw new IOException("HTTP "+code);
     if(kind.equals("fail"))throw new IllegalStateException("HTTP "+code);
     if(OfflineRules.looksLikePage(c.getContentType(),done))throw new IllegalStateException("服务器返回的是网页而不是视频");
-    boolean append=code==206&&done>0;if(!append)done=0;
-    long length=c.getContentLengthLong();long whole=code==206?OfflineRules.totalFromContentRange(c.getHeaderField("Content-Range")):length;if(whole<=0&&length>0)whole=done+length;if(whole>0){total=whole;set(id,"total",total);}
+    long length=c.getContentLengthLong();long whole=code==206?OfflineRules.totalFromContentRange(c.getHeaderField("Content-Range")):length;
+    long offset=OfflineRules.resumeOffset(OfflineRules.sameResource(bytesUrl,url),refreshed,code,done,total,whole);
+    if(offset==0&&code==206&&done>0){if(file.exists())file.delete();set(id,"done",0,"total",-1);replace=true;total=-1;bytesUrl=url;continue;}
+    boolean append=offset>0;if(!append){done=0;replace=false;bytesUrl=url;}
+    if(whole<=0&&length>0)whole=done+length;if(whole>0){total=whole;set(id,"total",total);}
     File parent=file.getParentFile();if(parent!=null&&!parent.exists())parent.mkdirs();
     if(parent!=null&&total>0&&parent.getUsableSpace()<total-done+64L*1024*1024)throw new IllegalStateException("存储空间不足（还需 "+OfflineRules.size(total-done)+"）");
     long windowStart=SystemClock.elapsedRealtime(),windowBytes=0,lastSave=0;

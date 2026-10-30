@@ -1,7 +1,29 @@
 package com.guocheng.mediapocket;
 import org.json.*;import java.util.*;
-public class OfflineQueueRulesTest {
+ public class OfflineQueueRulesTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
+ /** 播放页下载必须记下正在播的线路。PlaybackDownload.source 转发到 downloadSource。 */
+ public static void playingLine()throws Exception{
+  String flags="routeA$$$routeB";
+  String groups="E01$valueA#E02$valueA2$$$E01$valueB#E02$valueB2";
+  String watch="tvbox:watch-e01";
+  org.json.JSONArray videos=FusionPlaybackRules.episodeChoices(flags,groups,watch,"E01");
+  check(videos.length()==2&&"routeA".equals(videos.getJSONObject(0).optString("fusion.flag"))&&"valueA".equals(videos.getJSONObject(0).optString("fusion.value")),"episode list still keeps only the first line");
+  org.json.JSONObject meta=new org.json.JSONObject().put("fusion.config","cfg").put("fusion.site","site").put("videos",videos);
+  org.json.JSONObject stream=new org.json.JSONObject().put("url","http://cdn.example/routeB.mp4");
+  OfflineQueueRules.rememberLine(stream,meta,"cfg","site","routeB","valueB");
+  org.json.JSONObject src=OfflineQueueRules.downloadSource(stream,meta,watch);
+  check(src!=null&&"fusion".equals(src.optString("kind"))&&"routeB".equals(src.optString("flag"))&&"valueB".equals(src.optString("value"))&&"cfg".equals(src.optString("config"))&&"site".equals(src.optString("site")),"playing line 2 is the download source, not the deduped first line: "+src);
+  org.json.JSONObject urlOnly=new org.json.JSONObject().put("url","http://cdn.example/routeB.mp4");
+  org.json.JSONObject metaOnly=new org.json.JSONObject().put("fusion.config","cfg").put("fusion.site","site").put("videos",videos);
+  OfflineQueueRules.rememberLine(null,metaOnly,"cfg","site","routeB","valueB");
+  org.json.JSONObject fromMeta=OfflineQueueRules.downloadSource(urlOnly,metaOnly,watch);
+  check(fromMeta!=null&&"routeB".equals(fromMeta.optString("flag"))&&"valueB".equals(fromMeta.optString("value")),"explicit meta line wins over deduped videos: "+fromMeta);
+  org.json.JSONObject untouched=new org.json.JSONObject().put("url","http://cdn.example/routeB.mp4");
+  org.json.JSONObject videosOnly=new org.json.JSONObject().put("fusion.config","cfg").put("fusion.site","site").put("videos",videos);
+  org.json.JSONObject fallback=OfflineQueueRules.downloadSource(untouched,videosOnly,watch);
+  check(fallback!=null&&"routeA".equals(fallback.optString("flag"))&&"valueA".equals(fallback.optString("value")),"without a playing line, the episode list is unchanged");
+ }
  public static void main(String[] a)throws Exception{
   check(OfflineQueueRules.duplicate(null)==null&&OfflineQueueRules.duplicate("failed")==null&&OfflineQueueRules.duplicate("")==null,"failed can be queued again");
   check(OfflineQueueRules.DONE.equals(OfflineQueueRules.duplicate("done")),"done blocks");
@@ -85,6 +107,41 @@ public class OfflineQueueRulesTest {
   String redacted=OfflineQueueRules.summary(0,Arrays.asList("连接失败 "+secret,"连接失败 http://cdn.example/b.mkv?sign=zzz","磁力 "+magnet));
   check(redacted.contains("cdn.example")&&!redacted.contains("token")&&!redacted.contains("secret")&&!redacted.contains("a.mp4")&&!redacted.contains("btih")&&redacted.contains("磁力"),"summary keeps only the host: "+redacted);
   check(redacted.contains("连接失败 cdn.example · 2 集"),"same host collapses after redaction");
-  System.out.println("PASS: download dedupe, unsupported sources, batch order, summary, locked rows, deferred notification permission and host-only errors.");
+
+  String flush="连接失败https://fixture.invalid/video.mp4?token=synthetic";
+  String flushRed=OfflineQueueRules.redact(flush);
+  check(flushRed.contains("fixture.invalid")&&!flushRed.contains("token")&&!flushRed.contains("synthetic")&&!flushRed.contains("video.mp4")&&!flushRed.contains("https://"),"chinese text flush against a url keeps only the host: "+flushRed);
+  String paren=OfflineQueueRules.redact("（https://fixture.invalid/a.mp4?token=z）");
+  check(paren.equals("（fixture.invalid）"),"brackets stay and the query is masked: "+paren);
+  String wrapped=OfflineQueueRules.redact("(https://user:secret@cdn.example:8443/a.mp4?token=abc)");
+  check(wrapped.equals("(cdn.example)")&&!wrapped.contains("secret")&&!wrapped.contains("token"),"ascii parens and userinfo: "+wrapped);
+  String newline=OfflineQueueRules.redact("失败\nhttps://fixture.invalid/a.mp4?x=1");
+  check(newline.contains("fixture.invalid")&&!newline.contains("x=1")&&newline.contains("\n"),"url after a newline: "+newline.replace("\n","\\n"));
+  String magnetFlush=OfflineQueueRules.redact("见magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=name");
+  check(magnetFlush.equals("见磁力")&&!magnetFlush.contains("btih"),"magnet flush against chinese: "+magnetFlush);
+  check(OfflineQueueRules.redact("nothttps://fixture.invalid/a.mp4?token=keep").contains("token=keep"),"a letter glued to the scheme is not a url");
+
+  playingLine();
+
+  check(OfflineQueueRules.accept(false,null)==1&&OfflineQueueRules.accept(false,OfflineQueueRules.QUEUED)==0&&OfflineQueueRules.accept(true,null)<0&&OfflineQueueRules.accept(true,"解析失败")<0,"cancel after resolve refuses the episode");
+  java.util.ArrayList<String> kept=new java.util.ArrayList<>();
+  String[] names=new String[]{"第一集","第二集","第三集"};
+  boolean[] cancelOnReturn=new boolean[]{false,true,true};
+  for(int i=0;i<names.length;i++){int decision=OfflineQueueRules.accept(cancelOnReturn[i],null);if(decision<0)break;if(decision>0)kept.add(names[i]);}
+  check(kept.equals(java.util.Arrays.asList("第一集")),"an episode that finishes resolving after cancel is not queued, and later episodes are not started: "+kept);
+
+  String m3u8Reason=OfflineRules.refuse("http://cdn.example/3.m3u8");
+  String[] seasonBlock=new String[]{null,OfflineQueueRules.DONE,m3u8Reason};
+  OfflineQueueRules.Scope season=OfflineQueueRules.scope(seasonBlock,new int[]{0,1,2});
+  check(java.util.Arrays.equals(season.enqueue,new int[]{0})&&season.skips.equals(java.util.Arrays.asList(OfflineQueueRules.DONE,m3u8Reason)),"season scope keeps the downloadable index and the skip reasons: "+season.skips);
+  String seasonText=OfflineQueueRules.summary(1,season.skips);
+  check(seasonText.startsWith("已加入 1 集，跳过 2 集")&&seasonText.contains(OfflineQueueRules.DONE+" · 1 集")&&seasonText.contains(m3u8Reason+" · 1 集"),"season summary counts prefiltered skips: "+seasonText);
+  OfflineQueueRules.Scope tailScope=OfflineQueueRules.scope(seasonBlock,OfflineQueueRules.tail(1,3));
+  check(java.util.Arrays.equals(tailScope.enqueue,new int[0])&&tailScope.skips.equals(java.util.Arrays.asList(OfflineQueueRules.DONE,m3u8Reason)),"from current onward still reports locked skips");
+  check(OfflineQueueRules.summary(0,tailScope.skips).startsWith("已加入 0 集，跳过 2 集"),"an all-skipped range explains why nothing was added");
+  OfflineQueueRules.Scope picked=OfflineQueueRules.scope(seasonBlock,new int[]{0});
+  check(java.util.Arrays.equals(picked.enqueue,new int[]{0})&&picked.skips.isEmpty(),"a manual selection does not invent skips outside that selection");
+
+  System.out.println("PASS: download dedupe, unsupported sources, batch order, summary, locked rows, deferred notification permission, host-only errors, playing line, cancel and skip counts.");
  }
 }

@@ -13,6 +13,15 @@ public class OfflineDownloadRulesTest {
   check(OfflineRules.state("failed",0,0,0,"HTTP 403，重新获取地址后仍被拒绝").contains("HTTP 403")&&OfflineRules.state("failed",0,0,0,"").contains("点一下重试"),"failed line");
   check(OfflineRules.state("paused",10,100,0,"").contains("10%")&&OfflineRules.state("done",0,2048,0,"").startsWith("已下载 · 2 KB")&&OfflineRules.state("queued",0,-1,0,"").startsWith("排队"),"other lines");
   check(!OfflineProgress.due(1000,5999)&&OfflineProgress.due(1000,6000)&&OfflineProgress.due(-1,0)&&OfflineProgress.FLUSH_MS==5000,"progress flush about every 5 seconds");
-  System.out.println("PASS: in-app download status classification, Content-Range total, retry backoff, error-page detection, progress lines and flush throttle.");
+  check(OfflineRules.sameResource("http://cdn.example/a.mp4?token=old","http://cdn.example/a.mp4?token=new"),"a new query on the same file is still that file");
+  check(!OfflineRules.sameResource("http://cdn.example/routeB.mp4?token=1","http://cdn.example/routeA.mp4?token=2"),"two lines are different files");
+  check(OfflineRules.resumeOffset(true,false,206,400,-1,-1)==400,"an ordinary range resume keeps the bytes already stored");
+  check(OfflineRules.resumeOffset(true,true,206,400,1000,1000)==400,"refresh of the same file with the same length resumes");
+  check(OfflineRules.resumeOffset(true,true,206,400,1000,1800)==0,"refresh that reports a different length starts over");
+  check(OfflineRules.resumeOffset(true,true,206,400,-1,1000)==0,"refresh without a known length does not append");
+  check(OfflineRules.resumeOffset(false,true,206,400,1000,1000)==0,"a different source is not spliced onto the partial file even when the length matches");
+  check(OfflineRules.resumeOffset(false,false,206,400,1000,1000)==0,"mismatched source bytes are replaced");
+  check(OfflineRules.resumeOffset(true,false,200,400,1000,1000)==0,"a full response replaces the partial file");
+  System.out.println("PASS: in-app download status classification, Content-Range total, retry backoff, error-page detection, progress lines, flush throttle and resume that refuses a different source.");
  }
 }

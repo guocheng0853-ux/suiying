@@ -43,9 +43,9 @@ final class OfflineBatchMenu {
   tools.addView(link(a,"全选",()->setAll(a,rows,labels,on,block,at,true)),new LinearLayout.LayoutParams(0,CinemaMenu.dp(a,48),1f));
   tools.addView(link(a,"取消全选",()->setAll(a,rows,labels,on,block,at,false)),new LinearLayout.LayoutParams(0,CinemaMenu.dp(a,48),1f));
   body.addView(tools);
-  body.addView(link(a,"下载所选",()->confirm(a,chosen(jobs,on))));
-  body.addView(link(a,"下载本季全部",()->confirm(a,pick(jobs,OfflineQueueRules.allowed(block,range(jobs.size()))))));
-  body.addView(link(a,"从当前集往后全部",()->confirm(a,pick(jobs,OfflineQueueRules.allowed(block,OfflineQueueRules.tail(at,jobs.size()))))));
+  body.addView(link(a,"下载所选",()->confirm(a,chosen(jobs,on),java.util.Collections.<String>emptyList())));
+  body.addView(link(a,"下载本季全部",()->{OfflineQueueRules.Scope s=OfflineQueueRules.scope(block,range(jobs.size()));confirm(a,pick(jobs,s.enqueue),s.skips);}));
+  body.addView(link(a,"从当前集往后全部",()->{OfflineQueueRules.Scope s=OfflineQueueRules.scope(block,OfflineQueueRules.tail(at,jobs.size()));confirm(a,pick(jobs,s.enqueue),s.skips);}));
   for(int i=0;i<jobs.size();i++){final int index=i;labels[i]=jobs.get(i).label();TextView row=new TextView(a);rows[i]=row;paint(a,row,labels[i],i==at,false,block[i]);row.setMinHeight(CinemaMenu.dp(a,44));row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(CinemaMenu.dp(a,8),CinemaMenu.dp(a,4),CinemaMenu.dp(a,8),CinemaMenu.dp(a,4));row.setOnClickListener(v->{if(block[index]!=null){toast(a,block[index]);return;}on[index]=!on[index];paint(a,row,labels[index],index==at,on[index],null);});body.addView(row);}
   if(!CinemaMenu.open(a,title,body,new ArrayList<CinemaMenu.Item>(),null))toast(a,"现在打不开下载菜单");
  }
@@ -56,21 +56,24 @@ final class OfflineBatchMenu {
  static void setAll(Activity a,TextView[] rows,String[] labels,boolean[] on,String[] block,int current,boolean value){for(int i=0;i<on.length;i++){if(block[i]!=null){on[i]=false;paint(a,rows[i],labels[i],i==current,false,block[i]);continue;}on[i]=value;paint(a,rows[i],labels[i],i==current,value,null);}}
  static void paint(Activity a,TextView row,String label,boolean current,boolean checked,String block){String name=label+(current?"  · 当前":"");if(block!=null){row.setText("○  "+name+"\n"+block);row.setTextColor(PlayerTheme.secondary(a));row.setAlpha(.72f);}else{row.setText((checked?"✓  ":"○  ")+name);row.setTextColor(checked?PlayerTheme.selectedText(a):PlayerTheme.text(a));row.setAlpha(1f);}row.setTextSize(Ui.sp(15));}
  static TextView link(Activity a,String label,Runnable run){TextView t=new TextView(a);t.setText(label);t.setTextColor(PlayerTheme.selectedText(a));t.setTextSize(Ui.sp(15));t.setGravity(Gravity.CENTER_VERTICAL);t.setMinHeight(CinemaMenu.dp(a,48));t.setPadding(CinemaMenu.dp(a,8),0,CinemaMenu.dp(a,8),0);t.setOnClickListener(v->run.run());return t;}
- static void confirm(Activity a,List<Episode> jobs){
-  if(jobs==null||jobs.isEmpty()){toast(a,"还没有选择剧集");return;}
+ static void confirm(Activity a,List<Episode> jobs,List<String> presetSkips){
+  final ArrayList<String> prior=new ArrayList<>();if(presetSkips!=null)prior.addAll(presetSkips);
+  if(jobs==null||jobs.isEmpty()){if(!prior.isEmpty()){new CinemaDialog(a).setTitle("下载队列").setMessage(OfflineQueueRules.summary(0,prior)).setPositiveButton("知道了",null).show();return;}toast(a,"还没有选择剧集");return;}
   final ArrayList<Episode> chosen=new ArrayList<>(jobs);
-  new CinemaDialog(a).setTitle("批量下载").setMessage("按顺序加入下载队列，共 "+chosen.size()+" 集。\n已下载、已在队列或不支持的片源会跳过，并说明原因。\n大文件建议连 Wi-Fi。").setPositiveButton("开始下载",(d,w)->run(a,chosen)).setNegativeButton("取消",null).show();
+  String extra=prior.isEmpty()?"":"\n这一批里已经有 "+prior.size()+" 集会跳过，完成后按原因列出。";
+  new CinemaDialog(a).setTitle("批量下载").setMessage("按顺序加入下载队列，共 "+chosen.size()+" 集。\n已下载、已在队列或不支持的片源会跳过，并说明原因。"+extra+"\n大文件建议连 Wi-Fi。").setPositiveButton("开始下载",(d,w)->run(a,chosen,prior)).setNegativeButton("取消",null).show();
  }
- static void run(Activity a,List<Episode> chosen){
+ static void run(Activity a,List<Episode> chosen,List<String> presetSkips){
   CinemaWait wait=CinemaWait.show(a,"批量下载","正在加入下载队列…",true,true);AtomicBoolean cancel=new AtomicBoolean();wait.setOnCancelListener(d->cancel.set(true));Context app=a.getApplicationContext();
-  OfflineDownloads.IO.execute(()->{ArrayList<String> skips=new ArrayList<>();ArrayList<Episode> todo=new ArrayList<>();
+  OfflineDownloads.IO.execute(()->{ArrayList<String> skips=new ArrayList<>();if(presetSkips!=null)skips.addAll(presetSkips);ArrayList<Episode> todo=new ArrayList<>();
    Map<String,String> existing;synchronized(OfflineDownloads.class){existing=OfflineQueueRules.index(OfflineDownloads.list(app));}
    ArrayList<OfflineQueueRules.Item> items=new ArrayList<>();for(Episode ep:chosen)items.add(new OfflineQueueRules.Item(ep.key(),ep.label(),ep.earlyUrl(),ep.transcodeOnly()));
    List<OfflineQueueRules.Row> plan=OfflineQueueRules.plan(items,existing);
    for(int i=0;i<plan.size();i++){OfflineQueueRules.Row row=plan.get(i);if(row.enqueue)todo.add(chosen.get(i));else if(row.reason!=null)skips.add(row.reason);}
    ArrayList<JSONObject> ready=new ArrayList<>();long base=System.currentTimeMillis();
-   for(int i=0;i<todo.size();i++){if(cancel.get())break;final int at=i+1,total=todo.size();a.runOnUiThread(()->{if(!a.isFinishing()&&wait.isShowing())wait.setMessage("正在加入下载队列… "+at+" / "+total);});
-    try{JSONObject rec=todo.get(i).record(app,base+ready.size());String late=OfflineRules.refuse(rec.optString("url"));if(late!=null)skips.add(late);else ready.add(rec);}catch(Exception e){skips.add(reason(e));}}
+   for(int i=0;i<todo.size();i++){if(OfflineQueueRules.accept(cancel.get(),null)<0)break;final int at=i+1,total=todo.size();a.runOnUiThread(()->{if(!a.isFinishing()&&wait.isShowing())wait.setMessage("正在加入下载队列… "+at+" / "+total);});
+    JSONObject rec=null;String skip=null;try{rec=todo.get(i).record(app,base+ready.size());skip=OfflineRules.refuse(rec.optString("url"));}catch(Exception e){skip=reason(e);}
+    int decision=OfflineQueueRules.accept(cancel.get(),skip);if(decision<0)break;if(decision==0)skips.add(skip);else if(rec!=null)ready.add(rec);}
    int wrote=OfflineDownloads.commitAll(app,ready);if(wrote<0){skips.add("无法写入下载队列");wrote=0;}else for(int i=0;i<ready.size()-wrote;i++)skips.add(OfflineQueueRules.QUEUED);
    final int added=wrote;final String text=OfflineQueueRules.summary(added,skips)+(cancel.get()?"\n已取消，还没解析的集数没有加入。":"");
    a.runOnUiThread(()->{if(a.isFinishing()||a.isDestroyed())return;wait.dismiss();if(added>0)FollowUp.askDownloadNotify(a);new CinemaDialog(a).setTitle("下载队列").setMessage(text).setPositiveButton("知道了",null).show();});});
