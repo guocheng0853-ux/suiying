@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
   "ui_version": "0.1.165",
-  "android_device_tested": false,
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -20,7 +20,7 @@
   "dolby_android_device_tested": false,
   "jvm_test_programs_passed": 100,
   "apk_class_resolution": "passed",
-  "unique_classes": 9317,
+  "unique_classes": 9316,
   "dex_files": 3,
   "main_version_code": 166,
   "application_id": "com.guocheng.mediapocket.next",
@@ -42,5 +42,7 @@
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
   "real_source_playback_tested": false,
-  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build"
+  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build",
+  "signed_apk_sha256": "eefdf90dc6f7e573f0bf7df9b945387dd4596487347dd7164779c31c7f55ff29",
+  "device_test_scope": "2026-10-30 Windows build of 0.1.165 (code 166): PJZ110 Android17 overwrite-install; real-device acceptance of download features: batch menu render + whole-season guard dialog + cancel, player more-menu download entry with correct episode label, real enqueue from player -> active download from Emby (42.5MB at 1.5MB/s) -> tap-pause -> delete with partial-file cleanup verified on storage; playback unaffected during enqueue; 0 crashes. OPD2401 overwrite-install succeeded, launch check skipped (device unplugged by user)"
 }
