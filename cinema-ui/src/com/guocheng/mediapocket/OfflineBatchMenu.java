@@ -35,22 +35,26 @@ final class OfflineBatchMenu {
  static String watchId(FusionCatalog.Session session,String id,String episode){try{return "tvbox:"+TvSpiderRules.digest((session.url+"|"+session.site.optString("key")+"|"+id+"|"+episode).getBytes("UTF-8"),"SHA-256");}catch(Exception e){return "";}}
  static boolean[] flags(List<Boolean> values){boolean[] out=new boolean[values.size()];for(int i=0;i<out.length;i++)out[i]=Boolean.TRUE.equals(values.get(i));return out;}
  static void open(Activity a,String title,List<Episode> jobs,int current){
-  final boolean[] on=new boolean[jobs.size()];final TextView[] rows=new TextView[jobs.size()];final String[] labels=new String[jobs.size()];
-  int at=current<0?0:Math.min(current,jobs.size()-1);
+  final boolean[] on=new boolean[jobs.size()];final TextView[] rows=new TextView[jobs.size()];final String[] labels=new String[jobs.size()];final String[] block=blocks(a,jobs);
+  int at=current<0?0:Math.min(current,Math.max(0,jobs.size()-1));
   LinearLayout body=new LinearLayout(a);body.setOrientation(LinearLayout.VERTICAL);
-  TextView hint=new TextView(a);hint.setText("勾选要下载的集。已下载、已在队列或不支持的片源会跳过，并说明原因。");hint.setTextColor(PlayerTheme.secondary(a));hint.setTextSize(Ui.sp(13));hint.setPadding(CinemaMenu.dp(a,8),CinemaMenu.dp(a,4),CinemaMenu.dp(a,8),CinemaMenu.dp(a,8));body.addView(hint);
+  TextView hint=new TextView(a);hint.setText("灰色的是下不了，或已经在下载队列里的，点一下可看原因。全选和整季下载会跳过它们。");hint.setTextColor(PlayerTheme.secondary(a));hint.setTextSize(Ui.sp(13));hint.setPadding(CinemaMenu.dp(a,8),CinemaMenu.dp(a,4),CinemaMenu.dp(a,8),CinemaMenu.dp(a,8));body.addView(hint);
   LinearLayout tools=new LinearLayout(a);tools.setOrientation(LinearLayout.HORIZONTAL);
-  tools.addView(link(a,"全选",()->setAll(a,rows,labels,on,at,true)),new LinearLayout.LayoutParams(0,CinemaMenu.dp(a,48),1f));
-  tools.addView(link(a,"取消全选",()->setAll(a,rows,labels,on,at,false)),new LinearLayout.LayoutParams(0,CinemaMenu.dp(a,48),1f));
+  tools.addView(link(a,"全选",()->setAll(a,rows,labels,on,block,at,true)),new LinearLayout.LayoutParams(0,CinemaMenu.dp(a,48),1f));
+  tools.addView(link(a,"取消全选",()->setAll(a,rows,labels,on,block,at,false)),new LinearLayout.LayoutParams(0,CinemaMenu.dp(a,48),1f));
   body.addView(tools);
-  body.addView(link(a,"下载所选",()->{ArrayList<Episode> picked=new ArrayList<>();for(int i=0;i<on.length;i++)if(on[i])picked.add(jobs.get(i));confirm(a,picked);}));
-  body.addView(link(a,"下载本季全部",()->confirm(a,jobs)));
-  body.addView(link(a,"从当前集往后全部",()->{ArrayList<Episode> picked=new ArrayList<>();for(int i:OfflineQueueRules.tail(at,jobs.size()))picked.add(jobs.get(i));confirm(a,picked);}));
-  for(int i=0;i<jobs.size();i++){final int index=i;labels[i]=jobs.get(i).label();TextView row=new TextView(a);rows[i]=row;paint(a,row,labels[i],i==at,false);row.setMinHeight(CinemaMenu.dp(a,44));row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(CinemaMenu.dp(a,8),0,CinemaMenu.dp(a,8),0);row.setOnClickListener(v->{on[index]=!on[index];paint(a,row,labels[index],index==at,on[index]);});body.addView(row);}
+  body.addView(link(a,"下载所选",()->confirm(a,chosen(jobs,on))));
+  body.addView(link(a,"下载本季全部",()->confirm(a,pick(jobs,OfflineQueueRules.allowed(block,range(jobs.size()))))));
+  body.addView(link(a,"从当前集往后全部",()->confirm(a,pick(jobs,OfflineQueueRules.allowed(block,OfflineQueueRules.tail(at,jobs.size()))))));
+  for(int i=0;i<jobs.size();i++){final int index=i;labels[i]=jobs.get(i).label();TextView row=new TextView(a);rows[i]=row;paint(a,row,labels[i],i==at,false,block[i]);row.setMinHeight(CinemaMenu.dp(a,44));row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(CinemaMenu.dp(a,8),CinemaMenu.dp(a,4),CinemaMenu.dp(a,8),CinemaMenu.dp(a,4));row.setOnClickListener(v->{if(block[index]!=null){toast(a,block[index]);return;}on[index]=!on[index];paint(a,row,labels[index],index==at,on[index],null);});body.addView(row);}
   if(!CinemaMenu.open(a,title,body,new ArrayList<CinemaMenu.Item>(),null))toast(a,"现在打不开下载菜单");
  }
- static void setAll(Activity a,TextView[] rows,String[] labels,boolean[] on,int current,boolean value){for(int i=0;i<on.length;i++){on[i]=value;paint(a,rows[i],labels[i],i==current,value);}}
- static void paint(Activity a,TextView row,String label,boolean current,boolean checked){row.setText((checked?"✓  ":"○  ")+label+(current?"  · 当前":""));row.setTextColor(checked?PlayerTheme.selectedText(a):PlayerTheme.text(a));row.setTextSize(Ui.sp(15));}
+ static String[] blocks(Activity a,List<Episode> jobs){Map<String,String> existing;synchronized(OfflineDownloads.class){existing=OfflineQueueRules.index(OfflineDownloads.list(a));}String[] block=new String[jobs.size()];for(int i=0;i<jobs.size();i++)block[i]=OfflineQueueRules.dialogBlock(existing.get(jobs.get(i).key()),jobs.get(i).earlyUrl(),jobs.get(i).transcodeOnly());return block;}
+ static int[] range(int size){int[] all=new int[Math.max(0,size)];for(int i=0;i<all.length;i++)all[i]=i;return all;}
+ static List<Episode> pick(List<Episode> jobs,int[] indexes){ArrayList<Episode> out=new ArrayList<>();if(indexes==null)return out;for(int i:indexes)if(i>=0&&i<jobs.size())out.add(jobs.get(i));return out;}
+ static List<Episode> chosen(List<Episode> jobs,boolean[] on){ArrayList<Episode> out=new ArrayList<>();for(int i=0;i<on.length;i++)if(on[i])out.add(jobs.get(i));return out;}
+ static void setAll(Activity a,TextView[] rows,String[] labels,boolean[] on,String[] block,int current,boolean value){for(int i=0;i<on.length;i++){if(block[i]!=null){on[i]=false;paint(a,rows[i],labels[i],i==current,false,block[i]);continue;}on[i]=value;paint(a,rows[i],labels[i],i==current,value,null);}}
+ static void paint(Activity a,TextView row,String label,boolean current,boolean checked,String block){String name=label+(current?"  · 当前":"");if(block!=null){row.setText("○  "+name+"\n"+block);row.setTextColor(PlayerTheme.secondary(a));row.setAlpha(.72f);}else{row.setText((checked?"✓  ":"○  ")+name);row.setTextColor(checked?PlayerTheme.selectedText(a):PlayerTheme.text(a));row.setAlpha(1f);}row.setTextSize(Ui.sp(15));}
  static TextView link(Activity a,String label,Runnable run){TextView t=new TextView(a);t.setText(label);t.setTextColor(PlayerTheme.selectedText(a));t.setTextSize(Ui.sp(15));t.setGravity(Gravity.CENTER_VERTICAL);t.setMinHeight(CinemaMenu.dp(a,48));t.setPadding(CinemaMenu.dp(a,8),0,CinemaMenu.dp(a,8),0);t.setOnClickListener(v->run.run());return t;}
  static void confirm(Activity a,List<Episode> jobs){
   if(jobs==null||jobs.isEmpty()){toast(a,"还没有选择剧集");return;}

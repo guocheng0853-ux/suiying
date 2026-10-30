@@ -67,6 +67,24 @@ public class OfflineQueueRulesTest {
   check(OfflineQueueRules.resumeIndex(new String[]{"a","b","c"},new boolean[]{true,false,false},new boolean[]{false,true,false},null)==1,"in-progress episode");
   check(OfflineQueueRules.resumeIndex(new String[]{"a","b"},new boolean[]{true,false},new boolean[]{false,false},"missing")==1,"first unplayed when preferred is absent");
   check(OfflineQueueRules.lastTrue(new boolean[]{false,true,false,true})==3&&OfflineQueueRules.lastTrue(new boolean[]{false,false})==0,"last started episode, else the first");
-  System.out.println("PASS: download dedupe, unsupported sources, batch order, summary and current-episode range.");
+
+  String magnetReason=OfflineRules.refuse(null);
+  check(OfflineQueueRules.dialogBlock("done","http://cdn.example/a.mp4",false).equals(OfflineQueueRules.DONE),"downloaded row is locked");
+  check(OfflineQueueRules.dialogBlock("queued","",false).equals(OfflineQueueRules.QUEUED)&&OfflineQueueRules.dialogBlock("running","",false).equals(OfflineQueueRules.QUEUED)&&OfflineQueueRules.dialogBlock("paused","",false).equals(OfflineQueueRules.PAUSED),"queued, running and paused rows are locked");
+  check(magnetReason.equals(OfflineQueueRules.dialogBlock(null,magnet,false))&&OfflineQueueRules.dialogBlock("failed","http://cdn.example/a.mp4",false)==null,"unsupported source locks, a failed file can be selected again");
+  check(OfflineQueueRules.TRANSCODE.equals(OfflineQueueRules.dialogBlock(null,"http://cdn.example/a.mp4",true))&&OfflineQueueRules.dialogBlock(null,"ep-3",false)==null,"transcode locks, unresolved id stays selectable");
+  String[] locks=new String[]{null,OfflineQueueRules.QUEUED,magnetReason,null};
+  check(Arrays.equals(OfflineQueueRules.allowed(locks,new int[]{0,1,2,3}),new int[]{0,3}),"select all skips locked rows");
+  check(Arrays.equals(OfflineQueueRules.allowed(locks,OfflineQueueRules.tail(1,4)),new int[]{3}),"from current onward still skips locked rows");
+
+  check(!OfflineQueueRules.requestNotifyNow(true)&&OfflineQueueRules.requestNotifyNow(false),"player download does not ask for notification permission");
+  check(OfflineQueueRules.deferNotify(true,false,false)&&!OfflineQueueRules.deferNotify(true,true,false)&&!OfflineQueueRules.deferNotify(true,false,true)&&!OfflineQueueRules.deferNotify(false,false,false),"only an unanswered player download is deferred");
+  check(OfflineQueueRules.requestNotifyOnResume(false,true,false,false)&&!OfflineQueueRules.requestNotifyOnResume(true,true,false,false)&&!OfflineQueueRules.requestNotifyOnResume(false,false,false,false)&&!OfflineQueueRules.requestNotifyOnResume(false,true,true,false),"resume asks once, and never on the player");
+
+  String secret="http://user:secret@cdn.example:8443/a.mp4?token=abc";
+  String redacted=OfflineQueueRules.summary(0,Arrays.asList("连接失败 "+secret,"连接失败 http://cdn.example/b.mkv?sign=zzz","磁力 "+magnet));
+  check(redacted.contains("cdn.example")&&!redacted.contains("token")&&!redacted.contains("secret")&&!redacted.contains("a.mp4")&&!redacted.contains("btih")&&redacted.contains("磁力"),"summary keeps only the host: "+redacted);
+  check(redacted.contains("连接失败 cdn.example · 2 集"),"same host collapses after redaction");
+  System.out.println("PASS: download dedupe, unsupported sources, batch order, summary, locked rows, deferred notification permission and host-only errors.");
  }
 }

@@ -94,6 +94,6 @@ public final class FusionLibraryActivity extends Activity {
 
  void matchArtwork(JSONObject m,ImageView cover){EditText input=new EditText(this);input.setText(MediaMatchRules.clean(m.optString("vod_name")));new CinemaDialog(this).setTitle("搜索影片元数据").setView(input).setPositiveButton("搜索",(d,n)->work("正在匹配影片…",()->{JSONArray results=FusionArtwork.search(input.getText().toString());return ()->{if(results.length()==0){status.setText("未匹配到影片，可改用英文名搜索");return;}String[] labels=new String[results.length()];for(int i=0;i<labels.length;i++){JSONObject v=results.optJSONObject(i);labels[i]=v.optString("name")+" · "+v.optString("releaseInfo")+" · "+v.optString("type");}new CinemaDialog(this).setTitle("确认对应影片").setItems(labels,(x,index)->{JSONObject chosen=results.optJSONObject(index);FusionArtwork.save(this,m,chosen);load(cover,chosen.optString("poster"),dp(600));status.setText("匹配已保存 · 字幕将使用此影片身份");}).show();};},()->matchArtwork(m,cover))).setNegativeButton("取消",null).show();}
  @Override public void onBackPressed(){epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);if(!back.isEmpty())back.pop().run();else super.onBackPressed();}
- @Override protected void onResume(){PlaybackOrientation.releaseHost(this);super.onResume();}
+ @Override protected void onResume(){FollowUp.resumeDownloadNotify(this);PlaybackOrientation.releaseHost(this);super.onResume();}
  @Override public void onDestroy(){dead=true;epoch++;watch.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}
 }

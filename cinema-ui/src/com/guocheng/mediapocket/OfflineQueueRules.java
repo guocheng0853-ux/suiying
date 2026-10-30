@@ -1,5 +1,5 @@
 package com.guocheng.mediapocket;
-import org.json.*;import java.util.*;
+import org.json.*;import java.net.URL;import java.util.*;import java.util.regex.*;
 /**
  * 0.1.164 离线下载入队（不依赖 Android）：去重、跳过不支持的片源、批量保持顺序。
  * 队列数组的约定和 OfflineDownloads 一致：下标 0 是最新入队的，下载从数组末尾往前找排队项，所以先入队的先下。
@@ -122,10 +122,41 @@ final class OfflineQueueRules {
   for(int i=all.length()-1;i>=0;i--){JSONObject o=all.optJSONObject(i);if(o!=null&&"queued".equals(o.optString("status")))out.add(o.optString("name"));}
   return out;
  }
+ /** 批量对话框里这一集能不能勾。已下完、排队、下载中、暂停，以及现在就能判断的不支持片源，返回原因；能勾返回 null。 */
+ static String dialogBlock(String status,String earlyUrl,boolean transcodeOnly){
+  String dup=duplicate(status);
+  if(dup!=null)return dup;
+  if(transcodeOnly)return TRANSCODE;
+  return earlyRefuse(earlyUrl);
+ }
+ /** 全选和一键全部只用能勾的下标。 */
+ static int[] allowed(String[] block,int[] indexes){
+  if(indexes==null||indexes.length==0)return new int[0];
+  int n=0;for(int i:indexes)if(selectable(block,i))n++;
+  int[] out=new int[n];int w=0;for(int i:indexes)if(selectable(block,i))out[w++]=i;return out;
+ }
+ static boolean selectable(String[] block,int i){return block!=null&&i>=0&&i<block.length&&block[i]==null;}
+ /**
+  * 播放页不能弹通知权限：系统权限框会让播放器 onPause，SystemPlayerActivity 会暂停并上报。
+  * 播放页先记下，回到非播放页再问。已问过或已授权不再问。
+  */
+ static boolean requestNotifyNow(boolean player){return !player;}
+ static boolean deferNotify(boolean player,boolean asked,boolean granted){return player&&!asked&&!granted;}
+ static boolean requestNotifyOnResume(boolean player,boolean deferred,boolean asked,boolean granted){return !player&&deferred&&!asked&&!granted;}
+ /** 给用户看的错误里去掉完整地址，只留主机名。磁力和解析不出主机的地址不留路径和参数。 */
+ static String redact(String text){
+  if(text==null||text.isEmpty())return text==null?"":text;
+  Matcher m=Pattern.compile("(?i)\\b(?:https?|rtsp|rtmp)://[^\\s\"']+").matcher(text);
+  StringBuffer sb=new StringBuffer();
+  while(m.find())m.appendReplacement(sb,Matcher.quoteReplacement(hostOf(m.group())));
+  m.appendTail(sb);
+  return sb.toString().replaceAll("(?i)\\bmagnet:\\?\\S+","磁力");
+ }
+ static String hostOf(String url){try{String h=new URL(url).getHost();return h==null||h.isEmpty()?"服务器":h;}catch(Exception e){return "服务器";}}
  static String summary(int enqueued,List<String> skipReasons){
   LinkedHashMap<String,Integer> counts=new LinkedHashMap<>();
   int skip=0;
-  if(skipReasons!=null)for(String reason:skipReasons){skip++;String key=reason==null||reason.isEmpty()?"未加入":reason;Integer n=counts.get(key);counts.put(key,n==null?1:n+1);}
+  if(skipReasons!=null)for(String reason:skipReasons){skip++;String key=redact(reason==null||reason.isEmpty()?"未加入":reason);Integer n=counts.get(key);counts.put(key,n==null?1:n+1);}
   StringBuilder b=new StringBuilder();
   b.append("已加入 ").append(Math.max(0,enqueued)).append(" 集");
   if(skip>0){b.append("，跳过 ").append(skip).append(" 集");for(Map.Entry<String,Integer> e:counts.entrySet())b.append('\n').append(e.getKey()).append(" · ").append(e.getValue()).append(" 集");}
