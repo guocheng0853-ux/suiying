@@ -15,7 +15,36 @@ final class PosterDetailRules {
  static String duration(long ticks){if(ticks<=0)return "";long sec=ticks/10_000_000L;if(sec<=0)return "";long h=sec/3600,m=(sec%3600)/60,s=sec%60;if(h>0){String out=h+"小时";if(m>0)out+=m+"分";if(s>0)out+=s+"秒";return out;}if(m>0&&s>0)return m+"分"+s+"秒";if(m>0)return m+"分钟";return s+"秒";}
  /** 2026-10-28 或带时间的同一天，收成 2026/10/28。年份单独的不在这里处理。 */
  static String day(String raw){if(raw==null)return "";String s=raw.trim();if(s.length()>=10&&s.charAt(4)=='-'&&s.charAt(7)=='-')return s.substring(0,10).replace('-','/');return "";}
- static String episodeMeta(int season,int episode,String date,String duration){String code=season>0&&episode>0?"S"+season+":E"+episode:(episode>0?"E"+episode:"");String ep=episode>0?"第 "+episode+" 集":"";return join("｜",code,ep,date,duration);}
+ static String episodeMeta(int season,int episode,String date,String duration){return episodeMeta(season,episode,"",date,duration);}
+ /** 有独立集名时用集名，不再重复「第 N 集」。集名本身就是集号时仍显示「第 N 集」。 */
+ static String episodeMeta(int season,int episode,String name,String date,String duration){String code=season>0&&episode>0?"S"+season+":E"+episode:(episode>0?"E"+episode:"");String title=episodeTitle(name,episode);String ep=title.isEmpty()?(episode>0?"第 "+episode+" 集":""):title;return join("｜",code,ep,date,duration);}
+ static String episodeTitle(String name,int episode){if(name==null)return "";String t=name.trim();if(t.isEmpty())return "";if(episode>0){String n=String.valueOf(episode);if(t.matches("第\\s*0*"+n+"\\s*集"))return "";if(t.matches("0*"+n))return "";if(t.matches("(?i)S\\d{1,4}\\s*E0*"+n))return "";if(t.matches("(?i)(?:EP|E)\\s*0*"+n))return "";}return t;}
+ /**
+  * Emby 跳集只认 IndexNumber。没有这个字段、或没有这一集，返回 -1。
+  * 不用列表序号顶替，避免把第 1 条当成第 1 集。
+  */
+ static int embyJump(JSONArray items,int episode){if(items==null||episode<=0)return -1;for(int i=0;i<items.length();i++){JSONObject ep=items.optJSONObject(i);if(ep!=null&&ep.optInt("IndexNumber",-1)==episode)return i;}return -1;}
+ /**
+  * 影视仓选集名里的集数。优先 SxxEyy，其次「第 N 集」，再是 EP / E 前缀，
+  * 纯数字，以及「12. 标题」这种开头的序号。解析不到返回 -1。
+  */
+ static int fusionEpisodeNumber(String name){if(name==null)return -1;String s=name.trim();if(s.isEmpty())return -1;java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?i)S\\d{1,4}\\s*E(\\d{1,5})").matcher(s);if(m.find())return positive(m.group(1));m=java.util.regex.Pattern.compile("第\\s*(\\d{1,5})\\s*集").matcher(s);if(m.find())return positive(m.group(1));m=java.util.regex.Pattern.compile("(?i)(?:EP|E)\\s*(\\d{1,5})").matcher(s);if(m.find())return positive(m.group(1));if(s.matches("\\d{1,5}"))return positive(s);m=java.util.regex.Pattern.compile("^(\\d{1,5})\\s*[.、:：\\-].*").matcher(s);if(m.find())return positive(m.group(1));return -1;}
+ static int positive(String n){try{int v=Integer.parseInt(n);return v>0?v:-1;}catch(Exception e){return -1;}}
+ /**
+  * 先按选集名解析出的集数命中（同号取第一条）。没有再按 1 起的列表序号。
+  * 都对不上返回 -1。
+  */
+ static int fusionJump(String[] names,int episode){if(names==null||episode<=0)return -1;for(int i=0;i<names.length;i++)if(fusionEpisodeNumber(names[i])==episode)return i;if(episode<=names.length)return episode-1;return -1;}
+ /** 标题下面这一行：集名、年份、备注。空的段丢掉。 */
+ static String fusionMeta(String episode,String year,String remarks){return join("｜",episode,year,remarks);}
+ /**
+  * 影视仓通常没有每集图，就用整部 vod_pic。
+  * 选集名里单独出现的图片地址，或播放地址本身就是图片时，才当作这一集的图。
+  * 不根据集数去猜文件名。
+  */
+ static String fusionStill(String name,String playUrl,String vodPic){String named=imageIn(name);if(!named.isEmpty())return named;if(isImageUrl(playUrl))return playUrl.trim();return vodPic==null?"":vodPic.trim();}
+ static boolean isImageUrl(String raw){if(raw==null)return false;String s=raw.trim().toLowerCase(Locale.ROOT);int q=s.indexOf('?');if(q>=0)s=s.substring(0,q);int h=s.indexOf('#');if(h>=0)s=s.substring(0,h);return s.endsWith(".jpg")||s.endsWith(".jpeg")||s.endsWith(".png")||s.endsWith(".webp")||s.endsWith(".gif");}
+ static String imageIn(String text){if(text==null||text.isEmpty())return "";java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?i)https?://[^\\s\"']+\\.(?:jpg|jpeg|png|webp|gif)(?:\\?[^\\s\"']*)?").matcher(text);return m.find()?m.group():"";}
  static String tileLabel(int index,String name){if(index>0)return index+". 第 "+index+" 集";return name==null||name.trim().isEmpty()?"剧集":name.trim();}
  static float bar(long runtimeTicks,long positionTicks,boolean played){if(played)return 1f;return MediaBadgeRules.progress(runtimeTicks,positionTicks,false);}
  /** 影视仓只有本地进度。看到 90% 算看完；开过但没有时长时给一小节，避免完全空白。 */

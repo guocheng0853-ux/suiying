@@ -29,6 +29,20 @@ public class PosterDetailRulesTest {
   check(card.sources==1&&card.audios==1,"counts");
   check(PosterDetailRules.emby(new JSONObject(),0).visible()==false&&PosterDetailRules.line("量子","第 165 集").videoTitle.equals("量子"),"empty and fusion line");
   check(PosterDetailRules.names("叶秋，苏运韵、昊天").length==3,"cast split");
-  System.out.println("PASS: poster detail rules (wide, duration, episode meta, tracks without paths, fusion progress).");
+  check(PosterDetailRules.episodeMeta(1,65,"谛藏算计层出不穷","2024/11/28","20分54秒").equals("S1:E65｜谛藏算计层出不穷｜2024/11/28｜20分54秒"),"named episode meta");
+  check(PosterDetailRules.episodeMeta(1,65,"第65集","2024/11/28","20分54秒").equals("S1:E65｜第 65 集｜2024/11/28｜20分54秒"),"generic episode name stays as 第 N 集");
+  JSONArray eps=new JSONArray().put(new JSONObject().put("IndexNumber",165)).put(new JSONObject().put("IndexNumber",65)).put(new JSONObject().put("Name","无集号"));
+  check(PosterDetailRules.embyJump(eps,65)==1&&PosterDetailRules.embyJump(eps,1)==-1&&PosterDetailRules.embyJump(eps,165)==0&&PosterDetailRules.embyJump(eps,0)==-1,"emby jump uses IndexNumber only");
+  check(PosterDetailRules.fusionEpisodeNumber("S01E65")==65&&PosterDetailRules.fusionEpisodeNumber("第 12 集")==12&&PosterDetailRules.fusionEpisodeNumber("EP07")==7&&PosterDetailRules.fusionEpisodeNumber("08")==8&&PosterDetailRules.fusionEpisodeNumber("12. 标题")==12&&PosterDetailRules.fusionEpisodeNumber("正片")==-1,"fusion episode numbers");
+  String[] named=new String[]{"第100集","第101集"};
+  check(PosterDetailRules.fusionJump(named,100)==0&&PosterDetailRules.fusionJump(named,101)==1&&PosterDetailRules.fusionJump(named,1)==0&&PosterDetailRules.fusionJump(named,3)==-1,"parsed number wins, else 1-based index");
+  String[] plain=new String[]{"正片","花絮"};
+  check(PosterDetailRules.fusionJump(plain,2)==1&&PosterDetailRules.fusionJump(plain,3)==-1,"list index when names have no number");
+  check(PosterDetailRules.fusionMeta("第65集","2024","更新至65集").equals("第65集｜2024｜更新至65集"),"fusion meta");
+  check(PosterDetailRules.fusionStill("第1集","http://a/1.m3u8","http://a/vod.jpg").equals("http://a/vod.jpg"),"no per-episode art keeps vod_pic");
+  check(PosterDetailRules.fusionStill("第1集 http://cdn/ep1.jpg","http://a/1.mp4","http://a/vod.jpg").equals("http://cdn/ep1.jpg"),"image in the episode name");
+  check(PosterDetailRules.fusionStill("第1集","http://cdn/still.png?x=1","http://a/vod.jpg").equals("http://cdn/still.png?x=1"),"play url that is itself an image");
+  check(PosterDetailRules.fusionStill("第2集","http://a/ep.mp4","http://a/vod.jpg").equals("http://a/vod.jpg"),"do not invent a still from the episode number");
+  System.out.println("PASS: poster detail rules (wide, duration, episode meta, jump, fusion stills, tracks without paths).");
  }
 }

@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json,subprocess,re
 root=Path(__file__).resolve().parent
-apk=root.parent/'deliverables/MediaPocket-0.1.167-detail-poster-arm64.apk'
+apk=root.parent/'deliverables/MediaPocket-0.1.168-detail-effects-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]
@@ -23,7 +23,7 @@ def dex(d):
  return classes,methods
 badging=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','badging',str(apk)],text=True).splitlines()[0]
 match=re.search(r"name='([^']+)' versionCode='([^']+)' versionName='([^']+)'",badging)
-assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='168' and match.group(3)=='0.1.167',badging
+assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='169' and match.group(3)=='0.1.168',badging
 xml=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','xmltree',str(apk),'--file','AndroidManifest.xml'],text=True)
 assert 'ExternalPlayActivity' in xml and '随影 (VLC)' in xml and 'suiying' in xml, 'external player or import link missing'
 seen=set();refs=[];count=0;dex_classes={};dex_methods={}
@@ -81,7 +81,7 @@ validation=json.loads((root/'VALIDATION.json').read_text())
 # 0.1.156：已写上的真机记录不要被校验脚本改回 false。杜比仍强制 false，不在这里宣称测过杜比。
 device_keys=('android_device_tested','phone_tested_this_release','real_source_playback_tested','real_source_note','device_test_scope','device_acceptance_record','device_cleanup_verified','validation_flags_note')
 recorded={k:validation[k] for k in device_keys if k in validation}
-validation.update({'media3_runtime_included':True,'dolby_android_device_tested':False,'jvm_test_programs_passed':stamp,'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':168,'application_id':match.group(1),'review_build':match.group(1).endswith('.review'),'default_home_provider':'fusion','apk_signature_present':signed,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
+validation.update({'media3_runtime_included':True,'dolby_android_device_tested':False,'jvm_test_programs_passed':stamp,'apk_class_resolution':'passed','unique_classes':len(seen),'dex_files':count,'main_version_code':169,'application_id':match.group(1),'review_build':match.group(1).endswith('.review'),'default_home_provider':'fusion','apk_signature_present':signed,'xiaoya_sample_phone_evidence':'0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false','tablet_torrentclaw_failure_reproduced':False,'presets_empty':True,'torrentclaw_removal_retained':True,
  'header_route_patch':'VlcPlayback.setSource: 4 prepended instructions calling HeaderRoute; all other main-dex method bodies identical (PatchHeaderRoute self-check)',
  'jvm_playback_chain_test':'HeaderRouteTest: local origin requiring Cookie+Origin; VLC-only headers -> 403; via HeaderRoute ffmpeg decoded 150 frames from HLS master->variant->AES-128 TS; MP4 seek via Range/206. JVM+ffmpeg, not Android/VLC.',
  'stremio_picker_android_ui_tested':False,'web_sniffer_android_tested':False,'link_probe_android_tested':False,'range_accelerator':'RangeAcceleratorTest: 2MB/s-per-connection origin, single vs 4-connection proxy ~4x faster, sha256 identical, Range/no-Range correct, ffmpeg decode via accelerator. JVM, not Android.','accelerator_android_tested':False,'probe_budget_ms':4000,'torrent_boost':'TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM','torrent_boost_android_tested':False})

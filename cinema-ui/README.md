@@ -1,3 +1,13 @@
+# 随影 0.1.168 详情页跳至与换集主视觉（code 169）
+
+- Emby 和影视仓详情的「更多来自 …」右侧箭头打开「跳至」。输入集数后，选集条滚到这一集并选中。主「播放 / 继续」、片源卡、集名日期时长跟着变，和点选集瓦片是同一套状态。点瓦片不再直接进播放器。
+- Emby 按 IndexNumber 找集，不用列表序号顶替。影视仓先从选集名解析 SxxEyy、「第 N 集」、EP / E、纯数字或「12. 标题」，解析不到再按 1 起的列表序号。
+- 换集不重建详情页。Emby 主海报换成这一集的 Primary（有 tag 才用），没有再用 Backdrop，再没有就留着已经铺上的系列背景。片源卡等这一集的 MediaSources 回来再填。
+- Emby 选集瓦片按 Thumb → Primary → SeriesPrimary → 系列 Primary（SeriesId）兜底。季列表 Fields 补上 ImageTags、BackdropImageTags 和系列图字段。不批量请求 ThumbnailSet。影视仓选集图仍用整部 `vod_pic`；只有选集名里自带图片地址，或播放地址本身是图片时，主海报才换成这一集。
+- 下载拒绝规则、播放页「下载这一集」、推迟通知没有改。磁力、m3u8、DASH、只允许转码的 Emby 仍然不能下。手机和平板仍是同一套 PosterDetail，只按窗口宽度分片源卡。
+- 版本：查过 `origin/main`、全部远程分支和开放 PR，最高是 0.1.167 / versionCode 168。没有占用 0.1.166。本版 0.1.168 / versionCode 169。
+- JVM 仍是 101 个测试程序，`PosterDetailRulesTest` 和 `EmbyFeaturesTest` 补了跳集、主视觉链和 Fields。没有打签名包，没有在手机或平板上点这些新入口。
+
 # 随影 0.1.167 详情页沉浸海报（code 168）
 
 - Emby 库详情和影视仓 / 融合库详情改成同一套方向 A：海报铺满，片名和集数在左下，金色胶囊「播放」，圆形按钮是线路、下载、收藏、更多。宽窗口片源卡在标题右侧，窄窗口叠在按钮下面。
