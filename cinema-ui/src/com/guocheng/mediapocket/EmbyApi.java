@@ -120,6 +120,35 @@ final class EmbyApi {
   if("Logo".equals(want)){String tag=tags==null?"":tags.optString("Logo");if(!tag.isEmpty())return new ImageRef(id,"Logo",tag);String parent=item==null?"":item.optString("ParentLogoItemId");if(!parent.isEmpty())return new ImageRef(parent,"Logo",item.optString("ParentLogoImageTag"));return new ImageRef(id,"Logo","");}
   return new ImageRef(id,want,tags==null?"":tags.optString(want));
  }
+ /** 没有 tag 的单集 Primary / Backdrop 不放进链：服务器会去抽帧，失败就是 500，瓦片留黑。系列 Primary 是静态文件，可以不带 tag。 */
+ static void addImage(ArrayList<String> urls,String url){if(url!=null&&!url.isEmpty()&&!urls.contains(url))urls.add(url);}
+ /**
+  * 选集瓦片：Thumb（有 tag）→ Primary（有 tag）→ SeriesPrimary（有 tag）→ 系列 Primary（SeriesId）。
+  * 不走 ThumbnailSet。
+  */
+ static String[] episodeTiles(String base,String token,JSONObject ep,int width){
+  ArrayList<String> urls=new ArrayList<>();if(ep==null)return new String[0];
+  String id=ep.optString("Id");JSONObject tags=ep.optJSONObject("ImageTags");
+  String thumb=tags==null?"":tags.optString("Thumb");if(!thumb.isEmpty()&&!id.isEmpty())addImage(urls,imageUrl(base,id,"Thumb",token,width,thumb));
+  String primary=tags==null?"":tags.optString("Primary");if(!primary.isEmpty()&&!id.isEmpty())addImage(urls,imageUrl(base,id,"Primary",token,width,primary));
+  String seriesOnEp=tags==null?"":tags.optString("SeriesPrimary");if(!seriesOnEp.isEmpty()&&!id.isEmpty())addImage(urls,imageUrl(base,id,"SeriesPrimary",token,width,seriesOnEp));
+  String seriesId=ep.optString("SeriesId");if(!seriesId.isEmpty())addImage(urls,imageUrl(base,seriesId,"Primary",token,width,""));
+  return urls.toArray(new String[0]);
+ }
+ /**
+  * 详情主视觉：这一集 Primary（有 tag）→ 这一集 Backdrop（有 tag）→ 父级 Backdrop（有 tag）→ 系列 Primary。
+  * 没有可用图时返回空，调用方保留已经铺上的系列海报，避免换集闪白。
+  */
+ static String[] episodeHero(String base,String token,JSONObject ep,int width){
+  ArrayList<String> urls=new ArrayList<>();if(ep==null)return new String[0];
+  String id=ep.optString("Id");JSONObject tags=ep.optJSONObject("ImageTags");
+  String primary=tags==null?"":tags.optString("Primary");if(!primary.isEmpty()&&!id.isEmpty())addImage(urls,imageUrl(base,id,"Primary",token,width,primary));
+  String bd=backdropTag(ep);if(!bd.isEmpty()&&!id.isEmpty())addImage(urls,imageUrl(base,id,"Backdrop",token,width,bd));
+  else{String parent=ep.optString("ParentBackdropItemId"),ptag=ep.optString("ParentBackdropImageTag");if(!parent.isEmpty()&&!ptag.isEmpty())addImage(urls,imageUrl(base,parent,"Backdrop",token,width,ptag));}
+  // 这一集自己没有图时返回空。调用方继续用已经铺上的系列背景，不要改成竖版系列海报。
+  if(!urls.isEmpty()){String seriesId=ep.optString("SeriesId");if(!seriesId.isEmpty())addImage(urls,imageUrl(base,seriesId,"Primary",token,width,""));}
+  return urls.toArray(new String[0]);
+ }
  static String thumbnailSetPath(String itemId,String mediaSourceId,int width){String q="/Items/"+enc(itemId)+"/ThumbnailSet?Width="+roundUp100(Math.max(100,width));if(mediaSourceId!=null&&!mediaSourceId.isEmpty())q+="&MediaSourceId="+enc(mediaSourceId);return q;}
  static long[] thumbnailTicks(JSONArray items){if(items==null||items.length()==0)return new long[0];long[] raw=new long[items.length()];int n=0;for(int i=0;i<items.length();i++){JSONObject o=items.optJSONObject(i);if(o==null||!o.has("PositionTicks"))continue;raw[n++]=o.optLong("PositionTicks");}if(n==raw.length)return raw;long[] out=new long[n];System.arraycopy(raw,0,out,0,n);return out;}
  static String[] thumbnailTags(JSONArray items){if(items==null||items.length()==0)return new String[0];ArrayList<String> list=new ArrayList<>();for(int i=0;i<items.length();i++){JSONObject o=items.optJSONObject(i);if(o==null||!o.has("PositionTicks"))continue;list.add(o.optString("ImageTag"));}return list.toArray(new String[0]);}

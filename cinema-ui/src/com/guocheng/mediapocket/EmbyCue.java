@@ -170,8 +170,14 @@ final class EmbyCue {
   return -1;
  }
  static boolean containsLang(String name,String lang){if(lang.length()<=2)return PlaybackPrefs.has(name,lang);return name.contains(lang);}
- /** 剧集按页拉取。有的服务器不带 Limit 只回第一页。 */
- static String episodesPath(String userId,String seriesId,String seasonId,int start,int limit){String q="/Shows/"+EmbyApi.enc(seriesId)+"/Episodes?UserId="+EmbyApi.enc(userId)+"&Fields=Overview,RunTimeTicks,UserData&StartIndex="+Math.max(0,start)+"&Limit="+Math.max(1,limit);if(seasonId!=null&&!seasonId.isEmpty())q+="&SeasonId="+EmbyApi.enc(seasonId);return q;}
+ /**
+  * 剧集按页拉取。有的服务器不带 Limit 只回第一页。
+  * ImageTags / BackdropImageTags 用来画选集瓦片和换集后的主视觉。
+  * SeriesPrimaryImageTag、ParentBackdrop* 是系列图兜底要用的字段。
+  * 这里不要加 ThumbnailSet：整季抽帧又慢又容易 500。
+  */
+ static final String EPISODE_FIELDS="Overview,RunTimeTicks,UserData,ImageTags,BackdropImageTags,SeriesPrimaryImageTag,ParentBackdropItemId,ParentBackdropImageTag";
+ static String episodesPath(String userId,String seriesId,String seasonId,int start,int limit){String q="/Shows/"+EmbyApi.enc(seriesId)+"/Episodes?UserId="+EmbyApi.enc(userId)+"&Fields="+EPISODE_FIELDS+"&StartIndex="+Math.max(0,start)+"&Limit="+Math.max(1,limit);if(seasonId!=null&&!seasonId.isEmpty())q+="&SeasonId="+EmbyApi.enc(seasonId);return q;}
  /** 空页、不满一页，或已经盖住 TotalRecordCount 就停。总数未知且这一页是满的，继续下一页。 */
  static boolean episodePageDone(int start,int pageCount,int limit,int total){if(pageCount<=0||pageCount<limit)return true;return total>=0&&start+pageCount>=total;}
  static String libraryPath(String userId,String parentId,String types,int start,String genre,boolean favorite){

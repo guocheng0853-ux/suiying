@@ -1,5 +1,7 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
+> 0.1.168（code 169）：详情页「跳至」和换集主视觉。Emby 按 IndexNumber，影视仓先解析选集名再按列表序号。Emby 选集瓦片补 ImageTags，并按 Thumb → Primary → SeriesPrimary → 系列海报兜底，不批量抽帧。不占用 0.1.166。JVM 101 项通过。没有签名包，没有真机点选。见 `docs/handoff/detail-effects-0168.md`。
+
 > 0.1.167（code 168）：Emby 与影视仓详情改成同一套沉浸海报（方向 A）。跳号原因：避开 zcode 测试修补，不占用 0.1.166 / versionCode 167。JVM 101 项通过。没有签名包，没有真机点选。见 `docs/handoff/detail-poster-0167.md`。
 
 > 0.1.165（code 166）：播放页下载记下正在播的影视仓线路；过期续传不会把另一条线路拼进已有文件。批量取消会停掉还在解析的那一集。整季汇总计入事先跳过的集数和原因。错误里的地址在汉字紧贴时也只留主机名。JVM 回归已覆盖。没有打本版签名包，没有真机点选。见 `docs/handoff/download-fixes-0165.md`。

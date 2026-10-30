@@ -46,7 +46,7 @@ final class PosterDetail {
   LinearLayout top=new LinearLayout(a);top.setOrientation(wide?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);top.setGravity(Gravity.BOTTOM);
   LinearLayout left=new LinearLayout(a);left.setOrientation(LinearLayout.VERTICAL);
   TextView name=text(a,title==null||title.isEmpty()?"影片":title,28,CinemaTheme.INK);name.setTypeface(CinemaTheme.paperTitle(a));name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);left.addView(name);
-  TextView meta=text(a,"",14,CinemaTheme.SOFT);meta.setPadding(0,dp(a,6),0,0);meta.setVisibility(View.GONE);left.addView(meta);
+  TextView meta=text(a,"",14,CinemaTheme.SOFT);meta.setPadding(0,dp(a,6),0,0);meta.setVisibility(View.GONE);meta.setMaxLines(3);meta.setEllipsize(android.text.TextUtils.TruncateAt.END);left.addView(meta);
   LinearLayout actions=new LinearLayout(a);actions.setGravity(Gravity.CENTER_VERTICAL);actions.setPadding(0,dp(a,14),0,0);
   Button play=new CinemaButton(a,false);play.setText("播放");play.setTextSize(Ui.BODY);play.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);play.setTextColor(onAccent);play.setAllCaps(false);play.setBackground(round(a,accent,100));play.setBackgroundTintList(null);play.setPadding(dp(a,18),0,dp(a,22),0);play.setCompoundDrawablePadding(dp(a,8));play.setCompoundDrawablesWithIntrinsicBounds(new PosterGlyphs(PosterGlyphs.PLAY,dp(a,16)).tint(onAccent),null,null,null);play.setElevation(dp(a,4));play.setEnabled(false);CinemaControls.action(play,"播放");actions.addView(play,new LinearLayout.LayoutParams(-2,dp(a,48)));
   View line=icon(a,PosterGlyphs.GLOBE,"线路",clicks==null?null:clicks::line);View down=icon(a,PosterGlyphs.DOWN,"下载",clicks==null?null:clicks::download);FrameLayout fav=(FrameLayout)icon(a,PosterGlyphs.HEART,"收藏",clicks==null?null:clicks::favorite);View more=icon(a,PosterGlyphs.MORE,"更多",clicks==null?null:clicks::more);actions.addView(line);actions.addView(down);actions.addView(fav);actions.addView(more);left.addView(actions);
@@ -69,11 +69,35 @@ final class PosterDetail {
   ImageView chev=new ImageView(a);chev.setImageDrawable(new PosterGlyphs(PosterGlyphs.CHEV,dp(a,14)).tint(CinemaTheme.MUTED));row.addView(chev,new LinearLayout.LayoutParams(dp(a,14),dp(a,14)));
   return new View[]{row,title,sub,chev};}
  static View icon(Activity a,int glyph,String label,Runnable click){FrameLayout box=new FrameLayout(a);box.setBackground(circle(a,0x48000000,0x6bf4f1ea));ImageView icon=new ImageView(a);icon.setImageDrawable(new PosterGlyphs(glyph,dp(a,20)).tint(CinemaTheme.INK));icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);box.addView(icon,new FrameLayout.LayoutParams(dp(a,20),dp(a,20),Gravity.CENTER));CinemaControls.action(box,label);if(click!=null)box.setOnClickListener(v->click.run());LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(a,48),dp(a,48));lp.leftMargin=dp(a,10);box.setLayoutParams(lp);return box;}
- static TextView section(Activity a,LinearLayout body,String label,boolean chevron,Runnable click){LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);if(click!=null)row.setMinimumHeight(dp(a,48));
+ static TextView section(Activity a,LinearLayout body,String label,boolean chevron,Runnable click){return section(a,body,label,chevron,click,null);}
+ /** jump 非空时，右侧箭头打开「跳至」。季 / 线路切换仍走 click，避免和跳集抢同一个入口。 */
+ static TextView section(Activity a,LinearLayout body,String label,boolean chevron,Runnable click,Runnable jump){LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);if(click!=null||jump!=null)row.setMinimumHeight(dp(a,48));
   TextView t=text(a,label,14,CinemaTheme.INK);t.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));if(Build.VERSION.SDK_INT>=28)t.setAccessibilityHeading(true);row.addView(t,new LinearLayout.LayoutParams(-2,-2));
   if(chevron){ImageView c=new ImageView(a);c.setImageDrawable(new PosterGlyphs(PosterGlyphs.CHEV,dp(a,16)).tint(CinemaTheme.MUTED));c.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(dp(a,16),dp(a,16));ip.leftMargin=dp(a,6);row.addView(c,ip);}
-  if(click!=null){row.setOnClickListener(v->click.run());CinemaControls.action(row,label);}
+  if(jump!=null){row.addView(new View(a),new LinearLayout.LayoutParams(0,dp(a,1),1f));FrameLayout hit=new FrameLayout(a);ImageView c=new ImageView(a);c.setImageDrawable(new PosterGlyphs(PosterGlyphs.CHEV,dp(a,16)).tint(CinemaTheme.MUTED));c.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);hit.addView(c,new FrameLayout.LayoutParams(dp(a,16),dp(a,16),Gravity.CENTER));hit.setOnClickListener(v->jump.run());CinemaControls.action(hit,"跳至");row.addView(hit,new LinearLayout.LayoutParams(dp(a,48),dp(a,48)));}
+  Runnable rowClick=click!=null?click:jump;if(rowClick!=null){row.setOnClickListener(v->rowClick.run());CinemaControls.action(row,click!=null?label:"跳至");}
   LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.topMargin=dp(a,20);p.bottomMargin=dp(a,8);body.addView(row,p);return t;}
+ /** 返回 true 时关掉对话框。集数无效或找不到时返回 false，对话框留着。 */
+ interface EpisodePick {boolean pick(int episode);}
+ static void askEpisode(Activity a,EpisodePick pick){if(a==null||a.isFinishing())return;
+  android.app.Dialog d=new android.app.Dialog(a);d.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+  LinearLayout card=new LinearLayout(a);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(dp(a,18),dp(a,16),dp(a,18),dp(a,14));
+  GradientDrawable bg=new GradientDrawable();bg.setColor(0xf21c1914);bg.setCornerRadius(dp(a,16));card.setBackground(bg);
+  TextView title=text(a,"跳至",18,CinemaTheme.INK);title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);card.addView(title);
+  EditText input=new EditText(a);input.setSingleLine(true);input.setHint("输入要跳至的集数");input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);input.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);input.setTextColor(CinemaTheme.INK);input.setHintTextColor(CinemaTheme.MUTED);input.setTextSize(Ui.BODY);
+  GradientDrawable box=new GradientDrawable();box.setColor(0x00000000);box.setCornerRadius(dp(a,8));box.setStroke(Math.max(1,dp(a,1)),CinemaTheme.GOLD);input.setBackground(box);input.setPadding(dp(a,12),0,dp(a,12),0);
+  LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(-1,dp(a,48));ip.topMargin=dp(a,12);card.addView(input,ip);
+  LinearLayout actions=new LinearLayout(a);actions.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);
+  TextView cancel=text(a,"取消",15,CinemaTheme.SOFT);cancel.setGravity(Gravity.CENTER);cancel.setPadding(dp(a,12),0,dp(a,12),0);CinemaControls.action(cancel,"取消");cancel.setOnClickListener(v->d.dismiss());actions.addView(cancel,new LinearLayout.LayoutParams(-2,dp(a,44)));
+  TextView ok=text(a,"确定",15,CinemaTheme.ON_GOLD);ok.setGravity(Gravity.CENTER);ok.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);ok.setBackground(round(a,CinemaTheme.GOLD,100));ok.setPadding(dp(a,16),0,dp(a,16),0);CinemaControls.action(ok,"确定");
+  LinearLayout.LayoutParams op=new LinearLayout.LayoutParams(-2,dp(a,40));op.leftMargin=dp(a,8);actions.addView(ok,op);
+  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.topMargin=dp(a,12);card.addView(actions,rp);
+  Runnable submit=()->{String raw=input.getText()==null?"":input.getText().toString().trim();int n;try{n=Integer.parseInt(raw);}catch(Exception bad){n=-1;}if(n<=0||n>100000){Toast.makeText(a,"请输入集数",Toast.LENGTH_SHORT).show();return;}if(pick!=null&&pick.pick(n))d.dismiss();};
+  ok.setOnClickListener(v->submit.run());input.setOnEditorActionListener((v,action,ev)->{submit.run();return true;});
+  d.setContentView(card);
+  d.setOnShowListener(x->{android.view.Window w=d.getWindow();if(w==null)return;w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));int sw=a.getResources().getDisplayMetrics().widthPixels;w.setLayout(Math.min(sw-dp(a,48),dp(a,360)),ViewGroup.LayoutParams.WRAP_CONTENT);w.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);});
+  d.show();input.requestFocus();input.post(()->{android.view.inputmethod.InputMethodManager imm=(android.view.inputmethod.InputMethodManager)a.getSystemService(android.content.Context.INPUT_METHOD_SERVICE);if(imm!=null)imm.showSoftInput(input,android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);});
+ }
  static HorizontalScrollView scroller(Activity a,LinearLayout strip){HorizontalScrollView hs=new HorizontalScrollView(a);hs.setHorizontalScrollBarEnabled(false);hs.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);strip.setOrientation(LinearLayout.HORIZONTAL);hs.addView(strip,new FrameLayout.LayoutParams(-2,-2));return hs;}
  static void reveal(HorizontalScrollView hs,View current){if(hs==null||current==null)return;hs.post(()->hs.scrollTo(Math.max(0,current.getLeft()-dp((Activity)hs.getContext(),16)),0));}
  static View tile(Activity a,String label,float progress,boolean watched,boolean current,Runnable play,Runnable more,Thumb thumb){boolean wide=wide(a);int w=dp(a,wide?148:132),h=dp(a,wide?84:74);

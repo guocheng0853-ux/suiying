@@ -1,6 +1,8 @@
 # 随影 MediaPocket
 
-当前候选版本：0.1.147 / versionCode 148。已合入C1–C4修复，本机原签名构建、93项JVM及APK校验通过；OPD2401已完成C1–C4、正常开播、换集与409重试的合成片源复测。实测范围与清理记录见[本机交接](docs/handoff/handoff-0147-local-acceptance.md)。
+当前版本：0.1.168 / versionCode 169。详情页「跳至」、换集主视觉和 Emby 选集图兜底见[交接](docs/handoff/detail-effects-0168.md)。本版没有签名包，没有真机点选。
+
+此前候选 0.1.147 / versionCode 148 已合入C1–C4修复，本机原签名构建、93项JVM及APK校验通过；OPD2401已完成C1–C4、正常开播、换集与409重试的合成片源复测。实测范围与清理记录见[本机交接](docs/handoff/handoff-0147-local-acceptance.md)。
 
 遗漏的7项恢复边界补测已完成；分屏部分通过，首次进入后快速失焦的提示裁切保留为O2观察，未标为通过。补测与清理详情见[0.1.147补测记录](docs/handoff/continued-test-0147.md)。
 
