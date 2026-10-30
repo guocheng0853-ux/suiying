@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.163",
-  "android_device_tested": true,
+  "ui_version": "0.1.164",
+  "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -18,11 +18,11 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 99,
+  "jvm_test_programs_passed": 100,
   "apk_class_resolution": "passed",
-  "unique_classes": 9288,
+  "unique_classes": 9316,
   "dex_files": 3,
-  "main_version_code": 164,
+  "main_version_code": 165,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
@@ -41,13 +41,6 @@
   "probe_budget_ms": 4000,
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
-  "real_source_playback_tested": true,
-  "real_source_note": "User reported video is displaying after manually retrying the previously slow title on the final release. No matched BT throughput/startup benchmark; actual source URL and engine were not collected.",
-  "phone_tested_this_release": false,
-  "device_test_scope": "OPD2401: controlled statistics and preconditioned elapsed/slow window injected into formal callback; source ordering, actual synthetic direct VLC playback, no-switch guards, final installed hash and cleanup verified. Separate human real-playback display feedback.",
-  "device_acceptance_record": "docs/handoff/stremio-startup-0163.md",
-  "device_cleanup_verified": true,
-  "apk_sha256": "3874635e58fd842f659f0047b2c1336f07eb42518a434ff1f01888123a36029e",
-  "original_signing_certificate_verified": true,
-  "zipalign_16k_verified": true
+  "real_source_playback_tested": false,
+  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build"
 }
