@@ -16,10 +16,11 @@ import java.util.List;
 final class SubtitleSettings {
  private SubtitleSettings(){}
  static boolean dirty;static int previewLiftPx;
+ static void clearLift(){previewLiftPx=0;}
  static boolean consumeDirty(){boolean v=dirty;dirty=false;return v;}
  static String entry(Activity a){return SubtitleStyle.label(a);}
  static void open(Activity a){if(a instanceof ScrapedMainActivity)a.startActivity(new Intent(a,SubtitleSettingsActivity.class));else show(a);}
- static void show(Activity a){if(a==null||a.isFinishing())return;final Dialog d=new Dialog(a,android.R.style.Theme_Translucent_NoTitleBar);android.widget.FrameLayout scrim=new android.widget.FrameLayout(a);scrim.setBackgroundColor(0x66000000);scrim.setOnClickListener(v->d.dismiss());int max=Math.max(dp(a,280),Math.round(a.getResources().getDisplayMetrics().heightPixels*0.46f));View panel=shell(a,()->d.dismiss(),true);android.widget.FrameLayout.LayoutParams lp=new android.widget.FrameLayout.LayoutParams(-1,max,Gravity.BOTTOM);int m=dp(a,10);lp.leftMargin=m;lp.rightMargin=m;lp.bottomMargin=m;scrim.addView(panel,lp);d.setContentView(scrim);if(d.getWindow()!=null){d.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));d.getWindow().setLayout(-1,-1);}previewLiftPx=max+dp(a,24);nudge(a);d.setOnDismissListener(v->{previewLiftPx=0;nudge(a);});d.show();}
+ static void show(Activity a){if(a==null||a.isFinishing())return;final Dialog d=new Dialog(a,android.R.style.Theme_Translucent_NoTitleBar);android.widget.FrameLayout scrim=new android.widget.FrameLayout(a);scrim.setBackgroundColor(0x66000000);scrim.setOnClickListener(v->d.dismiss());int max=Math.max(dp(a,280),Math.round(a.getResources().getDisplayMetrics().heightPixels*0.46f));View panel=shell(a,()->d.dismiss(),true);android.widget.FrameLayout.LayoutParams lp=new android.widget.FrameLayout.LayoutParams(-1,max,Gravity.BOTTOM);int m=dp(a,10);lp.leftMargin=m;lp.rightMargin=m;lp.bottomMargin=m;scrim.addView(panel,lp);d.setContentView(scrim);if(d.getWindow()!=null){d.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));d.getWindow().setLayout(-1,-1);}previewLiftPx=max+dp(a,24);nudge(a);d.setOnDismissListener(v->{clearLift();if(!a.isFinishing())nudge(a);});d.show();}
  static View shell(Activity a,Runnable close){return shell(a,close,false);}
  static View shell(Activity a,Runnable close,boolean sheet){
   boolean light=CinemaTheme.light(a),gold=!light&&CinemaTheme.gold(a),clay=light&&CinemaTheme.clay(a);

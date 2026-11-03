@@ -48,20 +48,44 @@ final class SubtitleAuto {
   for(Track t:pool){int s=preferred.isEmpty()?1:languageScore(t.label,p);if(t.preferredDefault)s+=5;if(s>bestScore){bestScore=s;best=t;}}
   return best==null?KEEP:best.id;
  }
- /** 片源外挂跟内嵌轨列表无关。用户关掉、记住了外挂文件，或这场已经指定内嵌轨时，不再自动下片源外挂。 */
- static boolean shouldLoadSourceExternal(boolean suppressed,boolean rememberedFile,boolean explicitEmbedded,boolean hasSidecar){return !suppressed&&!rememberedFile&&!explicitEmbedded&&hasSidecar;}
  /** 第二字幕只接受 http/https。本地文件必须是用户自己选的 content/file URI，不能拿片源 JSON 里的路径。 */
  static boolean secondaryUrl(String url){if(url==null)return false;String u=url.trim();return u.startsWith("https://")||u.startsWith("http://");}
  static boolean secondaryLocal(String url){if(url==null)return false;String u=url.trim();return u.startsWith("content:")||u.startsWith("file:")||u.startsWith("/");}
  /** 和播放页音轨菜单同一套写法，记住的名字才能对上。 */
  static String media3Label(String label,String language,String codec){String name=label==null?"":label.trim(),lang=language==null?"":language.trim(),code=codec==null?"":codec.trim();String head=name.isEmpty()?(lang.isEmpty()?"未标语言":lang):(lang.isEmpty()?name:name+" · "+lang);return code.isEmpty()?head:head+" · "+code;}
  static java.util.Map<String,String> sidecarHeaders(org.json.JSONObject item){java.util.LinkedHashMap<String,String> headers=new java.util.LinkedHashMap<>();if(item==null)return headers;org.json.JSONObject declared=item.optJSONObject("header");if(declared==null)return headers;java.util.Iterator<String> keys=declared.keys();while(keys.hasNext()){String key=keys.next();if(key==null)continue;String value=declared.optString(key,"");if(!value.isEmpty())headers.put(key,value);}return headers;}
+ static boolean preferredText(String label,String pref){return inPreferred(label==null?"":label,SubtitlePrefs.language(false,pref));}
+ /** 重开第二字幕时只带回 Referer 和 User-Agent，不把 Cookie 写进偏好。 */
+ static java.util.Map<String,String> safeSecondaryHeaders(java.util.Map<String,String> headers){java.util.LinkedHashMap<String,String> out=new java.util.LinkedHashMap<>();if(headers==null)return out;for(java.util.Map.Entry<String,String> e:headers.entrySet()){if(e.getKey()==null||e.getValue()==null||e.getValue().isEmpty())continue;String k=e.getKey().toLowerCase(java.util.Locale.ROOT);if(k.equals("referer"))out.put("Referer",e.getValue());else if(k.equals("user-agent"))out.put("User-Agent",e.getValue());}return out;}
  /**
-  * 一次 VLC 轮询。tracks 为 null 表示播放器还没给出字幕轨（LibVLC 没内嵌轨时就是 null）。
-  * loadSidecar 不看 tracks。记住外挂时 spu 为 -1，表示关掉内嵌。
+  * 一次开播轮询，播放页直接调用。tracks 为 null 表示还没有字幕轨列表。
+  * 有记住的内嵌就不下片源外挂。偏好语言的内嵌优先于别的语言的外挂。
+  * 外挂是偏好语言，或确认没有内嵌时，才用外挂，并且不再打开内嵌。同一时刻只留一条第一字幕。
   */
- static final class Step {final boolean loadSidecar;final int spu;Step(boolean load,int spu){loadSidecar=load;this.spu=spu;}}
- static Step vlcPoll(Track[] tracks,boolean userOff,String pref,boolean rememberedFile,boolean explicitPick,boolean hasSidecar,int rememberedId,String rememberedName){boolean suppressed=userOff||"off".equals(SubtitlePrefs.language(false,pref));boolean load=shouldLoadSourceExternal(suppressed,rememberedFile,explicitPick,hasSidecar);int decision=decide(tracks,pref,userOff,explicitPick?rememberedId:-1,explicitPick?rememberedName:null,rememberedFile&&!explicitPick);int spu=decision==DISABLE||decision==EXTERNAL?-1:decision;return new Step(load,spu);}
+ static final class Poll {
+  Track[] tracks;String pref="zho",rememberedName="";
+  boolean userOff,rememberedFile,hasSidecar,sidecarPreferred,sidecarVisible,waitedOut;
+  int rememberedId=-1;
+ }
+ static final class Step {
+  final boolean loadSidecar,cancelSidecar,finished;final int spu;
+  Step(boolean load,boolean cancel,int spu,boolean finished){loadSidecar=load;cancelSidecar=cancel;this.spu=spu;this.finished=finished;}
+ }
+ static Step vlcPoll(Poll in){
+  if(in==null)return new Step(false,false,PENDING,false);
+  String pref=in.pref==null?"zho":in.pref;
+  if(in.userOff||"off".equals(SubtitlePrefs.language(false,pref)))return new Step(false,true,-1,true);
+  if(in.rememberedFile)return new Step(false,false,-1,in.tracks!=null||in.waitedOut);
+  boolean memory=in.rememberedId>=0||(in.rememberedName!=null&&!in.rememberedName.isEmpty());
+  if(memory){if(in.tracks==null&&!in.waitedOut)return new Step(false,false,PENDING,false);int hit=in.tracks==null?-2:remember(in.tracks,in.rememberedId,in.rememberedName);if(hit>=0)return new Step(false,true,hit,true);}
+  if(in.sidecarVisible)return new Step(false,false,-1,true);
+  int embedded=in.tracks==null?(in.waitedOut?KEEP:PENDING):auto(in.tracks,pref);
+  if(embedded==PENDING)return new Step(false,false,PENDING,false);
+  boolean sidecarWins=in.hasSidecar&&(embedded==KEEP||in.sidecarPreferred);
+  if(sidecarWins)return new Step(true,false,-1,true);
+  if(embedded>=0)return new Step(false,true,embedded,true);
+  return new Step(false,true,KEEP,true);
+ }
  /**
   * externalFile 为真表示这部片子已经记住外挂字幕。这时直接返回 EXTERNAL，不等内嵌轨列表，调用方关掉内嵌，避免两行叠在一起。
   * 返回轨道 id、DISABLE、EXTERNAL、KEEP 或 PENDING。
