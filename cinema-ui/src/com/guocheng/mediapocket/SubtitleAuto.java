@@ -70,7 +70,10 @@ final class SubtitleAuto {
  }
  static final class Step {
   final boolean loadSidecar,cancelSidecar,finished;final int spu;
-  Step(boolean load,boolean cancel,int spu,boolean finished){loadSidecar=load;cancelSidecar=cancel;this.spu=spu;this.finished=finished;}
+  /** 片子里没有可用的对白内嵌轨、片源也没带外挂，并且已经出画面等过一阵：去已安装的字幕插件（如 OpenSubtitles）自动搜一次。 */
+  final boolean searchAddons;
+  Step(boolean load,boolean cancel,int spu,boolean finished){this(load,cancel,spu,finished,false);}
+  Step(boolean load,boolean cancel,int spu,boolean finished,boolean search){loadSidecar=load;cancelSidecar=cancel;this.spu=spu;this.finished=finished;searchAddons=search;}
  }
  /** 播放器已经停在目标轨上时不要再 setSpuTrack。目标不是一条具体轨时返回 false，调用方自己决定要不要设置。 */
  static boolean alreadySpu(int current,int target){return (target==-1||target>=0)&&current==target;}
@@ -92,8 +95,10 @@ final class SubtitleAuto {
   boolean sidecarWins=in.hasSidecar&&(embedded==KEEP||in.sidecarPreferred);
   if(sidecarWins)return new Step(true,false,-1,false);
   if(embedded>=0)return new Step(false,true,embedded,false);
-  return new Step(false,true,KEEP,false);
+  return new Step(false,true,KEEP,false,embedded==KEEP&&!in.hasSidecar&&timed);
  }
+ /** 自动搜插件字幕只在能确定影片身份时进行：Stremio 的 IMDb 编号（剧集带 :季:集）。 */
+ static String addonQueryId(String id,String type){if(id==null)return "";String[] p=id.trim().split(":");if(p.length==0||!p[0].matches("tt\\d{5,12}"))return "";if("series".equals(type)){if(p.length!=3||!p[1].matches("\\d+")||!p[2].matches("\\d+"))return "";return p[0]+":"+p[1]+":"+p[2];}return p[0];}
  /**
   * externalFile 为真表示这部片子已经记住外挂字幕。这时直接返回 EXTERNAL，不等内嵌轨列表，调用方关掉内嵌，避免两行叠在一起。
   * 返回轨道 id、DISABLE、EXTERNAL、KEEP 或 PENDING。

@@ -96,6 +96,13 @@ public class SubtitleAutoTest {
   SubtitleCueClock.Delayed[] crowded=new SubtitleCueClock.Delayed[]{new SubtitleCueClock.Delayed(100,"旧"),new SubtitleCueClock.Delayed(200,"中"),new SubtitleCueClock.Delayed(300,"新"),new SubtitleCueClock.Delayed(500,"未到"),new SubtitleCueClock.Delayed(800,"更晚")};
   SubtitleCueClock.Delayed[] trimmed=SubtitleCueClock.trim(crowded,300);
   check(trimmed.length==3&&trimmed[0].text.equals("新")&&trimmed[1].text.equals("未到")&&trimmed[2].text.equals("更晚"),"cue events keep the latest shown line and the future ones");
+  // 没内嵌对白轨、没片源外挂、已出画面等过：自动搜插件字幕；还在等、或有外挂、或用户关掉都不搜
+  SubtitleAuto.Track[] none=new SubtitleAuto.Track[0];
+  check(poll(none,false,"eng",false,false,false,false,true,true,-1,"").searchAddons,"no subtitles anywhere: search installed subtitle addons");
+  check(!poll(none,false,"eng",false,false,false,false,true,false,-1,"").searchAddons,"still waiting for tracks: do not search yet");
+  check(!poll(none,false,"eng",false,true,false,false,true,true,-1,"").searchAddons,"source sidecar exists: load it instead");
+  check(!poll(none,true,"eng",false,false,false,false,true,true,-1,"").searchAddons,"user turned subtitles off");
+  check(SubtitleAuto.addonQueryId("tt26598805:1:1","series").equals("tt26598805:1:1")&&SubtitleAuto.addonQueryId("tt0111161","movie").equals("tt0111161")&&SubtitleAuto.addonQueryId("tvbox:abc","series").isEmpty()&&SubtitleAuto.addonQueryId("tt26598805","series").isEmpty(),"addon query needs an IMDb id (with season:episode for series)");
   System.out.println("PASS: vlcPoll waits until playback, late preferred embedded takes over, manual sidecar is not taken over, cue trim, headers.");
  }
 }
