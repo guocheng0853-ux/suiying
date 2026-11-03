@@ -64,7 +64,7 @@ final class SubtitleAuto {
   */
  static final class Poll {
   Track[] tracks;String pref="zho",rememberedName="";
-  boolean userOff,rememberedFile,hasSidecar,sidecarPreferred,sidecarVisible,waitedOut;
+  boolean userOff,rememberedFile,hasSidecar,sidecarPreferred,sidecarVisible,playing,waitedOut;
   int rememberedId=-1;
  }
  static final class Step {
@@ -75,16 +75,20 @@ final class SubtitleAuto {
   if(in==null)return new Step(false,false,PENDING,false);
   String pref=in.pref==null?"zho":in.pref;
   if(in.userOff||"off".equals(SubtitlePrefs.language(false,pref)))return new Step(false,true,-1,true);
-  if(in.rememberedFile)return new Step(false,false,-1,in.tracks!=null||in.waitedOut);
+  if(in.rememberedFile)return new Step(false,false,-1,false);
   boolean memory=in.rememberedId>=0||(in.rememberedName!=null&&!in.rememberedName.isEmpty());
-  if(memory){if(in.tracks==null&&!in.waitedOut)return new Step(false,false,PENDING,false);int hit=in.tracks==null?-2:remember(in.tracks,in.rememberedId,in.rememberedName);if(hit>=0)return new Step(false,true,hit,true);}
-  if(in.sidecarVisible)return new Step(false,false,-1,true);
-  int embedded=in.tracks==null?(in.waitedOut?KEEP:PENDING):auto(in.tracks,pref);
+  boolean timed=in.playing&&in.waitedOut;
+  if(memory){if(in.tracks==null&&!timed)return new Step(false,false,PENDING,false);int hit=in.tracks==null?-2:remember(in.tracks,in.rememberedId,in.rememberedName);if(hit>=0)return new Step(false,true,hit,true);}
+  int embedded=in.tracks==null?(timed?KEEP:PENDING):auto(in.tracks,pref);
   if(embedded==PENDING)return new Step(false,false,PENDING,false);
+  boolean embeddedPreferred=false;
+  if(embedded>=0&&in.tracks!=null)for(Track t:in.tracks)if(t!=null&&t.id==embedded&&preferredText(t.label,pref))embeddedPreferred=true;
+  if(embeddedPreferred&&!in.sidecarPreferred)return new Step(false,true,embedded,false);
+  if(in.sidecarVisible)return new Step(false,false,-1,false);
   boolean sidecarWins=in.hasSidecar&&(embedded==KEEP||in.sidecarPreferred);
-  if(sidecarWins)return new Step(true,false,-1,true);
-  if(embedded>=0)return new Step(false,true,embedded,true);
-  return new Step(false,true,KEEP,true);
+  if(sidecarWins)return new Step(true,false,-1,false);
+  if(embedded>=0)return new Step(false,true,embedded,false);
+  return new Step(false,true,KEEP,false);
  }
  /**
   * externalFile 为真表示这部片子已经记住外挂字幕。这时直接返回 EXTERNAL，不等内嵌轨列表，调用方关掉内嵌，避免两行叠在一起。

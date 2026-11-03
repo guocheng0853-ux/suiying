@@ -1,7 +1,7 @@
 package com.guocheng.mediapocket;
 public class SubtitleAutoTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
- static SubtitleAuto.Step poll(SubtitleAuto.Track[] tracks,boolean userOff,String pref,boolean rememberedFile,boolean hasSidecar,boolean sidecarPreferred,boolean sidecarVisible,boolean waitedOut,int rememberedId,String name){SubtitleAuto.Poll p=new SubtitleAuto.Poll();p.tracks=tracks;p.userOff=userOff;p.pref=pref;p.rememberedFile=rememberedFile;p.hasSidecar=hasSidecar;p.sidecarPreferred=sidecarPreferred;p.sidecarVisible=sidecarVisible;p.waitedOut=waitedOut;p.rememberedId=rememberedId;p.rememberedName=name==null?"":name;return SubtitleAuto.vlcPoll(p);}
+ static SubtitleAuto.Step poll(SubtitleAuto.Track[] tracks,boolean userOff,String pref,boolean rememberedFile,boolean hasSidecar,boolean sidecarPreferred,boolean sidecarVisible,boolean playing,boolean waitedOut,int rememberedId,String name){SubtitleAuto.Poll p=new SubtitleAuto.Poll();p.tracks=tracks;p.userOff=userOff;p.pref=pref;p.rememberedFile=rememberedFile;p.hasSidecar=hasSidecar;p.sidecarPreferred=sidecarPreferred;p.sidecarVisible=sidecarVisible;p.playing=playing;p.waitedOut=waitedOut;p.rememberedId=rememberedId;p.rememberedName=name==null?"":name;return SubtitleAuto.vlcPoll(p);}
  static SubtitleAuto.Track track(int id,String label,boolean forced,boolean meaningless,boolean commentary,boolean def){return new SubtitleAuto.Track(id,label,forced,meaningless,commentary,def);}
  static SubtitleAuto.Track plain(int id,String label){return track(id,label,false,false,false,false);}
  public static void main(String[] args)throws Exception{
@@ -39,24 +39,30 @@ public class SubtitleAutoTest {
   check(SubtitleCueClock.textAt(cues,200,500).equals(""),"positive offset shows the line later");
   check(SubtitleCueClock.textAt(cues,0,-500).equals("一\n叠"),"negative offset shows the line earlier");
   check(SubtitleCueClock.textAt(null,0,0).isEmpty()&&SubtitleCueClock.textAt(cues,-1,0).isEmpty(),"missing clock or position stays blank");
-  SubtitleAuto.Step waiting=poll(null,false,"zho",false,true,false,false,false,-1,null);
+  SubtitleAuto.Step waiting=poll(null,false,"zho",false,true,false,false,true,false,-1,null);
   check(!waiting.loadSidecar&&waiting.spu==SubtitleAuto.PENDING&&!waiting.finished,"null track list waits before choosing a sidecar");
-  SubtitleAuto.Step missing=poll(null,false,"zho",false,true,false,false,true,-1,null);
-  check(missing.loadSidecar&&missing.spu==-1&&missing.finished,"null track list still loads source sidecars and does not open embedded");
-  SubtitleAuto.Step remembered=poll(zh,false,"zho",true,true,true,false,false,-1,null);
+  SubtitleAuto.Step buffering=poll(null,false,"zho",false,true,false,false,false,true,-1,null);
+  check(!buffering.loadSidecar&&buffering.spu==SubtitleAuto.PENDING,"timeout does not start until playback has begun");
+  SubtitleAuto.Step missing=poll(null,false,"zho",false,true,false,false,true,true,-1,null);
+  check(missing.loadSidecar&&missing.spu==-1&&!missing.finished,"after playback, a still-empty track list loads the sidecar and keeps watching");
+  SubtitleAuto.Step late=poll(zh,false,"zho",false,true,false,true,true,true,-1,null);
+  check(!late.loadSidecar&&late.cancelSidecar&&late.spu==2,"preferred embedded takes over after the track list arrives late");
+  SubtitleAuto.Step manual=poll(zh,false,"zho",false,true,false,true,true,true,3,"English");
+  check(manual.spu==3&&!manual.loadSidecar,"a manual track choice is not taken over");
+  SubtitleAuto.Step remembered=poll(zh,false,"zho",true,true,true,false,true,true,-1,null);
   check(!remembered.loadSidecar&&remembered.spu==-1,"remembered external closes the embedded track");
-  SubtitleAuto.Step rememberedEarly=poll(null,false,"zho",true,true,false,false,false,-1,null);
+  SubtitleAuto.Step rememberedEarly=poll(null,false,"zho",true,true,false,false,true,false,-1,null);
   check(rememberedEarly.spu==-1&&!rememberedEarly.finished,"remembered external closes embedded even when getSpuTracks is null, and checks again");
-  SubtitleAuto.Step picked=poll(zh,false,"zho",false,true,true,false,false,1,"繁体中文");
+  SubtitleAuto.Step picked=poll(zh,false,"zho",false,true,true,false,true,false,1,"繁体中文");
   check(!picked.loadSidecar&&picked.cancelSidecar&&picked.spu==1,"remembered embedded is not replaced by a source sidecar");
-  SubtitleAuto.Step simplified=poll(zh,false,"zho",false,true,false,false,false,-1,null);
+  SubtitleAuto.Step simplified=poll(zh,false,"zho",false,true,false,false,true,false,-1,null);
   check(!simplified.loadSidecar&&simplified.cancelSidecar&&simplified.spu==2,"preferred embedded beats a non-preferred sidecar");
-  SubtitleAuto.Step bothPreferred=poll(zh,false,"zho",false,true,true,false,false,-1,null);
+  SubtitleAuto.Step bothPreferred=poll(zh,false,"zho",false,true,true,false,true,false,-1,null);
   check(bothPreferred.loadSidecar&&bothPreferred.spu==-1,"a preferred sidecar is used instead of also opening embedded");
-  SubtitleAuto.Step englishOnly=poll(new SubtitleAuto.Track[]{plain(3,"English")},false,"zho",false,true,true,false,false,-1,null);
+  SubtitleAuto.Step englishOnly=poll(new SubtitleAuto.Track[]{plain(3,"English")},false,"zho",false,true,true,false,true,false,-1,null);
   check(englishOnly.loadSidecar&&englishOnly.spu==-1&&!englishOnly.cancelSidecar,"preferred sidecar is used when embedded is another language, without leaving embedded on");
-  SubtitleAuto.Step shown=poll(zh,false,"zho",false,true,false,true,false,-1,null);
-  check(!shown.loadSidecar&&shown.spu==-1&&shown.finished,"once a sidecar is showing, embedded stays off");
+  SubtitleAuto.Step shown=poll(new SubtitleAuto.Track[]{plain(3,"English")},false,"zho",false,true,false,true,true,true,-1,null);
+  check(!shown.loadSidecar&&shown.spu==-1,"a late non-preferred embedded track stays off once a sidecar is showing");
   check(SubtitleAuto.secondaryUrl("https://cdn.example/a.srt")&&SubtitleAuto.secondaryUrl("http://cdn.example/a.srt")&&!SubtitleAuto.secondaryUrl("file:///sdcard/evil.srt")&&!SubtitleAuto.secondaryUrl("/sdcard/evil.srt")&&SubtitleAuto.secondaryLocal("content://media/1"),"secondary urls are http(s), local only when the user picked one");
   String menu=SubtitleAuto.media3Label("简体","zh","subrip");
   check(menu.equals("简体 · zh · subrip")&&SubtitleAuto.remember(new SubtitleAuto.Track[]{new SubtitleAuto.Track(0,menu,false,false,false,false)},-1,menu)==0,"saved media3 label matches the menu label");
@@ -65,8 +71,11 @@ public class SubtitleAutoTest {
   check("https://emby.example/".equals(headers.get("Referer"))&&"sid=1".equals(headers.get("Cookie")),"sidecar keeps the entry Referer and Cookie");
   java.util.Map<String,String> kept=SubtitleAuto.safeSecondaryHeaders(headers);
   check("https://emby.example/".equals(kept.get("Referer"))&&!kept.containsKey("Cookie")&&kept.size()==1,"reopen stores Referer, not Cookie");
-  SubtitleCueClock.Delayed[] late=new SubtitleCueClock.Delayed[]{SubtitleCueClock.schedule(0,2000,"你好"),SubtitleCueClock.schedule(800,2000,"")};
-  check(SubtitleCueClock.showing(late,1000).isEmpty()&&SubtitleCueClock.showing(late,2000).equals("你好")&&SubtitleCueClock.showing(late,2500).equals("你好")&&SubtitleCueClock.showing(late,2800).isEmpty(),"delay longer than one cue still shows that cue");
-  System.out.println("PASS: vlcPoll covers null sidecars, remembered embedded, preferred embedded over foreign sidecar, one primary line, cue delay, headers.");
+  SubtitleCueClock.Delayed[] delayed=new SubtitleCueClock.Delayed[]{SubtitleCueClock.schedule(0,2000,"你好"),SubtitleCueClock.schedule(800,2000,"")};
+  check(SubtitleCueClock.showing(delayed,1000).isEmpty()&&SubtitleCueClock.showing(delayed,2000).equals("你好")&&SubtitleCueClock.showing(delayed,2500).equals("你好")&&SubtitleCueClock.showing(delayed,2800).isEmpty(),"delay longer than one cue still shows that cue");
+  SubtitleCueClock.Delayed[] crowded=new SubtitleCueClock.Delayed[]{new SubtitleCueClock.Delayed(100,"旧"),new SubtitleCueClock.Delayed(200,"中"),new SubtitleCueClock.Delayed(300,"新"),new SubtitleCueClock.Delayed(500,"未到"),new SubtitleCueClock.Delayed(800,"更晚")};
+  SubtitleCueClock.Delayed[] trimmed=SubtitleCueClock.trim(crowded,300);
+  check(trimmed.length==3&&trimmed[0].text.equals("新")&&trimmed[1].text.equals("未到")&&trimmed[2].text.equals("更晚"),"cue events keep the latest shown line and the future ones");
+  System.out.println("PASS: vlcPoll waits until playback, late preferred embedded takes over, manual choice sticks, cue trim, headers.");
  }
 }
