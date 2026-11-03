@@ -61,7 +61,7 @@ final class PlayerSidePanel {
   String second=a.getSharedPreferences("data",0).getString("subtitle2Url:"+SubtitleMemory.id(a),"");
   row(box,"不使用第二字幕",second.isEmpty(),()->{SecondarySubtitle.clear(a);fill();});
   JSONArray ext=TrackSelection.stream(a).optJSONArray("subtitles");boolean anyExt=false;
-  for(int i=0;ext!=null&&i<ext.length();i++){JSONObject s=ext.optJSONObject(i);if(s==null||s.optString("url").isEmpty())continue;anyExt=true;final String url=s.optString("url"),name=s.optString("lang",s.optString("name","外挂字幕"));row(box,"外挂 · "+name,url.equals(second),()->{SecondarySubtitle.load(a,url,name,true);dismiss();});}
+  for(int i=0;ext!=null&&i<ext.length();i++){JSONObject s=ext.optJSONObject(i);if(s==null||!SubtitleAuto.secondaryUrl(s.optString("url")))continue;anyExt=true;final JSONObject item=s;final String url=s.optString("url"),name=s.optString("lang",s.optString("name","外挂字幕"));row(box,"外挂 · "+name,url.equals(second),()->{SecondarySubtitle.load(a,item,true);dismiss();});}
   if(!anyExt)note(box,"这条片源没有附带外挂字幕。在线搜索会加到第一字幕。");
   int offset=a.getSharedPreferences("data",0).getInt("sub.offsetMs",0);
   note(box,"字幕同步  "+(offset>0?"+":"")+offset+" ms");

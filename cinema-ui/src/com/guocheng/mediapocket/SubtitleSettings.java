@@ -15,15 +15,16 @@ import java.util.List;
 /** 字幕设置页。从「我的」进完整页面，从播放页进同一份内容的窗口，改完马上作用到正在播的字。 */
 final class SubtitleSettings {
  private SubtitleSettings(){}
- static boolean dirty;
+ static boolean dirty;static int previewLiftPx;
  static boolean consumeDirty(){boolean v=dirty;dirty=false;return v;}
  static String entry(Activity a){return SubtitleStyle.label(a);}
  static void open(Activity a){if(a instanceof ScrapedMainActivity)a.startActivity(new Intent(a,SubtitleSettingsActivity.class));else show(a);}
- static void show(Activity a){boolean light=CinemaTheme.light(a);final Dialog[] box=new Dialog[1];box[0]=new Dialog(a,light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar);box[0].setContentView(shell(a,()->box[0].dismiss()));box[0].show();}
- static View shell(Activity a,Runnable close){
+ static void show(Activity a){if(a==null||a.isFinishing())return;final Dialog d=new Dialog(a,android.R.style.Theme_Translucent_NoTitleBar);android.widget.FrameLayout scrim=new android.widget.FrameLayout(a);scrim.setBackgroundColor(0x66000000);scrim.setOnClickListener(v->d.dismiss());int max=Math.max(dp(a,280),Math.round(a.getResources().getDisplayMetrics().heightPixels*0.46f));View panel=shell(a,()->d.dismiss(),true);android.widget.FrameLayout.LayoutParams lp=new android.widget.FrameLayout.LayoutParams(-1,max,Gravity.BOTTOM);int m=dp(a,10);lp.leftMargin=m;lp.rightMargin=m;lp.bottomMargin=m;scrim.addView(panel,lp);d.setContentView(scrim);if(d.getWindow()!=null){d.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));d.getWindow().setLayout(-1,-1);}previewLiftPx=max+dp(a,24);nudge(a);d.setOnDismissListener(v->{previewLiftPx=0;nudge(a);});d.show();}
+ static View shell(Activity a,Runnable close){return shell(a,close,false);}
+ static View shell(Activity a,Runnable close,boolean sheet){
   boolean light=CinemaTheme.light(a),gold=!light&&CinemaTheme.gold(a),clay=light&&CinemaTheme.clay(a);
   int ink=light?(clay?CinemaTheme.SLATE:0xff173740):gold?CinemaTheme.INK:0xfff5fafb,muted=light?(clay?CinemaTheme.STONE:0xff52757c):gold?CinemaTheme.MUTED:0xffafcbd2,surface=light?(clay?CinemaTheme.PAPER:0xffedf5f5):gold?CinemaTheme.BG:0xff10343e;
-  LinearLayout root=new LinearLayout(a);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(surface);int pad=dp(a,16);root.setPadding(pad,dp(a,8),pad,0);
+  LinearLayout root=new LinearLayout(a);root.setOrientation(LinearLayout.VERTICAL);if(sheet){android.graphics.drawable.GradientDrawable card=new android.graphics.drawable.GradientDrawable();card.setColor(surface);card.setCornerRadius(dp(a,18));root.setBackground(card);}else root.setBackgroundColor(surface);int pad=dp(a,16);root.setPadding(pad,dp(a,8),pad,0);
   LinearLayout header=new LinearLayout(a);header.setGravity(Gravity.CENTER_VERTICAL);Button back=new Button(a);back.setText("‹ 返回");back.setAllCaps(false);back.setTextColor(ink);back.setBackgroundColor(light?(clay?CinemaTheme.SHEET:0xffffffff):gold?CinemaTheme.CARD:0xff19434e);back.setOnClickListener(v->close.run());header.addView(back);TextView title=text(a,"字幕设置",20,ink);title.setTypeface(CinemaTheme.paperTitle(a));title.setPadding(dp(a,12),0,0,0);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));root.addView(header);
   ScrollView scroll=new ScrollView(a);LinearLayout list=new LinearLayout(a);list.setOrientation(LinearLayout.VERTICAL);list.setTag("subtitle-settings");scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));fill(a,list,ink,muted);return root;
  }

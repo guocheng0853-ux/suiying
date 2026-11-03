@@ -29,7 +29,7 @@ final class SubtitleStyle {
    if("box".equals(look)){GradientDrawable g=new GradientDrawable();g.setColor(0x99000000);g.setCornerRadius(6*d);tv.setBackground(g);tv.setShadowLayer(0,0,0,0);tv.setTypeface(bold?Typeface.DEFAULT_BOLD:Typeface.DEFAULT);}
    else if("outline".equals(look)){tv.setBackground(null);tv.setShadowLayer(4*d,0,0,0xff000000);tv.setTypeface(Typeface.DEFAULT_BOLD);}
    else{tv.setBackground(null);tv.setShadowLayer(3*d,1,1,0xff000000);tv.setTypeface(bold?Typeface.DEFAULT_BOLD:Typeface.DEFAULT);}}
-  if((secondary||!controlsShown)&&tv.getLayoutParams() instanceof FrameLayout.LayoutParams){FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)tv.getLayoutParams();int want=baseHiddenPx+lift;if(lp.bottomMargin!=want){lp.bottomMargin=want;tv.setLayoutParams(lp);}}}
+  if((secondary||!controlsShown||SubtitleSettings.previewLiftPx>0)&&tv.getLayoutParams() instanceof FrameLayout.LayoutParams){FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)tv.getLayoutParams();int want=baseHiddenPx+lift+SubtitleSettings.previewLiftPx;if(lp.bottomMargin!=want){lp.bottomMargin=want;tv.setLayoutParams(lp);}}}
  static void apply(Activity a,TextView tv,boolean controlsShown){style(a,tv,controlsShown,Math.round(20*a.getResources().getDisplayMetrics().density),a instanceof SystemPlayerActivity&&hdr(((SystemPlayerActivity)a).source));}
  /** VLC 播放页：原版字幕控件 sub，控制栏收起时原版把它放在离底 24 像素处。 */
  static void applyVlc(Activity a){try{Object s=OnlineSubtitleSearch.field(a,"sub");if(!(s instanceof TextView))return;Object top=OnlineSubtitleSearch.field(a,"top");boolean shown=top instanceof View&&((View)top).getVisibility()==View.VISIBLE;style(a,(TextView)s,shown,24,hdr(TrackSelection.stream(a)));}catch(Exception ignored){}}

@@ -5,6 +5,11 @@ final class SubtitleCueClock {
   final int start,end; final String text;
   Cue(int start,int end,String text){this.start=start;this.end=end;this.text=text==null?"":text;}
  }
+ /** 一句字幕到达后，按偏移单独排期。后一句不会取消前一句。正偏移才推迟，负偏移当场显示。 */
+ static final class Delayed {final long showAt;final String text;Delayed(long showAt,String text){this.showAt=showAt;this.text=text==null?"":text;}}
+ static Delayed schedule(long arrivedAtMs,int offsetMs,String text){return new Delayed(arrivedAtMs+(offsetMs>0?offsetMs:0L),text);}
+ /** 已经到点的事件里，取最晚的一条。空字符串是合法的清屏，不会把还没到点的句子抹掉。 */
+ static String showing(Delayed[] events,long nowMs){if(events==null)return "";String text="";long best=Long.MIN_VALUE;boolean any=false;for(Delayed e:events){if(e==null||e.showAt>nowMs)continue;if(!any||e.showAt>=best){any=true;best=e.showAt;text=e.text;}}return text;}
  static String textAt(Cue[] cues,int positionMs,int offsetMs){
   if(cues==null||positionMs<0)return "";
   StringBuilder out=new StringBuilder();
