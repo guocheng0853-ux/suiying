@@ -49,16 +49,20 @@ final class PlayerSidePanel {
  void subtitles(LinearLayout box){
   // 0.1.93：获取字幕的入口统一放在字幕页最上面（原来在「更多」和本页底部各有一份）
   note(box,"获取字幕");
+  row(box,"字幕设置",false,()->{dismiss();SubtitleSettings.open(a);});
   row(box,"搜索在线字幕（迅雷免密钥"+(OnlineSubtitleRules.missing(OnlineSubtitleController.assrt(a.getSharedPreferences("data",0)),OnlineSubtitleController.openKey(a.getSharedPreferences("data",0)))==null?" · 射手 · OpenSubtitles）":"）"),false,()->{dismiss();OnlineSubtitleController.open(a);});
   row(box,"Whisper 语音生成字幕",false,()->{dismiss();PlayerFeatureSettings.whisper(a);});
   row(box,"用已安装的字幕插件搜索",false,()->{dismiss();Object session=OnlineSubtitleSearch.field(a,"session");if(session!=null)OnlineSubtitleSearch.start(session);});
   note(box,"主字幕");EmbyPlayerUi ui=EmbyPlayerUi.ALL.get(a);JSONArray subs=ui==null?new JSONArray():ui.subs;
-  row(box,"关闭",false,()->{if(ui!=null)ui.chooseSub(direct(),-1,"off");else EmbyPlayerUi.fallback(a,"subtitles");dismiss();});
+  row(box,"关闭",a.getSharedPreferences("data",0).getBoolean("subtitleDisabled:"+SubtitleMemory.id(a),false),()->{SubtitleMemory.off(a);TrackSelection.quietSpu(a);dismiss();});
   if(subs.length()==0)row(box,"播放器里的字幕",false,()->{EmbyPlayerUi.fallback(a,"subtitles");dismiss();});
   for(int i=0;i<subs.length();i++){JSONObject t=subs.optJSONObject(i);if(t==null)continue;int index=t.optInt("index",-1);String lang=t.optString("lang");row(box,ui.describe(t,false),lang.equals(a.getSharedPreferences("data",0).getString("emby.subLang","")),()->{ui.chooseSub(direct(),index,lang);dismiss();});}
-  note(box,"次字幕");note(box,"LibVLC 同时只能显示一条字幕。次字幕会记住，同步偏移作用在当前这条上。");
-  row(box,"不使用次字幕",a.getSharedPreferences("data",0).getInt("sub.secondary",-2)==-2,()->{a.getSharedPreferences("data",0).edit().putInt("sub.secondary",-2).apply();fill();});
-  for(int i=0;i<subs.length();i++){JSONObject t=subs.optJSONObject(i);if(t==null)continue;int index=t.optInt("index",-1);row(box,"次 · "+ui.describe(t,false),a.getSharedPreferences("data",0).getInt("sub.secondary",-2)==index,()->{a.getSharedPreferences("data",0).edit().putInt("sub.secondary",index).apply();fill();});}
+  note(box,"第二字幕");note(box,"外挂文本可以和第一字幕同时显示，字号和位置在字幕设置里分开调。VLC 和内置播放器一次只能解一条内嵌字幕，所以第二条内嵌不会叠上去。");
+  String second=a.getSharedPreferences("data",0).getString("subtitle2Url:"+SubtitleMemory.id(a),"");
+  row(box,"不使用第二字幕",second.isEmpty(),()->{SecondarySubtitle.clear(a);fill();});
+  JSONArray ext=TrackSelection.stream(a).optJSONArray("subtitles");boolean anyExt=false;
+  for(int i=0;ext!=null&&i<ext.length();i++){JSONObject s=ext.optJSONObject(i);if(s==null||s.optString("url").isEmpty())continue;anyExt=true;final String url=s.optString("url"),name=s.optString("lang",s.optString("name","外挂字幕"));row(box,"外挂 · "+name,url.equals(second),()->{SecondarySubtitle.load(a,url,name,true);dismiss();});}
+  if(!anyExt)note(box,"这条片源没有附带外挂字幕。在线搜索会加到第一字幕。");
   int offset=a.getSharedPreferences("data",0).getInt("sub.offsetMs",0);
   note(box,"字幕同步  "+(offset>0?"+":"")+offset+" ms");
   LinearLayout sync=new LinearLayout(a);

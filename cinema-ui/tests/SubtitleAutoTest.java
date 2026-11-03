@@ -1,0 +1,43 @@
+package com.guocheng.mediapocket;
+public class SubtitleAutoTest {
+ static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
+ static SubtitleAuto.Track track(int id,String label,boolean forced,boolean meaningless,boolean commentary,boolean def){return new SubtitleAuto.Track(id,label,forced,meaningless,commentary,def);}
+ static SubtitleAuto.Track plain(int id,String label){return track(id,label,false,false,false,false);}
+ public static void main(String[] args){
+  SubtitleAuto.Track[] zh=new SubtitleAuto.Track[]{plain(1,"繁体中文"),plain(2,"简体中文"),plain(3,"English"),track(4,"Forced 简体",true,false,false,false),track(5,"Commentary",false,false,true,false),track(-1,"关闭",false,false,false,false)};
+  check(SubtitleAuto.decide(zh,"zho",true,-1,null,false)==SubtitleAuto.DISABLE,"user off stays off for this video");
+  check(SubtitleAuto.decide(zh,"off",false,-1,null,true)==SubtitleAuto.DISABLE,"global off beats a saved external file");
+  check(SubtitleAuto.decide(zh,"zho",false,1,"繁体",true)==SubtitleAuto.EXTERNAL,"saved external file beats a remembered embedded track");
+  check(SubtitleAuto.decide(zh,"zho",false,1,"繁体",false)==1,"remembered embedded id is kept");
+  check(SubtitleAuto.decide(zh,"zho",false,-1,"English",false)==3,"remembered name still wins");
+  check(SubtitleAuto.decide(zh,"zho",false,99,"没有这条",false)==2,"missing memory falls through to simplified");
+  check(SubtitleAuto.decide(zh,"zho",false,-1,null,false)==2,"simplified before traditional and english");
+  check(SubtitleAuto.decide(zh,"hant",false,-1,null,false)==1,"traditional preference");
+  check(SubtitleAuto.decide(zh,"eng",false,-1,null,false)==3,"english preference");
+  check(SubtitleAuto.decide(zh,"zho",false,-1,null,false)!=4,"forced track is not the automatic choice");
+  SubtitleAuto.Track[] onlyForced=new SubtitleAuto.Track[]{track(7,"Forced English",true,false,false,true),track(8,"Songs 歌词",false,true,false,false)};
+  check(SubtitleAuto.decide(onlyForced,"eng",false,-1,null,false)==SubtitleAuto.KEEP,"forced and lyrics alone stay off");
+  SubtitleAuto.Track[] fallback=new SubtitleAuto.Track[]{plain(1,"日本語"),track(2,"日本語",false,false,false,true),plain(3,"Français")};
+  check(SubtitleAuto.decide(fallback,"zho",false,-1,null,false)==2,"without a preferred language, the default track wins");
+  SubtitleAuto.Track[] first=new SubtitleAuto.Track[]{plain(4,"日本語"),plain(6,"Français")};
+  check(SubtitleAuto.decide(first,"hant",false,-1,null,false)==4,"otherwise the first full embedded track");
+  check(SubtitleAuto.decide(null,"zho",false,-1,null,false)==SubtitleAuto.PENDING,"empty decoder list waits");
+  check(SubtitleAuto.decide(null,"zho",false,-1,null,true)==SubtitleAuto.PENDING,"external file still waits until tracks are listed");
+  check(SubtitleAuto.decide(new SubtitleAuto.Track[0],"zho",false,-1,null,false)==SubtitleAuto.KEEP,"no tracks means nothing to force on");
+  check(SubtitleAuto.decide(zh,"zho",true,2,"简体",true)==SubtitleAuto.DISABLE,"turning subtitles off is sticky even if a file was saved");
+  SubtitleAuto.Track[] named=SubtitleAuto.fromNames(new int[]{-1,3,4},new String[]{"Disable","Track 1","Track 2"},new String[]{"简体中文","English"});
+  check(named!=null&&SubtitleAuto.decide(named,"zho",false,-1,null,false)==3,"unnamed tracks follow the title order and skip the disable row");
+  SubtitleAuto.Track[] forcedFull=SubtitleAuto.fromNames(new int[]{1,2},new String[]{"Forced 简体","繁体中文"},null);
+  check(SubtitleAuto.decide(forcedFull,"zho",false,-1,null,false)==2,"a full traditional track beats a forced simplified track");
+  check(SubtitleAuto.secondary(zh,2,"eng")==3,"second track skips the primary and uses the other preference");
+  check(SubtitleAuto.secondary(new SubtitleAuto.Track[]{plain(2,"简体")},2,"zho")==SubtitleAuto.KEEP,"no second dialogue track");
+  check(SubtitleAuto.remember(zh,-1,"简体中文")==2,"script match finds simplified when the player label differs");
+  SubtitleCueClock.Cue[] cues=new SubtitleCueClock.Cue[]{new SubtitleCueClock.Cue(0,1000,"一"),new SubtitleCueClock.Cue(1000,2000,"二"),null,new SubtitleCueClock.Cue(500,1500,"叠")};
+  check(SubtitleCueClock.textAt(cues,500,0).equals("一\n叠"),"overlapping cues stack");
+  check(SubtitleCueClock.textAt(cues,1000,0).equals("二\n叠"),"end is exclusive and the next cue starts");
+  check(SubtitleCueClock.textAt(cues,200,500).equals(""),"positive offset shows the line later");
+  check(SubtitleCueClock.textAt(cues,0,-500).equals("一\n叠"),"negative offset shows the line earlier");
+  check(SubtitleCueClock.textAt(null,0,0).isEmpty()&&SubtitleCueClock.textAt(cues,-1,0).isEmpty(),"missing clock or position stays blank");
+  System.out.println("PASS: embedded auto selection, sticky off, external priority, forced tracks, cue offset.");
+ }
+}

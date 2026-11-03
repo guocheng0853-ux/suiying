@@ -183,7 +183,7 @@ final class PlayerOverlay {
   {String dl="视频解码："+PlayerOverlayRules.decoderDisplay(PlayerOverlayRules.decoderLabel(currentTier(a),decodeKnown(a),decodeSoftware(a)));labels.add(dl);hint.put(dl,"硬解+ / 硬解 / 软解，画面异常或卡顿时换一档");actions.add(()->decodePicker(a));}
   labels.add("截图");actions.add(()->capture(a));
   labels.add(AudioEffects.label(a));actions.add(()->AudioEffects.menu(a));
-  labels.add("字幕样式");actions.add(()->SubtitleStyle.menu(a,null));
+  labels.add("字幕设置");actions.add(()->SubtitleSettings.open(a));
   // 0.1.133：两个外部播放入口合成一个（从当前位置交给外部播放器）；解释放副标题
   labels.add("用外部播放器打开");hint.put("用外部播放器打开","从当前位置继续，杜比视界颜色发紫发绿时用");actions.add(()->external(a));
   labels.add("系统解码重播");hint.put("系统解码重播","实验功能，画面异常时换安卓自带解码器试试");actions.add(()->systemReplay(a));
