@@ -59,18 +59,21 @@ final class SubtitleAuto {
  static java.util.Map<String,String> safeSecondaryHeaders(java.util.Map<String,String> headers){java.util.LinkedHashMap<String,String> out=new java.util.LinkedHashMap<>();if(headers==null)return out;for(java.util.Map.Entry<String,String> e:headers.entrySet()){if(e.getKey()==null||e.getValue()==null||e.getValue().isEmpty())continue;String k=e.getKey().toLowerCase(java.util.Locale.ROOT);if(k.equals("referer"))out.put("Referer",e.getValue());else if(k.equals("user-agent"))out.put("User-Agent",e.getValue());}return out;}
  /**
   * 一次开播轮询，播放页直接调用。tracks 为 null 表示还没有字幕轨列表。
-  * 有记住的内嵌就不下片源外挂。偏好语言的内嵌优先于别的语言的外挂。
-  * 外挂是偏好语言，或确认没有内嵌时，才用外挂，并且不再打开内嵌。同一时刻只留一条第一字幕。
-  */
+ * 有记住的内嵌就不下片源外挂。偏好语言的内嵌优先于别的语言的外挂。
+ * 外挂是偏好语言，或确认没有内嵌时，才用外挂，并且不再打开内嵌。同一时刻只留一条第一字幕。
+ * manual 表示这次播放里用户手动选过字幕（内嵌、没存成文件的外挂，或关闭）。之后不再自动接管，只把内嵌保持关掉。
+ */
  static final class Poll {
   Track[] tracks;String pref="zho",rememberedName="";
-  boolean userOff,rememberedFile,hasSidecar,sidecarPreferred,sidecarVisible,playing,waitedOut;
+  boolean userOff,rememberedFile,hasSidecar,sidecarPreferred,sidecarVisible,playing,waitedOut,manual;
   int rememberedId=-1;
  }
  static final class Step {
   final boolean loadSidecar,cancelSidecar,finished;final int spu;
   Step(boolean load,boolean cancel,int spu,boolean finished){loadSidecar=load;cancelSidecar=cancel;this.spu=spu;this.finished=finished;}
  }
+ /** 播放器已经停在目标轨上时不要再 setSpuTrack。目标不是一条具体轨时返回 false，调用方自己决定要不要设置。 */
+ static boolean alreadySpu(int current,int target){return (target==-1||target>=0)&&current==target;}
  static Step vlcPoll(Poll in){
   if(in==null)return new Step(false,false,PENDING,false);
   String pref=in.pref==null?"zho":in.pref;
@@ -79,6 +82,7 @@ final class SubtitleAuto {
   boolean memory=in.rememberedId>=0||(in.rememberedName!=null&&!in.rememberedName.isEmpty());
   boolean timed=in.playing&&in.waitedOut;
   if(memory){if(in.tracks==null&&!timed)return new Step(false,false,PENDING,false);int hit=in.tracks==null?-2:remember(in.tracks,in.rememberedId,in.rememberedName);if(hit>=0)return new Step(false,true,hit,true);}
+  if(in.manual)return new Step(false,false,-1,false);
   int embedded=in.tracks==null?(timed?KEEP:PENDING):auto(in.tracks,pref);
   if(embedded==PENDING)return new Step(false,false,PENDING,false);
   boolean embeddedPreferred=false;

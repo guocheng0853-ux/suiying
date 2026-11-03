@@ -2,6 +2,7 @@ package com.guocheng.mediapocket;
 public class SubtitleAutoTest {
  static void check(boolean b,String m){if(!b)throw new AssertionError(m);}
  static SubtitleAuto.Step poll(SubtitleAuto.Track[] tracks,boolean userOff,String pref,boolean rememberedFile,boolean hasSidecar,boolean sidecarPreferred,boolean sidecarVisible,boolean playing,boolean waitedOut,int rememberedId,String name){SubtitleAuto.Poll p=new SubtitleAuto.Poll();p.tracks=tracks;p.userOff=userOff;p.pref=pref;p.rememberedFile=rememberedFile;p.hasSidecar=hasSidecar;p.sidecarPreferred=sidecarPreferred;p.sidecarVisible=sidecarVisible;p.playing=playing;p.waitedOut=waitedOut;p.rememberedId=rememberedId;p.rememberedName=name==null?"":name;return SubtitleAuto.vlcPoll(p);}
+ static SubtitleAuto.Step held(SubtitleAuto.Track[] tracks,boolean sidecarVisible,int rememberedId,String name){SubtitleAuto.Poll p=new SubtitleAuto.Poll();p.tracks=tracks;p.pref="zho";p.hasSidecar=true;p.sidecarPreferred=false;p.sidecarVisible=sidecarVisible;p.playing=true;p.waitedOut=true;p.manual=true;p.rememberedId=rememberedId;p.rememberedName=name==null?"":name;return SubtitleAuto.vlcPoll(p);}
  static SubtitleAuto.Track track(int id,String label,boolean forced,boolean meaningless,boolean commentary,boolean def){return new SubtitleAuto.Track(id,label,forced,meaningless,commentary,def);}
  static SubtitleAuto.Track plain(int id,String label){return track(id,label,false,false,false,false);}
  public static void main(String[] args)throws Exception{
@@ -63,6 +64,25 @@ public class SubtitleAutoTest {
   check(englishOnly.loadSidecar&&englishOnly.spu==-1&&!englishOnly.cancelSidecar,"preferred sidecar is used when embedded is another language, without leaving embedded on");
   SubtitleAuto.Step shown=poll(new SubtitleAuto.Track[]{plain(3,"English")},false,"zho",false,true,false,true,true,true,-1,null);
   check(!shown.loadSidecar&&shown.spu==-1,"a late non-preferred embedded track stays off once a sidecar is showing");
+  SubtitleAuto.Step manualSidecar=held(zh,true,-1,"");
+  check(!manualSidecar.loadSidecar&&!manualSidecar.cancelSidecar&&manualSidecar.spu==-1&&!manualSidecar.finished,"a visible manual sidecar is not replaced by a preferred embedded track");
+  SubtitleAuto.Step manualLoading=held(zh,false,-1,"");
+  check(!manualLoading.loadSidecar&&!manualLoading.cancelSidecar&&manualLoading.spu==-1,"a manual sidecar that is still loading is not cancelled");
+  SubtitleAuto.Step manualEmbedded=held(zh,true,3,"English");
+  check(manualEmbedded.spu==3&&manualEmbedded.cancelSidecar&&!manualEmbedded.loadSidecar,"a manual embedded choice is kept and still closes the sidecar");
+  SubtitleAuto.Poll closed=new SubtitleAuto.Poll();closed.tracks=zh;closed.pref="zho";closed.userOff=true;closed.manual=true;closed.hasSidecar=true;closed.sidecarVisible=true;closed.playing=true;closed.waitedOut=true;
+  SubtitleAuto.Step manualOff=SubtitleAuto.vlcPoll(closed);
+  check(manualOff.spu==-1&&manualOff.cancelSidecar&&manualOff.finished,"closing subtitles still stops playback takeover");
+  check(SubtitleAuto.alreadySpu(2,2)&&SubtitleAuto.alreadySpu(-1,-1)&&!SubtitleAuto.alreadySpu(4,2)&&!SubtitleAuto.alreadySpu(-1,2)&&!SubtitleAuto.alreadySpu(Integer.MIN_VALUE,-1),"the current spu track is not selected again");
+  String root="src/com/guocheng/mediapocket/";
+  String trackSrc=java.nio.file.Files.readString(java.nio.file.Paths.get(root+"TrackSelection.java"));
+  String memorySrc=java.nio.file.Files.readString(java.nio.file.Paths.get(root+"SubtitleMemory.java"));
+  String loaderSrc=java.nio.file.Files.readString(java.nio.file.Paths.get(root+"SourceSubtitleLoader.java"));
+  String chromeSrc=java.nio.file.Files.readString(java.nio.file.Paths.get(root+"PlayerChrome.java"));
+  String mediaSrc=java.nio.file.Files.readString(java.nio.file.Paths.get(root+"Media3Controls.java"));
+  check(trackSrc.contains("poll.manual=SubtitleMemory.held(a)")&&trackSrc.contains("if(on&&!played[0]){played[0]=true;applyDelay(player,prefs);}")&&trackSrc.contains("!SubtitleAuto.alreadySpu(currentSpu(player),step.spu)")&&trackSrc.contains("POLLS.put(a,handler)"),"playback uses the manual hold, reapplies delay when playing, and skips a repeated spu");
+  check(memorySrc.contains("static void external(Activity a){hold(a);")&&memorySrc.contains("static void off(Activity a){hold(a);")&&memorySrc.contains("static void embedded(Activity a,int spu,String name){hold(a);")&&memorySrc.contains("static void named(Activity a,String name){hold(a);"),"embedded, external, and off share one manual hold");
+  check(loaderSrc.contains("if(!automatic)SubtitleMemory.external(a)")&&chromeSrc.contains("TrackSelection.dispose(a)")&&mediaSrc.contains("TrackSelection.dispose(a)")&&trackSrc.contains("h.removeCallbacksAndMessages(null)"),"manual loads set the hold, and releasing the player cancels polling");
   check(SubtitleAuto.secondaryUrl("https://cdn.example/a.srt")&&SubtitleAuto.secondaryUrl("http://cdn.example/a.srt")&&!SubtitleAuto.secondaryUrl("file:///sdcard/evil.srt")&&!SubtitleAuto.secondaryUrl("/sdcard/evil.srt")&&SubtitleAuto.secondaryLocal("content://media/1"),"secondary urls are http(s), local only when the user picked one");
   String menu=SubtitleAuto.media3Label("简体","zh","subrip");
   check(menu.equals("简体 · zh · subrip")&&SubtitleAuto.remember(new SubtitleAuto.Track[]{new SubtitleAuto.Track(0,menu,false,false,false,false)},-1,menu)==0,"saved media3 label matches the menu label");
@@ -76,6 +96,6 @@ public class SubtitleAutoTest {
   SubtitleCueClock.Delayed[] crowded=new SubtitleCueClock.Delayed[]{new SubtitleCueClock.Delayed(100,"旧"),new SubtitleCueClock.Delayed(200,"中"),new SubtitleCueClock.Delayed(300,"新"),new SubtitleCueClock.Delayed(500,"未到"),new SubtitleCueClock.Delayed(800,"更晚")};
   SubtitleCueClock.Delayed[] trimmed=SubtitleCueClock.trim(crowded,300);
   check(trimmed.length==3&&trimmed[0].text.equals("新")&&trimmed[1].text.equals("未到")&&trimmed[2].text.equals("更晚"),"cue events keep the latest shown line and the future ones");
-  System.out.println("PASS: vlcPoll waits until playback, late preferred embedded takes over, manual choice sticks, cue trim, headers.");
+  System.out.println("PASS: vlcPoll waits until playback, late preferred embedded takes over, manual sidecar is not taken over, cue trim, headers.");
  }
 }
