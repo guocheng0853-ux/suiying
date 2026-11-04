@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.169",
-  "android_device_tested": true,
+  "ui_version": "0.1.170",
+  "android_device_tested": false,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -18,7 +18,7 @@
   "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
   "media3_runtime_included": true,
   "dolby_android_device_tested": false,
-  "jvm_test_programs_passed": 105,
+  "jvm_test_programs_passed": 106,
   "apk_class_resolution": "passed",
   "unique_classes": 9409,
   "dex_files": 3,
@@ -42,9 +42,5 @@
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
   "real_source_playback_tested": false,
-  "real_source_note": "Not exercised in this acceptance; localhost synthetic sources only",
-  "android_device_test_scope": "Partial OPD2401 Android 16 synthetic playback/subtitle/keyboard acceptance; unresolved findings T1-T3; not full release acceptance",
-  "acceptance_handoff": "docs/handoff/acceptance-0169.md",
-  "tested_source_commit": "bbd28f6",
-  "apk_sha256": "cfd7ae9e690e79c1a72da8fc6ac0326596e7e1b94354ea358046344ca07e9612"
+  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build"
 }
