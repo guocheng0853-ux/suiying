@@ -24,7 +24,7 @@ final class TvSupport {
  static void player(Activity a){if(KEYS.containsKey(a))return;KEYS.put(a,true);try{Window w=a.getWindow();Window.Callback original=w.getCallback();if(original==null)return;Set<Integer> held=new HashSet<>();
   Object proxy=Proxy.newProxyInstance(Window.Callback.class.getClassLoader(),new Class<?>[]{Window.Callback.class},(p,m,args)->{
    if("dispatchKeyEvent".equals(m.getName())&&args!=null&&args.length==1&&args[0] instanceof KeyEvent){KeyEvent e=(KeyEvent)args[0];
-    try{if(PlayerMedia.mediaKey(a,e))return true;Boolean mine=playerKey(a,e,held);if(mine!=null)return mine;}catch(Throwable ignored){}}
+    try{if(PlayerMedia.mediaKey(a,e))return true;if(KeyboardKeys.vlc(a,e))return true;Boolean mine=playerKey(a,e,held);if(mine!=null)return mine;}catch(Throwable ignored){}}
    try{return m.invoke(original,args);}catch(InvocationTargetException ex){throw ex.getCause();}});
   w.setCallback((Window.Callback)proxy);}catch(Throwable ignored){}}
 
