@@ -11,7 +11,7 @@ import android.app.Activity;import android.content.res.ColorStateList;import and
 final class PlayerGlass {
  private PlayerGlass(){}
  static final int GLASS=0x8C1C1A18,GLASS_STRONG=0xB31C1A18,STROKE=0x26ffffff;
- static final int CIRCLE_DP=PlayerGlassRules.TOUCH_DP,CENTER_DP=64,PLAY_DP=80,CENTER_GAP_DP=56,PANEL_RADIUS_DP=20,PLAY_ICON_DP=44,SKIP_ICON_DP=34;
+ static final int CIRCLE_DP=PlayerGlassRules.TOUCH_DP,CENTER_DP=64,PLAY_DP=PlayerGlassRules.KEY_DP,CENTER_GAP_DP=56,PANEL_RADIUS_DP=20,PLAY_ICON_DP=PlayerGlassRules.KEY_ICON_DP,SKIP_ICON_DP=34;
  static final Map<View,String> STYLED=new WeakHashMap<>();
  static int dp(Activity a,float v){return Math.round(v*a.getResources().getDisplayMetrics().density);}
  /** 无底的点按反馈：只有按下时一圈淡白波纹。 */

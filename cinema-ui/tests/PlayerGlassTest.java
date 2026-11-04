@@ -50,8 +50,11 @@ public final class PlayerGlassTest {
   check(!PlayerGlassRules.SKIP_KEYS&&glass.contains("if(!PlayerGlassRules.SKIP_KEYS)for(int i:new int[]{0,2})"),"0.1.151 center shows play/pause only; double tap seeks");
   check(!PlayerGlassRules.speedAccent(1f)&&PlayerGlassRules.speedAccent(1.25f)&&PlayerGlassRules.speedAccent(0.9f),"0.1.151 speed label is accent only when not 1.0x");
   check(String.join(",",PlayerGlassRules.BAR_ORDER).equals("subtitle,audio,episodes,next,rate"),"0.1.151 bottom order");
-  check(overlay.contains("\"mp-slot-\"+PlayerOverlayRules.SUBTITLE,\"mp-slot-\"+PlayerOverlayRules.AUDIO,\"mp-slot-\"+PlayerOverlayRules.EPISODES,\"mp-next\",\"mp-fixed-rate\"")&&overlay.contains("labels.add(\"截图\")")&&overlay.contains("decoder.setVisibility(View.GONE)"),"0.1.151 VLC: decoder and screenshot live in more; bar order subtitle-audio-episodes-next-rate");
-  check(!m3.contains("\"上一集\"")&&!m3.contains("button(\"DV\"")&&m3.contains("CinemaMenu.item(\"截图\"")&&m3.contains("side.addView(icon(PlayerIcons.LOCK"),"0.1.151 Media3: lock on the left rail, screenshot in more, no DV chip or previous key");
+  check(overlay.contains("\"mp-slot-\"+PlayerOverlayRules.SUBTITLE,\"mp-slot-\"+PlayerOverlayRules.AUDIO,\"mp-slot-\"+PlayerOverlayRules.EPISODES,\"mp-next\",\"mp-fixed-rate\"")&&overlay.contains("rows.add(CinemaMenu.item(\"截图\",()->capture(a)))")&&overlay.contains("decoder.setVisibility(View.GONE)"),"0.1.151 VLC: decoder and screenshot live in more; bar order subtitle-audio-episodes-next-rate");
+  check(!m3.contains("\"上一集\"")&&!m3.contains("button(\"DV\"")&&m3.contains("CinemaMenu.item(\"截图\"")&&m3.contains("Button lock=icon(PlayerIcons.LOCK")&&m3.contains("side.addView(lock,new LinearLayout.LayoutParams(k,k))"),"0.1.151 Media3: lock on the left rail, screenshot in more, no DV chip or previous key");
+  check(PlayerGlass.PLAY_DP==PlayerGlassRules.KEY_DP&&PlayerGlass.PLAY_ICON_DP==PlayerGlassRules.KEY_ICON_DP&&PlayerGlassRules.KEY_DP>=48,"0.1.169 lock and play key share one size");
+  check(overlay.contains("move(g==null?null:g.lockButton,side,Math.max(0,(h-key)/2),key)"),"0.1.169 VLC lock sits on the play key's horizontal line");
+  check(!overlay.contains("labels.add(\"线路与片源\")")&&overlay.contains("\"画面与解码 ›\"")&&overlay.contains("if(download.enabled)rows.add(download)"),"0.1.169 More is grouped; route and subtitle settings live in the side panel");
   System.out.println("PASS: player glass remaining copy, bright-scene opacity, 48dp targets, seek-key flash, shared bar language, gold accent.");
  }
 }
