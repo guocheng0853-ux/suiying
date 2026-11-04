@@ -14,6 +14,11 @@ public class AudioEffectRulesTest {
   for(float[] c:new float[][]{d,n,k,m})for(int i=1;i<c.length;i++)check(c[i]+c[0]<=1.5f,"no band pushes far above 0 dB after preamp (clipping guard)");
   check(AudioEffectRules.chinese("Full bass").equals("重低音")&&AudioEffectRules.chinese("Headphones").equals("耳机")&&AudioEffectRules.chinese("Unknown").equals("Unknown"),"names");
   check(AudioEffectRules.label("preset:4","Full bass").equals("均衡器 · 重低音")&&AudioEffectRules.label("dialog","").equals("对白增强")&&AudioEffectRules.label("x","").equals("关闭"),"labels");
+    // 0.1.169 影院与看剧音效
+  for(String v:new String[]{"cinema","documentary","variety","vintage"}){check(AudioEffectRules.normalize(v).equals(v),"saved "+v);float[] c=AudioEffectRules.curve(v,10);check(c!=null&&c.length==11,"curve "+v);float max=0;for(int i=1;i<c.length;i++)max=Math.max(max,c[i]);check(c[0]+max<=1f,"preamp leaves headroom so "+v+" does not clip");check(!AudioEffectRules.hint(v).isEmpty()&&!AudioEffectRules.label(v,"").equals("关闭"),"label and hint "+v);}
+  float[] cin=AudioEffectRules.curve("cinema",10);check(cin[1]>=4&&cin[2]>=4&&cin[5]<0,"cinema: deep bass, scooped mids");
+  float[] old=AudioEffectRules.curve("vintage",10);check(old[10]<=-5,"vintage cuts hiss above 8 kHz");
+  check(AudioEffectRules.CURATED[0].equals("off")&&AudioEffectRules.CURATED[1].equals("cinema"),"cinema listed first after off");
   System.out.println("PASS: audio effects normalize, dialog/night curves with clipping headroom, preset names and labels.");
  }
 }

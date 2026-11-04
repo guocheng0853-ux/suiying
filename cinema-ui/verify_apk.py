@@ -51,6 +51,7 @@ PATCH_MARKS=[
  ('PatchPlaybackOrientation','Lcom/guocheng/mediapocket/GesturePlayerActivity;',('class','Lcom/guocheng/mediapocket/PlaybackOrientation;')),
  ('PatchPlaybackBackend','Lcom/guocheng/mediapocket/PlayerActivity;',('class','Lcom/guocheng/mediapocket/PlaybackBackend;')),
  ('PatchDecodePolicy','Lcom/guocheng/mediapocket/VlcPlayback;',('class','Lcom/guocheng/mediapocket/DecodePolicyRules;')),
+ ('PatchSubtitleVlc','Lcom/guocheng/mediapocket/VlcPlayback;',('class','Lcom/guocheng/mediapocket/SubtitleVlc;')),
 ]
 with zipfile.ZipFile(apk) as z:
  dexbytes={n:z.read(n) for n in dex_classes}
@@ -91,4 +92,4 @@ validation.setdefault('android_device_tested',False)
 if 'real_source_playback_tested' not in validation:
  validation['real_source_playback_tested']=False
  validation.setdefault('real_source_note','cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build')
-(root/'VALIDATION.json').write_text(json.dumps(validation,indent=2));print('PASS: unique classes, component method ABI, manifest build/version, runtime assets, native module, original code preservation, 8 patch marks present.')
+(root/'VALIDATION.json').write_text(json.dumps(validation,indent=2));print('PASS: unique classes, component method ABI, manifest build/version, runtime assets, native module, original code preservation, 9 patch marks present.')

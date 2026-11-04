@@ -48,6 +48,7 @@ final class DecoderSwitch {
    media.getClass().getMethod("setHWDecoderEnabled",boolean.class,boolean.class).invoke(media,PlayerOverlayRules.hwEnabled(tier),PlayerOverlayRules.directRendering(tier));
    Method add=media.getClass().getMethod("addOption",String.class);
    for(String option:PlayerOverlayRules.decodeOptions(tier,file,headers))add.invoke(media,option);
+   for(String option:SubtitleVlc.mediaOptions())add.invoke(media,option);
    invoke(player,"stop");
    Method setMedia=find(player.getClass(),"setMedia",1);if(setMedia==null)return "LibVLC 没有 setMedia";
    setMedia.invoke(player,media);

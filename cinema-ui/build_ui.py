@@ -22,8 +22,8 @@ with zipfile.ZipFile(work/'stubs.jar','w') as z:
 (work/'dex').mkdir(exist_ok=True)
 run(bt/'d8','--min-api','26','--lib',sdk,'--classpath',work/'stubs.jar','--classpath',work/'runtime.jar','--output',work/'dex',work/'ui.jar')
 jadx=tools/'jadx/lib/jadx-1.5.3-all.jar'
-# 改这条补丁链，或 cinema-ui/build/build_win.py 里同一条链，之后必须跑 verify_apk.py。终检断言 8 个 PATCH_MARKS（含 PatchPlaybackBackend、PatchDecodePolicy）；只改脚本不跑 verify，缺补丁的包会漏出去。
-run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java',root/'tools/PatchHeaderRoute.java',root/'tools/PatchTorrentBoost.java',root/'tools/PatchPieceReads.java',root/'tools/PatchPlaybackOrientation.java',root/'tools/PatchPlaybackBackend.java',root/'tools/PatchDecodePolicy.java')
+# 改这条补丁链，或 cinema-ui/build/build_win.py 里同一条链，之后必须跑 verify_apk.py。终检断言 9 个 PATCH_MARKS（含 PatchPlaybackBackend、PatchDecodePolicy）；只改脚本不跑 verify，缺补丁的包会漏出去。
+run('java','-jar',tools/'ecj.jar','-17','-proc:none','-nowarn','-classpath',jadx,'-d',work/'patch-tools',root/'tools/PatchClawNet.java',root/'tools/VerifyClawPatch.java',root/'tools/PatchSubtitleSearch.java',root/'tools/PatchHeaderRoute.java',root/'tools/PatchTorrentBoost.java',root/'tools/PatchPieceReads.java',root/'tools/PatchPlaybackOrientation.java',root/'tools/PatchPlaybackBackend.java',root/'tools/PatchDecodePolicy.java',root/'tools/PatchSubtitleVlc.java')
 with zipfile.ZipFile(root/'base.apk') as base:
  (work/'original-main.dex').write_bytes(base.read('classes.dex'))
 (work/'patched-main.dex').unlink(missing_ok=True)
@@ -78,7 +78,9 @@ run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchPlaybackOrientation
 run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchPlaybackBackend',work/'patched-orientation.dex',work/'patched-backend.dex')
 # 0.1.163：自动档先硬解。VlcPlayback 构造改调 DecodePolicyRules，黑屏仍走原来的 retry。
 run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchDecodePolicy',work/'patched-backend.dex',work/'patched-decode.dex')
-final_dex[torrent_name]=(work/'patched-decode.dex').read_bytes()
+# 0.1.169：VLC 自己画的文字字幕跟随字幕设置（LibVLC 全局 + 每个片源的媒体选项）
+run('java','-cp',str(work/'patch-tools')+':'+str(jadx),'PatchSubtitleVlc',work/'patched-decode.dex',work/'patched-subtitle-style.dex')
+final_dex[torrent_name]=(work/'patched-subtitle-style.dex').read_bytes()
 assert final_dex[torrent_name][:4]==b'dex\n'
 # 真实默认配置含个人令牌，不入库；缺失时用脱敏样例（打包名仍为 fusion-default.json）
 if not (root/'assets/fusion-default.json').exists():

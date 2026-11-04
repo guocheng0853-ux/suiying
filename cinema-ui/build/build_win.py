@@ -92,7 +92,7 @@ d8('--min-api','26','--lib',AJ,'--classpath',work/'stubs.jar','--classpath',work
 # 5. dex 补丁（dexlib2 来自 jadx-all jar；Windows classpath 用分号）
 patch_tools=work/'patch-tools'
 shutil.rmtree(patch_tools,ignore_errors=True)
-javac(JADX_JAR,patch_tools,*[root/'tools'/n for n in ['PatchClawNet.java','VerifyClawPatch.java','PatchSubtitleSearch.java','PatchHeaderRoute.java','PatchTorrentBoost.java','PatchPieceReads.java','PatchPlaybackOrientation.java','PatchPlaybackBackend.java','PatchDecodePolicy.java']])
+javac(JADX_JAR,patch_tools,*[root/'tools'/n for n in ['PatchClawNet.java','VerifyClawPatch.java','PatchSubtitleSearch.java','PatchHeaderRoute.java','PatchTorrentBoost.java','PatchPieceReads.java','PatchPlaybackOrientation.java','PatchPlaybackBackend.java','PatchDecodePolicy.java','PatchSubtitleVlc.java']])
 patchcp=str(patch_tools)+';'+str(JADX_JAR)
 def patcher(cls,src,dst):
     (work/dst).unlink(missing_ok=True)
@@ -136,7 +136,9 @@ final_dex[torrent_name]=patcher('PatchPlaybackOrientation','patched-piece-reads.
 # 0.1.148：PlayerActivity 两处 useVlc 读取改走 PlaybackBackend.preferVlc（音频兼容/VLC 入口）
 patcher('PatchPlaybackBackend','patched-orientation.dex','patched-backend.dex')
 # 0.1.163：自动档先硬解。VlcPlayback 构造改调 DecodePolicyRules，黑屏仍走原来的 retry。
-final_dex[torrent_name]=patcher('PatchDecodePolicy','patched-backend.dex','patched-decode.dex')
+patcher('PatchDecodePolicy','patched-backend.dex','patched-decode.dex')
+# 0.1.169：VLC 自己画的文字字幕跟随字幕设置
+final_dex[torrent_name]=patcher('PatchSubtitleVlc','patched-decode.dex','patched-subtitle-style.dex')
 
 # 6. 真实默认配置含个人令牌，不入库；缺失时用脱敏样例（打包名仍为 fusion-default.json）
 if not (root/'assets/fusion-default.json').exists():
