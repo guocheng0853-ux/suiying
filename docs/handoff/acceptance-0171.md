@@ -69,3 +69,28 @@
 3. 描边 / 位置 VLC 渲染逐项截图（颜色 + 字号已两点实证同通道）。
 4. 0169 清单第 2-4 条：键盘音量实测（方向键上下）、手机窄屏、大字号、TalkBack、真实 HDR / 杜比、真实服务器转码、Stremio 网速。
 5. T3 状态栏沉浸的真机日常复核（0170 遗留，非 instrumentation 环境）。
+
+## 续测轮补全（2026-11-05，同日第二轮）
+
+上表 1–4 项已全部完成，结论如下（证据同在 deliverables/tablet-0171/，t9–t15 前缀）：
+
+1. **详情页三件套：通过**。E5（fixture 无海报集）换集后主视觉正常渲染、无破图（fixture 海报即蓝色占位图，E5 与 E1 视觉一致；无法区分兜底来源，记录）；选中集对应下载目标——E5 选中时下载对话框明确指名「第 5 集 · Synthetic Episode 5」；播放→返回后详情完整（4 集条、E5 选中保持、meta 正确）。
+2. **偏好语言外挂胜内嵌：通过**。probe `direct` 新增 `lang` 参数 → `direct(lang='eng', sidecar=true)`：spu 全程 -1，外挂经 cue 层渲染（`t10-s4-crop.png`），`sidecarWins` 分支真机实证。
+3. **描边 / 位置：通过**。`sub.look=outline` + `sub.lift=4` 直设偏好后经弹层改色触发整页重建，三属性（描边硬描线、位置离底、黄色）一次渲染实证（`t11-mid-crop.png`）。
+4. **键盘（VLC 侧）：通过，且澄清了一个测试工件**。`KeyboardKeys.vlc` 直调 DPAD_UP → 音量 140→150 实变、`locked/panel` 全 false——功能本体正常；而 `dispatchKeyEvent` 注入 `handled=False` 不达底座按键代理链是**注入工件**（Activity 级 dispatch 不走真实输入管线）。系统级注入（UiAutomation.injectInputEvent，与物理键盘同路径）→ 音量 150→140 实降、DPAD_RIGHT 快进 +15.9s（`t12-*`）。0169 的 VLC 键盘功能真机实证闭环。
+5. **大字号（font_scale 1.3）：通过**。播放渲染正常、设置面板行距 130px→226px 随系统字号缩放（`t13-*`）。注意 probe 重启会还原 journal 里的 sub.* 旧值（样式测试要重设）。
+6. **手机窄屏（window_dp 360）：通过**。360dp 纵向窗口居中，视频/字幕/状态条正常渲染（`t14-narrow-screencap.png`）；probe 的 shot 在浮动窗模式下报「Synthetic window must be active」，改用 adb screencap。观察：超长字幕行在窄窗下有轻微裁边（fixture 长句 + freetype 不换行组合，非定论）。
+7. **TalkBack：通过**。服务启用后 touch_exploration=true，播放/字幕面板交互正常、无崩溃；全部 chrome 按钮带 contentDescription（锁定屏幕/返回/画面比例/画中画/更多/字幕/音轨/选集/播放速度）、面板行有文本标签——TalkBack 朗读来源齐备（`t15-talkback-panel-0171.png`）。收尾已关闭服务（touch_exploration=0）。
+
+### 工具增量（本轮）
+
+- probe 错误应答新增 `message` + `at`（栈顶）——排障不再只猜类型。
+- `keydebug` 动作：回读 `locked`/`panel` guard 真值 + 直调 `KeyboardKeys.vlc`/`PlayerMedia.mediaKey` 结果。
+- `key` 动作新增 `system:true` 模式：UiAutomation.injectInputEvent（`sync=false`——true 会在主线程内死锁）。**判别注入工件 vs 真实缺陷一律用 system 模式**。
+- `direct` 新增 `lang` 参数（覆盖默认 zho）。
+
+### 仍然未测（不在本机能力内）
+
+- 真实 HDR / 杜比、真实服务器转码、Stremio 网速（云环境网络受限，历史轮同样受阻）。
+- T3 状态栏沉浸的真机日常复核（需用户日常使用场景，0170 遗留）。
+- 实体键盘实物测试（无实体键盘外设；系统级注入已等效覆盖 DPAD 键事件路径）。
