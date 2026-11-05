@@ -45,7 +45,7 @@ final class PlayerOverlay {
   View legacyStatus=top.findViewWithTag("mp-status");if(legacyStatus!=null)top.removeView(legacyStatus);
   Button aspect=ensure(a,top,"mp-aspect",PlayerIcons.ASPECT,"画面比例",v->quickAspect(a));aspect.setOnLongClickListener(v->{aspectPicker(a);return true;});
   Button pip=findExact(top,"画中画");if(pip!=null)fit(a,pip,PlayerIcons.PIP,"画中画");
-  Button more=ensure(a,top,"mp-more",PlayerIcons.MORE,"更多",v->more(a));
+  Button more=ensure(a,top,"mp-more",PlayerIcons.MORE,"更多",v->{CinemaMenu.anchor(v);more(a);});
   View gap=findTag(top,"mp-top-gap");if(gap==null){gap=new View(a);gap.setTag("mp-top-gap");}
   View[] right=new View[]{gap,decoder,aspect,pip,more};for(View v:right){if(v==null)continue;if(v.getParent() instanceof ViewGroup&&v.getParent()!=top)((ViewGroup)v.getParent()).removeView(v);if(v.getParent()==top)top.removeView(v);top.addView(v);}
   slot(a,decoder,0);if(decoder!=null&&decoder.getVisibility()!=View.GONE)decoder.setVisibility(View.GONE);// 0.1.151：解码档位是排障用的设置，收进「更多」，顶栏只留图标

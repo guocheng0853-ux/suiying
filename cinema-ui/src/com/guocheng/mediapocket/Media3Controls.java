@@ -13,7 +13,7 @@ final class Media3Controls {
   top.addView(icon(PlayerIcons.BACK,"返回",()->a.finish()),touchLp(0));
   top.addView(new View(a),new LinearLayout.LayoutParams(0,1,1));
   top.addView(icon(PlayerIcons.ASPECT,"画面比例",this::aspect),touchLp(Ui.S1));
-  top.addView(icon(PlayerIcons.MORE,"更多",this::more),touchLp(Ui.S1));
+  final Button[] moreKey={null};moreKey[0]=icon(PlayerIcons.MORE,"更多",()->{CinemaMenu.anchor(moreKey[0]);more();});top.addView(moreKey[0],touchLp(Ui.S1));
   root.addView(top,new FrameLayout.LayoutParams(-1,-2,Gravity.TOP));
   int secs=PlaybackPrefs.seekSeconds(prefs);Button[] keys=PlayerGlass.center(a,root,secs,v->{jump(-1);},v->{PlayerMedia.toggle(a);reveal();},v->{jump(1);});center=(View)keys[0].getParent();seekBack=keys[0];play=keys[1];seekFwd=keys[2];
   bottom=new LinearLayout(a);a.bottom=bottom;bottom.setOrientation(LinearLayout.VERTICAL);bottom.setPadding(dp(24),dp(48),dp(24),dp(12));bottom.setBackground(PlayerGlass.panelDrawable(a));
