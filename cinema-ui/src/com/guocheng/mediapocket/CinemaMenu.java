@@ -39,7 +39,9 @@ final class CinemaMenu {
   final android.app.Dialog dialog=new android.app.Dialog(a,android.R.style.Theme_Translucent_NoTitleBar);
   final FrameLayout scrim=new FrameLayout(a);scrim.setBackgroundColor(PlayerTheme.SCRIM);scrim.setClickable(true);
   final LinearLayout panel=new LinearLayout(a);panel.setOrientation(LinearLayout.VERTICAL);
-  GradientDrawable bg=new GradientDrawable();bg.setColor(PlayerTheme.surface(a));if(PlayerTheme.paper(a))bg.setStroke(dp(a,1),CinemaTheme.LINE);bg.setCornerRadius(dp(a,PlayerTheme.RADIUS_PANEL_DP));panel.setBackground(bg);
+  // 0.1.169：播放页里的菜单做成雾面玻璃窗口（面板大小的独立窗口，后面视频磨砂）；首页等浅色页面保持原来的纸面
+  final boolean glass=GlassRules.player(a instanceof PlayerActivity||a instanceof SystemPlayerActivity,PlayerTheme.paper(a));
+  GradientDrawable bg=new GradientDrawable();bg.setColor(PlayerTheme.surface(a));if(PlayerTheme.paper(a))bg.setStroke(dp(a,1),CinemaTheme.LINE);bg.setCornerRadius(dp(a,PlayerTheme.RADIUS_PANEL_DP));if(!glass)panel.setBackground(bg);
   panel.setPadding(dp(a,14),dp(a,12),dp(a,14),dp(a,14));
   int screen=decor.getWidth()>0?decor.getWidth():a.getResources().getDisplayMetrics().widthPixels;
   int width=Math.min(dp(a,PlayerTheme.MENU_WIDTH_MAX_DP),screen-dp(a,40));
@@ -74,9 +76,8 @@ final class CinemaMenu {
   int menuH=Math.min(panel.getMeasuredHeight(),Math.round(vh*0.78f));
   FrameLayout center=new FrameLayout(a);
   ScrollView scroll=new ScrollView(a);scroll.setVerticalScrollBarEnabled(false);scroll.addView(panel,new FrameLayout.LayoutParams(width,-2));
-  center.addView(scroll,new FrameLayout.LayoutParams(width,menuH,Gravity.CENTER));
-  scrim.addView(center,new FrameLayout.LayoutParams(-1,-1));
-  scrim.setOnClickListener(v->cancel(a));
+  if(glass){scrim.setBackgroundColor(0);scrim.setClickable(false);scrim.addView(scroll,new FrameLayout.LayoutParams(width,menuH));dialog.setCanceledOnTouchOutside(true);dialog.setOnCancelListener(d->cancel(a));}
+  else{center.addView(scroll,new FrameLayout.LayoutParams(width,menuH,Gravity.CENTER));scrim.addView(center,new FrameLayout.LayoutParams(-1,-1));scrim.setOnClickListener(v->cancel(a));}
   dialog.setContentView(scrim);
   dialog.setCancelable(true);
   dialog.setOnKeyListener((d,code,e)->{if(code==KeyEvent.KEYCODE_BACK){if(e.getAction()==KeyEvent.ACTION_UP)cancel(a);return true;}return false;});
@@ -85,15 +86,15 @@ final class CinemaMenu {
    w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));
    w.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
    w.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS|WindowManager.LayoutParams.FLAG_FULLSCREEN);
-   w.setLayout(-1,-1);w.setWindowAnimations(0);
+   if(glass){Glass.window(a,w,PlayerTheme.RADIUS_PANEL_DP);w.setLayout(width,menuH);WindowManager.LayoutParams g=w.getAttributes();g.gravity=Gravity.CENTER;g.dimAmount=GlassRules.MENU_DIM;w.setAttributes(g);w.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);}else w.setLayout(-1,-1);w.setWindowAnimations(0);
    if(body!=null&&hasInput(body))w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE|WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
    if(Build.VERSION.SDK_INT>=28){WindowManager.LayoutParams lp=w.getAttributes();lp.layoutInDisplayCutoutMode=a.getWindow().getAttributes().layoutInDisplayCutoutMode;w.setAttributes(lp);}
-   VideoFullscreen.dialog(a,w);
+   if(!glass)VideoFullscreen.dialog(a,w);
    // 先不可聚焦地显示并复制沉浸式标志，再恢复可聚焦（返回键），避免弹出时状态栏/导航栏闪出来
    w.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
   }
   try{dialog.show();}catch(Exception e){return false;}
-  if(w!=null){w.getDecorView().setSystemUiVisibility(decor.getSystemUiVisibility());w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);VideoFullscreen.dialog(a,w);}
+  if(w!=null){w.getDecorView().setSystemUiVisibility(decor.getSystemUiVisibility());w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);if(!glass)VideoFullscreen.dialog(a,w);}
   OPEN.put(a,new Open(dialog,scrim,onCancel));
   scrim.setAlpha(0f);panel.setScaleX(0.92f);panel.setScaleY(0.92f);
   scrim.animate().alpha(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
