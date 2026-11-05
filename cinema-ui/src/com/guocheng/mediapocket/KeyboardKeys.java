@@ -11,6 +11,6 @@ final class KeyboardKeys {
  /** 内置杜比播放页。 */
  static boolean media3(SystemPlayerActivity a,KeyEvent e){Media3Controls c=a.chrome;int act=KeyboardRules.action(e.getKeyCode(),keyboard(a,e),false,c!=null&&c.locked);if(act==KeyboardRules.NONE||c==null)return false;if(e.getAction()!=KeyEvent.ACTION_DOWN)return true;
   if(act==KeyboardRules.VOLUME_UP||act==KeyboardRules.VOLUME_DOWN){volume(a,a.root,act==KeyboardRules.VOLUME_UP);return true;}
-  c.jump(act==KeyboardRules.FORWARD?1:-1);return true;}
+  c.jump(act==KeyboardRules.FORWARD?1:-1,KeyboardRules.seekStepMs(PlaybackPrefs.seekMs(c.prefs),e.getRepeatCount()));return true;}
  static void volume(Activity a,FrameLayout host,boolean up){try{AudioManager am=(AudioManager)a.getSystemService(Activity.AUDIO_SERVICE);if(am==null)return;am.adjustStreamVolume(AudioManager.STREAM_MUSIC,up?AudioManager.ADJUST_RAISE:AudioManager.ADJUST_LOWER,0);int max=am.getStreamMaxVolume(AudioManager.STREAM_MUSIC),now=am.getStreamVolume(AudioManager.STREAM_MUSIC);if(host!=null){LevelHud.show(a,host,false,max<=0?0:Math.round(now*100f/max),100);LevelHud.hideSoon(a,LevelHudMetrics.HOLD_MS);}else FullscreenMode.hud(a,"音量 "+(max<=0?0:Math.round(now*100f/max))+"%");}catch(RuntimeException ignored){}}
 }

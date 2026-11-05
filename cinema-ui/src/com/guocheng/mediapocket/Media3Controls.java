@@ -67,7 +67,9 @@ final class Media3Controls {
   return true;
  }
  boolean hasControlFocus(){View focused=a.getCurrentFocus();return remoteActive&&focused!=null&&focused!=a.video&&focused.hasFocus();}
- void jump(int direction){a.video.seekTo(Media3ControlRules.seek(a.video.getCurrentPosition(),a.video.getDuration(),direction*PlaybackPrefs.seekMs(prefs)),true);PlayerGlass.flashSeek(center);reveal();}
+ void jump(int direction){jump(direction,PlaybackPrefs.seekMs(prefs));}
+ /** 键盘长按加速走这里：repeat 高的事件传放大后的步长；屏幕键和双击仍用基础步长。 */
+ void jump(int direction,int stepMs){a.video.seekTo(Media3ControlRules.seek(a.video.getCurrentPosition(),a.video.getDuration(),direction*stepMs),true);PlayerGlass.flashSeek(center);reveal();}
  void speed(){List<CinemaMenu.Item> rows=new ArrayList<>();for(float v:new float[]{.5f,.75f,1f,1.25f,1.5f,2f,2.5f,3f}){final float value=v;rows.add(CinemaMenu.choice(PlaybackPrefs.speedLabel(v),Math.abs(a.video.speed()-v)<.01f,()->{PlaybackPrefs.setSpeed(prefs,value);a.video.speed(value);}));}CinemaMenu.show(a,"播放速度",rows);}
  void aspect(){List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<FullscreenRules.MODES.length;i++){final String mode=FullscreenRules.MODES[i];rows.add(CinemaMenu.choice(FullscreenRules.LABELS[i],mode.equals(a.video.aspect),()->{prefs.edit().putString("aspectMode",mode).apply();a.video.aspect(mode);}));}CinemaMenu.show(a,"画面比例",rows);}
  void tracks(int type){List<CinemaMenu.Item> rows=new ArrayList<>();if(type==C.TRACK_TYPE_TEXT)rows.add(CinemaMenu.item("关闭字幕",()->{a.video.holdText=true;a.video.autoDone=true;a.video.selectTrack(type,null);SubtitleMemory.off(a);}));for(Media3VideoView.Track track:a.video.tracks(type))rows.add(CinemaMenu.choice(track.label,track.selected,()->{a.video.selectTrack(type,track);if(type==C.TRACK_TYPE_TEXT){a.video.holdText=true;a.video.autoDone=true;SubtitleMemory.named(a,track.label);}}));if(rows.isEmpty()){hint(type==C.TRACK_TYPE_TEXT?"片源还没有可选的文本字幕":"片源尚未返回可选择的音轨");return;}CinemaMenu.show(a,type==C.TRACK_TYPE_TEXT?"内嵌字幕":"音轨",rows);}
