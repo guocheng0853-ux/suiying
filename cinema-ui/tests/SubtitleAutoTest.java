@@ -103,6 +103,15 @@ public class SubtitleAutoTest {
   check(!poll(none,false,"eng",false,true,false,false,true,true,-1,"").searchAddons,"source sidecar exists: load it instead");
   check(!poll(none,true,"eng",false,false,false,false,true,true,-1,"").searchAddons,"user turned subtitles off");
   check(SubtitleAuto.addonQueryId("tt26598805:1:1","series").equals("tt26598805:1:1")&&SubtitleAuto.addonQueryId("tt0111161","movie").equals("tt0111161")&&SubtitleAuto.addonQueryId("tvbox:abc","series").isEmpty()&&SubtitleAuto.addonQueryId("tt26598805","series").isEmpty(),"addon query needs an IMDb id (with season:episode for series)");
-  System.out.println("PASS: vlcPoll waits until playback, late preferred embedded takes over, manual sidecar is not taken over, cue trim, headers.");
+  check(SubtitleAuto.takeSearchedSubtitle(true,2,false,false,true),"a subtitle the user picked replaces the open track");
+  check(!SubtitleAuto.takeSearchedSubtitle(false,2,false,false,false),"an automatic result does not cover an open embedded track");
+  check(!SubtitleAuto.takeSearchedSubtitle(false,-1,false,false,true),"an automatic result does not cover an embedded track already chosen this session");
+  check(!SubtitleAuto.takeSearchedSubtitle(false,-1,true,false,false)&&!SubtitleAuto.takeSearchedSubtitle(false,-1,false,true,false),"an automatic result leaves a visible sidecar or a manual choice");
+  check(SubtitleAuto.takeSearchedSubtitle(false,-1,false,false,false),"an automatic result loads only when no primary subtitle is on");
+  check(!SubtitleAuto.takeSearchedSubtitle(false,Integer.MIN_VALUE,false,false,false),"an unreadable track is not treated as empty");
+  String searchSrc=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/OnlineSubtitleSearch.java"));
+  check(searchSrc.contains("SubtitleAuto.takeSearchedSubtitle(false,TrackSelection.liveSpu(a),TrackSelection.cuesVisible(a),SubtitleMemory.held(a),TrackSelection.embeddedMarked(a))"),"automatic addon results ask before replacing the current subtitle");
+  check(trackSrc.contains("if(step.spu>=0)markEmbedded(a)"),"selecting an embedded track is remembered for the rest of the session");
+  System.out.println("PASS: vlcPoll waits until playback, late preferred embedded takes over, manual sidecar is not taken over, searched subtitles stay off an open track, cue trim, headers.");
  }
 }
