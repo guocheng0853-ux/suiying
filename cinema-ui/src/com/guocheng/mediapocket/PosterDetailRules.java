@@ -2,14 +2,42 @@ package com.guocheng.mediapocket;
 import org.json.*;import java.util.*;
 /**
  * 详情页方向 A 的文案和断点。不依赖 Android。
- * 宽屏把片源卡放在标题右侧，窄屏叠在按钮下面。技术字段只在片源里真有时才出现，路径不展示。
+ * 片源卡跟标题、按钮同一列：窄屏通栏，宽屏留在左侧，不浮到海报人物上。技术字段只在片源里真有时才出现，路径不展示。
  */
 final class PosterDetailRules {
  private PosterDetailRules(){}
  static final int WIDE_DP=720;
  static boolean wide(int widthDp){return widthDp>=WIDE_DP;}
+ /**
+  * 窄窗口信息列等于正文宽度（手机竖屏片源卡仍在按钮下面、通栏）。
+  * 宽窗口大约 42% 宽，不超过 560dp，卡片留在左侧信息区。
+  */
+ static int infoColumn(int widthPx,float density){if(widthPx<=0)return 0;float d=density<=0?1f:density;int widthDp=Math.round(widthPx/d);if(!wide(widthDp))return widthPx;int cap=Math.round(560*d),frac=Math.round(widthPx*0.42f),floor=Math.round(280*d);return Math.max(floor,Math.min(cap,frac));}
+ /** 平板横屏（宽，且高 ≥ 640dp）标题再往下，给海报主体留上半。手机竖屏 16%，矮的宽窗口（手机横屏）22%。 */
+ static float spacerFraction(int widthDp,int heightDp){if(wide(widthDp)&&heightDp>=640)return 0.30f;if(wide(widthDp))return 0.22f;return 0.16f;}
  /** 第一屏把标题压在海报下半。顶栏高度以下再留一点，避免和返回叠在一起。 */
- static int spacer(int screenPx,int headerPx,boolean wide){int want=Math.round(screenPx*(wide?0.26f:0.16f));int min=Math.max(0,headerPx)+Math.round(Math.max(0,screenPx)*0.02f);return Math.max(min,want);}
+ static int spacer(int screenPx,int headerPx,int widthPx,float density){float d=density<=0?1f:density;int widthDp=widthPx<=0?0:Math.round(widthPx/d),heightDp=screenPx<=0?0:Math.round(screenPx/d);int want=Math.round(Math.max(0,screenPx)*spacerFraction(widthDp,heightDp));int min=Math.max(0,headerPx)+Math.round(Math.max(0,screenPx)*0.02f);return Math.max(min,want);}
+ /**
+  * 详情页要不要画选集。剧集本身画自己的季。单集、季要回到所属剧，否则页面只有这一集，选集不会出现。
+  * 没有 SeriesId 时无法查询，不画空列表。电影不画。
+  */
+ static final class EpisodeList {
+  final boolean show;final String seriesId,seasonId,focusId;
+  EpisodeList(boolean show,String seriesId,String seasonId,String focusId){this.show=show;this.seriesId=seriesId==null?"":seriesId;this.seasonId=seasonId==null?"":seasonId;this.focusId=focusId==null?"":focusId;}
+ }
+ static EpisodeList episodes(String type,String id,String seriesId,String seasonId){String item=id==null?"":id,series=seriesId==null?"":seriesId,season=seasonId==null?"":seasonId;if("Series".equals(type))return new EpisodeList(true,item,"","");if("Season".equals(type))return new EpisodeList(!series.isEmpty(),series,item,"");if("Episode".equals(type))return new EpisodeList(!series.isEmpty(),series,season,item);return new EpisodeList(false,"","","");}
+ /** 打开单集时优先用它的季；对不上再退回第一季。 */
+ static String seasonId(JSONArray seasons,String prefer){if(seasons==null||seasons.length()==0)return "";if(prefer!=null&&!prefer.isEmpty()){for(int i=0;i<seasons.length();i++){JSONObject s=seasons.optJSONObject(i);if(s!=null&&prefer.equals(s.optString("Id")))return prefer;}}JSONObject first=seasons.optJSONObject(0);return first==null?"":first.optString("Id");}
+ /** 选集里按 Id 找到打开时的那一集。没有返回 -1，调用方再按进度决定主按钮。 */
+ static int focusIndex(JSONArray items,String focusId){if(items==null||focusId==null||focusId.isEmpty())return -1;for(int i=0;i<items.length();i++){JSONObject ep=items.optJSONObject(i);if(ep!=null&&focusId.equals(ep.optString("Id")))return i;}return -1;}
+ /** 从单集打开。补充加载失败时回到原单集页，不画剧的选集。 */
+ static final int PAGE_EPISODE=0,PAGE_SERIES=1,PAGE_ENRICH=2;
+ /**
+  * 从单集进来时，剧资料、季列表、选集都是可失败的补充。
+  * 剧资料失败、季请求失败、选集失败或空列表、focus 不在列表里，都回到原单集页（PAGE_EPISODE）。
+  * 四步都成功才画剧详情并选中这一集（PAGE_ENRICH）。不是从单集进来时保持剧详情流程（PAGE_SERIES）。
+  */
+ static int detailPage(boolean openedEpisode,boolean seriesItemOk,boolean seasonsOk,int episodeCount,int focusAt){if(!openedEpisode)return PAGE_SERIES;if(!seriesItemOk||!seasonsOk||episodeCount<=0||focusAt<0)return PAGE_EPISODE;return PAGE_ENRICH;}
  static String join(String sep,String... parts){StringBuilder b=new StringBuilder();if(parts==null)return "";for(String p:parts){if(p==null)continue;String t=p.trim();if(t.isEmpty())continue;if(b.length()>0)b.append(sep);b.append(t);}return b.toString();}
  /** Emby 的 100 纳秒刻度。21 分 21 秒这种长度保留秒。 */
  static String duration(long ticks){if(ticks<=0)return "";long sec=ticks/10_000_000L;if(sec<=0)return "";long h=sec/3600,m=(sec%3600)/60,s=sec%60;if(h>0){String out=h+"小时";if(m>0)out+=m+"分";if(s>0)out+=s+"秒";return out;}if(m>0&&s>0)return m+"分"+s+"秒";if(m>0)return m+"分钟";return s+"秒";}
