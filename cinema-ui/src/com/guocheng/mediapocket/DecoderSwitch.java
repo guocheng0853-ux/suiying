@@ -16,13 +16,26 @@ import java.util.Map;
 final class DecoderSwitch {
  private static int token;
  private DecoderSwitch(){}
- /** 成功返回 null，否则返回能直接给用户看的原因。 */
+ /** 成功返回 null，否则返回能直接给用户看的原因。解码档位切换仍走原路：先原位换 Media，不行再底座重建并重放档位。 */
  static String reopen(android.app.Activity a,String tier){
   String reason=once(a,tier);
   if(reason==null||!reason.startsWith("当前不是"))return reason;
   try{OnlineSubtitleSearch.call(a,"retryCurrentDecoder",new Class<?>[0]);}
   catch(Exception e){return "底座重开失败："+text(e);}
   return once(a,tier);
+ }
+ /** 改字幕样式的「重建」= 整页关闭重开。真机对照证实：freetype 样式只在 onCreate 建 LibVLC 实例时的全局选项里生效
+  * （media 级 :freetype-* 到不了 vout），retryCurrentDecoder 虽有 LibVLC 构造分支但真机重建后样式不变——
+  * 只有整页重开才换实例。底座重开自己恢复进度（关闭时 persist）并按偏好自动选轨，无需手工写回。 */
+ static String rebuild(android.app.Activity a,String tier){
+  try{
+   try{OnlineSubtitleSearch.call(a,"persist",new Class<?>[]{boolean.class},Boolean.FALSE);}catch(Exception ignored){}
+   android.content.Intent in=new android.content.Intent(a,a.getClass());
+   in.replaceExtras(a.getIntent());
+   a.startActivity(in);
+   a.finish();
+   return null;
+  }catch(Exception e){return text(e);}
  }
  static String once(android.app.Activity a,String tier){
   Object video=OnlineSubtitleSearch.field(a,"video");
@@ -48,6 +61,7 @@ final class DecoderSwitch {
    media.getClass().getMethod("setHWDecoderEnabled",boolean.class,boolean.class).invoke(media,PlayerOverlayRules.hwEnabled(tier),PlayerOverlayRules.directRendering(tier));
    Method add=media.getClass().getMethod("addOption",String.class);
    for(String option:PlayerOverlayRules.decodeOptions(tier,file,headers))add.invoke(media,option);
+   for(String option:SubtitleVlc.mediaOptions())add.invoke(media,option);
    invoke(player,"stop");
    Method setMedia=find(player.getClass(),"setMedia",1);if(setMedia==null)return "LibVLC 没有 setMedia";
    setMedia.invoke(player,media);

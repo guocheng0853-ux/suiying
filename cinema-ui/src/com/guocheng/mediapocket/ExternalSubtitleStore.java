@@ -8,6 +8,6 @@ final class ExternalSubtitleStore {
  static boolean isLocal(String path){return path!=null&&(path.startsWith("/")||path.startsWith("file:"));}
  static byte[] read(String path)throws IOException{File file=new File(path.startsWith("file:")?path.substring(5):path);if(!file.isFile())throw new IOException("找不到已保存的字幕");if(file.length()>2*1024*1024)throw new IOException("字幕文件过大");try(FileInputStream in=new FileInputStream(file);ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)out.write(b,0,n);return out.toByteArray();}}
  static String choiceKey(String id){return "subtitle.choice:"+(id==null?"":id);}
- static void remember(SharedPreferences p,String id,String path,String choice){if(p==null||id==null)return;p.edit().putString("subtitleUrl:"+id,path==null?"":path).putString(choiceKey(id),choice==null?"":choice).putBoolean("subtitleDisabled:"+id,false).apply();}
+ static void remember(SharedPreferences p,String id,String path,String choice){if(p==null||id==null)return;p.edit().putString("subtitleUrl:"+id,path==null?"":path).putString(choiceKey(id),choice==null?"":choice).putBoolean("subtitleDisabled:"+id,false).remove("subtitleSpu:"+id).remove("subtitleName:"+id).apply();}
  static String remembered(SharedPreferences p,String id){return p==null?"":p.getString("subtitleUrl:"+(id==null?"":id),"");}
 }

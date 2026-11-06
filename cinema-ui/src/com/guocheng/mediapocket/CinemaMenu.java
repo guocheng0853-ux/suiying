@@ -19,6 +19,13 @@ final class CinemaMenu {
  static Item value(String label,String value,Runnable action){return new Item(label,value,false,action);}
  static Item choice(String label,boolean selected,Runnable action){return new Item(label,null,selected,action);}
  private CinemaMenu(){}
+ /**
+  * 0.1.173：「更多」菜单从 ⋮ 按钮下面往下展开，不再弹在屏幕正中。点按钮时记下按钮；菜单里点一行打开的二级菜单
+  * （画面与解码、其他、音效…）在 ANCHOR_MS 内弹出也挂在同一个位置，看起来是同一个下拉菜单换了一页。
+  */
+ static java.lang.ref.WeakReference<View> anchor;static long anchorUntil;
+ static void anchor(View v){anchor=v==null?null:new java.lang.ref.WeakReference<>(v);anchorUntil=v==null?0:android.os.SystemClock.uptimeMillis()+GlassRules.ANCHOR_MS;}
+ static View anchorView(){View v=anchor==null?null:anchor.get();if(v==null||!v.isAttachedToWindow()||android.os.SystemClock.uptimeMillis()>anchorUntil)return null;return v;}
  static boolean blocked(Activity a){return (Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode())||PlayerGestures.locked(a);}
  /**
   * 弹出。rows 里可以混用 item/value/choice；点任意一行都会先收起再执行动作。
@@ -39,7 +46,9 @@ final class CinemaMenu {
   final android.app.Dialog dialog=new android.app.Dialog(a,android.R.style.Theme_Translucent_NoTitleBar);
   final FrameLayout scrim=new FrameLayout(a);scrim.setBackgroundColor(PlayerTheme.SCRIM);scrim.setClickable(true);
   final LinearLayout panel=new LinearLayout(a);panel.setOrientation(LinearLayout.VERTICAL);
-  GradientDrawable bg=new GradientDrawable();bg.setColor(PlayerTheme.surface(a));if(PlayerTheme.paper(a))bg.setStroke(dp(a,1),CinemaTheme.LINE);bg.setCornerRadius(dp(a,PlayerTheme.RADIUS_PANEL_DP));panel.setBackground(bg);
+  // 0.1.169：播放页里的菜单做成雾面玻璃窗口（面板大小的独立窗口，后面视频磨砂）；首页等浅色页面保持原来的纸面
+  final boolean glass=GlassRules.player(a instanceof PlayerActivity||a instanceof SystemPlayerActivity,PlayerTheme.paper(a));
+  GradientDrawable bg=new GradientDrawable();bg.setColor(PlayerTheme.surface(a));if(PlayerTheme.paper(a))bg.setStroke(dp(a,1),CinemaTheme.LINE);bg.setCornerRadius(dp(a,PlayerTheme.RADIUS_PANEL_DP));if(!glass)panel.setBackground(bg);
   panel.setPadding(dp(a,14),dp(a,12),dp(a,14),dp(a,14));
   int screen=decor.getWidth()>0?decor.getWidth():a.getResources().getDisplayMetrics().widthPixels;
   int width=Math.min(dp(a,PlayerTheme.MENU_WIDTH_MAX_DP),screen-dp(a,40));
@@ -62,6 +71,7 @@ final class CinemaMenu {
    if(!it.enabled)row.setAlpha(.72f);
    row.setOnClickListener(v->{
     if(!it.enabled){if(it.hint!=null&&!it.hint.isEmpty())Toast.makeText(a,it.hint,Toast.LENGTH_LONG).show();return;}
+    if(anchorView()!=null)anchor(anchorView());
     dismiss(a);
     // 动作挂在 Activity 的窗口上执行：菜单窗口关掉后它自己的 Handler 回调不一定还在
     if(it.action!=null)decor.postDelayed(()->{if(!a.isFinishing())it.action.run();},PlayerMotionRules.MENU_OUT_MS);
@@ -72,11 +82,15 @@ final class CinemaMenu {
   panel.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
   float vh=decor.getHeight()>0?decor.getHeight():a.getResources().getDisplayMetrics().heightPixels;
   int menuH=Math.min(panel.getMeasuredHeight(),Math.round(vh*0.78f));
+  // 下拉位置：右边和 ⋮ 按钮右边对齐，顶在按钮下面；超出屏幕就往里收，高度不超过按钮以下的空间
+  int[] dropAt=null;View hook=glass?anchorView():null;
+  if(hook!=null){int[] at=new int[2];hook.getLocationOnScreen(at);int[] base=new int[2];decor.getLocationOnScreen(base);int sh=decor.getHeight()>0?decor.getHeight():a.getResources().getDisplayMetrics().heightPixels;
+   dropAt=GlassRules.dropDown(screen,sh,width,at[0]-base[0]+hook.getWidth(),at[1]-base[1]+hook.getHeight(),dp(a,GlassRules.EDGE_DP),dp(a,GlassRules.DROP_GAP_DP));anchor(hook);}
+  if(dropAt!=null){menuH=Math.min(menuH,dropAt[2]);panel.setPivotX(width);panel.setPivotY(0);}
   FrameLayout center=new FrameLayout(a);
   ScrollView scroll=new ScrollView(a);scroll.setVerticalScrollBarEnabled(false);scroll.addView(panel,new FrameLayout.LayoutParams(width,-2));
-  center.addView(scroll,new FrameLayout.LayoutParams(width,menuH,Gravity.CENTER));
-  scrim.addView(center,new FrameLayout.LayoutParams(-1,-1));
-  scrim.setOnClickListener(v->cancel(a));
+  if(glass){scrim.setBackgroundColor(0);scrim.setClickable(false);scrim.addView(scroll,new FrameLayout.LayoutParams(width,menuH));dialog.setCanceledOnTouchOutside(true);dialog.setOnCancelListener(d->cancel(a));}
+  else{center.addView(scroll,new FrameLayout.LayoutParams(width,menuH,Gravity.CENTER));scrim.addView(center,new FrameLayout.LayoutParams(-1,-1));scrim.setOnClickListener(v->cancel(a));}
   dialog.setContentView(scrim);
   dialog.setCancelable(true);
   dialog.setOnKeyListener((d,code,e)->{if(code==KeyEvent.KEYCODE_BACK){if(e.getAction()==KeyEvent.ACTION_UP)cancel(a);return true;}return false;});
@@ -85,25 +99,27 @@ final class CinemaMenu {
    w.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0));
    w.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
    w.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN|WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS|WindowManager.LayoutParams.FLAG_FULLSCREEN);
-   w.setLayout(-1,-1);w.setWindowAnimations(0);
+   if(glass){Glass.window(a,w,PlayerTheme.RADIUS_PANEL_DP);WindowManager.LayoutParams g=w.getAttributes();
+    if(dropAt!=null){g.gravity=Gravity.TOP|Gravity.START;g.x=dropAt[0];g.y=dropAt[1];menuH=Math.min(menuH,dropAt[2]);g.dimAmount=GlassRules.DROP_DIM;}else{g.gravity=Gravity.CENTER;g.dimAmount=GlassRules.MENU_DIM;}
+    w.setLayout(width,menuH);w.setAttributes(g);w.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);}else w.setLayout(-1,-1);w.setWindowAnimations(0);
    if(body!=null&&hasInput(body))w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE|WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
    if(Build.VERSION.SDK_INT>=28){WindowManager.LayoutParams lp=w.getAttributes();lp.layoutInDisplayCutoutMode=a.getWindow().getAttributes().layoutInDisplayCutoutMode;w.setAttributes(lp);}
-   VideoFullscreen.dialog(a,w);
+   if(!glass)VideoFullscreen.dialog(a,w);
    // 先不可聚焦地显示并复制沉浸式标志，再恢复可聚焦（返回键），避免弹出时状态栏/导航栏闪出来
    w.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
   }
   try{dialog.show();}catch(Exception e){return false;}
-  if(w!=null){w.getDecorView().setSystemUiVisibility(decor.getSystemUiVisibility());w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);VideoFullscreen.dialog(a,w);}
+  if(w!=null){w.getDecorView().setSystemUiVisibility(decor.getSystemUiVisibility());w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);if(!glass)VideoFullscreen.dialog(a,w);}
   OPEN.put(a,new Open(dialog,scrim,onCancel));
-  scrim.setAlpha(0f);panel.setScaleX(0.92f);panel.setScaleY(0.92f);
+  scrim.setAlpha(0f);panel.setScaleX(0.92f);panel.setScaleY(0.92f);if(dropAt!=null)panel.setTranslationY(-dp(a,8));
   scrim.animate().alpha(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
-  panel.animate().scaleX(1f).scaleY(1f).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
+  panel.animate().scaleX(1f).scaleY(1f).translationY(0).setDuration(PlayerMotionRules.MENU_DIM_MS).start();
   return true;
  }
  static boolean hasInput(View v){if(v instanceof EditText)return true;if(v instanceof ViewGroup){ViewGroup g=(ViewGroup)v;for(int i=0;i<g.getChildCount();i++)if(hasInput(g.getChildAt(i)))return true;}return false;}
  static final class Open {final android.app.Dialog dialog;final FrameLayout scrim;final Runnable onCancel;Open(android.app.Dialog d,FrameLayout s,Runnable c){dialog=d;scrim=s;onCancel=c;}}
  /** 没选任何行就关掉：收起并执行 onCancel。 */
- static void cancel(final Activity a){Open o=OPEN.get(a);final Runnable after=o==null?null:o.onCancel;dismiss(a);if(after!=null)a.getWindow().getDecorView().postDelayed(()->{if(!a.isFinishing())after.run();},PlayerMotionRules.MENU_OUT_MS);}
+ static void cancel(final Activity a){anchor(null);Open o=OPEN.get(a);final Runnable after=o==null?null:o.onCancel;dismiss(a);if(after!=null)a.getWindow().getDecorView().postDelayed(()->{if(!a.isFinishing())after.run();},PlayerMotionRules.MENU_OUT_MS);}
  static final java.util.Map<Activity,Open> OPEN=new java.util.WeakHashMap<>();
  static boolean isOpen(Activity a){Open o=OPEN.get(a);return o!=null&&o.dialog.isShowing();}
  static void dismiss(final Activity a){

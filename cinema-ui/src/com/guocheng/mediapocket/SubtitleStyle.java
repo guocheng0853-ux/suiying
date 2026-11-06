@@ -15,28 +15,25 @@ final class SubtitleStyle {
  static int sizeSp(SharedPreferences p){return SIZE_SP[index(SIZES,p.getString("sub.size","normal"),1)];}
  static String look(SharedPreferences p){return LOOKS[index(LOOKS,p.getString("sub.look","shadow"),0)];}
  static int liftDp(SharedPreferences p){return LIFT_DP[index(LIFTS,p.getString("sub.lift","0"),0)];}
- static String label(Activity a){SharedPreferences p=prefs(a);return "字幕样式："+SIZE_LABELS[index(SIZES,p.getString("sub.size","normal"),1)]+" · "+LOOK_LABELS[index(LOOKS,look(p),0)].replaceAll("（.*）","")+" · "+LIFT_LABELS[index(LIFTS,p.getString("sub.lift","0"),0)];}
+ static SubtitlePrefs.Values values(SharedPreferences p){java.util.HashMap<String,String> m=new java.util.HashMap<>();if(p==null)return SubtitlePrefs.defaults();m.put("sub.size",p.getString("sub.size","normal"));m.put("sub.look",p.getString("sub.look","shadow"));m.put("sub.lift",p.getString("sub.lift","0"));m.put("sub.color",p.getString("sub.color","white"));m.put("sub.bold",String.valueOf(p.getBoolean("sub.bold",false)));m.put("sub.hdrDim",String.valueOf(p.getBoolean("sub.hdrDim",true)));m.put("sub.secondarySize",p.getString("sub.secondarySize","normal"));m.put("sub.secondaryLift",p.getString("sub.secondaryLift","2"));m.put("sub.offsetMs",String.valueOf(p.getInt("sub.offsetMs",0)));m.put("pref.subtitleOff",String.valueOf(p.getBoolean("pref.subtitleOff",false)));m.put("subtitleLanguage",p.getString("subtitleLanguage","zho"));return SubtitlePrefs.read(m);}
+ static String label(Activity a){return "字幕设置："+SubtitlePrefs.summary(values(prefs(a)));}
 
  /** baseHiddenPx：控制栏收起时字幕原本离底部的距离。 */
  /** HDR / 杜比视界片源：白字在 HDR 亮度下刺眼，默认调成浅灰（约 78% 亮度）。 */
  static boolean hdr(org.json.JSONObject stream){String k=stream==null?"":stream.optString("dolby.kind");return k.equals("hdr")||k.equals("p5")||k.equals("dv")||k.equals("dv-compatible");}
  static boolean hdrDim(Activity a){return prefs(a).getBoolean("sub.hdrDim",true);}
- static void style(Activity a,TextView tv,boolean controlsShown,int baseHiddenPx){style(a,tv,controlsShown,baseHiddenPx,false);}
- static void style(Activity a,TextView tv,boolean controlsShown,int baseHiddenPx,boolean hdr){if(tv==null)return;SharedPreferences p=prefs(a);float d=a.getResources().getDisplayMetrics().density;int size=sizeSp(p);String look=look(p);int lift=Math.round(liftDp(p)*d);boolean dim=hdr&&hdrDim(a);
-  String key=size+"|"+look+"|"+dim;if(!key.equals(tv.getTag(TAG))){tv.setTag(TAG,key);tv.setTextSize(size);tv.setTextColor(dim?0xffc8c8c8:0xffffffff);
-   if("box".equals(look)){GradientDrawable g=new GradientDrawable();g.setColor(0x99000000);g.setCornerRadius(6*d);tv.setBackground(g);tv.setShadowLayer(0,0,0,0);tv.setTypeface(Typeface.DEFAULT);}
+ static void style(Activity a,TextView tv,boolean controlsShown,int baseHiddenPx){style(a,tv,controlsShown,baseHiddenPx,false,false);}
+ static void style(Activity a,TextView tv,boolean controlsShown,int baseHiddenPx,boolean hdr){style(a,tv,controlsShown,baseHiddenPx,hdr,false);}
+ static void style(Activity a,TextView tv,boolean controlsShown,int baseHiddenPx,boolean hdr,boolean secondary){if(tv==null)return;SubtitlePrefs.Values v=values(prefs(a));float d=a.getResources().getDisplayMetrics().density;int size=SubtitlePrefs.sizeSp(secondary?v.secondarySize:v.size);String look=v.look;int lift=Math.round(SubtitlePrefs.liftDp(secondary?v.secondaryLift:v.lift)*d);boolean dim=hdr&&v.hdrDim;int color=dim?0xffc8c8c8:SubtitlePrefs.colorArgb(v.color);boolean bold=v.bold||"outline".equals(look);
+  String key=size+"|"+look+"|"+dim+"|"+color+"|"+bold+"|"+(secondary?1:0);if(!key.equals(tv.getTag(TAG))){tv.setTag(TAG,key);tv.setTextSize(size);tv.setTextColor(color);
+   if("box".equals(look)){GradientDrawable g=new GradientDrawable();g.setColor(0x99000000);g.setCornerRadius(6*d);tv.setBackground(g);tv.setShadowLayer(0,0,0,0);tv.setTypeface(bold?Typeface.DEFAULT_BOLD:Typeface.DEFAULT);}
    else if("outline".equals(look)){tv.setBackground(null);tv.setShadowLayer(4*d,0,0,0xff000000);tv.setTypeface(Typeface.DEFAULT_BOLD);}
-   else{tv.setBackground(null);tv.setShadowLayer(3*d,1,1,0xff000000);tv.setTypeface(Typeface.DEFAULT);}}
-  if(!controlsShown&&tv.getLayoutParams() instanceof FrameLayout.LayoutParams){FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)tv.getLayoutParams();int want=baseHiddenPx+lift;if(lp.bottomMargin!=want){lp.bottomMargin=want;tv.setLayoutParams(lp);}}}
+   else{tv.setBackground(null);tv.setShadowLayer(3*d,1,1,0xff000000);tv.setTypeface(bold?Typeface.DEFAULT_BOLD:Typeface.DEFAULT);}}
+  if((secondary||!controlsShown||SubtitleSettings.previewLiftPx>0)&&tv.getLayoutParams() instanceof FrameLayout.LayoutParams){FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)tv.getLayoutParams();int want=baseHiddenPx+lift+SubtitleSettings.previewLiftPx;if(lp.bottomMargin!=want){lp.bottomMargin=want;tv.setLayoutParams(lp);}}}
  static void apply(Activity a,TextView tv,boolean controlsShown){style(a,tv,controlsShown,Math.round(20*a.getResources().getDisplayMetrics().density),a instanceof SystemPlayerActivity&&hdr(((SystemPlayerActivity)a).source));}
  /** VLC 播放页：原版字幕控件 sub，控制栏收起时原版把它放在离底 24 像素处。 */
  static void applyVlc(Activity a){try{Object s=OnlineSubtitleSearch.field(a,"sub");if(!(s instanceof TextView))return;Object top=OnlineSubtitleSearch.field(a,"top");boolean shown=top instanceof View&&((View)top).getVisibility()==View.VISIBLE;style(a,(TextView)s,shown,24,hdr(TrackSelection.stream(a)));}catch(Exception ignored){}}
 
- static void menu(Activity a,Runnable done){List<CinemaMenu.Item> rows=new ArrayList<>();SharedPreferences p=prefs(a);
-  rows.add(CinemaMenu.item("字号："+SIZE_LABELS[index(SIZES,p.getString("sub.size","normal"),1)],()->pick(a,"sub.size","字幕字号",SIZES,SIZE_LABELS,"normal",done)));
-  rows.add(CinemaMenu.item("外观："+LOOK_LABELS[index(LOOKS,look(p),0)],()->pick(a,"sub.look","字幕外观",LOOKS,LOOK_LABELS,"shadow",done)));
-  rows.add(CinemaMenu.item("HDR 片源字幕调暗："+(hdrDim(a)?"开":"关"),()->{prefs(a).edit().putBoolean("sub.hdrDim",!hdrDim(a)).apply();if(done!=null)done.run();else menu(a,null);}));
-  rows.add(CinemaMenu.item("高度："+LIFT_LABELS[index(LIFTS,p.getString("sub.lift","0"),0)],()->pick(a,"sub.lift","字幕高度",LIFTS,LIFT_LABELS,"0",done)));
-  CinemaMenu.show(a,"字幕样式",rows);}
+ static void menu(Activity a,Runnable done){SubtitleSettings.open(a);if(done!=null)done.run();}
  static void pick(Activity a,String key,String title,String[] values,String[] labels,String def,Runnable done){List<CinemaMenu.Item> rows=new ArrayList<>();String cur=prefs(a).getString(key,def);for(int i=0;i<values.length;i++){final String v=values[i];rows.add(CinemaMenu.choice(labels[i],v.equals(cur),()->{prefs(a).edit().putString(key,v).apply();if(done!=null)done.run();else menu(a,null);}));}CinemaMenu.show(a,title,rows);}
 }

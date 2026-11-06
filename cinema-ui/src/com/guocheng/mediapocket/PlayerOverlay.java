@@ -45,7 +45,7 @@ final class PlayerOverlay {
   View legacyStatus=top.findViewWithTag("mp-status");if(legacyStatus!=null)top.removeView(legacyStatus);
   Button aspect=ensure(a,top,"mp-aspect",PlayerIcons.ASPECT,"画面比例",v->quickAspect(a));aspect.setOnLongClickListener(v->{aspectPicker(a);return true;});
   Button pip=findExact(top,"画中画");if(pip!=null)fit(a,pip,PlayerIcons.PIP,"画中画");
-  Button more=ensure(a,top,"mp-more",PlayerIcons.MORE,"更多",v->more(a));
+  Button more=ensure(a,top,"mp-more",PlayerIcons.MORE,"更多",v->{CinemaMenu.anchor(v);more(a);});
   View gap=findTag(top,"mp-top-gap");if(gap==null){gap=new View(a);gap.setTag("mp-top-gap");}
   View[] right=new View[]{gap,decoder,aspect,pip,more};for(View v:right){if(v==null)continue;if(v.getParent() instanceof ViewGroup&&v.getParent()!=top)((ViewGroup)v.getParent()).removeView(v);if(v.getParent()==top)top.removeView(v);top.addView(v);}
   slot(a,decoder,0);if(decoder!=null&&decoder.getVisibility()!=View.GONE)decoder.setVisibility(View.GONE);// 0.1.151：解码档位是排障用的设置，收进「更多」，顶栏只留图标
@@ -175,26 +175,33 @@ final class PlayerOverlay {
  static void dispatch(Activity a,String action){PlayerChrome.bump(a);if(PlayerOverlayRules.AUDIO.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.AUDIO);else if(PlayerOverlayRules.SUBTITLE.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.SUB);else if(PlayerOverlayRules.EPISODES.equals(action))PlayerSidePanel.open(a,PlayerSidePanel.EPISODES);}
  static void episodes(Activity a){JSONObject meta=meta(a);if(meta.has("fusion.config")&&EpisodeActions.list(meta).isEmpty()){PlaybackSitePicker.selectEpisode(a);return;}ArrayList<JSONObject> list=EpisodeActions.list(meta);if(list.isEmpty()){if(meta.has("fusion.config"))PlaybackSitePicker.selectEpisode(a);else toast(a,"没有可选择的剧集");return;}String cur=id(a);String[] labels=new String[list.size()];int selected=-1;for(int i=0;i<list.size();i++){labels[i]=EpisodeActions.label(list.get(i));if(cur.equals(list.get(i).optString("id")))selected=i;}java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<list.size();i++){final String next=list.get(i).optString("id");rows.add(CinemaMenu.choice(labels[i],cur.equals(next),()->{if(!next.isEmpty()&&!next.equals(cur))AutoNext.handoff(a,meta,next,type(a));}));}CinemaMenu.show(a,"选集",rows);}
  /** 0.1.93：只放播放器级设置。字幕获取、片源/版本/线路、章节、码率、定时、流信息都在右侧面板，不在这里重复。 */
- static void more(Activity a){ArrayList<String> labels=new ArrayList<>();ArrayList<Runnable> actions=new ArrayList<>();java.util.Map<String,String> hint=new java.util.HashMap<>();
-  labels.add(DanmuController.label(a));actions.add(()->DanmuController.menu(a));
-  // 0.1.97：解码只在顶栏芯片、音轨只在面板，不再打开原版「播放器」菜单；外部播放器单独一项
-  labels.add("线路与片源");hint.put("线路与片源","换线路、换版本、自动换源");actions.add(()->PlayerSidePanel.open(a,PlayerSidePanel.ROUTES));
-  // 0.1.151：解码档位和截图从画面上收进这里
-  {String dl="视频解码："+PlayerOverlayRules.decoderDisplay(PlayerOverlayRules.decoderLabel(currentTier(a),decodeKnown(a),decodeSoftware(a)));labels.add(dl);hint.put(dl,"硬解+ / 硬解 / 软解，画面异常或卡顿时换一档");actions.add(()->decodePicker(a));}
-  labels.add("截图");actions.add(()->capture(a));
-  labels.add(AudioEffects.label(a));actions.add(()->AudioEffects.menu(a));
-  labels.add("字幕样式");actions.add(()->SubtitleStyle.menu(a,null));
-  // 0.1.133：两个外部播放入口合成一个（从当前位置交给外部播放器）；解释放副标题
-  labels.add("用外部播放器打开");hint.put("用外部播放器打开","从当前位置继续，杜比视界颜色发紫发绿时用");actions.add(()->external(a));
-  labels.add("系统解码重播");hint.put("系统解码重播","实验功能，画面异常时换安卓自带解码器试试");actions.add(()->systemReplay(a));
-  labels.add("定时关闭");actions.add(()->PlayerSidePanel.sleepMenu(a));
-  labels.add("流信息");hint.put("流信息","分辨率、编码、码率、HDR 类型");actions.add(()->PlayerSidePanel.infoDialog(a));
-  labels.add("播放设置");actions.add(()->PlayerFeatureSettings.playback(a));
-  click(findExact(bar(a,"top"),"旋转"),"旋转",labels,actions);
-  labels.add("片头标记");actions.add(()->introMenu(a));
-  labels.add("调试信息");actions.add(()->DebugLog.show(a));
-  java.util.List<CinemaMenu.Item> rows=new ArrayList<>();for(int i=0;i<labels.size();i++)rows.add(hint.containsKey(labels.get(i))?CinemaMenu.detail(labels.get(i),hint.get(labels.get(i)),actions.get(i)):CinemaMenu.item(labels.get(i),actions.get(i)));rows.add(0,PlaybackDownload.menu(a,TrackSelection.stream(a),meta(a),id(a),name(a)));CinemaMenu.show(a,"更多",rows);
- }
+ /**
+  * 0.1.169「更多」重新整理（原来 16 行）。首屏只留常用的：音效、定时关闭、截图、能下载时才出现的下载、弹幕；
+  * 低频的收进两个二级菜单「画面与解码」「其他」。线路与片源、字幕设置在侧栏的「线路」「字幕」页里已经有，这里不再重复。
+  */
+ static void more(Activity a){java.util.List<CinemaMenu.Item> rows=new ArrayList<>();
+  rows.add(CinemaMenu.item(AudioEffects.label(a),()->AudioEffects.menu(a)));
+  rows.add(CinemaMenu.item(PlayerSidePanel.sleepLabel(),()->PlayerSidePanel.sleepMenu(a)));
+  rows.add(CinemaMenu.item("截图",()->capture(a)));
+  CinemaMenu.Item download=PlaybackDownload.menu(a,TrackSelection.stream(a),meta(a),id(a),name(a));if(download.enabled)rows.add(download);
+  rows.add(CinemaMenu.item(DanmuController.label(a),()->DanmuController.menu(a)));
+  String tier=PlayerOverlayRules.decoderDisplay(PlayerOverlayRules.decoderLabel(currentTier(a),decodeKnown(a),decodeSoftware(a)));
+  rows.add(CinemaMenu.detail("画面与解码 ›","解码 "+tier+" · 系统解码 · 外部播放器 · 流信息",()->picture(a)));
+  rows.add(CinemaMenu.detail("其他 ›","播放设置 · 片头标记 · 调试信息",()->others(a)));
+  CinemaMenu.show(a,"更多",rows);}
+ static void picture(Activity a){java.util.List<CinemaMenu.Item> rows=new ArrayList<>();
+  String tier=PlayerOverlayRules.decoderDisplay(PlayerOverlayRules.decoderLabel(currentTier(a),decodeKnown(a),decodeSoftware(a)));
+  rows.add(CinemaMenu.detail("视频解码："+tier,"画面异常或卡顿时换一档",()->decodePicker(a)));
+  rows.add(CinemaMenu.detail("系统解码重播","实验功能，画面异常时换安卓自带解码器试试",()->systemReplay(a)));
+  rows.add(CinemaMenu.detail("用外部播放器打开","从当前位置继续，杜比视界颜色发紫发绿时用",()->external(a)));
+  Button rotate=findExact(bar(a,"top"),"旋转");if(rotate!=null)rows.add(CinemaMenu.item("旋转屏幕",rotate::performClick));
+  rows.add(CinemaMenu.detail("流信息","分辨率、编码、码率、HDR 类型",()->PlayerSidePanel.infoDialog(a)));
+  CinemaMenu.show(a,"画面与解码",rows);}
+ static void others(Activity a){java.util.List<CinemaMenu.Item> rows=new ArrayList<>();
+  rows.add(CinemaMenu.item("播放设置",()->PlayerFeatureSettings.playback(a)));
+  rows.add(CinemaMenu.item("片头标记",()->introMenu(a)));
+  rows.add(CinemaMenu.item("调试信息",()->DebugLog.show(a)));
+  CinemaMenu.show(a,"其他",rows);}
  /** 原版「更多播放设置」（自动换源、换下一个源、等待时间、连接详情）的按钮，放到线路页里用。 */
  static Button baseMore(Activity a){Button b=findExact(scroll(bar(a,"bottom")),"更多");return b!=null&&b.getTag() instanceof String&&((String)b.getTag()).startsWith("mp-")?null:b;}
  /** 0.1.111：把当前片源交给安卓自带解码器从当前位置重播（杜比视界 P5 等 VLC 显示异常的片源）。 */
@@ -276,7 +283,7 @@ final class PlayerOverlay {
   * A tablet uses the landscape immersive edge: the cutout only, even if the window stays portrait.
   */
  static int[] chromeInsets(Activity a,View root){int[] bars=insets(root);if(a==null)return bars;int sw=a.getResources().getConfiguration().smallestScreenWidthDp;if(!VideoFullscreenRules.tablet(sw))return bars;boolean portrait=a.getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_PORTRAIT;int[] cut=cutoutInsets(root);return new int[]{VideoFullscreenRules.chromeEdge(bars[0],cut[0],sw,portrait),VideoFullscreenRules.chromeEdge(bars[1],cut[1],sw,portrait),VideoFullscreenRules.chromeEdge(bars[2],cut[2],sw,portrait),VideoFullscreenRules.chromeEdge(bars[3],cut[3],sw,portrait)};}
- static void placeSides(Activity a,int left,int right){LinearLayout top=bar(a,"top"),bottom=bar(a,"bottom");View root=root(a);boolean pip=Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode();boolean chrome=top!=null&&!pip&&!PlayerGestures.locked(a)&&top.getVisibility()==View.VISIBLE;View shot=root==null?null:root.findViewWithTag("mp-shot");if(shot!=null)shot.setVisibility(chrome?View.VISIBLE:View.GONE);if(top==null||bottom==null||root==null||top.getBottom()<=0||bottom.getTop()<=top.getBottom())return;int w=root.getWidth()<=0?a.getResources().getDisplayMetrics().widthPixels:root.getWidth(),h=root.getHeight()<=0?a.getResources().getDisplayMetrics().heightPixels:root.getHeight();int[] cut=chromeInsets(a,root);PlayerLayoutMetrics.Overlay m=PlayerLayoutMetrics.measure(w,h,a.getResources().getDisplayMetrics().density,cut[0],cut[1],cut[2],cut[3],true,true,true,false,top.getBottom(),bottom.getTop());int side=m.margin;if(shot!=null)shot.setVisibility(View.GONE);PlayerGestures g=PlayerGestures.ALL.get(a);move(g==null?null:g.lockButton,side,(m.camera.y+m.lock.y)/2,m.touch);
+ static void placeSides(Activity a,int left,int right){LinearLayout top=bar(a,"top"),bottom=bar(a,"bottom");View root=root(a);boolean pip=Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode();boolean chrome=top!=null&&!pip&&!PlayerGestures.locked(a)&&top.getVisibility()==View.VISIBLE;View shot=root==null?null:root.findViewWithTag("mp-shot");if(shot!=null)shot.setVisibility(chrome?View.VISIBLE:View.GONE);if(top==null||bottom==null||root==null||top.getBottom()<=0||bottom.getTop()<=top.getBottom())return;int w=root.getWidth()<=0?a.getResources().getDisplayMetrics().widthPixels:root.getWidth(),h=root.getHeight()<=0?a.getResources().getDisplayMetrics().heightPixels:root.getHeight();int[] cut=chromeInsets(a,root);PlayerLayoutMetrics.Overlay m=PlayerLayoutMetrics.measure(w,h,a.getResources().getDisplayMetrics().density,cut[0],cut[1],cut[2],cut[3],true,true,true,false,top.getBottom(),bottom.getTop());int side=m.margin;if(shot!=null)shot.setVisibility(View.GONE);PlayerGestures g=PlayerGestures.ALL.get(a);int key=dp(a,PlayerGlassRules.KEY_DP);move(g==null?null:g.lockButton,side,Math.max(0,(h-key)/2),key);// 0.1.169：和正中播放键同大小、同一水平线
   PlayerChrome chromeBar=PlayerChrome.ALL.get(a);if(chromeBar!=null&&chromeBar.speed!=null&&m.speed!=null){FrameLayout.LayoutParams lp=lp(chromeBar.speed);if(lp!=null){if(lp.width!=m.speed.w||lp.height!=m.speed.h||lp.topMargin!=m.speed.y||lp.rightMargin!=side||lp.gravity!=(Gravity.END|Gravity.TOP)){lp.gravity=Gravity.END|Gravity.TOP;lp.width=m.speed.w;lp.height=m.speed.h;lp.topMargin=m.speed.y;lp.rightMargin=side;lp.leftMargin=0;lp.bottomMargin=0;chromeBar.speed.setLayoutParams(lp);}}}
  }
  static void move(View v,int x,int y,int w){if(v==null)return;FrameLayout.LayoutParams lp=lp(v);if(lp==null)return;int gravity=Gravity.START|Gravity.TOP;v.setTranslationX(0);v.setTranslationY(0);if(lp.leftMargin==x&&lp.topMargin==y&&lp.width==w&&lp.height==w&&lp.gravity==gravity)return;lp.gravity=gravity;lp.width=w;lp.height=w;lp.leftMargin=x;lp.rightMargin=0;lp.topMargin=y;lp.bottomMargin=0;v.setLayoutParams(lp);}

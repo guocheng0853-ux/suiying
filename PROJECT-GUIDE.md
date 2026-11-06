@@ -1,5 +1,9 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
+> 0.1.173（code 174）：字幕在没有手动外挂、也没有记住的选择时，开播先打开偏好语言的内嵌；关掉某一集之后这一集保持关闭。字幕设置可调字号、颜色、粗体、描边或底框、位置、第二字幕和延迟。播放页里选集可以直接选片源再起播，不必退回详情页。「更多」改成从按钮下展开的菜单，侧栏是雾面玻璃。普通下一集不会带上一次在播放页选中的片源。自动搜到的插件字幕不会关掉已经打开的内嵌。没有改签名配置。JVM 见 `cinema-ui/VALIDATION.json`。没有打本版签名包，没有真机点选。
+
+> 0.1.169（code 170）：没手动加字幕、也没记住选择时，开播先打开偏好语言的内嵌字幕；关掉某一集之后这一集不再被强制打开。字幕设置可调字号、颜色、粗体、描边或底框、位置、第二字幕的字号和位置，以及字幕延迟。简体 / 繁体可分开偏好。VLC 与内置播放器都只能同时解一条内嵌字幕，第二字幕用外挂文本叠上去。
+
 > 0.1.168（code 169）：详情页「跳至」和换集主视觉。Emby 按 IndexNumber，影视仓先解析选集名再按列表序号。Emby 选集瓦片补 ImageTags，并按 Thumb → Primary → SeriesPrimary → 系列海报兜底，不批量抽帧。不占用 0.1.166。JVM 101 项通过。没有签名包，没有真机点选。见 `docs/handoff/detail-effects-0168.md`。
 
 > 0.1.167（code 168）：Emby 与影视仓详情改成同一套沉浸海报（方向 A）。跳号原因：避开 zcode 测试修补，不占用 0.1.166 / versionCode 167。JVM 101 项通过。没有签名包，没有真机点选。见 `docs/handoff/detail-poster-0167.md`。
@@ -52,7 +56,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 101 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 109 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |

@@ -4,6 +4,8 @@ import java.util.*;
 final class PlayerGlassRules {
  /** 0.1.151：正中不再显示 ±N 跳秒键（双击左右三分之一跳秒）。 */
  static final boolean SKIP_KEYS=false;
+ /** 0.1.169：左侧锁和正中播放 / 暂停同一大小（点按区 64dp、图形 36dp），并且在同一条水平线上（都在画面垂直正中）。 */
+ static final int KEY_DP=64,KEY_ICON_DP=36;
  /** 原速时倍速标签的白（72%）。 */
  static final int QUIET_TEXT=0xB8FFFFFF;
  /** 倍速标签：1.0× 用普通白字，改过倍速才用强调色，提醒「现在不是原速」。 */
