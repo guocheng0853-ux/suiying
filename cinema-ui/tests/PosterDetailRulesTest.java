@@ -43,7 +43,6 @@ public class PosterDetailRulesTest {
   check(PosterDetailRules.fusionStill("第1集 http://cdn/ep1.jpg","http://a/1.mp4","http://a/vod.jpg").equals("http://cdn/ep1.jpg"),"image in the episode name");
   check(PosterDetailRules.fusionStill("第1集","http://cdn/still.png?x=1","http://a/vod.jpg").equals("http://cdn/still.png?x=1"),"play url that is itself an image");
   check(PosterDetailRules.fusionStill("第2集","http://a/ep.mp4","http://a/vod.jpg").equals("http://a/vod.jpg"),"do not invent a still from the episode number");
-  check(!PosterDetailRules.cardBesideTitle(360)&&!PosterDetailRules.cardBesideTitle(1200),"source card stays in the info column on phone and tablet");
   check(PosterDetailRules.infoColumn(1080,3f)==1080,"phone column is the full width");
   int tabletColumn=PosterDetailRules.infoColumn(3000,2.625f);
   check(tabletColumn<3000&&tabletColumn==Math.round(3000*0.42f),"tablet column is the left 42%, got "+tabletColumn);
@@ -64,6 +63,12 @@ public class PosterDetailRulesTest {
   check(PosterDetailRules.seasonId(seasonRows,"season2").equals("season2")&&PosterDetailRules.seasonId(seasonRows,"missing").equals("season1")&&PosterDetailRules.seasonId(null,"").isEmpty(),"prefer the opened season, else the first");
   JSONArray focusRows=new JSONArray().put(new JSONObject().put("Id","a")).put(new JSONObject().put("Id","e46"));
   check(PosterDetailRules.focusIndex(focusRows,"e46")==1&&PosterDetailRules.focusIndex(focusRows,"nope")==-1&&PosterDetailRules.focusIndex(focusRows,"")==-1,"focus uses the episode id");
-  System.out.println("PASS: poster detail rules (wide, duration, episode meta, jump, fusion stills, tracks without paths, tablet column, episode list).");
+  check(PosterDetailRules.detailPage(true,false,true,8,1)==PosterDetailRules.PAGE_EPISODE,"series item failure keeps the opened episode");
+  check(PosterDetailRules.detailPage(true,true,false,8,1)==PosterDetailRules.PAGE_EPISODE,"season request failure keeps the opened episode");
+  check(PosterDetailRules.detailPage(true,true,true,0,-1)==PosterDetailRules.PAGE_EPISODE,"failed or empty episode list keeps the opened episode");
+  check(PosterDetailRules.detailPage(true,true,true,8,-1)==PosterDetailRules.PAGE_EPISODE,"missing focus id keeps the opened episode");
+  check(PosterDetailRules.detailPage(true,true,true,8,1)==PosterDetailRules.PAGE_ENRICH,"complete supplement shows the series and selects the episode");
+  check(PosterDetailRules.detailPage(false,false,false,0,-1)==PosterDetailRules.PAGE_SERIES,"opening a series is not the episode fallback");
+  System.out.println("PASS: poster detail rules (wide, duration, episode meta, jump, fusion stills, tracks without paths, tablet column, episode list, episode fallback).");
  }
 }

@@ -9,11 +9,6 @@ final class PosterDetailRules {
  static final int WIDE_DP=720;
  static boolean wide(int widthDp){return widthDp>=WIDE_DP;}
  /**
-  * 片源卡和标题、按钮同一列，不再在宽屏另起一列浮到海报人物上。
-  * 宽窄都走信息列。参数留着，避免以后又按宽度把卡片挪回画面中央。
-  */
- static boolean cardBesideTitle(int widthDp){return false;}
- /**
   * 窄窗口信息列等于正文宽度（手机竖屏片源卡仍在按钮下面、通栏）。
   * 宽窗口大约 42% 宽，不超过 560dp，卡片留在左侧信息区。
   */
@@ -35,6 +30,14 @@ final class PosterDetailRules {
  static String seasonId(JSONArray seasons,String prefer){if(seasons==null||seasons.length()==0)return "";if(prefer!=null&&!prefer.isEmpty()){for(int i=0;i<seasons.length();i++){JSONObject s=seasons.optJSONObject(i);if(s!=null&&prefer.equals(s.optString("Id")))return prefer;}}JSONObject first=seasons.optJSONObject(0);return first==null?"":first.optString("Id");}
  /** 选集里按 Id 找到打开时的那一集。没有返回 -1，调用方再按进度决定主按钮。 */
  static int focusIndex(JSONArray items,String focusId){if(items==null||focusId==null||focusId.isEmpty())return -1;for(int i=0;i<items.length();i++){JSONObject ep=items.optJSONObject(i);if(ep!=null&&focusId.equals(ep.optString("Id")))return i;}return -1;}
+ /** 从单集打开。补充加载失败时回到原单集页，不画剧的选集。 */
+ static final int PAGE_EPISODE=0,PAGE_SERIES=1,PAGE_ENRICH=2;
+ /**
+  * 从单集进来时，剧资料、季列表、选集都是可失败的补充。
+  * 剧资料失败、季请求失败、选集失败或空列表、focus 不在列表里，都回到原单集页（PAGE_EPISODE）。
+  * 四步都成功才画剧详情并选中这一集（PAGE_ENRICH）。不是从单集进来时保持剧详情流程（PAGE_SERIES）。
+  */
+ static int detailPage(boolean openedEpisode,boolean seriesItemOk,boolean seasonsOk,int episodeCount,int focusAt){if(!openedEpisode)return PAGE_SERIES;if(!seriesItemOk||!seasonsOk||episodeCount<=0||focusAt<0)return PAGE_EPISODE;return PAGE_ENRICH;}
  static String join(String sep,String... parts){StringBuilder b=new StringBuilder();if(parts==null)return "";for(String p:parts){if(p==null)continue;String t=p.trim();if(t.isEmpty())continue;if(b.length()>0)b.append(sep);b.append(t);}return b.toString();}
  /** Emby 的 100 纳秒刻度。21 分 21 秒这种长度保留秒。 */
  static String duration(long ticks){if(ticks<=0)return "";long sec=ticks/10_000_000L;if(sec<=0)return "";long h=sec/3600,m=(sec%3600)/60,s=sec%60;if(h>0){String out=h+"小时";if(m>0)out+=m+"分";if(s>0)out+=s+"秒";return out;}if(m>0&&s>0)return m+"分"+s+"秒";if(m>0)return m+"分钟";return s+"秒";}
