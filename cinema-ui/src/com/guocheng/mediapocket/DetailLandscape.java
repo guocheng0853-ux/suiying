@@ -10,6 +10,16 @@ final class DetailLandscape {
  static boolean on(Activity a){android.util.DisplayMetrics m=a.getResources().getDisplayMetrics();return m.widthPixels>m.heightPixels;}
  static int dp(Activity a,int v){return Math.round(v*a.getResources().getDisplayMetrics().density);}
 
+ static final int POSTER_EDGE=0x6d705072,BASE_BOTTOM=0x6d705073,SAVED_BG=0x6d705074,BASE_TOP=0x6d705075;
+ static boolean poster(View root){return root!=null&&"1".equals(String.valueOf(root.getTag(POSTER_EDGE)));}
+ /** 详情海报铺到系统栏下面。根布局不再为状态栏 / 导航栏留白，否则浅色页面底会在栏和海报之间露出一条白边。返回按钮抬到海报之上，正文自己避开 inset。 */
+ static void posterEdge(Activity a,LinearLayout root,boolean on){if(a==null||root==null||a.getWindow()==null)return;
+  if(on){if(!(root.getTag(SAVED_BG) instanceof Integer)){int bg=root.getBackground() instanceof android.graphics.drawable.ColorDrawable?((android.graphics.drawable.ColorDrawable)root.getBackground()).getColor():0xff080706;root.setTag(SAVED_BG,bg);}root.setTag(POSTER_EDGE,"1");root.setBackgroundColor(0xff080706);a.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(0xff080706));a.getWindow().getDecorView().setBackgroundColor(0xff080706);a.getWindow().setStatusBarColor(0);a.getWindow().setNavigationBarColor(0);if(Build.VERSION.SDK_INT>=29)a.getWindow().setNavigationBarContrastEnforced(false);if(Build.VERSION.SDK_INT>=35)a.getWindow().setStatusBarContrastEnforced(false);if(Build.VERSION.SDK_INT>=30)a.getWindow().setDecorFitsSystemWindows(false);}
+  else{root.setTag(POSTER_EDGE,null);Object saved=root.getTag(SAVED_BG);int color=saved instanceof Integer?(Integer)saved:0xff080706;root.setBackgroundColor(color);a.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(color));a.getWindow().getDecorView().setBackgroundColor(color);a.getWindow().setStatusBarColor(color);a.getWindow().setNavigationBarColor(color);if(Build.VERSION.SDK_INT>=29)a.getWindow().setNavigationBarContrastEnforced(true);View header=root.getChildCount()>0?root.getChildAt(0):null;if(header!=null){header.setTranslationZ(0);header.setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND);}}
+  WindowInsets current=root.getRootWindowInsets();if(current!=null)root.dispatchApplyWindowInsets(current);else root.requestApplyInsets();
+ }
+ static int inset(WindowInsets insets,int edge){int legacy=edge==0?insets.getSystemWindowInsetLeft():edge==1?insets.getSystemWindowInsetTop():edge==2?insets.getSystemWindowInsetRight():insets.getSystemWindowInsetBottom();if(Build.VERSION.SDK_INT>=30){android.graphics.Insets c=insets.getInsets(WindowInsets.Type.systemBars()|WindowInsets.Type.displayCutout());int typed=edge==0?c.left:edge==1?c.top:edge==2?c.right:c.bottom;return Math.max(legacy,typed);}if(Build.VERSION.SDK_INT>=28&&insets.getDisplayCutout()!=null){android.view.DisplayCutout cut=insets.getDisplayCutout();int cutout=edge==0?cut.getSafeInsetLeft():edge==1?cut.getSafeInsetTop():edge==2?cut.getSafeInsetRight():cut.getSafeInsetBottom();return Math.max(legacy,cutout);}return legacy;}
+ static void tuck(Activity a,LinearLayout root,View header){if(header!=null){header.setOutlineProvider(null);header.setTranslationZ(dp(a,8));}View stage=null;for(int i=0;i<root.getChildCount();i++){View c=root.getChildAt(i);if("mp-poster".equals(c.getTag()))stage=c;}if(stage==null||!(stage.getLayoutParams() instanceof LinearLayout.LayoutParams))return;int h=header==null?0:header.getHeight();if(h<=0)h=(header==null?0:header.getPaddingTop())+dp(a,48);LinearLayout.LayoutParams sl=(LinearLayout.LayoutParams)stage.getLayoutParams();int parentH=root.getHeight();boolean grow=parentH>0&&(sl.height!=parentH||sl.weight!=0f);if(sl.topMargin!=-h||grow){sl.topMargin=-h;if(parentH>0){sl.height=parentH;sl.weight=0f;}stage.setLayoutParams(sl);}}
  /** 根布局不再带左右内边距（否则通栏背景会被 ScrollView 裁成两边留缝）；左右边距改给页头、状态行和正文，并加上挖孔 / 导航栏的安全区。 */
  static void window(Activity a,LinearLayout root,View header,View status,LinearLayout body){
   FullscreenMode.immersive(a);
@@ -17,11 +27,12 @@ final class DetailLandscape {
   int bg=root.getBackground() instanceof android.graphics.drawable.ColorDrawable?((android.graphics.drawable.ColorDrawable)root.getBackground()).getColor():0xff10343e;
   a.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(bg));
   if(Build.VERSION.SDK_INT>=30)a.getWindow().setDecorFitsSystemWindows(false);else{View decor=a.getWindow().getDecorView();decor.setSystemUiVisibility(decor.getSystemUiVisibility()|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);}
-  int top=root.getPaddingTop();root.setPadding(0,top,0,0);
+  int top=root.getPaddingTop();root.setTag(BASE_TOP,top);if(body!=null)body.setTag(BASE_BOTTOM,body.getPaddingBottom());root.setPadding(0,top,0,0);
   apply(a,header,status,body,0,0);
-  root.setOnApplyWindowInsetsListener((v,insets)->{root.setPadding(0,top+insets.getSystemWindowInsetTop(),0,insets.getSystemWindowInsetBottom());int l=insets.getSystemWindowInsetLeft(),r=insets.getSystemWindowInsetRight();
-   if(Build.VERSION.SDK_INT>=28&&insets.getDisplayCutout()!=null){l=Math.max(l,insets.getDisplayCutout().getSafeInsetLeft());r=Math.max(r,insets.getDisplayCutout().getSafeInsetRight());}
-   apply(a,header,status,body,l,r);return insets;});
+  root.setOnApplyWindowInsetsListener((v,insets)->{int topInset=inset(insets,1),bottomInset=inset(insets,3),l=inset(insets,0),r=inset(insets,2);
+   if(poster(root)){root.setPadding(0,0,0,0);apply(a,header,status,body,l,r);if(header!=null)header.setPadding(header.getPaddingLeft(),topInset,header.getPaddingRight(),header.getPaddingBottom());int base=body!=null&&body.getTag(BASE_BOTTOM) instanceof Integer?(Integer)body.getTag(BASE_BOTTOM):0;if(body!=null)body.setPadding(body.getPaddingLeft(),body.getPaddingTop(),body.getPaddingRight(),base+bottomInset);tuck(a,root,header);if(header!=null)header.post(()->{if(poster(root))tuck(a,root,header);});}
+   else{int baseTop=root.getTag(BASE_TOP) instanceof Integer?(Integer)root.getTag(BASE_TOP):top;root.setPadding(0,baseTop+topInset,0,bottomInset);apply(a,header,status,body,l,r);if(header!=null)header.setPadding(header.getPaddingLeft(),0,header.getPaddingRight(),header.getPaddingBottom());if(body!=null&&body.getTag(BASE_BOTTOM) instanceof Integer)body.setPadding(body.getPaddingLeft(),body.getPaddingTop(),body.getPaddingRight(),(Integer)body.getTag(BASE_BOTTOM));}
+   return insets;});
  }
  /** Saved content insets. Independent of the "mp-split" string tag, and high enough to pass View.setTag(int). */
  static final int PAD_TAG=0x6d705064;

@@ -43,6 +43,27 @@ public class PosterDetailRulesTest {
   check(PosterDetailRules.fusionStill("第1集 http://cdn/ep1.jpg","http://a/1.mp4","http://a/vod.jpg").equals("http://cdn/ep1.jpg"),"image in the episode name");
   check(PosterDetailRules.fusionStill("第1集","http://cdn/still.png?x=1","http://a/vod.jpg").equals("http://cdn/still.png?x=1"),"play url that is itself an image");
   check(PosterDetailRules.fusionStill("第2集","http://a/ep.mp4","http://a/vod.jpg").equals("http://a/vod.jpg"),"do not invent a still from the episode number");
-  System.out.println("PASS: poster detail rules (wide, duration, episode meta, jump, fusion stills, tracks without paths).");
+  check(!PosterDetailRules.cardBesideTitle(360)&&!PosterDetailRules.cardBesideTitle(1200),"source card stays in the info column on phone and tablet");
+  check(PosterDetailRules.infoColumn(1080,3f)==1080,"phone column is the full width");
+  int tabletColumn=PosterDetailRules.infoColumn(3000,2.625f);
+  check(tabletColumn<3000&&tabletColumn==Math.round(3000*0.42f),"tablet column is the left 42%, got "+tabletColumn);
+  check(Math.abs(PosterDetailRules.spacerFraction(400,800)-0.16f)<0.001f,"phone portrait spacer");
+  check(Math.abs(PosterDetailRules.spacerFraction(800,400)-0.22f)<0.001f,"short wide spacer");
+  check(Math.abs(PosterDetailRules.spacerFraction(1143,808)-0.30f)<0.001f,"tablet landscape spacer");
+  check(PosterDetailRules.spacer(2120,147,3000,2.625f)==Math.round(2120*0.30f),"tablet spacer clears the hero subject");
+  PosterDetailRules.EpisodeList movie=PosterDetailRules.episodes("Movie","m","","");
+  check(!movie.show,"movie has no episode list");
+  PosterDetailRules.EpisodeList seriesList=PosterDetailRules.episodes("Series","s1","","");
+  check(seriesList.show&&seriesList.seriesId.equals("s1")&&seriesList.focusId.isEmpty()&&seriesList.seasonId.isEmpty(),"series lists its own seasons");
+  PosterDetailRules.EpisodeList opened=PosterDetailRules.episodes("Episode","e46","s1","season1");
+  check(opened.show&&opened.seriesId.equals("s1")&&opened.seasonId.equals("season1")&&opened.focusId.equals("e46"),"episode detail opens the parent series and keeps the episode");
+  check(!PosterDetailRules.episodes("Episode","e1","","").show,"episode without SeriesId cannot query a list");
+  PosterDetailRules.EpisodeList seasonList=PosterDetailRules.episodes("Season","season2","s1","");
+  check(seasonList.show&&seasonList.seriesId.equals("s1")&&seasonList.seasonId.equals("season2")&&seasonList.focusId.isEmpty(),"season detail locks to that season");
+  JSONArray seasonRows=new JSONArray().put(new JSONObject().put("Id","season1")).put(new JSONObject().put("Id","season2"));
+  check(PosterDetailRules.seasonId(seasonRows,"season2").equals("season2")&&PosterDetailRules.seasonId(seasonRows,"missing").equals("season1")&&PosterDetailRules.seasonId(null,"").isEmpty(),"prefer the opened season, else the first");
+  JSONArray focusRows=new JSONArray().put(new JSONObject().put("Id","a")).put(new JSONObject().put("Id","e46"));
+  check(PosterDetailRules.focusIndex(focusRows,"e46")==1&&PosterDetailRules.focusIndex(focusRows,"nope")==-1&&PosterDetailRules.focusIndex(focusRows,"")==-1,"focus uses the episode id");
+  System.out.println("PASS: poster detail rules (wide, duration, episode meta, jump, fusion stills, tracks without paths, tablet column, episode list).");
  }
 }

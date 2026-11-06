@@ -1,8 +1,8 @@
 package com.guocheng.mediapocket;
 import android.app.Activity;import android.graphics.drawable.GradientDrawable;import android.os.Build;import android.view.*;import android.widget.*;
 /**
- * 方向 A：海报铺满，标题和播放在左下，片源卡在宽屏右侧、窄屏下面。
- * 手机和小平板是同一套，只按窗口宽度决定片源卡并排还是换行。离开详情时 restore 把滚动区放回去。
+ * 方向 A：海报铺满到系统栏后面，标题和播放在左下。片源卡跟标题、按钮同一列，不浮在人物上。
+ * 宽屏这一列大约 42% 宽，窄屏通栏。离开详情时 restore 把滚动区放回去。
  */
 final class PosterDetail {
  static final int CHROME=0x6d70506f,BACK_TEXT=0x6d705070,BACK_W=0x6d705071;
@@ -23,16 +23,16 @@ final class PosterDetail {
  static ImageView mount(Activity a,LinearLayout body,int card,boolean light){if(!(body.getParent() instanceof ScrollView))return new ImageView(a);ScrollView sv=(ScrollView)body.getParent();if(sv.getParent() instanceof FrameLayout&&"mp-poster".equals(((FrameLayout)sv.getParent()).getTag())){View art=((FrameLayout)sv.getParent()).findViewWithTag("mp-poster-art");return art instanceof ImageView?(ImageView)art:new ImageView(a);}
   LinearLayout root=(LinearLayout)sv.getParent();int idx=root.indexOfChild(sv);ViewGroup.LayoutParams lp=sv.getLayoutParams();root.removeView(sv);
   FrameLayout stage=new FrameLayout(a);stage.setTag("mp-poster");ImageView art=new ImageView(a);art.setTag("mp-poster-art");art.setScaleType(ImageView.ScaleType.CENTER_CROP);art.setBackgroundColor(0xff080706);art.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-  View veil=new View(a);veil.setBackground(new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,new int[]{0xf7080706,0xd1080706,0x59080706,0x00080706}));veil.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-  View side=new View(a);side.setBackground(new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0x8c080706,0x00080706,0x00000000}));side.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+  View veil=new View(a);veil.setBackground(new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,new int[]{0xff080706,0xf2080706,0xc0080706,0x66080706,0x00080706}));veil.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+  View side=new View(a);side.setBackground(new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,new int[]{0xb0080706,0x00080706,0x00000000}));side.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
   stage.addView(art,new FrameLayout.LayoutParams(-1,-1));stage.addView(veil,new FrameLayout.LayoutParams(-1,-1));stage.addView(side,new FrameLayout.LayoutParams(-1,-1));stage.addView(sv,new FrameLayout.LayoutParams(-1,-1));root.addView(stage,idx,lp);
   LinearLayout header=root.getChildCount()>0&&root.getChildAt(0) instanceof LinearLayout?(LinearLayout)root.getChildAt(0):null;
-  Runnable lift=()->{if(!"mp-poster".equals(stage.getTag())||!(stage.getLayoutParams() instanceof LinearLayout.LayoutParams)||header==null)return;int h=header.getHeight();if(h<=0)h=dp(a,56);LinearLayout.LayoutParams sl=(LinearLayout.LayoutParams)stage.getLayoutParams();if(sl.topMargin!=-h){sl.topMargin=-h;stage.setLayoutParams(sl);}};
+  Runnable lift=()->{if(!"mp-poster".equals(stage.getTag())||header==null)return;DetailLandscape.tuck(a,root,header);};
   if(header!=null)header.post(lift);else lift.run();
-  chrome(a,root,true,card,light);return art;
+  chrome(a,root,true,card,light);DetailLandscape.posterEdge(a,root,true);return art;
  }
- static void restore(Activity a,LinearLayout body,int card,boolean light){if(a==null||body==null||!(body.getParent() instanceof ScrollView))return;ScrollView sv=(ScrollView)body.getParent();ViewParent parent=sv.getParent();if(parent instanceof FrameLayout&&"mp-poster".equals(((FrameLayout)parent).getTag())){FrameLayout stage=(FrameLayout)parent;ViewGroup root=(ViewGroup)stage.getParent();int idx=root.indexOfChild(stage);ViewGroup.LayoutParams lp=stage.getLayoutParams();if(lp instanceof LinearLayout.LayoutParams)((LinearLayout.LayoutParams)lp).topMargin=0;stage.setTag(null);stage.removeView(sv);root.removeView(stage);root.addView(sv,idx,lp);parent=root;}
-  if(parent instanceof LinearLayout)chrome(a,(LinearLayout)parent,false,card,light);
+ static void restore(Activity a,LinearLayout body,int card,boolean light){if(a==null||body==null||!(body.getParent() instanceof ScrollView))return;ScrollView sv=(ScrollView)body.getParent();ViewParent parent=sv.getParent();  if(parent instanceof FrameLayout&&"mp-poster".equals(((FrameLayout)parent).getTag())){FrameLayout stage=(FrameLayout)parent;ViewGroup root=(ViewGroup)stage.getParent();int idx=root.indexOfChild(stage);ViewGroup.LayoutParams lp=stage.getLayoutParams();if(lp instanceof LinearLayout.LayoutParams){LinearLayout.LayoutParams sl=(LinearLayout.LayoutParams)lp;sl.topMargin=0;sl.height=0;sl.weight=1f;}stage.setTag(null);stage.removeView(sv);root.removeView(stage);root.addView(sv,idx,lp);parent=root;}
+  if(parent instanceof LinearLayout){DetailLandscape.posterEdge(a,(LinearLayout)parent,false);chrome(a,(LinearLayout)parent,false,card,light);}
  }
  static void chrome(Activity a,LinearLayout root,boolean on,int card,boolean light){if(root==null||root.getChildCount()==0||!(root.getChildAt(0) instanceof LinearLayout))return;LinearLayout header=(LinearLayout)root.getChildAt(0);if(!on&&!"1".equals(header.getTag(CHROME)))return;header.setTag(CHROME,on?"1":null);header.setBackgroundColor(0);View back=header.getChildAt(0);
   if(back instanceof TextView){TextView b=(TextView)back;if(on){if(b.getTag(BACK_TEXT)==null)b.setTag(BACK_TEXT,b.getText().toString());ViewGroup.LayoutParams raw=b.getLayoutParams();if(b.getTag(BACK_W)==null&&raw!=null)b.setTag(BACK_W,raw.width);b.setText("");b.setContentDescription("返回");b.setCompoundDrawables(null,null,null,null);b.setBackground(circle(a,0x66000000,0x6bf4f1ea));b.setBackgroundTintList(null);if(raw instanceof LinearLayout.LayoutParams){raw.width=dp(a,48);raw.height=dp(a,48);b.setLayoutParams(raw);}b.setCompoundDrawablesWithIntrinsicBounds(new PosterGlyphs(PosterGlyphs.BACK,dp(a,18)).tint(CinemaTheme.INK),null,null,null);b.setPadding(0,0,0,0);}
@@ -42,17 +42,17 @@ final class PosterDetail {
   if(root.getChildCount()>1&&root.getChildAt(1) instanceof TextView)root.getChildAt(1).setVisibility(on?View.GONE:View.VISIBLE);
   CinemaTheme.barIcons(a,on?false:light);
  }
- static Page hero(Activity a,LinearLayout body,String title,int accent,int onAccent,Clicks clicks){boolean wide=wide(a);int screen=a.getResources().getDisplayMetrics().heightPixels;View spacer=new View(a);body.addView(spacer,new LinearLayout.LayoutParams(-1,PosterDetailRules.spacer(screen,dp(a,56),wide)));
-  LinearLayout top=new LinearLayout(a);top.setOrientation(wide?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);top.setGravity(Gravity.BOTTOM);
-  LinearLayout left=new LinearLayout(a);left.setOrientation(LinearLayout.VERTICAL);
-  TextView name=text(a,title==null||title.isEmpty()?"影片":title,28,CinemaTheme.INK);name.setTypeface(CinemaTheme.paperTitle(a));name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);left.addView(name);
-  TextView meta=text(a,"",14,CinemaTheme.SOFT);meta.setPadding(0,dp(a,6),0,0);meta.setVisibility(View.GONE);meta.setMaxLines(3);meta.setEllipsize(android.text.TextUtils.TruncateAt.END);left.addView(meta);
+ static void shadow(Activity a,TextView t){if(t==null||a==null)return;t.setShadowLayer(dp(a,4),0,dp(a,1),0xf0000000);}
+ static Page hero(Activity a,LinearLayout body,String title,int accent,int onAccent,Clicks clicks){boolean wide=wide(a);android.util.DisplayMetrics dm=a.getResources().getDisplayMetrics();int screen=dm.heightPixels,widthPx=dm.widthPixels;View spacer=new View(a);body.addView(spacer,new LinearLayout.LayoutParams(-1,PosterDetailRules.spacer(screen,dp(a,56),widthPx,dm.density)));
+  LinearLayout top=new LinearLayout(a);top.setOrientation(LinearLayout.VERTICAL);
+  LinearLayout left=new LinearLayout(a);left.setOrientation(LinearLayout.VERTICAL);int column=PosterDetailRules.infoColumn(widthPx,dm.density);
+  TextView name=text(a,title==null||title.isEmpty()?"影片":title,28,CinemaTheme.INK);name.setTypeface(CinemaTheme.paperTitle(a));name.setMaxLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);shadow(a,name);left.addView(name);
+  TextView meta=text(a,"",14,CinemaTheme.SOFT);meta.setPadding(0,dp(a,6),0,0);meta.setVisibility(View.GONE);meta.setMaxLines(3);meta.setEllipsize(android.text.TextUtils.TruncateAt.END);shadow(a,meta);left.addView(meta);
   LinearLayout actions=new LinearLayout(a);actions.setGravity(Gravity.CENTER_VERTICAL);actions.setPadding(0,dp(a,14),0,0);
   Button play=new CinemaButton(a,false);play.setText("播放");play.setTextSize(Ui.BODY);play.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);play.setTextColor(onAccent);play.setAllCaps(false);play.setBackground(round(a,accent,100));play.setBackgroundTintList(null);play.setPadding(dp(a,18),0,dp(a,22),0);play.setCompoundDrawablePadding(dp(a,8));play.setCompoundDrawablesWithIntrinsicBounds(new PosterGlyphs(PosterGlyphs.PLAY,dp(a,16)).tint(onAccent),null,null,null);play.setElevation(dp(a,4));play.setEnabled(false);CinemaControls.action(play,"播放");actions.addView(play,new LinearLayout.LayoutParams(-2,dp(a,48)));
   View line=icon(a,PosterGlyphs.GLOBE,"线路",clicks==null?null:clicks::line);View down=icon(a,PosterGlyphs.DOWN,"下载",clicks==null?null:clicks::download);FrameLayout fav=(FrameLayout)icon(a,PosterGlyphs.HEART,"收藏",clicks==null?null:clicks::favorite);View more=icon(a,PosterGlyphs.MORE,"更多",clicks==null?null:clicks::more);actions.addView(line);actions.addView(down);actions.addView(fav);actions.addView(more);left.addView(actions);
-  View[] rows=trackCard(a);LinearLayout card=(LinearLayout)rows[0];
-  if(wide){top.addView(left,new LinearLayout.LayoutParams(0,-2,1f));LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(dp(a,300),-2);cp.leftMargin=dp(a,20);top.addView(card,cp);}
-  else{top.addView(left,new LinearLayout.LayoutParams(-1,-2));LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.topMargin=dp(a,12);top.addView(card,cp);}
+  View[] rows=trackCard(a);LinearLayout card=(LinearLayout)rows[0];LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.topMargin=dp(a,12);left.addView(card,cp);
+  top.addView(left,new LinearLayout.LayoutParams(wide&&column>0&&column<widthPx?column:-1,-2));
   body.addView(top,new LinearLayout.LayoutParams(-1,-2));card.setVisibility(View.GONE);
   Page page=new Page(play,meta,card,(View)rows[1],(TextView)rows[2],(TextView)rows[3],(View)rows[4],(View)rows[5],(TextView)rows[6],(TextView)rows[7],(View)rows[8],fav,(ImageView)fav.getChildAt(0));
   page.setFavorite(false);return page;
@@ -72,7 +72,7 @@ final class PosterDetail {
  static TextView section(Activity a,LinearLayout body,String label,boolean chevron,Runnable click){return section(a,body,label,chevron,click,null);}
  /** jump 非空时，右侧箭头打开「跳至」。季 / 线路切换仍走 click，避免和跳集抢同一个入口。 */
  static TextView section(Activity a,LinearLayout body,String label,boolean chevron,Runnable click,Runnable jump){LinearLayout row=new LinearLayout(a);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);if(click!=null||jump!=null)row.setMinimumHeight(dp(a,48));
-  TextView t=text(a,label,14,CinemaTheme.INK);t.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));if(Build.VERSION.SDK_INT>=28)t.setAccessibilityHeading(true);row.addView(t,new LinearLayout.LayoutParams(-2,-2));
+  TextView t=text(a,label,14,CinemaTheme.INK);t.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));shadow(a,t);if(Build.VERSION.SDK_INT>=28)t.setAccessibilityHeading(true);row.addView(t,new LinearLayout.LayoutParams(-2,-2));
   if(chevron){ImageView c=new ImageView(a);c.setImageDrawable(new PosterGlyphs(PosterGlyphs.CHEV,dp(a,16)).tint(CinemaTheme.MUTED));c.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);LinearLayout.LayoutParams ip=new LinearLayout.LayoutParams(dp(a,16),dp(a,16));ip.leftMargin=dp(a,6);row.addView(c,ip);}
   if(jump!=null){row.addView(new View(a),new LinearLayout.LayoutParams(0,dp(a,1),1f));FrameLayout hit=new FrameLayout(a);ImageView c=new ImageView(a);c.setImageDrawable(new PosterGlyphs(PosterGlyphs.CHEV,dp(a,16)).tint(CinemaTheme.MUTED));c.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);hit.addView(c,new FrameLayout.LayoutParams(dp(a,16),dp(a,16),Gravity.CENTER));hit.setOnClickListener(v->jump.run());CinemaControls.action(hit,"跳至");row.addView(hit,new LinearLayout.LayoutParams(dp(a,48),dp(a,48)));}
   Runnable rowClick=click!=null?click:jump;if(rowClick!=null){row.setOnClickListener(v->rowClick.run());CinemaControls.action(row,click!=null?label:"跳至");}
@@ -120,8 +120,8 @@ final class PosterDetail {
  static void people(Activity a,LinearLayout body,String[] names,String[] roles){if(names==null||names.length==0)return;section(a,body,"演职人员",false,null);HorizontalScrollView hs=new HorizontalScrollView(a);hs.setHorizontalScrollBarEnabled(false);LinearLayout row=new LinearLayout(a);hs.addView(row);
   for(int i=0;i<names.length;i++){String name=names[i];String role=roles!=null&&i<roles.length&&roles[i]!=null?roles[i]:"";LinearLayout cell=new LinearLayout(a);cell.setOrientation(LinearLayout.VERTICAL);cell.setGravity(Gravity.CENTER_HORIZONTAL);
    FrameLayout face=new FrameLayout(a);GradientDrawable bg=new GradientDrawable();bg.setCornerRadius(dp(a,10));bg.setColor(0xff2e2920);face.setBackground(bg);TextView initial=text(a,name.isEmpty()?"演":name.substring(0,1),20,CinemaTheme.MUTED);initial.setGravity(Gravity.CENTER);face.addView(initial,new FrameLayout.LayoutParams(-1,-1));cell.addView(face,new LinearLayout.LayoutParams(dp(a,70),dp(a,92)));
-   TextView n=text(a,name,12,CinemaTheme.INK);n.setGravity(Gravity.CENTER);n.setMaxLines(2);n.setEllipsize(android.text.TextUtils.TruncateAt.END);n.setPadding(0,dp(a,6),0,0);cell.addView(n,new LinearLayout.LayoutParams(dp(a,76),-2));
-   if(!role.isEmpty()){TextView r=text(a,role,12,CinemaTheme.MUTED);r.setGravity(Gravity.CENTER);r.setMaxLines(1);r.setEllipsize(android.text.TextUtils.TruncateAt.END);cell.addView(r,new LinearLayout.LayoutParams(dp(a,76),-2));}
+   TextView n=text(a,name,12,0xffffffff);n.setGravity(Gravity.CENTER);n.setMaxLines(2);n.setEllipsize(android.text.TextUtils.TruncateAt.END);n.setPadding(0,dp(a,6),0,0);shadow(a,n);cell.addView(n,new LinearLayout.LayoutParams(dp(a,76),-2));
+   if(!role.isEmpty()){TextView r=text(a,role,12,CinemaTheme.SOFT);r.setGravity(Gravity.CENTER);r.setMaxLines(1);r.setEllipsize(android.text.TextUtils.TruncateAt.END);shadow(a,r);cell.addView(r,new LinearLayout.LayoutParams(dp(a,76),-2));}
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(a,84),-2);lp.rightMargin=dp(a,8);row.addView(cell,lp);}
   body.addView(hs);}
  static TextView text(Activity a,String value,int sp,int color){TextView t=new TextView(a);t.setText(value);t.setTextColor(color);t.setTextSize(sp<=12?Ui.CAPTION:sp<=14?Ui.SMALL:sp<=17?Ui.BODY:sp<=22?Ui.SECTION:Ui.DISPLAY);t.setIncludeFontPadding(false);return t;}
