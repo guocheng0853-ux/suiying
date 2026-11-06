@@ -40,8 +40,15 @@ final class PosterDetail {
   for(int i=1;i<header.getChildCount();i++){View child=header.getChildAt(i);if(child instanceof Button){Button button=(Button)child;if(on){button.setTextColor(CinemaTheme.INK);button.setBackground(round(a,0x66000000,100));button.setBackgroundTintList(null);}else{button.setBackground(round(a,card,12));button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(card));button.setTextColor(Ui.onFill(card));}}
    else if(child instanceof TextView)child.setVisibility(on?View.INVISIBLE:View.VISIBLE);}
   if(root.getChildCount()>1&&root.getChildAt(1) instanceof TextView)root.getChildAt(1).setVisibility(on?View.GONE:View.VISIBLE);
+  // 0.1.174：海报页铺满深色，状态栏和导航栏也跟着变深（浅色 / 陶土主题下原来是两条米白色的边）；顶栏抬到海报上面，
+  // 圆形返回键不再被铺满的海报盖住。离开海报页时恢复进来之前的颜色。
+  header.setZ(on?dp(a,2):0);bars(a,on);
   CinemaTheme.barIcons(a,on?false:light);
  }
+ static final int BAR_SAVED=0x6d705072;
+ static void bars(Activity a,boolean on){Window w=a.getWindow();if(w==null)return;View decor=w.getDecorView();Object saved=decor.getTag(BAR_SAVED);
+  if(on){if(!(saved instanceof int[]))decor.setTag(BAR_SAVED,new int[]{w.getStatusBarColor(),w.getNavigationBarColor()});w.setStatusBarColor(PosterDetailRules.BAR);w.setNavigationBarColor(PosterDetailRules.BAR);}
+  else if(saved instanceof int[]){int[] c=(int[])saved;w.setStatusBarColor(c[0]);w.setNavigationBarColor(c[1]);decor.setTag(BAR_SAVED,null);}}
  static Page hero(Activity a,LinearLayout body,String title,int accent,int onAccent,Clicks clicks){boolean wide=wide(a);int screen=a.getResources().getDisplayMetrics().heightPixels;View spacer=new View(a);body.addView(spacer,new LinearLayout.LayoutParams(-1,PosterDetailRules.spacer(screen,dp(a,56),wide)));
   LinearLayout top=new LinearLayout(a);top.setOrientation(wide?LinearLayout.HORIZONTAL:LinearLayout.VERTICAL);top.setGravity(Gravity.BOTTOM);
   LinearLayout left=new LinearLayout(a);left.setOrientation(LinearLayout.VERTICAL);

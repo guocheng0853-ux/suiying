@@ -5,6 +5,8 @@ import org.json.*;import java.util.*;
  * 宽屏把片源卡放在标题右侧，窄屏叠在按钮下面。技术字段只在片源里真有时才出现，路径不展示。
  */
 final class PosterDetailRules {
+ /** 0.1.174 海报页状态栏 / 导航栏颜色：和海报底色 0xff080706 一样。 */
+ static final int BAR=0xff080706;
  private PosterDetailRules(){}
  static final int WIDE_DP=720;
  static boolean wide(int widthDp){return widthDp>=WIDE_DP;}
