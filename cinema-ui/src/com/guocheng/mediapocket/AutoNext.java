@@ -25,7 +25,7 @@ final class AutoNext {
  static void handoff(Activity a,JSONObject meta,String nextId,String type){if(nextId==null||a==null||a.isFinishing())return;AutoNext n=ALL.get(a);if(n!=null){n.cancelled=true;n.hide();}
   // Emby library pages do not consume the main Activity's static pending request.
   // Keep this player until playItem starts its replacement successfully.
-  EpisodeHandoff.dispatch(nextId,id->EmbyPlayback.switchEpisode(a,id),()->{pendingMeta=meta;pendingId=nextId;pendingType=type;a.finish();});}
+  pendingStream=null;pendingSources=null;EpisodeHandoff.dispatch(nextId,id->EmbyPlayback.switchEpisode(a,id),()->{pendingMeta=meta;pendingId=nextId;pendingType=type;pendingStream=null;pendingSources=null;a.finish();});}
  /** 主界面 onResume 调用：取出请求，返回 [id,type] 与 meta。 */
  /** 0.1.173：播放页选集里已经选好了这一集的片源：关掉播放页，主界面直接用它起播，不经过详情页。 */
  static void handoffStream(Activity a,JSONObject meta,String nextId,String type,JSONObject stream,JSONArray sources){if(nextId==null||stream==null||a==null||a.isFinishing())return;AutoNext n=ALL.get(a);if(n!=null){n.cancelled=true;n.hide();}pendingMeta=meta;pendingId=nextId;pendingType=type;pendingStream=stream;pendingSources=sources;a.finish();}

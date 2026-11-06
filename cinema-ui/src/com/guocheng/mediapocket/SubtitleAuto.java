@@ -77,6 +77,12 @@ final class SubtitleAuto {
  }
  /** 播放器已经停在目标轨上时不要再 setSpuTrack。目标不是一条具体轨时返回 false，调用方自己决定要不要设置。 */
  static boolean alreadySpu(int current,int target){return (target==-1||target>=0)&&current==target;}
+ /**
+  * 搜到的插件字幕要不要换成现在的第一字幕。
+  * 用户在结果里点了要换，才换。自动结果只在确认没有第一字幕时才换：内嵌已经打开、这一场已经自动选过内嵌、外挂已经在画、或用户手动选过，都不换。
+  * 读不到当前轨时也不换，避免把已经打开的内嵌关掉，再被下一拍轮询抢回来。
+  */
+ static boolean takeSearchedSubtitle(boolean userChose,int currentSpu,boolean cuesVisible,boolean held,boolean embeddedOn){if(userChose)return true;if(held||cuesVisible||embeddedOn||currentSpu>=0||currentSpu==Integer.MIN_VALUE)return false;return true;}
  static Step vlcPoll(Poll in){
   if(in==null)return new Step(false,false,PENDING,false);
   String pref=in.pref==null?"zho":in.pref;

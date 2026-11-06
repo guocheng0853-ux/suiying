@@ -26,6 +26,7 @@ public class PlaybackEndRulesTest {
   String overlay=java.nio.file.Files.readString(java.nio.file.Paths.get("src/com/guocheng/mediapocket/PlayerOverlay.java"));
   check(!repair.contains("本集播放完毕")&&repair.contains("getPlayerState")&&repair.contains("prematureFlag"),"repair marks EndReached from player state");
   check(auto.contains("naturalFinish")&&auto.contains("PlaybackRepair.premature"),"auto-next consults the flag");
+  check(auto.contains("pendingStream=null;pendingSources=null;"),"a plain next-episode handoff drops a previously picked stream");
   check(overlay.contains("PlaybackRepair.premature")&&overlay.contains("failure(rendered,terminal,message,premature)")&&overlay.contains("nativeTick(a,failure,"),"failure card and Emby recovery take the flag");
   check(PlaybackEndRules.mmss(3723000).equals("1:02:03"),"hours");
   check(PlaybackEndRules.playingWithoutVout(false,false,true,1920,5000),"playing with a sized video track counts as rendered");
