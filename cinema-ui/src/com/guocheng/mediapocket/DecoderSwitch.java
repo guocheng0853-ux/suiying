@@ -90,7 +90,7 @@ final class DecoderSwitch {
  static void invoke(Object target,String name)throws Exception{Method m=find(target.getClass(),name,0);if(m!=null)m.invoke(target);}
  static Object callQuiet(Object target,String name){return callQuiet(target,name,new Class<?>[0]);}
  static Object callQuiet(Object target,String name,Class<?>[] types,Object... args){try{return target==null?null:OnlineSubtitleSearch.call(target,name,types,args);}catch(Exception e){return null;}}
- static void set(Object target,String name,Object value){for(Class<?> c=target.getClass();c!=null;c=c.getSuperclass())try{java.lang.reflect.Field f=c.getDeclaredField(name);f.setAccessible(true);f.set(target,value);return;}catch(Exception ignored){}}
+ static void set(Object target,String name,Object value){java.lang.reflect.Field f=ReflectCache.field(target.getClass(),name);if(f!=null)try{f.set(target,value);}catch(Exception ignored){}}
  static int number(Object v){return v instanceof Integer?(Integer)v:v instanceof Long?((Long)v).intValue():-1;}
  static String string(Object v){return v==null?"":v.toString();}
  static String text(Throwable e){Throwable t=e instanceof InvocationTargetException&&e.getCause()!=null?e.getCause():e;String m=t.getMessage();return t.getClass().getSimpleName()+(m==null||m.isEmpty()?"":"："+m);}

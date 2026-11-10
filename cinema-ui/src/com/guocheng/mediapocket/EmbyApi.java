@@ -115,8 +115,12 @@ final class EmbyApi {
  static final class ImageRef {final String itemId,kind,tag;ImageRef(String itemId,String kind,String tag){this.itemId=itemId==null?"":itemId;this.kind=kind==null?"Primary":kind;this.tag=tag==null?"":tag;}}
  static ImageRef fallbackImage(JSONObject item,String kind){
   String id=item==null?"":item.optString("Id");JSONObject tags=item==null?null:item.optJSONObject("ImageTags");String want=kind==null||kind.isEmpty()?"Primary":kind;
-  if("Primary".equals(want)){String tag=tags==null?"":tags.optString("Primary");if(!tag.isEmpty())return new ImageRef(id,"Primary",tag);String series=tags==null?"":tags.optString("SeriesPrimary");if(!series.isEmpty())return new ImageRef(id,"SeriesPrimary",series);String pid=item==null?"":item.optString("PrimaryImageItemId");if(!pid.isEmpty())return new ImageRef(pid,"Primary",item.optString("PrimaryImageTag"));return new ImageRef(id,"Primary","");}
-  if("Backdrop".equals(want)){String tag=backdropTag(item);if(!tag.isEmpty())return new ImageRef(id,"Backdrop",tag);String parent=item==null?"":item.optString("ParentBackdropItemId");if(!parent.isEmpty())return new ImageRef(parent,"Backdrop",item.optString("ParentBackdropImageTag"));return new ImageRef(id,"Backdrop","");}
+  // 0.1.176：Emby 实际返回的是顶层的 SeriesPrimaryImageTag、数组 ParentBackdropImageTags、ParentThumbItemId/Tag；
+  // 原来只认 ImageTags.SeriesPrimary 和单数 ParentBackdropImageTag，单集没有剧照时详情页主视觉整块是黑的。
+  String series=item==null?"":item.optString("SeriesId");
+  if("Primary".equals(want)){String tag=tags==null?"":tags.optString("Primary");if(!tag.isEmpty())return new ImageRef(id,"Primary",tag);String sp=item==null?"":item.optString("SeriesPrimaryImageTag");if(!sp.isEmpty()&&!series.isEmpty())return new ImageRef(series,"Primary",sp);String legacy=tags==null?"":tags.optString("SeriesPrimary");if(!legacy.isEmpty())return new ImageRef(id,"SeriesPrimary",legacy);String pid=item==null?"":item.optString("PrimaryImageItemId");if(!pid.isEmpty())return new ImageRef(pid,"Primary",item.optString("PrimaryImageTag"));if(!series.isEmpty())return new ImageRef(series,"Primary","");return new ImageRef(id,"Primary","");}
+  if("Backdrop".equals(want)){String tag=backdropTag(item);if(!tag.isEmpty())return new ImageRef(id,"Backdrop",tag);String parent=item==null?"":item.optString("ParentBackdropItemId");if(!parent.isEmpty()){JSONArray pt=item.optJSONArray("ParentBackdropImageTags");String ptag=pt!=null&&pt.length()>0?pt.optString(0):item.optString("ParentBackdropImageTag");return new ImageRef(parent,"Backdrop",ptag);}
+   String thumb=item==null?"":item.optString("ParentThumbItemId");if(!thumb.isEmpty())return new ImageRef(thumb,"Thumb",item.optString("ParentThumbImageTag"));return new ImageRef(id,"Backdrop","");}
   if("Logo".equals(want)){String tag=tags==null?"":tags.optString("Logo");if(!tag.isEmpty())return new ImageRef(id,"Logo",tag);String parent=item==null?"":item.optString("ParentLogoItemId");if(!parent.isEmpty())return new ImageRef(parent,"Logo",item.optString("ParentLogoImageTag"));return new ImageRef(id,"Logo","");}
   return new ImageRef(id,want,tags==null?"":tags.optString(want));
  }
@@ -288,7 +292,7 @@ final class EmbyApi {
   String base=server.optString("url"),token=server.optString("token"),sid=server.optString("id"),itemId=item.optString("Id");
   String type=item.optString("Type"),media="Episode".equals(type)||"Series".equals(type)||"Season".equals(type)?"series":"movie";
   ImageRef primary=fallbackImage(item,"Primary");String poster=imageUrl(base,primary.itemId.isEmpty()?itemId:primary.itemId,primary.kind,token,480,primary.tag);
-  ImageRef backdrop=fallbackImage(item,"Backdrop");String background=backdrop.tag.isEmpty()?poster:imageUrl(base,backdrop.itemId.isEmpty()?itemId:backdrop.itemId,backdrop.kind,token,1280,backdrop.tag);
+  ImageRef backdrop=fallbackImage(item,"Backdrop");String background=backdrop.tag.isEmpty()&&(backdrop.itemId.isEmpty()||backdrop.itemId.equals(itemId))?poster:imageUrl(base,backdrop.itemId.isEmpty()?itemId:backdrop.itemId,backdrop.kind,token,1280,backdrop.tag);
   ImageRef logoRef=fallbackImage(item,"Logo");String logo=logoRef.tag.isEmpty()?"":imageUrl(base,logoRef.itemId.isEmpty()?itemId:logoRef.itemId,logoRef.kind,token,640,logoRef.tag);
   JSONArray genres=new JSONArray();JSONArray raw=item.optJSONArray("Genres");for(int i=0;raw!=null&&i<raw.length()&&i<4;i++)if(!raw.optString(i).isEmpty())genres.put(raw.optString(i));
   String name=item.optString("Name","影片");

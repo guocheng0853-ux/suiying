@@ -50,7 +50,7 @@ final class EmbyHealthCheck {
  }
  static String httpReason(int code){return "HTTP "+code+(code==401?"：登录已失效，请重新登录":code==403?"：服务器拒绝访问，请检查账号权限":code==404?"：接口或影片不存在":code==409?"：服务器存在播放会话限制":code>=500?"：服务器暂时出错":"：请求未成功");}
  static String reason(Exception e){if(e instanceof Failure)return e.getMessage();if(e instanceof java.util.concurrent.TimeoutException||e instanceof SocketTimeoutException)return "连接或读取超时";if(e instanceof UnknownHostException)return "域名解析失败";if(e instanceof javax.net.ssl.SSLException)return "安全连接未通过，请检查证书";if(e instanceof ConnectException)return "服务器端口无法连接";if(e instanceof InterruptedIOException)return "已取消或检查超时";if(e instanceof JSONException)return "服务器返回的信息格式不正确";return "检查未通过，请核对服务器或网络";}
- static String probeReason(LinkProbe.Result r){java.util.regex.Matcher m=java.util.regex.Pattern.compile("HTTP (\\d{3})").matcher(r.kind);if(m.find())return httpReason(Integer.parseInt(m.group(1)));return r.detail.contains("超时")?"视频数据检查超时":"未读到可识别的视频数据";}
+ static String probeReason(LinkProbe.Result r){java.util.regex.Matcher m=Rx.of("HTTP (\\d{3})").matcher(r.kind);if(m.find())return httpReason(Integer.parseInt(m.group(1)));return r.detail.contains("超时")?"视频数据检查超时":"未读到可识别的视频数据";}
  static String stateName(int s){return s==RUNNING?"检查中":s==PASS?"通过":s==FAIL?"未通过":s==SKIP?"未检查":"等待";}
  String report(){return report(rows);}
  static String report(Row[] rows){StringBuilder b=new StringBuilder("随影 Emby 片源体检\n检查范围：主地址及一条影片；未覆盖备用线路和实际解码。\n地址、账号、令牌、影片名称与编号均已隐藏。\n");for(Row r:rows)b.append('\n').append(TITLES[r.index]).append("：").append(stateName(r.state)).append(r.ms>0?"（"+r.ms+" ms）":"").append('\n').append(r.detail).append('\n');return b.toString();}

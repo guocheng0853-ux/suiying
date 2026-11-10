@@ -13,7 +13,7 @@ final class RangeAccelerator {
  /** 返回本次响应覆盖的绝对字节区间 {start,end}；不可分段时返回 null。 */
  static long[] span(int code,long length,String contentRange,String acceptRanges){
   if(length<=0)return null;
-  if(code==206&&contentRange!=null){java.util.regex.Matcher m=java.util.regex.Pattern.compile("bytes\\s+(\\d+)-(\\d+)/(\\d+|\\*)").matcher(contentRange.trim());if(m.find()){long a=Long.parseLong(m.group(1)),b=Long.parseLong(m.group(2));return b-a+1==length?new long[]{a,b}:null;}return null;}
+  if(code==206&&contentRange!=null){java.util.regex.Matcher m=Rx.of("bytes\\s+(\\d+)-(\\d+)/(\\d+|\\*)").matcher(contentRange.trim());if(m.find()){long a=Long.parseLong(m.group(1)),b=Long.parseLong(m.group(2));return b-a+1==length?new long[]{a,b}:null;}return null;}
   if(code==200&&acceptRanges!=null&&acceptRanges.toLowerCase(Locale.ROOT).contains("bytes"))return new long[]{0,length-1};
   return null;
  }

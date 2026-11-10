@@ -56,7 +56,7 @@ final class PosterDetailRules {
   * 影视仓选集名里的集数。优先 SxxEyy，其次「第 N 集」，再是 EP / E 前缀，
   * 纯数字，以及「12. 标题」这种开头的序号。解析不到返回 -1。
   */
- static int fusionEpisodeNumber(String name){if(name==null)return -1;String s=name.trim();if(s.isEmpty())return -1;java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?i)S\\d{1,4}\\s*E(\\d{1,5})").matcher(s);if(m.find())return positive(m.group(1));m=java.util.regex.Pattern.compile("第\\s*(\\d{1,5})\\s*集").matcher(s);if(m.find())return positive(m.group(1));m=java.util.regex.Pattern.compile("(?i)(?:EP|E)\\s*(\\d{1,5})").matcher(s);if(m.find())return positive(m.group(1));if(s.matches("\\d{1,5}"))return positive(s);m=java.util.regex.Pattern.compile("^(\\d{1,5})\\s*[.、:：\\-].*").matcher(s);if(m.find())return positive(m.group(1));return -1;}
+ static int fusionEpisodeNumber(String name){if(name==null)return -1;String s=name.trim();if(s.isEmpty())return -1;java.util.regex.Matcher m=Rx.of("(?i)S\\d{1,4}\\s*E(\\d{1,5})").matcher(s);if(m.find())return positive(m.group(1));m=Rx.of("第\\s*(\\d{1,5})\\s*集").matcher(s);if(m.find())return positive(m.group(1));m=Rx.of("(?i)(?:EP|E)\\s*(\\d{1,5})").matcher(s);if(m.find())return positive(m.group(1));if(s.matches("\\d{1,5}"))return positive(s);m=Rx.of("^(\\d{1,5})\\s*[.、:：\\-].*").matcher(s);if(m.find())return positive(m.group(1));return -1;}
  static int positive(String n){try{int v=Integer.parseInt(n);return v>0?v:-1;}catch(Exception e){return -1;}}
  /**
   * 先按选集名解析出的集数命中（同号取第一条）。没有再按 1 起的列表序号。
@@ -72,7 +72,7 @@ final class PosterDetailRules {
   */
  static String fusionStill(String name,String playUrl,String vodPic){String named=imageIn(name);if(!named.isEmpty())return named;if(isImageUrl(playUrl))return playUrl.trim();return vodPic==null?"":vodPic.trim();}
  static boolean isImageUrl(String raw){if(raw==null)return false;String s=raw.trim().toLowerCase(Locale.ROOT);int q=s.indexOf('?');if(q>=0)s=s.substring(0,q);int h=s.indexOf('#');if(h>=0)s=s.substring(0,h);return s.endsWith(".jpg")||s.endsWith(".jpeg")||s.endsWith(".png")||s.endsWith(".webp")||s.endsWith(".gif");}
- static String imageIn(String text){if(text==null||text.isEmpty())return "";java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?i)https?://[^\\s\"']+\\.(?:jpg|jpeg|png|webp|gif)(?:\\?[^\\s\"']*)?").matcher(text);return m.find()?m.group():"";}
+ static String imageIn(String text){if(text==null||text.isEmpty())return "";java.util.regex.Matcher m=Rx.of("(?i)https?://[^\\s\"']+\\.(?:jpg|jpeg|png|webp|gif)(?:\\?[^\\s\"']*)?").matcher(text);return m.find()?m.group():"";}
  static String tileLabel(int index,String name){if(index>0)return index+". 第 "+index+" 集";return name==null||name.trim().isEmpty()?"剧集":name.trim();}
  static float bar(long runtimeTicks,long positionTicks,boolean played){if(played)return 1f;return MediaBadgeRules.progress(runtimeTicks,positionTicks,false);}
  /** 影视仓只有本地进度。看到 90% 算看完；开过但没有时长时给一小节，避免完全空白。 */

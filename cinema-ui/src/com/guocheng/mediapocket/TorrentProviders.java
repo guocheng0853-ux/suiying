@@ -43,9 +43,9 @@ final class TorrentProviders {
    if(wanted.type.equals("series")){
     if(ez){if(r.optInt("season",-1)!=wanted.season||r.optInt("episode",-1)!=wanted.episode)continue;}
     else if(!episode(title,wanted.season,wanted.episode))continue;
-   }else if(Pattern.compile("(?i)(?:\\bS[0-9]{1,2}E[0-9]{1,3}\\b|\\b[0-9]{1,2}x[0-9]{1,3}\\b)").matcher(title).find())continue;
+   }else if(Rx.of("(?i)(?:\\bS[0-9]{1,2}E[0-9]{1,3}\\b|\\b[0-9]{1,2}x[0-9]{1,3}\\b)").matcher(title).find())continue;
    long seeds=Math.max(0,r.optLong("seeds",r.optLong("seeders",0))),size=Math.max(0,r.optLong("size_bytes",r.optLong("size",0)));
-   String quality="";Matcher q=Pattern.compile("(?i)\\b(2160p|1080p|720p|480p)\\b").matcher(title);if(q.find())quality=q.group(1).toLowerCase(Locale.ROOT);
+   String quality="";Matcher q=Rx.of("(?i)\\b(2160p|1080p|720p|480p)\\b").matcher(title);if(q.find())quality=q.group(1).toLowerCase(Locale.ROOT);
    JSONObject stream=new JSONObject().put("name",(ez?"EZTV":"海盗湾")+(quality.isEmpty()?"":" · "+quality)).put("title",title+"\n做种 "+seeds+(size>0?String.format(Locale.ROOT," · %.2f GB",size/1073741824.0):"")).put("infoHash",hash).put("suiying.seeders",seeds).put("behaviorHints",new JSONObject().put("bingeGroup",provider+"-"+quality));
    JSONObject old=unique.get(hash);if(old==null||old.optLong("suiying.seeders")<seeds)unique.put(hash,stream);
   }
@@ -53,7 +53,7 @@ final class TorrentProviders {
  }
  /** Exclude packs and multi-episode releases: largest-file selection cannot safely choose an episode. */
  static boolean episode(String title,int season,int episode){
-  Matcher m=Pattern.compile("(?i)(?<![A-Za-z0-9])(?:S(\\d{1,2})E(\\d{1,3})|(\\d{1,2})x(\\d{1,3}))(?![A-Za-z0-9])").matcher(title);
+  Matcher m=Rx.of("(?i)(?<![A-Za-z0-9])(?:S(\\d{1,2})E(\\d{1,3})|(\\d{1,2})x(\\d{1,3}))(?![A-Za-z0-9])").matcher(title);
   if(!m.find())return false;int s=Integer.parseInt(m.group(1)==null?m.group(3):m.group(1)),e=Integer.parseInt(m.group(2)==null?m.group(4):m.group(2));
   String rest=title.substring(m.end());if(rest.matches("(?is)^(?:[ ._-]*(?:E\\d|S\\d|\\d{1,2}x\\d)|[-+]\\d).*"))return false;
   return s==season&&e==episode&&!m.find();

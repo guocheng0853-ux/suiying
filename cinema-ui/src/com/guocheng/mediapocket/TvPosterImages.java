@@ -45,7 +45,7 @@ final class TvPosterImages {
     if(bounds.outWidth>target&&options.inSampleSize>0){options.inScaled=true;options.inDensity=bounds.outWidth;options.inTargetDensity=target*options.inSampleSize;}
     result=BitmapFactory.decodeByteArray(bytes,0,bytes.length,options);if(result==null)throw new IOException("图片解码失败");
     if(result.getWidth()>target+1){int h=Math.max(1,Math.round(result.getHeight()*(target/(float)result.getWidth())));Bitmap scaled=Bitmap.createScaledBitmap(result,target,h,true);if(scaled!=result){result.recycle();result=scaled;}}
-    MEMORY.put(tag,result);status="加载成功";trim(directory(app));
+    MEMORY.put(tag,result);status="加载成功";trimSoon(directory(app));
    }catch(Exception e){status=reason(e);}
    record(raw,status);complete(tag,result,status);
   });}catch(RejectedExecutionException e){record(raw,"图片队列已满，请重新打开页面");complete(tag,null,"图片队列已满");}
@@ -78,5 +78,11 @@ final class TvPosterImages {
  static long diskSize(Context c){long size=0;File[] files=directory(c).listFiles((d,n)->n.endsWith(".img"));if(files!=null)for(File f:files)size+=f.length();return size;}
  static byte[] read(InputStream stream,int limit)throws Exception{return CoverFiles.read(stream,limit);}
  static String hash(String s){try{byte[] bytes=MessageDigest.getInstance("SHA-256").digest(s.getBytes("UTF-8"));StringBuilder out=new StringBuilder();for(byte b:bytes)out.append(String.format(Locale.ROOT,"%02x",b&255));return out.toString();}catch(Exception e){return String.valueOf(s.hashCode());}}
+ /**
+  * 0.1.176：清理磁盘缓存最多每 {@link PosterSample#TRIM_GAP_MS} 做一次。原来每加载一张图（包括命中磁盘缓存的）都要把缓存目录
+  * 列一遍、对最多 800 个文件逐个取大小；首页一屏几十张海报就是几万次文件状态查询，全压在 4 个图片线程上，拖慢后面的海报。
+  */
+ static final long LOADED_AT=System.nanoTime();static final java.util.concurrent.atomic.AtomicLong NEXT_TRIM=new java.util.concurrent.atomic.AtomicLong(0);
+ static void trimSoon(File dir){long now=(System.nanoTime()-LOADED_AT)/1000000L,next=NEXT_TRIM.get();if(!PosterSample.trimDue(now,next)||!NEXT_TRIM.compareAndSet(next,now+PosterSample.TRIM_GAP_MS))return;trim(dir);}
  static void trim(File dir){File[] files=dir.listFiles((d,n)->n.endsWith(".img"));if(files==null)return;long total=0;for(File f:files)total+=f.length();if(total<=128L*1024*1024&&files.length<=800)return;Arrays.sort(files,Comparator.comparingLong(File::lastModified));for(File f:files){long size=f.length();if(f.delete())total-=size;if(total<=96L*1024*1024)break;}}
 }

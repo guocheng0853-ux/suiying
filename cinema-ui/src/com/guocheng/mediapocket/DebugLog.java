@@ -12,18 +12,29 @@ final class DebugLog {
   try{if(dir==null){dir=new File(c.getApplicationContext().getFilesDir(),"debug");dir.mkdirs();}
    if(installed)return;installed=true;
    final Thread.UncaughtExceptionHandler previous=Thread.getDefaultUncaughtExceptionHandler();
-   Thread.setDefaultUncaughtExceptionHandler((t,e)->{try{StringWriter w=new StringWriter();e.printStackTrace(new PrintWriter(w));write("crash.log","=== 崩溃 "+stamp()+" · 线程 "+t.getName()+" · "+version(c)+"\n"+w+"\n");}catch(Throwable ignored){}if(previous!=null)previous.uncaughtException(t,e);});
+   Thread.setDefaultUncaughtExceptionHandler((t,e)->{flush(300);try{StringWriter w=new StringWriter();e.printStackTrace(new PrintWriter(w));write("crash.log","=== 崩溃 "+stamp()+" · 线程 "+t.getName()+" · "+version(c)+"\n"+w+"\n");}catch(Throwable ignored){}if(previous!=null)previous.uncaughtException(t,e);});
   }catch(Throwable ignored){}
  }
  static String stamp(){return new SimpleDateFormat("MM-dd HH:mm:ss",Locale.CHINA).format(new Date());}
  /** 运行事件：一行一条，相同内容连续出现只记一次。 */
  static String last="";
- static synchronized void event(String tag,String text){if(dir==null||text==null||text.trim().isEmpty())return;String line=tag+" · "+sanitize(text).replace('\n',' ').trim();if(line.equals(last))return;last=line;write("events.log",stamp()+"  "+line+"\n");}
+ /**
+  * 0.1.176：事件改在单独的后台线程上脱敏、去重、写文件，调用方只排个队就返回。
+  * 原来播放状态每变一次（缓冲百分比、P2P 速度…）都在主线程上同步跑一遍脱敏正则、打开文件、追加、关闭。
+  * 单线程按提交顺序执行，日志顺序和时间戳（取提交时刻）不变；读日志和写崩溃记录之前先 {@link #flush} 等队列写完。
+  */
+ static final java.util.concurrent.ExecutorService WRITER=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"debug-log");t.setDaemon(true);t.setPriority(Thread.MIN_PRIORITY);return t;});
+ static void event(String tag,String text){if(dir==null||text==null||text.trim().isEmpty())return;final long at=System.currentTimeMillis();
+  try{WRITER.execute(()->record(tag,text,at));}catch(RuntimeException rejected){record(tag,text,at);}}
+ static synchronized void record(String tag,String text,long at){try{String line=tag+" · "+sanitize(text).replace('\n',' ').trim();if(line.equals(last))return;last=line;write("events.log",stamp(at)+"  "+line+"\n");}catch(Throwable ignored){}}
+ static String stamp(long at){return new SimpleDateFormat("MM-dd HH:mm:ss",Locale.CHINA).format(new Date(at));}
+ /** 等已排队的事件写完，最多等 millis 毫秒（写线程自己调用时直接返回）。 */
+ static void flush(long millis){if("debug-log".equals(Thread.currentThread().getName()))return;try{WRITER.submit(()->{}).get(millis,java.util.concurrent.TimeUnit.MILLISECONDS);}catch(Throwable ignored){}}
  /** 网址只留主机名；去掉常见令牌参数。 */
  static String sanitize(String s){return DebugText.sanitize(s);}
  static synchronized void write(String name,String text){try{File f=new File(dir,name);if(f.length()>LIMIT){byte[] all=read(f);int keep=(int)(LIMIT/2);byte[] tail=Arrays.copyOfRange(all,Math.max(0,all.length-keep),all.length);try(FileOutputStream o=new FileOutputStream(f,false)){o.write(tail);}}try(FileOutputStream o=new FileOutputStream(f,true)){o.write(text.getBytes(StandardCharsets.UTF_8));}}catch(Throwable ignored){}}
  static byte[] read(File f)throws IOException{try(FileInputStream in=new FileInputStream(f);ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1)out.write(b,0,n);return out.toByteArray();}}
- static String tail(String name,int chars){try{File f=new File(dir,name);if(!f.exists())return "（无）";String s=new String(read(f),StandardCharsets.UTF_8);return s.length()>chars?"…"+s.substring(s.length()-chars):s;}catch(Throwable e){return "（读取失败）";}}
+ static String tail(String name,int chars){flush(500);try{File f=new File(dir,name);if(!f.exists())return "（无）";String s=new String(read(f),StandardCharsets.UTF_8);return s.length()>chars?"…"+s.substring(s.length()-chars):s;}catch(Throwable e){return "（读取失败）";}}
  static String version(Context c){try{android.content.pm.PackageInfo p=c.getPackageManager().getPackageInfo(c.getPackageName(),0);return p.versionName+" ("+p.versionCode+")";}catch(Throwable e){return "?";}}
  static String report(Context c){
   install(c);SharedPreferences p=c.getSharedPreferences("data",0);StringBuilder s=new StringBuilder();

@@ -82,7 +82,7 @@ final class HomeRules {
  /** 从「更新至48」「全16集」「48」等提取短数字角标。 */
  static String numericBadge(String raw){
   if(raw==null||raw.matches("\\d+\\.\\d+"))return "";
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(\\d{1,4})").matcher(raw);
+  java.util.regex.Matcher m=Rx.of("(\\d{1,4})").matcher(raw);
   String last="";while(m.find())last=m.group(1);
   if(last.isEmpty())return "";
   if(last.length()==4){int y=Integer.parseInt(last);if(y>=1900&&y<=2100)return "";}
