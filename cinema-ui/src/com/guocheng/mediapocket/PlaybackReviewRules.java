@@ -14,7 +14,7 @@ final class PlaybackReviewRules {
   if(video==null)return "版本";
   String title=video.optString("title",video.optString("name",""));
   String blob=title+" "+video.optString("resolution")+" "+video.optString("quality");
-  Matcher m=Pattern.compile("(?i)(2160p|1080p|720p|480p|4K)").matcher(blob);
+  Matcher m=Rx.of("(?i)(2160p|1080p|720p|480p|4K)").matcher(blob);
   String quality=m.find()?m.group(1).toUpperCase(java.util.Locale.ROOT):"";
   if(blob.toLowerCase(java.util.Locale.ROOT).contains("dolby vision"))quality+=" · Dolby Vision";
   else if(blob.toUpperCase(java.util.Locale.ROOT).contains("HDR"))quality+=" · HDR";
@@ -31,7 +31,7 @@ final class PlaybackReviewRules {
  static boolean feedbackVisible(boolean covered,boolean failure,boolean rendered,boolean terminal,String raw){return !covered&&(failure||(!rendered&&!terminal&&raw!=null&&!raw.trim().isEmpty()));}
  static String failureMessage(String raw){String s=raw==null?"":raw;if(s.contains("解码")||s.contains("格式"))return "这个视频暂时无法播放，可以换个片源试试";return "没连上这个片源，可以换一个试试";}
  static String loading(String raw){
-  Matcher m=Pattern.compile("(?:缓冲|buffer)[^0-9]{0,8}([0-9]{1,3})%",Pattern.CASE_INSENSITIVE).matcher(raw==null?"":raw);
+  Matcher m=Rx.of("(?:缓冲|buffer)[^0-9]{0,8}([0-9]{1,3})%",Pattern.CASE_INSENSITIVE).matcher(raw==null?"":raw);
   return m.find()?"正在连接 · 已缓冲 "+Math.min(100,Integer.parseInt(m.group(1)))+"%":"正在连接…";
  }
 }

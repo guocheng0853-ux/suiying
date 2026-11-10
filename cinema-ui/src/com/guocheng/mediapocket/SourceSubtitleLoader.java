@@ -1,7 +1,7 @@
 package com.guocheng.mediapocket;
 import android.app.*;import android.content.*;import android.widget.*;import org.json.*;import java.util.*;import java.lang.reflect.*;
 public final class SourceSubtitleLoader {
- static void set(Object target,String name,Object value)throws Exception{for(Class<?> c=target.getClass();c!=null;c=c.getSuperclass())try{Field f=c.getDeclaredField(name);f.setAccessible(true);f.set(target,value);return;}catch(NoSuchFieldException ignored){}throw new NoSuchFieldException(name);}
+ static void set(Object target,String name,Object value)throws Exception{Field f=ReflectCache.field(target.getClass(),name);if(f==null)throw new NoSuchFieldException(name);f.set(target,value);}
  /** 内嵌轨已经选中，或字幕应关闭时，作废还在下载的自动外挂字幕。 */
  static void stopAuto(Activity a){try{Object g=OnlineSubtitleSearch.field(a,"generation");int token=(g instanceof Integer?(Integer)g:0)+1;set(a,"generation",token);set(a,"cues",new ArrayList<Object>());}catch(Exception ignored){}}
  static JSONArray list(Activity a){Object stream=OnlineSubtitleSearch.field(a,"stream");return stream instanceof JSONObject?((JSONObject)stream).optJSONArray("subtitles"):null;}

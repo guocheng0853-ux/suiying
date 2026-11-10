@@ -91,20 +91,20 @@ final class PlayerOverlayRules {
   return fromId(id);
  }
  /** 「55: 标题」变成「第55集 · 标题」，单独的集号变成「第55集」。已经是片名的原样返回。 */
- static String presentEpisode(String raw){if(raw==null)return "";String t=raw.trim();if(t.isEmpty())return "";java.util.regex.Matcher m=java.util.regex.Pattern.compile("^(\\d{1,4})\\s*:\\s*(.+)$").matcher(t);if(m.find())return "第"+Integer.parseInt(m.group(1))+"集 · "+m.group(2).trim();if(t.matches("\\d{1,4}"))return "第"+Integer.parseInt(t)+"集";return t;}
+ static String presentEpisode(String raw){if(raw==null)return "";String t=raw.trim();if(t.isEmpty())return "";java.util.regex.Matcher m=Rx.of("^(\\d{1,4})\\s*:\\s*(.+)$").matcher(t);if(m.find())return "第"+Integer.parseInt(m.group(1))+"集 · "+m.group(2).trim();if(t.matches("\\d{1,4}"))return "第"+Integer.parseInt(t)+"集";return t;}
  static JSONObject current(JSONObject meta,String id){if(meta==null||id==null||id.isEmpty())return null;for(JSONObject video:EpisodeActions.list(meta))if(id.equals(video.optString("id")))return video;return null;}
  static String neighbor(JSONObject meta,String id,int direction){if(meta==null||id==null||direction==0)return null;ArrayList<JSONObject> list=EpisodeActions.list(meta);for(int i=0;i<list.size();i++){if(!id.equals(list.get(i).optString("id")))continue;int j=i+direction;if(j<0||j>=list.size())return null;String next=list.get(j).optString("id");return next.isEmpty()?null:next;}return null;}
  static boolean showNeighbor(String id){return id!=null&&!id.isEmpty();}
  /** 有剧集列表，或影视仓剧集（选集要现拉）时才显示最右图标。 */
  static boolean showEpisodes(int videos,boolean series,boolean tvbox){return videos>0||(tvbox&&series);}
- static String embyLine(String line){if(line==null)return "";java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?i)S\\d+E(\\d+)\\s*(?:·\\s*)?(.*)").matcher(line.trim());if(!m.find())return "";String title=m.group(2)==null?"":m.group(2).trim();int ep=Integer.parseInt(m.group(1));return title.isEmpty()?String.valueOf(ep):ep+": "+title;}
+ static String embyLine(String line){if(line==null)return "";java.util.regex.Matcher m=Rx.of("(?i)S\\d+E(\\d+)\\s*(?:·\\s*)?(.*)").matcher(line.trim());if(!m.find())return "";String title=m.group(2)==null?"":m.group(2).trim();int ep=Integer.parseInt(m.group(1));return title.isEmpty()?String.valueOf(ep):ep+": "+title;}
  static String tidyEpisode(String raw){
   if(raw==null)return "";String t=raw.trim();if(t.isEmpty())return "";
-  java.util.regex.Matcher colon=java.util.regex.Pattern.compile("^(\\d{1,4})\\s*[:：]\\s*(.+)$").matcher(t);if(colon.find())return Integer.parseInt(colon.group(1))+": "+colon.group(2).trim();
-  java.util.regex.Matcher se=java.util.regex.Pattern.compile("(?i)^S\\d+E(\\d+)\\s*[·.\\-]*\\s*(.*)$").matcher(t);if(se.find()){String title=se.group(2).trim();int ep=Integer.parseInt(se.group(1));return title.isEmpty()?String.valueOf(ep):ep+": "+title;}
-  java.util.regex.Matcher ep=java.util.regex.Pattern.compile("^第\\s*(\\d{1,4})\\s*集\\s*(.*)$").matcher(t);if(ep.find()){String title=ep.group(2).trim();int n=Integer.parseInt(ep.group(1));return title.isEmpty()?String.valueOf(n):n+": "+title;}
-  java.util.regex.Matcher num=java.util.regex.Pattern.compile("^(\\d{1,4})\\s+(.+)$").matcher(t);if(num.find())return Integer.parseInt(num.group(1))+": "+num.group(2).trim();
-  java.util.regex.Matcher only=java.util.regex.Pattern.compile("^(\\d{1,4})$").matcher(t);if(only.find())return String.valueOf(Integer.parseInt(only.group(1)));
+  java.util.regex.Matcher colon=Rx.of("^(\\d{1,4})\\s*[:：]\\s*(.+)$").matcher(t);if(colon.find())return Integer.parseInt(colon.group(1))+": "+colon.group(2).trim();
+  java.util.regex.Matcher se=Rx.of("(?i)^S\\d+E(\\d+)\\s*[·.\\-]*\\s*(.*)$").matcher(t);if(se.find()){String title=se.group(2).trim();int ep=Integer.parseInt(se.group(1));return title.isEmpty()?String.valueOf(ep):ep+": "+title;}
+  java.util.regex.Matcher ep=Rx.of("^第\\s*(\\d{1,4})\\s*集\\s*(.*)$").matcher(t);if(ep.find()){String title=ep.group(2).trim();int n=Integer.parseInt(ep.group(1));return title.isEmpty()?String.valueOf(n):n+": "+title;}
+  java.util.regex.Matcher num=Rx.of("^(\\d{1,4})\\s+(.+)$").matcher(t);if(num.find())return Integer.parseInt(num.group(1))+": "+num.group(2).trim();
+  java.util.regex.Matcher only=Rx.of("^(\\d{1,4})$").matcher(t);if(only.find())return String.valueOf(Integer.parseInt(only.group(1)));
   return t;
  }
  static String fromId(String id){if(id==null)return "";String[] p=id.split(":");if(p.length<3||"emby".equals(p[0])||"tvbox".equals(p[0]))return "";try{int ep=Integer.parseInt(p[p.length-1]);return ep>0?String.valueOf(ep):"";}catch(Exception e){return "";}}

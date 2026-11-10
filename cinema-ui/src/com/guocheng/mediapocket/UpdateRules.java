@@ -7,7 +7,7 @@ final class UpdateRules {
  static final String LATEST="https://api.github.com/repos/"+REPO+"/releases/latest";
  static final String PAGE="https://github.com/"+REPO+"/releases";
  /** "v0.1.106" / "随影 0.1.106-xxx" → [0,1,106]；没有数字返回空数组。 */
- static int[] parse(String v){if(v==null)return new int[0];java.util.regex.Matcher m=java.util.regex.Pattern.compile("(\\d+)(?:\\.(\\d+))?(?:\\.(\\d+))?(?:\\.(\\d+))?").matcher(v);if(!m.find())return new int[0];List<Integer> out=new ArrayList<>();for(int i=1;i<=4;i++)if(m.group(i)!=null)out.add(Integer.parseInt(m.group(i)));int[] r=new int[out.size()];for(int i=0;i<r.length;i++)r[i]=out.get(i);return r;}
+ static int[] parse(String v){if(v==null)return new int[0];java.util.regex.Matcher m=Rx.of("(\\d+)(?:\\.(\\d+))?(?:\\.(\\d+))?(?:\\.(\\d+))?").matcher(v);if(!m.find())return new int[0];List<Integer> out=new ArrayList<>();for(int i=1;i<=4;i++)if(m.group(i)!=null)out.add(Integer.parseInt(m.group(i)));int[] r=new int[out.size()];for(int i=0;i<r.length;i++)r[i]=out.get(i);return r;}
  static int compare(String a,String b){int[] x=parse(a),y=parse(b);for(int i=0;i<Math.max(x.length,y.length);i++){int p=i<x.length?x[i]:0,q=i<y.length?y[i]:0;if(p!=q)return Integer.compare(p,q);}return 0;}
  static boolean newer(String remote,String local){return parse(remote).length>0&&compare(remote,local)>0;}
  /** Release JSON → {version, apk 下载地址（没有安装包时为发布页）, 说明, 大小}；草稿 / 预发布跳过（latest 接口本来就不返回）。 */
