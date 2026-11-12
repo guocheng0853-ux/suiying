@@ -7,7 +7,9 @@ final class Media3VideoView extends FrameLayout implements MediaController.Media
  interface Prepared {void call(Media3VideoView view);} interface Info {boolean call(Media3VideoView view,int what,int extra);} interface Error {boolean call(Media3VideoView view,int what,int extra);} interface Complete {void call(Media3VideoView view);} interface Size {void call(Media3VideoView view,int width,int height);}
  Prepared prepared;Info info;Error error;Complete complete;Size size;MediaController controller;
  ExoPlayer player;final SurfaceView surface;boolean notified,autoDone,adjusting,holdText;String pendingSubtitle="";String failure="";int httpStatus;int width,height;boolean strictP5;String aspect="fit";float zoom=1f;android.widget.TextView subtitleView;final ArrayList<Runnable> cueTasks=new ArrayList<>();final ArrayList<SubtitleCueClock.Delayed> cueEvents=new ArrayList<>();
- Media3VideoView(Context c){super(c);surface=new SurfaceView(c);addView(surface,new LayoutParams(-1,-1,Gravity.CENTER));setOnClickListener(v->{if(controller!=null)controller.show();});}
+ /** 盖在 Surface 上的全屏层。平板把表面用 scale 拉满后，触摸仍落在这块没被缩放的布局上。 */
+ final View touch;
+ Media3VideoView(Context c){super(c);surface=new SurfaceView(c);surface.setClickable(false);surface.setFocusable(false);addView(surface,new LayoutParams(-1,-1,Gravity.CENTER));touch=new View(c);touch.setClickable(true);touch.setFocusable(false);addView(touch,new LayoutParams(-1,-1));setOnClickListener(v->{if(controller!=null)controller.show();});}
  static volatile Boolean p5Cache;
  static void warmDecoder(){Thread t=new Thread(Media3VideoView::supportsP5,"p5-probe");t.setDaemon(true);t.start();}
  static boolean supportsP5(){Boolean cached=p5Cache;if(cached!=null)return cached;synchronized(Media3VideoView.class){if(p5Cache!=null)return p5Cache;p5Cache=probeP5();return p5Cache;}}
