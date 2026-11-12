@@ -55,7 +55,7 @@ final class HomeNavBar extends FrameLayout {
   int prev=selected;selected=next;
   boolean move=animate&&prev>=0&&prev!=next&&getVisibility()==VISIBLE&&bar!=null&&motion();
   for(Item item:items)item.setLit(item.index==next?1f:0f,move);
-  if(!move){settle();return;}
+  if(!move){restOn(slot(selected));return;}
   if(slide!=null||motion.running){if(slide!=null){slide.cancel();slide=null;}launch(true);return;}
   slideQueued=true;
   bar.removeCallbacks(slideRunnable);
@@ -70,9 +70,16 @@ final class HomeNavBar extends FrameLayout {
   motion=motion.settle();
   placeShown(motion.shown);
  }
+ void restOn(BottomNavRules.Box target){
+  slideQueued=false;
+  if(bar!=null)bar.removeCallbacks(slideRunnable);
+  if(slide!=null){slide.cancel();slide=null;}
+  motion=BottomNavRules.selectMark(motion,target,false);
+  placeShown(motion.shown);
+ }
  void snapSoon(){
   if(bar==null)return;
-  bar.post(() -> {if(slide==null&&!slideQueued)placeShown(slot(selected));});
+  bar.post(() -> {if(slide!=null||slideQueued)return;BottomNavRules.Box fitted=slot(selected);if(BottomNavRules.markVisible(fitted))motion=BottomNavRules.Slide.resting(fitted);placeShown(BottomNavRules.markVisible(fitted)?motion.shown:fitted);});
  }
  boolean motion(){
   if(!ValueAnimator.areAnimatorsEnabled())return false;
@@ -246,7 +253,7 @@ final class HomeNavBar extends FrameLayout {
    lp.topMargin=dp(2);
    addView(text,lp);
   }
-  @Override public boolean onTouchEvent(MotionEvent e){if(!BottomNavRules.insideHit(e.getX(),e.getY(),getWidth(),getHeight(),dp(48)))return false;return super.onTouchEvent(e);}
+  @Override public boolean onTouchEvent(MotionEvent e){if(rail&&!BottomNavRules.insideHit(true,e.getX(),e.getY(),getWidth(),getHeight(),dp(48)))return false;return super.onTouchEvent(e);}
   void setLit(float target,boolean animate){
    if(litAnim!=null){litAnim.cancel();litAnim=null;}
    if(!animate){lit=target;paint();return;}

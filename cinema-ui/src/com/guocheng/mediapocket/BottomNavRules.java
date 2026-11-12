@@ -85,6 +85,16 @@ final class BottomNavRules {
   }
   Slide settle(){return resting(to!=null?to:shown);}
  }
+ /**
+  * select 的决定。move 为 false（去掉动画，或 animate=false）时停在新槽，
+  * 不要 settle 回上一段的目标。正在滑时改道从当前 shown 出发。
+  */
+ static Slide selectMark(Slide current,Box nextSlot,boolean move){
+  Slide base=current==null?Slide.resting(null):current;
+  if(!move)return base.play(nextSlot,false);
+  if(base.running)return base.retarget(nextSlot,true);
+  return base.play(nextSlot,true);
+ }
  static int railRightDp(){return RAIL_LEFT_DP+RAIL_WIDTH_DP;}
  /** 海报行的屏幕左边。侧轨时不小于侧轨右缘。 */
  static int contentScreenLeftDp(boolean rail,int safeLeftDp){return safeLeftDp+contentLeftDp(rail);}
@@ -93,9 +103,12 @@ final class BottomNavRules {
   * 没有侧轨时仍拉到 0。
   */
  static int fullBleedLeftMargin(int paddingLeftPx,int railRightPx,boolean rail){return (rail?railRightPx:0)-paddingLeftPx;}
- /** 48dp 热区居中。格子比热区大时，热区外面的点击让给底下的海报。 */
- static boolean insideHit(float x,float y,float viewW,float viewH,float minPx){
+ /**
+  * 手机胶囊整格可点。侧轨才把热区收成居中的 48dp，格子四角让给底下的海报。
+  */
+ static boolean insideHit(boolean rail,float x,float y,float viewW,float viewH,float minPx){
   if(viewW<=0f||viewH<=0f)return false;
+  if(!rail)return x>=0f&&y>=0f&&x<=viewW&&y<=viewH;
   if(viewW<minPx||viewH<minPx)return x>=0f&&y>=0f&&x<=viewW&&y<=viewH;
   float left=(viewW-minPx)/2f,top=(viewH-minPx)/2f;
   return x>=left&&x<=left+minPx&&y>=top&&y<=top+minPx;
