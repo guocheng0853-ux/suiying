@@ -13,8 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
- * 首页导航。手机（以及平板竖屏、分屏窄窗）是底部展开胶囊；平板横屏是左缘竖向侧轨。
- * 未选中的胶囊项只留图标，名称放在 contentDescription。展开动效跟系统「移除动画」。
+ * 首页导航。胶囊里四项等宽，图标在上、文字常在；选中是一块中性圆角底，切换时滑过去。
+ * 平板横屏同一套，改成竖向滑动。空处不吃点击，好让底下的海报还能点到。
  */
 final class HomeNavBar extends FrameLayout {
  interface TabClick { void onTab(String tab); }
@@ -22,37 +22,55 @@ final class HomeNavBar extends FrameLayout {
  private final String[] tabs;
  private final TabClick click;
  private final Item[] items;
- private Fade fade;
+ private final Runnable slideRunnable=this::startSlide;
  private Bar bar;
  private boolean rail,day;
  private int selected=-1;
  private int safeLeft,safeTop,safeRight,safeBottom;
+ private boolean slideQueued;
+ private ValueAnimator slide;
+ private BottomNavRules.Box shown;
 
  HomeNavBar(Context context,String[] tabs,TabClick click){
   super(context);
   this.tabs=tabs;this.click=click;
-  setClipChildren(false);setClipToPadding(false);setClickable(false);setFocusable(false);
+  setClickable(false);setFocusable(false);setClipChildren(false);setClipToPadding(false);
   items=new Item[tabs.length];
   for(int i=0;i<tabs.length;i++)items[i]=new Item(i,tabs[i]);
  }
- /** 旋转和分屏只换容器，选中项保持。详情页整条收起。 */
+ /** 详情页收起时停掉滑动。旋转换了形态就直接落到新位置，不补播。 */
  void layoutChrome(boolean rail,boolean day,int safeLeft,int safeTop,int safeRight,int safeBottom,boolean visible){
   this.safeLeft=safeLeft;this.safeTop=safeTop;this.safeRight=safeRight;this.safeBottom=safeBottom;
-  setVisibility(visible?VISIBLE:GONE);
-  if(!visible)return;
+  if(!visible){setVisibility(GONE);settle();return;}
   boolean modeChanged=bar==null||this.rail!=rail||this.day!=day;
   this.rail=rail;this.day=day;
-  if(fade==null){fade=new Fade(getContext());addView(fade);}
-  fade.setPage(day);fade.setVisibility(rail?GONE:VISIBLE);
-  if(modeChanged){buildBar();applyItems(false);}
+  setVisibility(VISIBLE);
+  if(modeChanged){settle();buildBar();}
   place();
+  if(modeChanged)snapSoon();
  }
  void select(int index,boolean animate){
   int next=BottomNavRules.keptIndex(index,items.length);
   int prev=selected;selected=next;
+  boolean move=animate&&prev>=0&&prev!=next&&getVisibility()==VISIBLE&&bar!=null&&motion();
+  for(Item item:items)item.setLit(item.index==next?1f:0f,move);
+  if(!move){settle();return;}
+  if(slide!=null){slide.cancel();slide=null;startSlide();return;}
+  slideQueued=true;
+  bar.removeCallbacks(slideRunnable);
+  bar.post(slideRunnable);
+ }
+ /** 配置变化或导航被收起：停在当前选中项，不把半截动画留着。 */
+ void settle(){
+  slideQueued=false;
+  if(bar!=null)bar.removeCallbacks(slideRunnable);
+  if(slide!=null){slide.cancel();slide=null;}
+  for(Item item:items)item.setLit(item.index==selected?1f:0f,false);
+  snapSoon();
+ }
+ void snapSoon(){
   if(bar==null)return;
-  boolean move=animate&&prev>=0&&prev!=next&&motion();
-  applyItems(move);
+  bar.post(() -> {if(slide==null&&!slideQueued)placeShown(slot(selected));});
  }
  boolean motion(){
   if(!ValueAnimator.areAnimatorsEnabled())return false;
@@ -62,170 +80,198 @@ final class HomeNavBar extends FrameLayout {
   float w=Settings.Global.getFloat(r,Settings.Global.WINDOW_ANIMATION_SCALE,1f);
   return BottomNavRules.motionEnabled(a,t,w);
  }
+ void startSlide(){
+  slideQueued=false;
+  if(bar==null||getVisibility()!=VISIBLE){placeShown(slot(selected));return;}
+  BottomNavRules.Box from=shown!=null?shown:slot(selected);
+  BottomNavRules.Box to=slot(selected);
+  if(slide!=null){slide.cancel();slide=null;}
+  slide=ValueAnimator.ofFloat(0f,1f);
+  slide.setDuration(BottomNavRules.slideMs(true));
+  slide.setInterpolator(EASE);
+  slide.addUpdateListener(a->{float u=(Float)a.getAnimatedValue();placeShown(BottomNavRules.lerp(from,to,u));});
+  slide.addListener(new AnimatorListenerAdapter(){
+   boolean cancelled;
+   public void onAnimationCancel(Animator animation){cancelled=true;if(slide==animation)slide=null;}
+   public void onAnimationEnd(Animator animation){if(cancelled)return;if(slide==animation)slide=null;placeShown(to);}
+  });
+  slide.start();
+ }
+ BottomNavRules.Box slot(int index){
+  if(bar==null)return new BottomNavRules.Box(0,0,0,0);
+  float pad=dp(rail?BottomNavRules.RAIL_PAD_DP:BottomNavRules.PILL_PAD_DP);
+  float inset=dp(BottomNavRules.MARK_INSET_DP);
+  float track=rail?bar.getHeight():bar.getWidth();
+  float cross=rail?bar.getWidth():bar.getHeight();
+  return BottomNavRules.indicator(rail,index,items.length,track,cross,pad,inset);
+ }
+ void placeShown(BottomNavRules.Box box){
+  shown=box;
+  if(bar!=null)bar.placeMark(box);
+ }
  void buildBar(){
-  if(bar!=null)removeView(bar);
+  if(bar!=null){bar.removeCallbacks(slideRunnable);removeView(bar);}
   bar=new Bar(getContext());
-  bar.setOrientation(rail?LinearLayout.VERTICAL:LinearLayout.HORIZONTAL);
-  bar.setGravity(android.view.Gravity.CENTER);
-  bar.setClipChildren(false);bar.setClipToPadding(false);
-  int pad=dp(rail?BottomNavRules.RAIL_PAD_DP:BottomNavRules.PILL_PAD_DP);
-  bar.setPadding(pad,pad,pad,pad);
   GradientDrawable plate=new GradientDrawable();
   plate.setColor(BottomNavRules.surface(day));
   plate.setCornerRadius(dp(rail?BottomNavRules.RAIL_RADIUS_DP:BottomNavRules.PILL_RADIUS_DP));
   plate.setStroke(Math.max(1,dp(1)),BottomNavRules.edge(day));
   bar.setBackground(plate);
-  bar.setClickable(true);bar.setFocusable(false);bar.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);bar.setElevation(dp(rail?8:6));
+  bar.setElevation(dp(day?2:3));
   if(android.os.Build.VERSION.SDK_INT>=28){int shadow=BottomNavRules.shadow(day);bar.setOutlineAmbientShadowColor(shadow);bar.setOutlineSpotShadowColor(shadow);}
-  GradientDrawable gap=new GradientDrawable();gap.setSize(dp(BottomNavRules.RAIL_GAP_DP),dp(BottomNavRules.RAIL_GAP_DP));
-  bar.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);bar.setDividerDrawable(gap);
-  for(Item item:items){if(item.getParent() instanceof ViewGroup)((ViewGroup)item.getParent()).removeView(item);bar.addView(item);}
+  for(Item item:items){if(item.getParent() instanceof ViewGroup)((ViewGroup)item.getParent()).removeView(item);bar.row.addView(item,itemParams());}
   addView(bar);
+  for(Item item:items)item.setLit(item.index==selected?1f:0f,false);
+ }
+ LinearLayout.LayoutParams itemParams(){
+  if(rail)return new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,dp(64));
+  return new LinearLayout.LayoutParams(0,LayoutParams.MATCH_PARENT,1f);
  }
  void place(){
-  if(fade!=null&&!rail){
-   FrameLayout.LayoutParams fadeLp=new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,dp(BottomNavRules.fadeHeightDp(0))+safeBottom,Gravity.BOTTOM);
-   fade.setLayoutParams(fadeLp);
-  }
   if(bar==null)return;
   if(rail){
    FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(dp(BottomNavRules.RAIL_WIDTH_DP),LayoutParams.WRAP_CONTENT,Gravity.START|Gravity.TOP);
    bar.setLayoutParams(lp);
   }else{
-   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,dp(BottomNavRules.PILL_HEIGHT_DP),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
+   int parent=getWidth();if(parent<=0)parent=getResources().getDisplayMetrics().widthPixels;
+   int gutter=Math.max(dp(BottomNavRules.NAV_PAD_H_DP),Math.max(safeLeft,safeRight));
+   int width=Math.min(Math.max(dp(160),parent-gutter*2),dp(480));
+   FrameLayout.LayoutParams lp=new FrameLayout.LayoutParams(width,dp(BottomNavRules.PILL_HEIGHT_DP),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
    lp.bottomMargin=safeBottom+dp(BottomNavRules.NAV_PAD_BOTTOM_DP);
-   lp.leftMargin=Math.max(dp(BottomNavRules.NAV_PAD_H_DP),safeLeft);
-   lp.rightMargin=Math.max(dp(BottomNavRules.NAV_PAD_H_DP),safeRight);
    bar.setLayoutParams(lp);
   }
  }
- void applyItems(boolean animate){for(Item item:items)item.setOn(item.index==selected,animate);}
  @Override protected void onLayout(boolean changed,int left,int top,int right,int bottom){
   super.onLayout(changed,left,top,right,bottom);
-  if(!rail||bar==null||getVisibility()!=VISIBLE)return;
-  int x=safeLeft+dp(BottomNavRules.RAIL_LEFT_DP);
-  int y=BottomNavRules.railTop(getHeight(),bar.getMeasuredHeight(),safeTop,safeBottom);
-  bar.layout(x,y,x+bar.getMeasuredWidth(),y+bar.getMeasuredHeight());
+  if(rail&&bar!=null&&getVisibility()==VISIBLE){
+   int x=safeLeft+dp(BottomNavRules.RAIL_LEFT_DP);
+   int y=BottomNavRules.railTop(getHeight(),bar.getMeasuredHeight(),safeTop,safeBottom);
+   bar.layout(x,y,x+bar.getMeasuredWidth(),y+bar.getMeasuredHeight());
+  }
+  if(slide==null&&!slideQueued)placeShown(slot(selected));
+  else if(shown!=null)bar.placeMark(shown);
  }
- @Override protected void onDetachedFromWindow(){super.onDetachedFromWindow();for(Item item:items)if(item.anim!=null)item.anim.cancel();}
+ @Override public boolean onTouchEvent(MotionEvent event){return false;}
+ @Override protected void onDetachedFromWindow(){settle();super.onDetachedFromWindow();}
  int dp(int value){return Math.round(value*getResources().getDisplayMetrics().density);}
  static int blend(int from,int to,float t){
-  float u=t<0?0:t>1?1:t;
+  float u=t<0f?0f:t>1f?1f:t;
   int af=(from>>>24)&255,at=(to>>>24)&255,rf=(from>>>16)&255,rt=(to>>>16)&255,gf=(from>>>8)&255,gt=(to>>>8)&255,bf=from&255,bt=to&255;
   return (Math.round(af+(at-af)*u)<<24)|(Math.round(rf+(rt-rf)*u)<<16)|(Math.round(gf+(gt-gf)*u)<<8)|Math.round(bf+(bt-bf)*u);
  }
 
- final class Fade extends View {
-  private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
-  private int tone=BottomNavRules.NIGHT_PAGE;
-  private int lastW=-1,lastH=-1;
-  Fade(Context context){super(context);setClickable(false);setFocusable(false);setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);}
-  void setPage(boolean day){int next=BottomNavRules.page(day);if(next!=tone){tone=next;lastH=-1;invalidate();}}
-  @Override protected void onDraw(Canvas canvas){
-   int w=getWidth(),h=getHeight();if(w<=0||h<=0)return;
-   if(w!=lastW||h!=lastH||paint.getShader()==null){
-    lastW=w;lastH=h;
-    paint.setShader(new LinearGradient(0,0,0,h,new int[]{BottomNavRules.fadeColor(tone,0f),BottomNavRules.fadeColor(tone,BottomNavRules.FADE_MID_ALPHA),BottomNavRules.fadeColor(tone,1f)},new float[]{0f,BottomNavRules.FADE_MID,1f},Shader.TileMode.CLAMP));
-   }
-   canvas.drawRect(0,0,w,h,paint);
+ final class Bar extends FrameLayout {
+  final Row row=new Row(getContext());
+  final Highlight mark=new Highlight(getContext());
+  Bar(Context context){
+   super(context);
+   setClickable(false);setFocusable(false);setClipChildren(false);setClipToPadding(false);
+   addView(mark,new LayoutParams(0,0));
+   row.setOrientation(rail?LinearLayout.VERTICAL:LinearLayout.HORIZONTAL);
+   int pad=dp(rail?BottomNavRules.RAIL_PAD_DP:BottomNavRules.PILL_PAD_DP);
+   row.setPadding(pad,pad,pad,pad);
+   row.setClickable(false);row.setFocusable(false);
+   addView(row,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
+  }
+  void placeMark(BottomNavRules.Box box){
+   if(box==null)return;
+   int w=Math.max(1,Math.round(box.w)),h=Math.max(1,Math.round(box.h));
+   mark.layout(0,0,w,h);
+   mark.setTranslationX(box.x);
+   mark.setTranslationY(box.y);
+  }
+  @Override public boolean onTouchEvent(MotionEvent event){return false;}
+  @Override protected void onLayout(boolean changed,int left,int top,int right,int bottom){
+   super.onLayout(changed,left,top,right,bottom);
+   if(shown!=null)placeMark(shown);
   }
  }
 
- final class Bar extends LinearLayout {
+ final class Row extends LinearLayout {
   private final Paint ring=new Paint(Paint.ANTI_ALIAS_FLAG);
   private final RectF rect=new RectF();
-  Bar(Context context){super(context);ring.setStyle(Paint.Style.STROKE);}
+  Row(Context context){super(context);ring.setStyle(Paint.Style.STROKE);setDefaultFocusHighlightEnabled(false);}
   @Override protected void dispatchDraw(Canvas canvas){
    super.dispatchDraw(canvas);
-   float o=Math.max(1,dp(2));
-   ring.setStrokeWidth(o);ring.setColor(BottomNavRules.focus(day));
-   float rad=dp(rail?BottomNavRules.RAIL_ITEM_RADIUS_DP:BottomNavRules.PILL_ITEM_RADIUS_DP)+o;
+   float sw=Math.max(1,dp(2));
+   ring.setStrokeWidth(sw);ring.setColor(BottomNavRules.focus(day));
    for(int i=0;i<getChildCount();i++){
-    View child=getChildAt(i);if(!child.isFocused())continue;
-    rect.set(child.getLeft()-o,child.getTop()-o,child.getRight()+o,child.getBottom()+o);
-    canvas.drawRoundRect(rect,rad,rad,ring);
+    View child=getChildAt(i);
+    if(!child.isFocused())continue;
+    float inset=sw/2f+dp(1);
+    rect.set(child.getLeft()+inset,child.getTop()+inset,child.getRight()-inset,child.getBottom()-inset);
+    canvas.drawRoundRect(rect,dp(BottomNavRules.MARK_RADIUS_DP),dp(BottomNavRules.MARK_RADIUS_DP),ring);
    }
+  }
+ }
+
+ final class Highlight extends View {
+  Highlight(Context context){
+   super(context);
+   setClickable(false);setFocusable(false);setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+   GradientDrawable plate=new GradientDrawable();
+   plate.setColor(BottomNavRules.mark(day));
+   plate.setCornerRadius(dp(BottomNavRules.MARK_RADIUS_DP));
+   plate.setStroke(Math.max(1,dp(1)),BottomNavRules.markEdge(day));
+   setBackground(plate);
   }
  }
 
  final class Item extends LinearLayout {
-  final int index;final String label;final Glyph glyph;final TextView text;final GradientDrawable chip=new GradientDrawable();
-  float shown;boolean on;ValueAnimator anim;
+  final int index;final String label;final Glyph glyph;final TextView text;
+  float lit;ValueAnimator litAnim;
   Item(int index,String label){
    super(HomeNavBar.this.getContext());
    this.index=index;this.label=label;
-   setOrientation(HORIZONTAL);setGravity(Gravity.CENTER);
-   setClickable(true);setFocusable(true);setDefaultFocusHighlightEnabled(false);
+   setOrientation(VERTICAL);setGravity(Gravity.CENTER);
+   setClickable(true);setFocusable(true);setFocusableInTouchMode(false);
+   setDefaultFocusHighlightEnabled(false);setForeground(null);setBackground(null);
+   setMinimumHeight(dp(48));
    setContentDescription(label);
    setOnClickListener(v->{if(click!=null)click.onTab(label);});
    glyph=new Glyph(index);
    addView(glyph,new LayoutParams(dp(BottomNavRules.ICON_DP),dp(BottomNavRules.ICON_DP)));
    text=new TextView(getContext());
    text.setText(label);text.setSingleLine(true);text.setIncludeFontPadding(false);text.setGravity(Gravity.CENTER);
+   text.setTextSize(TypedValue.COMPLEX_UNIT_SP,BottomNavRules.LABEL_SP);
    text.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
-   addView(text,new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
-   chip.setColor(0);setBackground(chip);
+   text.setFocusable(false);text.setClickable(false);
+   LayoutParams lp=new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
+   lp.topMargin=dp(2);
+   addView(text,lp);
   }
-  void setOn(boolean selected,boolean animate){
-   on=selected;float target=selected?1f:0f;
-   if(anim!=null){anim.cancel();anim=null;}
-   if(!animate){shown=target;apply();return;}
-   anim=ValueAnimator.ofFloat(shown,target);
-   anim.setDuration(rail?BottomNavRules.COLOR_MS:BottomNavRules.EXPAND_MS);
-   anim.setInterpolator(EASE);
-   anim.addUpdateListener(a->{shown=(Float)a.getAnimatedValue();apply();});
-   anim.addListener(new AnimatorListenerAdapter(){public void onAnimationEnd(Animator animation){if(anim==animation)anim=null;}});
-   anim.start();
+  void setLit(float target,boolean animate){
+   if(litAnim!=null){litAnim.cancel();litAnim=null;}
+   if(!animate){lit=target;paint();return;}
+   litAnim=ValueAnimator.ofFloat(lit,target);
+   litAnim.setDuration(BottomNavRules.slideMs(true));
+   litAnim.setInterpolator(EASE);
+   litAnim.addUpdateListener(a->{lit=(Float)a.getAnimatedValue();paint();});
+   litAnim.addListener(new AnimatorListenerAdapter(){public void onAnimationEnd(Animator animation){if(litAnim==animation)litAnim=null;}});
+   litAnim.start();
   }
-  void apply(){
-   setOrientation(rail?VERTICAL:HORIZONTAL);
-   setGravity(Gravity.CENTER);
-   setSelected(on);
-   LayoutParams self=getLayoutParams() instanceof LayoutParams?(LayoutParams)getLayoutParams():new LayoutParams(LayoutParams.WRAP_CONTENT,dp(BottomNavRules.PILL_ITEM_MIN_DP));
-   LayoutParams glyphLp=(LayoutParams)glyph.getLayoutParams();
-   glyphLp.width=dp(BottomNavRules.ICON_DP);glyphLp.height=dp(BottomNavRules.ICON_DP);glyphLp.topMargin=0;glyphLp.leftMargin=0;
-   LayoutParams textLp=(LayoutParams)text.getLayoutParams();
-   text.setTextSize(TypedValue.COMPLEX_UNIT_SP,BottomNavRules.labelSp(rail));
-   text.setTypeface(weight(on));
-   if(rail){
-    self.width=LayoutParams.MATCH_PARENT;self.height=dp(BottomNavRules.RAIL_ITEM_HEIGHT_DP);self.weight=0;
-    setMinimumWidth(0);setMinimumHeight(dp(BottomNavRules.railItemHeightDp()));
-    setPadding(0,0,0,0);
-    textLp.width=LayoutParams.WRAP_CONTENT;textLp.height=LayoutParams.WRAP_CONTENT;textLp.leftMargin=0;textLp.topMargin=dp(BottomNavRules.RAIL_LABEL_GAP_DP);
-    text.setAlpha(1f);text.setTextColor(blend(BottomNavRules.muted(day),BottomNavRules.onAccent(day),shown));
-    chip.setCornerRadius(dp(BottomNavRules.RAIL_ITEM_RADIUS_DP));
-   }else{
-    self.width=LayoutParams.WRAP_CONTENT;self.height=dp(BottomNavRules.PILL_ITEM_MIN_DP);self.weight=0;
-    setMinimumWidth(dp(BottomNavRules.pillItemMinDp()));setMinimumHeight(dp(BottomNavRules.pillItemMinDp()));
-    int start=lerp(dp(BottomNavRules.PILL_PAD_H_DP),dp(BottomNavRules.PILL_SEL_PAD_START_DP),shown);
-    int end=lerp(dp(BottomNavRules.PILL_PAD_H_DP),dp(BottomNavRules.PILL_SEL_PAD_END_DP),shown);
-    setPadding(start,0,end,0);
-    text.setTextColor(BottomNavRules.onAccent(day));text.setTypeface(weight(true));
-    float width=text.getPaint().measureText(label)*shown;
-    textLp.width=Math.max(0,(int)Math.ceil(width));textLp.height=LayoutParams.WRAP_CONTENT;
-    textLp.leftMargin=Math.round(dp(BottomNavRules.LABEL_GAP_DP)*shown);textLp.topMargin=0;
-    text.setAlpha(shown);
-    chip.setCornerRadius(dp(BottomNavRules.PILL_ITEM_RADIUS_DP));
-   }
-   setLayoutParams(self);text.setLayoutParams(textLp);glyph.setLayoutParams(glyphLp);
-   chip.setColor(blend(0,BottomNavRules.accent(day),shown));
-   glyph.icon.tint(blend(BottomNavRules.muted(day),BottomNavRules.onAccent(day),shown));
-   glyph.icon.fill(shown);glyph.invalidate();
+  void paint(){
+   setSelected(lit>0.5f);
+   text.setTextColor(blend(BottomNavRules.muted(day),BottomNavRules.ink(day),lit));
+   text.setTypeface(weight(lit>0.5f));
+   glyph.icon.tint(blend(BottomNavRules.muted(day),BottomNavRules.ink(day),lit));
+   glyph.icon.fill(lit);
+   glyph.invalidate();
   }
   Typeface weight(boolean selected){
    if(android.os.Build.VERSION.SDK_INT>=28)return Typeface.create(Typeface.create("sans-serif",Typeface.NORMAL),selected?600:400,false);
    return Typeface.create(selected?"sans-serif-medium":"sans-serif",Typeface.NORMAL);
   }
-  int lerp(int a,int b,float t){return Math.round(a+(b-a)*(t<0?0:t>1?1:t));}
-  @Override protected void onFocusChanged(boolean gain,int direction,Rect previously){
-   super.onFocusChanged(gain,direction,previously);
-   if(getParent() instanceof View)((View)getParent()).invalidate();
-  }
  }
 
  final class Glyph extends View {
   final HomeNavIcon icon;
-  Glyph(int kind){super(HomeNavBar.this.getContext());icon=new HomeNavIcon(kind,dp(BottomNavRules.ICON_DP),BottomNavRules.muted(false));setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);}
+  Glyph(int kind){
+   super(HomeNavBar.this.getContext());
+   icon=new HomeNavIcon(kind,dp(BottomNavRules.ICON_DP),BottomNavRules.muted(false));
+   setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+   setFocusable(false);setClickable(false);setDefaultFocusHighlightEnabled(false);
+  }
   @Override protected void onDraw(Canvas canvas){icon.setBounds(0,0,getWidth(),getHeight());icon.draw(canvas);}
  }
 }
