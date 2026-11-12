@@ -99,10 +99,18 @@ final class BottomNavRules {
  /** 海报行的屏幕左边。侧轨时不小于侧轨右缘。 */
  static int contentScreenLeftDp(boolean rail,int safeLeftDp){return safeLeftDp+contentLeftDp(rail);}
  /**
-  * 全宽海报的 leftMargin。侧轨时只拉到侧轨右缘，不再拉到屏幕左边压住四个标签。
-  * 没有侧轨时仍拉到 0。
+  * 英雄图的 leftMargin。侧轨是浮在图上的，图必须回到屏幕左缘，否则左边会露出另一张海报。
+  * 横滑行不走这条，它们用 rowStartPadding。
   */
- static int fullBleedLeftMargin(int paddingLeftPx,int railRightPx,boolean rail){return (rail?railRightPx:0)-paddingLeftPx;}
+ static int fullBleedLeftMargin(int paddingLeftPx,int railRightPx,boolean rail){return -paddingLeftPx;}
+ static int heroScreenLeft(int paddingLeftPx){return paddingLeftPx+fullBleedLeftMargin(paddingLeftPx,0,true);}
+ /** 横滑容器可以伸到侧轨底下，静止时第一张从侧轨右缘开始。 */
+ static int rowStartPadding(int scrollerScreenLeft,int railRight,boolean rail){return rail?Math.max(0,railRight-scrollerScreenLeft):0;}
+ static int rowLeftMargin(int bodyPaddingLeft,int scrollerScreenLeft){return scrollerScreenLeft-bodyPaddingLeft;}
+ static int rowRestScreenLeft(int scrollerScreenLeft,int railRight,boolean rail){return scrollerScreenLeft+rowStartPadding(scrollerScreenLeft,railRight,rail);}
+ /** 侧轨半透明，压在英雄图上仍能读出标签。手机胶囊保持不透明。 */
+ static final int RAIL_SCRIM_ALPHA=0xC0;
+ static int railSurface(boolean day){return (RAIL_SCRIM_ALPHA<<24)|(surface(day)&0xffffff);}
  /**
   * 手机胶囊整格可点。侧轨才把热区收成居中的 48dp，格子四角让给底下的海报。
   */

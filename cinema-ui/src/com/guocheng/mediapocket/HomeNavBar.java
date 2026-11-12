@@ -126,7 +126,7 @@ final class HomeNavBar extends FrameLayout {
   if(bar!=null){bar.removeCallbacks(slideRunnable);removeView(bar);}
   bar=new Bar(getContext());
   GradientDrawable plate=new GradientDrawable();
-  plate.setColor(BottomNavRules.surface(day));
+  plate.setColor(rail?BottomNavRules.railSurface(day):BottomNavRules.surface(day));
   plate.setCornerRadius(dp(rail?BottomNavRules.RAIL_RADIUS_DP:BottomNavRules.PILL_RADIUS_DP));
   plate.setStroke(Math.max(1,dp(1)),BottomNavRules.edge(day));
   bar.setBackground(plate);

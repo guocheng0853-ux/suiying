@@ -27,8 +27,14 @@ public class BottomNavMotionTest {
   int safe=36,railRight=BottomNavRules.railRightDp()+safe,content=BottomNavRules.contentScreenLeftDp(true,safe);
   check(content>=railRight,"poster strips start at or past the rail's right edge");
   int pad=content,margin=BottomNavRules.fullBleedLeftMargin(pad,railRight,true);
-  check(pad+margin==railRight,"full-bleed poster stops at the rail instead of sliding underneath the tabs");
-  check(BottomNavRules.fullBleedLeftMargin(pad,railRight,false)==-pad,"without a rail the hero still reaches the screen edge");
+  check(margin==-pad&&BottomNavRules.heroScreenLeft(pad)==0,"hero bleeds from the screen edge under the rail");
+  check(BottomNavRules.fullBleedLeftMargin(pad,railRight,false)==-pad,"phone hero also bleeds from the screen edge");
+  int rowAtRest=BottomNavRules.rowRestScreenLeft(0,railRight,true);
+  check(rowAtRest>=railRight&&BottomNavRules.rowStartPadding(0,railRight,true)==railRight,"poster rows rest at the rail's right edge and can scroll underneath");
+  check(BottomNavRules.rowStartPadding(0,railRight,false)==0,"phone rows do not pick up the rail padding");
+  int scrim=BottomNavRules.railSurface(false);
+  check(((scrim>>>24)&255)==BottomNavRules.RAIL_SCRIM_ALPHA&&(scrim&0xffffff)==(BottomNavRules.surface(false)&0xffffff),"rail is a translucent copy of the surface");
+  check(((BottomNavRules.surface(true)>>>24)&255)==255,"phone capsule stays opaque");
   float box=48f;
   BottomNavRules.Slide half=BottomNavRules.Slide.resting(A).play(B,true).advance(0.5f);
   BottomNavRules.Slide picked=BottomNavRules.selectMark(half,C,false);
