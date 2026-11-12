@@ -65,7 +65,7 @@ final class HomeChrome {
    LinearLayout card=continueCard(m,width);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(width,-2);lp.rightMargin=dp(10);row.addView(card,lp);
   }
-  scroller.addView(row);parent.addView(scroller);
+  scroller.addView(row);parent.addView(scroller);a.insetPosterRow(scroller);
  }
  LinearLayout continueCard(JSONObject meta,int width){
   LinearLayout c=new LinearLayout(a);c.setOrientation(1);c.setPadding(0,0,0,dp(6));
@@ -110,7 +110,7 @@ final class HomeChrome {
    LinearLayout card=libraryTile(tile[0],tile[1],tile[2],w,h);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(w,h);lp.rightMargin=dp(10);row.addView(card,lp);
   }
-  scroller.addView(row);a.body.addView(scroller);
+  scroller.addView(row);a.body.addView(scroller);a.insetPosterRow(scroller);
  }
  LinearLayout libraryTile(String title,String type,String genre,int w,int h){
   FrameLayout frame=new FrameLayout(a);frame.setBackground(round(a.card(),12));frame.setClipToOutline(true);
