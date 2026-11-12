@@ -29,6 +29,7 @@ final class HomeNavBar extends FrameLayout {
  private int safeLeft,safeTop,safeRight,safeBottom;
  private boolean slideQueued;
  private ValueAnimator slide;
+ private BottomNavRules.Slide motion=BottomNavRules.Slide.resting(null);
  private BottomNavRules.Box shown;
 
  HomeNavBar(Context context,String[] tabs,TabClick click){
@@ -55,7 +56,7 @@ final class HomeNavBar extends FrameLayout {
   boolean move=animate&&prev>=0&&prev!=next&&getVisibility()==VISIBLE&&bar!=null&&motion();
   for(Item item:items)item.setLit(item.index==next?1f:0f,move);
   if(!move){settle();return;}
-  if(slide!=null){slide.cancel();slide=null;startSlide();return;}
+  if(slide!=null||motion.running){if(slide!=null){slide.cancel();slide=null;}launch(true);return;}
   slideQueued=true;
   bar.removeCallbacks(slideRunnable);
   bar.post(slideRunnable);
@@ -66,7 +67,8 @@ final class HomeNavBar extends FrameLayout {
   if(bar!=null)bar.removeCallbacks(slideRunnable);
   if(slide!=null){slide.cancel();slide=null;}
   for(Item item:items)item.setLit(item.index==selected?1f:0f,false);
-  snapSoon();
+  motion=motion.settle();
+  placeShown(motion.shown);
  }
  void snapSoon(){
   if(bar==null)return;
@@ -80,20 +82,24 @@ final class HomeNavBar extends FrameLayout {
   float w=Settings.Global.getFloat(r,Settings.Global.WINDOW_ANIMATION_SCALE,1f);
   return BottomNavRules.motionEnabled(a,t,w);
  }
- void startSlide(){
-  slideQueued=false;
+ void startSlide(){slideQueued=false;launch(motion.running);}
+ void launch(boolean retarget){
   if(bar==null||getVisibility()!=VISIBLE){placeShown(slot(selected));return;}
-  BottomNavRules.Box from=shown!=null?shown:slot(selected);
   BottomNavRules.Box to=slot(selected);
+  if(!BottomNavRules.markVisible(to)){placeShown(to);return;}
+  boolean allow=motion();
+  motion=retarget?motion.retarget(to,allow):motion.play(to,allow);
   if(slide!=null){slide.cancel();slide=null;}
+  if(!motion.running){placeShown(motion.shown);return;}
+  final BottomNavRules.Slide origin=motion;
   slide=ValueAnimator.ofFloat(0f,1f);
   slide.setDuration(BottomNavRules.slideMs(true));
   slide.setInterpolator(EASE);
-  slide.addUpdateListener(a->{float u=(Float)a.getAnimatedValue();placeShown(BottomNavRules.lerp(from,to,u));});
+  slide.addUpdateListener(a->{motion=origin.advance((Float)a.getAnimatedValue());placeShown(motion.shown);});
   slide.addListener(new AnimatorListenerAdapter(){
    boolean cancelled;
    public void onAnimationCancel(Animator animation){cancelled=true;if(slide==animation)slide=null;}
-   public void onAnimationEnd(Animator animation){if(cancelled)return;if(slide==animation)slide=null;placeShown(to);}
+   public void onAnimationEnd(Animator animation){if(cancelled)return;if(slide==animation)slide=null;motion=origin.advance(1f);placeShown(motion.shown);}
   });
   slide.start();
  }
@@ -148,7 +154,7 @@ final class HomeNavBar extends FrameLayout {
    int y=BottomNavRules.railTop(getHeight(),bar.getMeasuredHeight(),safeTop,safeBottom);
    bar.layout(x,y,x+bar.getMeasuredWidth(),y+bar.getMeasuredHeight());
   }
-  if(slide==null&&!slideQueued)placeShown(slot(selected));
+  if(slide==null&&!slideQueued){BottomNavRules.Box fitted=slot(selected);if(BottomNavRules.markVisible(fitted))motion=BottomNavRules.Slide.resting(fitted);placeShown(fitted);}
   else if(shown!=null)bar.placeMark(shown);
  }
  @Override public boolean onTouchEvent(MotionEvent event){return false;}
@@ -174,9 +180,9 @@ final class HomeNavBar extends FrameLayout {
    addView(row,new LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
   }
   void placeMark(BottomNavRules.Box box){
-   if(box==null)return;
-   int w=Math.max(1,Math.round(box.w)),h=Math.max(1,Math.round(box.h));
-   mark.layout(0,0,w,h);
+   if(!BottomNavRules.markVisible(box)){mark.setAlpha(0f);return;}
+   mark.setAlpha(1f);
+   mark.layout(0,0,Math.round(box.w),Math.round(box.h));
    mark.setTranslationX(box.x);
    mark.setTranslationY(box.y);
   }
@@ -213,7 +219,7 @@ final class HomeNavBar extends FrameLayout {
    plate.setColor(BottomNavRules.mark(day));
    plate.setCornerRadius(dp(BottomNavRules.MARK_RADIUS_DP));
    plate.setStroke(Math.max(1,dp(1)),BottomNavRules.markEdge(day));
-   setBackground(plate);
+   setBackground(plate);setAlpha(0f);
   }
  }
 
@@ -240,6 +246,7 @@ final class HomeNavBar extends FrameLayout {
    lp.topMargin=dp(2);
    addView(text,lp);
   }
+  @Override public boolean onTouchEvent(MotionEvent e){if(!BottomNavRules.insideHit(e.getX(),e.getY(),getWidth(),getHeight(),dp(48)))return false;return super.onTouchEvent(e);}
   void setLit(float target,boolean animate){
    if(litAnim!=null){litAnim.cancel();litAnim=null;}
    if(!animate){lit=target;paint();return;}
