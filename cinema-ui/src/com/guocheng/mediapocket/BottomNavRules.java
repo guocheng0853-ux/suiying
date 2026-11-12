@@ -107,10 +107,23 @@ final class BottomNavRules {
  /** 横滑容器可以伸到侧轨底下，静止时第一张从侧轨右缘开始。 */
  static int rowStartPadding(int scrollerScreenLeft,int railRight,boolean rail){return rail?Math.max(0,railRight-scrollerScreenLeft):0;}
  static int rowLeftMargin(int bodyPaddingLeft,int scrollerScreenLeft){return scrollerScreenLeft-bodyPaddingLeft;}
+ /** 没有侧轨时边距和起始内边距都回到 0，不能留下横屏时的负边距。 */
+ static int rowLeftMarginFor(boolean rail,int bodyPaddingLeft,int scrollerScreenLeft){return rail?rowLeftMargin(bodyPaddingLeft,scrollerScreenLeft):0;}
+ static int rowStartPaddingFor(boolean rail,int scrollerScreenLeft,int railRight){return rowStartPadding(scrollerScreenLeft,railRight,rail);}
  static int rowRestScreenLeft(int scrollerScreenLeft,int railRight,boolean rail){return scrollerScreenLeft+rowStartPadding(scrollerScreenLeft,railRight,rail);}
- /** 侧轨半透明，压在英雄图上仍能读出标签。手机胶囊保持不透明。 */
- static final int RAIL_SCRIM_ALPHA=0xC0;
- static int railSurface(boolean day){return (RAIL_SCRIM_ALPHA<<24)|(surface(day)&0xffffff);}
+ /** 夜间侧轨 75% 表面色。日间压在亮海报上要更实，标签才过 4.5:1。 */
+ static final int RAIL_SCRIM_ALPHA=0xC0,RAIL_SCRIM_ALPHA_LIGHT=0xE6;
+ static int railScrimAlpha(boolean day){return day?RAIL_SCRIM_ALPHA_LIGHT:RAIL_SCRIM_ALPHA;}
+ static int railSurface(boolean day){return (railScrimAlpha(day)<<24)|(surface(day)&0xffffff);}
+ /** 把带透明度的侧轨底叠到海报上，用来测最亮底上的字。 */
+ static int composite(int fg,int bg){
+  int a=(fg>>>24)&255;if(a>=255)return 0xff000000|(fg&0xffffff);
+  int inv=255-a;
+  int r=(((fg>>>16)&255)*a+((bg>>>16)&255)*inv)/255;
+  int g=(((fg>>>8)&255)*a+((bg>>>8)&255)*inv)/255;
+  int b=((fg&255)*a+(bg&255)*inv)/255;
+  return 0xff000000|(r<<16)|(g<<8)|b;
+ }
  /**
   * 手机胶囊整格可点。侧轨才把热区收成居中的 48dp，格子四角让给底下的海报。
   */
