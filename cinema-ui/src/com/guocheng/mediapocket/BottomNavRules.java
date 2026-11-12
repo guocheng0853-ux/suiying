@@ -52,6 +52,67 @@ final class BottomNavRules {
   if(a==null)return b;if(b==null)return a;
   return new Box(a.x+(b.x-a.x)*u,a.y+(b.y-a.y)*u,a.w+(b.w-a.w)*u,a.h+(b.h-a.h)*u);
  }
+ /** 宽或高还没量出来时不要画选中块，避免先闪出 1px。 */
+ static boolean markVisible(Box box){return box!=null&&box.w>=1f&&box.h>=1f;}
+ /**
+  * 选中块的滑动状态。连点改道时 from 取当前 shown，不回到上一段的起点或终点。
+  * settle 直接落到当前目标。motion 为 false 时不播，立刻到目标。
+  */
+ static final class Slide {
+  final Box from,to,shown;
+  final float progress;
+  final boolean running;
+  Slide(Box from,Box to,Box shown,float progress,boolean running){this.from=from;this.to=to;this.shown=shown;this.progress=progress;this.running=running;}
+  static Slide resting(Box at){return new Slide(at,at,at,1f,false);}
+  Slide play(Box target,boolean motion){
+   if(target==null)return this;
+   if(!motion)return resting(target);
+   Box start=shown!=null?shown:target;
+   return new Slide(start,target,start,0f,true);
+  }
+  Slide advance(float t){
+   if(!running||from==null||to==null)return this;
+   float u=t<0f?0f:t>1f?1f:t;
+   if(u>=1f)return new Slide(from,to,to,1f,false);
+   return new Slide(from,to,lerp(from,to,u),u,true);
+  }
+  /** 从当前已经画出的位置改去新目标。 */
+  Slide retarget(Box target,boolean motion){
+   if(target==null)return this;
+   Box start=shown!=null?shown:target;
+   if(!motion)return resting(target);
+   return new Slide(start,target,start,0f,true);
+  }
+  Slide settle(){return resting(to!=null?to:shown);}
+ }
+ /**
+  * select 的决定。move 为 false（去掉动画，或 animate=false）时停在新槽，
+  * 不要 settle 回上一段的目标。正在滑时改道从当前 shown 出发。
+  */
+ static Slide selectMark(Slide current,Box nextSlot,boolean move){
+  Slide base=current==null?Slide.resting(null):current;
+  if(!move)return base.play(nextSlot,false);
+  if(base.running)return base.retarget(nextSlot,true);
+  return base.play(nextSlot,true);
+ }
+ static int railRightDp(){return RAIL_LEFT_DP+RAIL_WIDTH_DP;}
+ /** 海报行的屏幕左边。侧轨时不小于侧轨右缘。 */
+ static int contentScreenLeftDp(boolean rail,int safeLeftDp){return safeLeftDp+contentLeftDp(rail);}
+ /**
+  * 全宽海报的 leftMargin。侧轨时只拉到侧轨右缘，不再拉到屏幕左边压住四个标签。
+  * 没有侧轨时仍拉到 0。
+  */
+ static int fullBleedLeftMargin(int paddingLeftPx,int railRightPx,boolean rail){return (rail?railRightPx:0)-paddingLeftPx;}
+ /**
+  * 手机胶囊整格可点。侧轨才把热区收成居中的 48dp，格子四角让给底下的海报。
+  */
+ static boolean insideHit(boolean rail,float x,float y,float viewW,float viewH,float minPx){
+  if(viewW<=0f||viewH<=0f)return false;
+  if(!rail)return x>=0f&&y>=0f&&x<=viewW&&y<=viewH;
+  if(viewW<minPx||viewH<minPx)return x>=0f&&y>=0f&&x<=viewW&&y<=viewH;
+  float left=(viewW-minPx)/2f,top=(viewH-minPx)/2f;
+  return x>=left&&x<=left+minPx&&y>=top&&y<=top+minPx;
+ }
  static boolean useRail(int windowWidthDp,int windowHeightDp,int smallestWidthDp){
   if(windowWidthDp<=windowHeightDp)return false;
   if(windowWidthDp<RAIL_MIN_DP)return false;
@@ -62,7 +123,7 @@ final class BottomNavRules {
  /** 每一项都显示文字，不再把未选中项收成图标。 */
  static boolean labelVisible(boolean rail,boolean selected){return true;}
  static int labelSp(boolean rail){return LABEL_SP;}
- static int contentLeftDp(boolean railVisible){return railVisible?CONTENT_LEFT_DP:PAGE_INSET_DP;}
+ static int contentLeftDp(boolean railVisible){return railVisible?Math.max(CONTENT_LEFT_DP,railRightDp()):PAGE_INSET_DP;}
  static int contentBottomDp(boolean railVisible,boolean detail){return contentBottomDp(railVisible,detail,false);}
  static int contentBottomDp(boolean railVisible,boolean detail,boolean keyboard){
   if(detail)return DETAIL_BOTTOM_DP;
@@ -90,6 +151,8 @@ final class BottomNavRules {
  static int edge(boolean day){return day?DAY_EDGE:NIGHT_EDGE;}
  static int focus(boolean day){return day?DAY_FOCUS:NIGHT_FOCUS;}
  static int shadow(boolean day){return day?DAY_SHADOW:NIGHT_SHADOW;}
+ /** 电视蓝框。首页导航自己有一圈，这里排除掉。 */
+ static boolean drawsTvFocusRing(boolean touchMode,boolean textField,int width,boolean insideHomeNav){return !touchMode&&!textField&&width>0&&!insideHomeNav;}
  static boolean motionEnabled(float animatorScale,float transitionScale,float windowScale){
   return animatorScale>0f&&transitionScale>0f&&windowScale>0f;
  }

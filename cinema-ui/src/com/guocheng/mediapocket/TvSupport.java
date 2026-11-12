@@ -15,10 +15,13 @@ final class TvSupport {
   public void onActivityCreated(Activity a,Bundle b){}public void onActivityStarted(Activity a){}public void onActivityPaused(Activity a){}public void onActivityStopped(Activity a){}public void onActivitySaveInstanceState(Activity a,Bundle b){}public void onActivityDestroyed(Activity a){FOCUS.remove(a);KEYS.remove(a);}});}
 
  static Drawable ring(Activity a){float d=a.getResources().getDisplayMetrics().density;GradientDrawable g=new GradientDrawable();g.setColor(0x1fffffff);g.setStroke(Math.round(3*d),0xff78b7ff);g.setCornerRadius(12*d);return g;}
+ /** 首页胶囊和侧轨自己画一圈焦点，这里不再套 3dp 蓝框。 */
+ static boolean insideHomeNav(View v){for(android.view.ViewParent p=v.getParent();p!=null;p=p.getParent())if(p instanceof HomeNavBar)return true;return false;}
+ static boolean drawsFocusRing(boolean touchMode,boolean textField,int width,boolean insideHomeNav){return BottomNavRules.drawsTvFocusRing(touchMode,textField,width,insideHomeNav);}
  /** 方向键焦点高亮：只在非触屏模式下画，换焦点时恢复原来的前景。 */
  static void focus(Activity a){try{if(FOCUS.containsKey(a))return;FOCUS.put(a,true);View decor=a.getWindow().getDecorView();
   decor.getViewTreeObserver().addOnGlobalFocusChangeListener((old,now)->{try{if(old!=null&&SAVED.containsKey(old)){old.setForeground(SAVED.remove(old));}
-   if(now!=null&&!now.isInTouchMode()&&!(now instanceof android.widget.EditText)&&now.getWidth()>0){SAVED.put(now,now.getForeground());now.setForeground(ring(a));}}catch(Throwable ignored){}});}catch(Throwable ignored){}}
+   if(now!=null&&drawsFocusRing(now.isInTouchMode(),now instanceof android.widget.EditText,now.getWidth(),insideHomeNav(now))){SAVED.put(now,now.getForeground());now.setForeground(ring(a));}}catch(Throwable ignored){}});}catch(Throwable ignored){}}
 
  /** 播放页按键，由 PlayerChrome 每次轮询调用；只装一次。 */
  static void player(Activity a){if(KEYS.containsKey(a))return;KEYS.put(a,true);try{Window w=a.getWindow();Window.Callback original=w.getCallback();if(original==null)return;Set<Integer> held=new HashSet<>();
