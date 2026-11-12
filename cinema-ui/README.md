@@ -1,3 +1,7 @@
+# 随影 0.1.178 首页展开胶囊 + 平板侧轨（code 179）
+
+基于 main 0.1.177（code 178）。查过全部远端分支，0.1.178 / versionCode 179 没有被占用；0.1.176 / versionCode 177 仍在 `claude/hot-path-caches-0176`。只改首页底栏，不改 0.1.175 详情页和 0.1.177 播放页手势。
+
 # 随影 0.1.177 播放页上下滑（code 178）
 
 基于 main 0.1.175（code 176）。0.1.176 / versionCode 177 在 `claude/hot-path-caches-0176`，0.1.174 用户用过，本版用 0.1.177 / versionCode 178。不改 0.1.175 的详情页。
