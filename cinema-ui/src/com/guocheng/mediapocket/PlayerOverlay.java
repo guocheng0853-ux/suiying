@@ -230,12 +230,13 @@ final class PlayerOverlay {
   boolean failure=PlaybackReviewRules.failure(rendered,terminal,message,premature);
   boolean covered=PlayerSidePanel.open(a)||CinemaMenu.isOpen(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode());
   EmbyAutoRecovery.nativeTick(a,failure,covered||!a.hasWindowFocus(),message);
+  FusionReconnect.tick(a,failure,PlayerSidePanel.open(a)||CinemaMenu.isOpen(a),message);
   connectHud(a,!PlaybackReviewRules.feedbackVisible(covered,failure,rendered,terminal,message)?"":failure?PlaybackReviewRules.failureMessage(message):PlaybackReviewRules.loading(message),failure);
  }
  static void connectHud(Activity a,String text,boolean failure){
   View host=root(a);if(!(host instanceof FrameLayout))return;FrameLayout root=(FrameLayout)host;
   View old=root.findViewWithTag("mp-connect");if(old!=null)old.setVisibility(View.GONE);
-  LinearLayout box=root.findViewWithTag("mp-playback-feedback");if(failure&&!text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);PlaybackFailureCard.show(a,root,text,()->{if(EmbyAutoRecovery.pending(a))EmbyAutoRecovery.cancel(a);else retrySource(a);},()->{EmbyAutoRecovery.cancel(a);PlayerSidePanel.open(a,PlayerSidePanel.ROUTES);});return;}PlaybackFailureCard.hide(root);if(text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);return;}
+  LinearLayout box=root.findViewWithTag("mp-playback-feedback");if(failure&&!text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);PlaybackFailureCard.show(a,root,text,()->{if(EmbyAutoRecovery.pending(a))EmbyAutoRecovery.cancel(a);else if(FusionReconnect.pending(a))FusionReconnect.cancel(a);else if(!FusionReconnect.manual(a))retrySource(a);},()->{EmbyAutoRecovery.cancel(a);FusionReconnect.cancel(a);PlayerSidePanel.open(a,PlayerSidePanel.ROUTES);});return;}PlaybackFailureCard.hide(root);if(text.isEmpty()){if(box!=null)box.setVisibility(View.GONE);return;}
   if(box==null){box=new LinearLayout(a);box.setTag("mp-playback-feedback");box.setOrientation(LinearLayout.VERTICAL);box.setGravity(Gravity.CENTER);box.setPadding(dp(a,16),dp(a,12),dp(a,16),dp(a,12));box.setBackground(PlayerTheme.card(a.getResources().getDisplayMetrics().density));root.addView(box,new FrameLayout.LayoutParams(-2,-2,Gravity.CENTER));}
   String key="load:"+text;if(!key.equals(box.getContentDescription())){box.removeAllViews();box.setContentDescription(key);
    ProgressBar progress=new ProgressBar(a);progress.setIndeterminateTintList(android.content.res.ColorStateList.valueOf(PlayerTheme.playbackAccent(CinemaTheme.gold(a))));box.addView(progress,new LinearLayout.LayoutParams(dp(a,28),dp(a,28)));
