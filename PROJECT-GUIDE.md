@@ -1,5 +1,7 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
+> 0.1.183（code 184）：影视仓片源播到一半失败时自动重连。同一线路重新取播放地址（最多连续 2 次）并从断点续播，再换同一集的其他线路（最多 3 条），都不行才交回跨站查找 / 失败卡片；卡片的「重新连接」对影视仓线路改成重新取地址。入口在 `PlayerOverlay.status` → `FusionReconnect.tick`，规则在 `FusionReconnectRules`。没有真机验证。
+
 > 0.1.182（code 183）：原 0.1.176 的提速搬到最新 main 上，界面和功能不变。反射查找结果缓存（`ReflectCache`），片源文字解析结果复用（`StreamInfo.parse`），正则按表达式缓存（`Rx`），调试日志改到后台线程写，海报磁盘缓存清理最多 30 秒一次；补回 Emby 单集主视觉读错字段的修复。新写反射或正则时走 `ReflectCache` / `Rx`。本机签名包，没有真机验证。
 
 > 0.1.181（code 182）：平板横屏英雄图重新铺满到屏幕左缘，侧轨浮在同一张图上。0.1.180 把全宽图截到侧轨右边，左边露出另一张海报。继续观看等横滑行静止时仍从侧轨右缘开始。0.1.181 没有被远端占用。没有打签名包，没有真机点选。
@@ -70,7 +72,7 @@ cinema-ui/AndroidManifest.xml 扩展层的清单（入口是 ScrapedMainActivity
 | --- | --- |
 | `cinema-ui/build_ui.py` | 构建脚本（Linux）。输出 `deliverables/MediaPocket-<版本>-<名>-arm64.apk` |
 | `cinema-ui/verify_apk.py` | 构建后校验：类唯一、方法 ABI、版本号、原版代码 / so / assets 未被改动 |
-| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 114 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
+| `cinema-ui/tests/*Test.java` | JVM 单测（`main` 方法）。`scripts/run_tests.sh` 全跑，数量等于该目录下的 `*Test.java`，当前 115 个。通过后写入 `cinema-ui/build/jvm-tests.passed`，`verify_apk.py` 读取这个数字，不再写死次数。 |
 | `cinema-ui/README.md` | 每个版本一条更新记录（新的在最上面），写清验证范围 |
 | `cinema-ui/VALIDATION.json` | 构建自动生成的校验摘要 |
 | `cinema-ui/assets/fusion-default.example.json` | 默认影视仓配置的**脱敏样例**；真实的 `fusion-default.json` 含用户个人令牌，只在本地，已 gitignore |

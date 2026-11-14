@@ -15,18 +15,18 @@ final class ReflectCache {
   if(type==null||name==null)return null;
   ConcurrentHashMap<String,Object> known=FIELDS.get(type);if(known==null){FIELDS.putIfAbsent(type,new ConcurrentHashMap<String,Object>());known=FIELDS.get(type);}
   Object hit=known.get(name);if(hit!=null)return hit==MISSING?null:(Field)hit;
-  Field found=null;
-  for(Class<?> c=type;c!=null&&found==null;c=c.getSuperclass())try{Field f=c.getDeclaredField(name);f.setAccessible(true);found=f;}catch(Exception|LinkageError ignored){}
-  known.put(name,found==null?MISSING:found);return found;
+  Field found=null;boolean absent=false;
+  for(Class<?> c=type;c!=null&&found==null;c=c.getSuperclass())try{Field f=c.getDeclaredField(name);f.setAccessible(true);found=f;}catch(NoSuchFieldException ignored){absent=true;}catch(Exception|LinkageError e){return null;}
+  if(found!=null)known.put(name,found);else if(absent)known.put(name,MISSING);return found;
  }
  /** 沿继承链找到的第一个同名同参数方法（已 setAccessible）；没有返回 null。 */
  static Method method(Class<?> type,String name,Class<?>[] types){
   if(type==null||name==null)return null;
   ConcurrentHashMap<String,Object> known=METHODS.get(type);if(known==null){METHODS.putIfAbsent(type,new ConcurrentHashMap<String,Object>());known=METHODS.get(type);}
   String key=key(name,types);Object hit=known.get(key);if(hit!=null)return hit==MISSING?null:(Method)hit;
-  Method found=null;
-  for(Class<?> c=type;c!=null&&found==null;c=c.getSuperclass())try{Method m=c.getDeclaredMethod(name,types);m.setAccessible(true);found=m;}catch(NoSuchMethodException|LinkageError ignored){}
-  known.put(key,found==null?MISSING:found);return found;
+  Method found=null;boolean absent=false;
+  for(Class<?> c=type;c!=null&&found==null;c=c.getSuperclass())try{Method m=c.getDeclaredMethod(name,types);m.setAccessible(true);found=m;}catch(NoSuchMethodException ignored){absent=true;}catch(Exception|LinkageError e){return null;}
+  if(found!=null)known.put(key,found);else if(absent)known.put(key,MISSING);return found;
  }
  static String key(String name,Class<?>[] types){if(types==null||types.length==0)return name;StringBuilder b=new StringBuilder(name);for(Class<?> t:types)b.append(',').append(t==null?"?":t.getName());return b.toString();}
 }
