@@ -12,8 +12,9 @@ final class Rx {
  private static final ConcurrentHashMap<String,Pattern> CACHE=new ConcurrentHashMap<>();
  static Pattern of(String regex){return of(regex,0);}
  static Pattern of(String regex,int flags){
-  String key=flags==0?regex:flags+"\u0000"+regex;Pattern p=CACHE.get(key);if(p!=null)return p;
-  p=Pattern.compile(regex,flags);if(CACHE.size()<LIMIT)CACHE.put(key,p);return p;
+  String key=flags==0?regex:flags+"\u0000"+regex;
+  Pattern compiled=Pattern.compile(regex,flags);
+  synchronized(CACHE){Pattern p=CACHE.get(key);if(p!=null)return p;if(CACHE.size()<LIMIT)CACHE.put(key,compiled);return compiled;}
  }
  static int size(){return CACHE.size();}
 }

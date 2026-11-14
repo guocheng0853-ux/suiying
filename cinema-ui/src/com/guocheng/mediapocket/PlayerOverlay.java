@@ -230,7 +230,7 @@ final class PlayerOverlay {
   boolean failure=PlaybackReviewRules.failure(rendered,terminal,message,premature);
   boolean covered=PlayerSidePanel.open(a)||CinemaMenu.isOpen(a)||PlayerGestures.locked(a)||(Build.VERSION.SDK_INT>=24&&a.isInPictureInPictureMode());
   EmbyAutoRecovery.nativeTick(a,failure,covered||!a.hasWindowFocus(),message);
-  FusionReconnect.tick(a,failure,PlayerSidePanel.open(a)||CinemaMenu.isOpen(a),message);
+  FusionReconnect.tick(a,failure,covered||!a.hasWindowFocus(),message);
   connectHud(a,!PlaybackReviewRules.feedbackVisible(covered,failure,rendered,terminal,message)?"":failure?PlaybackReviewRules.failureMessage(message):PlaybackReviewRules.loading(message),failure);
  }
  static void connectHud(Activity a,String text,boolean failure){

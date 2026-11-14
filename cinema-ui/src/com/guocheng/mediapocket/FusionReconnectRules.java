@@ -22,6 +22,11 @@ final class FusionReconnectRules {
   if(embyItem!=null&&!embyItem.isEmpty())return false;
   return !value.trim().toLowerCase(Locale.ROOT).startsWith("magnet:");
  }
+ /** 开播时记下的续播点和播放中更新的位置，取更大的那个。读取失败不会回写 resumePos，只涨 lastPos。 */
+ static long playedMs(long resumePos,long lastPos){return Math.max(resumePos,lastPos);}
+ /** 成功换源后这么久内，250ms 轮询即使还看见旧的失败状态也不再 start。 */
+ static final long GRACE_MS=2000;
+ static boolean holdOff(long nowMs,long graceUntilMs){return graceUntilMs>nowMs;}
  /** blocked：用户正开着面板或菜单（可能正在自己选片源），这时不抢。 */
  static boolean eligible(boolean enabled,boolean route,boolean failure,boolean active,boolean blocked,long playedMs,int total){
   return enabled&&route&&failure&&active&&!blocked&&playedMs>=MIN_PLAYED_MS&&total<TOTAL_MAX;

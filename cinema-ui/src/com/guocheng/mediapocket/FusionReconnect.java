@@ -8,28 +8,31 @@ import android.app.Activity;import android.content.SharedPreferences;import org.
  */
 final class FusionReconnect {
  private FusionReconnect(){}
- static final class Run {String id="";volatile int same,total,step,token=-1;volatile long attemptPos=-1;volatile boolean pending,exhausted;volatile String flag="";final Set<String> triedValues=Collections.synchronizedSet(new HashSet<String>());volatile List<FusionPlaybackRules.Route> alternatives;}
+ static final class Run {String id="";volatile int same,total,step,token=-1;volatile long attemptPos=-1,graceUntil;volatile boolean pending,exhausted;volatile String flag="";final Set<String> triedValues=Collections.synchronizedSet(new HashSet<String>());volatile List<FusionPlaybackRules.Route> alternatives;}
  static final Map<Activity,Run> ALL=new WeakHashMap<>();
- static Run run(Activity a){Run r=ALL.get(a);String id=String.valueOf(OnlineSubtitleSearch.field(a,"id"));if(r==null||!r.id.equals(id)){r=new Run();r.id=id;ALL.put(a,r);}return r;}
- static boolean pending(Activity a){Run r=ALL.get(a);return r!=null&&r.pending;}
- static boolean exhausted(Activity a){Run r=ALL.get(a);return r!=null&&r.exhausted&&!r.pending;}
- static String hint(Activity a){Run r=ALL.get(a);return r==null?"":FusionReconnectRules.hint(r.step,r.same,r.flag);}
- static void cancel(Activity a){Run r=ALL.get(a);if(r==null||!r.pending)return;r.pending=false;PlaybackSitePicker.state(a).token++;DebugLog.event("影视仓","自动重连已取消");}
- static void dispose(Activity a){ALL.remove(a);}
+ static final Object LOCK=new Object();
+ static Run run(Activity a){synchronized(LOCK){Run r=ALL.get(a);String id=String.valueOf(OnlineSubtitleSearch.field(a,"id"));if(r==null||!r.id.equals(id)){r=new Run();r.id=id;ALL.put(a,r);}return r;}}
+ static boolean pending(Activity a){synchronized(LOCK){Run r=ALL.get(a);return r!=null&&r.pending;}}
+ static boolean exhausted(Activity a){synchronized(LOCK){Run r=ALL.get(a);return r!=null&&r.exhausted&&!r.pending;}}
+ static String hint(Activity a){synchronized(LOCK){Run r=ALL.get(a);return r==null?"":FusionReconnectRules.hint(r.step,r.same,r.flag);}}
+ static void cancel(Activity a){Run r;synchronized(LOCK){r=ALL.get(a);}if(r==null||!r.pending)return;r.pending=false;PlaybackSitePicker.state(a).token++;DebugLog.event("影视仓","自动重连已取消");}
+ static void dispose(Activity a){cancel(a);synchronized(LOCK){ALL.remove(a);}}
  /** 当前这条线路：先看 meta（播放页内换线路后更新的是它），没有再看片源本身（开播时 rememberLine 写进去的）。 */
  static JSONObject line(Activity a){JSONObject s=TrackSelection.stream(a),m=PlaybackSitePicker.meta(a);JSONObject out=new JSONObject();try{for(String k:new String[]{"fusion.config","fusion.site","fusion.flag","fusion.value"}){String v=m.optString(k);out.put(k,v.isEmpty()?s.optString(k):v);}out.put("emby.item",s.optString("emby.item"));}catch(JSONException ignored){}return out;}
  static boolean route(JSONObject l){return FusionReconnectRules.route(l.optString("fusion.config"),l.optString("fusion.site"),l.optString("fusion.flag"),l.optString("fusion.value"),l.optString("emby.item"));}
  static long position(Activity a,String name){Object v=OnlineSubtitleSearch.field(a,name);return v instanceof Number?((Number)v).longValue():0;}
  /** 这条片源归不归这里管（PlaybackSitePicker.onFailure 用它决定要不要先让同线路重连试一下）。 */
- static boolean covers(Activity a){try{Run r=run(a);if(r.exhausted)return false;SharedPreferences p=a.getSharedPreferences("data",0);return FusionReconnectRules.eligible(p.getBoolean("autoSwitch",true),route(line(a)),true,true,false,Math.max(position(a,"resumePos"),position(a,"lastPos")),r.total);}catch(Throwable t){return false;}}
+ static long played(Activity a){return FusionReconnectRules.playedMs(position(a,"resumePos"),position(a,"lastPos"));}
+ static boolean covers(Activity a){try{Run r=run(a);if(r.exhausted)return false;SharedPreferences p=a.getSharedPreferences("data",0);return FusionReconnectRules.eligible(p.getBoolean("autoSwitch",true),route(line(a)),true,true,false,played(a),r.total);}catch(Throwable t){return false;}}
  static void tick(Activity a,boolean failure,boolean blocked,String raw){
   try{
    Run r=run(a);
    if(!failure){if(!r.pending&&r.attemptPos>=0&&FusionReconnectRules.settled(position(a,"lastPos"),r.attemptPos)){r.same=0;r.attemptPos=-1;r.exhausted=false;r.triedValues.clear();r.alternatives=null;}return;}
    if(r.pending){if(PlaybackSitePicker.state(a).token!=r.token)r.pending=false;return;}
+   if(FusionReconnectRules.holdOff(System.currentTimeMillis(),r.graceUntil))return;
    if(r.exhausted)return;
    boolean active=Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"active"));
-   if(!FusionReconnectRules.eligible(a.getSharedPreferences("data",0).getBoolean("autoSwitch",true),route(line(a)),true,active,blocked,position(a,"resumePos"),r.total))return;
+   if(!FusionReconnectRules.eligible(a.getSharedPreferences("data",0).getBoolean("autoSwitch",true),route(line(a)),true,active,blocked,played(a),r.total))return;
    start(a,r,raw);
   }catch(Throwable ignored){}
  }
@@ -37,7 +40,7 @@ final class FusionReconnect {
  static boolean manual(Activity a){try{if(!route(line(a)))return false;Run r=run(a);r.same=0;r.total=0;r.exhausted=false;r.triedValues.clear();r.alternatives=null;start(a,r,"手动重新连接");return true;}catch(Throwable t){return false;}}
  static void start(final Activity a,final Run r,String raw)throws Exception{
   final JSONObject l=line(a);final JSONObject m=PlaybackSitePicker.meta(a);final PlaybackSitePicker.State state=PlaybackSitePicker.state(a);
-  final long resume=position(a,"resumePos");r.pending=true;r.exhausted=false;r.attemptPos=resume;r.token=++state.token;state.automatic=false;final int token=r.token;
+  final long resume=played(a);r.pending=true;r.exhausted=false;r.graceUntil=0;r.attemptPos=resume;r.token=++state.token;state.automatic=false;final int token=r.token;
   r.step=FusionReconnectRules.SAME;r.flag=l.optString("fusion.flag");
   DebugLog.event("影视仓","播到 "+PlaybackEndRules.mmss(resume)+" 断开（"+(raw==null?"":raw.replace('\n',' '))+"），自动重新获取播放地址");
   final String episode=m.optString("subtitleEpisode");
@@ -60,14 +63,16 @@ final class FusionReconnect {
    }
    final JSONObject stream=got;final FusionPlaybackRules.Route route=used;final FusionCatalog.Session s=session;
    a.runOnUiThread(()->{
-    if(state.token!=token||!PlaybackSitePicker.alive(a)){r.pending=false;return;}
-    r.pending=false;
-    if(stream==null||route==null){r.exhausted=true;DebugLog.event("影视仓","自动重连没有成功，交回其他站点查找 / 手动恢复");if(Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"active"))&&Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"autoSwitch")))PlaybackSitePicker.automatic(a);return;}
-    if(!Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal")))return;
-    try{if(position(a,"resumePos")<resume)SourceSubtitleLoader.set(a,"resumePos",(int)Math.min(Integer.MAX_VALUE,resume));}catch(Exception ignored){}
-    PlaybackSitePicker.apply(a,s,stream,episode,false);
-    try{PlaybackSitePicker.meta(a).put("fusion.flag",route.flag).put("fusion.value",route.value);}catch(Exception ignored){}
-    FullscreenMode.hud(a,FusionReconnectRules.resumed(resume));
+    try{
+     if(state.token!=token||!PlaybackSitePicker.alive(a))return;
+     if(stream==null||route==null){r.exhausted=true;DebugLog.event("影视仓","自动重连没有成功，交回其他站点查找 / 手动恢复");if(Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"active"))&&Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"autoSwitch")))PlaybackSitePicker.automatic(a);return;}
+     if(!Boolean.TRUE.equals(OnlineSubtitleSearch.field(a,"terminal")))return;
+     try{SourceSubtitleLoader.set(a,"resumePos",(int)Math.min(Integer.MAX_VALUE,resume));}catch(Exception ignored){}
+     PlaybackSitePicker.apply(a,s,stream,episode,false);
+     try{PlaybackSitePicker.meta(a).put("fusion.flag",route.flag).put("fusion.value",route.value);}catch(Exception ignored){}
+     r.graceUntil=System.currentTimeMillis()+FusionReconnectRules.GRACE_MS;
+     FullscreenMode.hud(a,FusionReconnectRules.resumed(resume));
+    }finally{r.pending=false;}
    });
   });
  }

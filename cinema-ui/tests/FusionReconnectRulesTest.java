@@ -17,6 +17,10 @@ public class FusionReconnectRulesTest {
   check(!FusionReconnectRules.eligible(true,true,true,true,true,60_000,0),"user has a panel or menu open");
   check(!FusionReconnectRules.eligible(true,true,true,true,false,FusionReconnectRules.MIN_PLAYED_MS-1,0),"never really started: a fresh address would be the same one");
   check(FusionReconnectRules.eligible(true,true,true,true,false,FusionReconnectRules.MIN_PLAYED_MS,0),"boundary");
+  long played=FusionReconnectRules.playedMs(0,20*60_000L);
+  check(played==20*60_000L&&FusionReconnectRules.eligible(true,true,true,true,false,played,0),"resumePos stays 0 after a read failure, lastPos still makes it eligible and is the resume point");
+  check(FusionReconnectRules.playedMs(90_000L,20_000L)==90_000L,"a stored resume ahead of lastPos is kept");
+  check(FusionReconnectRules.holdOff(1_000,1_001)&&!FusionReconnectRules.holdOff(3_000,1_000+FusionReconnectRules.GRACE_MS),"grace window blocks the 250ms poll from starting again");
   check(!FusionReconnectRules.eligible(true,true,true,true,false,60_000,FusionReconnectRules.TOTAL_MAX),"per-episode cap");
   // 顺序：同线路两次，再换线路，最后放弃
   check(FusionReconnectRules.next(0,0,-1,0)==FusionReconnectRules.SAME&&FusionReconnectRules.next(1,0,-1,1)==FusionReconnectRules.SAME,"same line first, twice");

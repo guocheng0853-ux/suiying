@@ -18,15 +18,19 @@ final class DebugLog {
  static String stamp(){return new SimpleDateFormat("MM-dd HH:mm:ss",Locale.CHINA).format(new Date());}
  /** 运行事件：一行一条，相同内容连续出现只记一次。 */
  static String last="";
+ static volatile int generation;
  /**
   * 0.1.182：事件改在单独的后台线程上脱敏、去重、写文件，调用方只排个队就返回。
   * 原来播放状态每变一次（缓冲百分比、P2P 速度…）都在主线程上同步跑一遍脱敏正则、打开文件、追加、关闭。
   * 单线程按提交顺序执行，日志顺序和时间戳（取提交时刻）不变；读日志和写崩溃记录之前先 {@link #flush} 等队列写完。
+  * 队列有上限，满了丢掉最旧的一条。清空会把 generation 加一，已经排队、属于上一轮的事件不再写回。
   */
- static final java.util.concurrent.ExecutorService WRITER=java.util.concurrent.Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"debug-log");t.setDaemon(true);t.setPriority(Thread.MIN_PRIORITY);return t;});
- static void event(String tag,String text){if(dir==null||text==null||text.trim().isEmpty())return;final long at=System.currentTimeMillis();
-  try{WRITER.execute(()->record(tag,text,at));}catch(RuntimeException rejected){record(tag,text,at);}}
- static synchronized void record(String tag,String text,long at){try{String line=tag+" · "+sanitize(text).replace('\n',' ').trim();if(line.equals(last))return;last=line;write("events.log",stamp(at)+"  "+line+"\n");}catch(Throwable ignored){}}
+ static final java.util.concurrent.ThreadPoolExecutor WRITER;
+ static {java.util.concurrent.ArrayBlockingQueue<Runnable> queue=new java.util.concurrent.ArrayBlockingQueue<>(64);WRITER=new java.util.concurrent.ThreadPoolExecutor(1,1,0L,java.util.concurrent.TimeUnit.MILLISECONDS,queue,r->{Thread t=new Thread(r,"debug-log");t.setDaemon(true);t.setPriority(Thread.MIN_PRIORITY);return t;},new java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy());}
+ static void event(String tag,String text){if(dir==null||text==null||text.trim().isEmpty())return;final long at=System.currentTimeMillis();final int gen=generation;
+  try{WRITER.execute(()->record(tag,text,at,gen));}catch(RuntimeException rejected){record(tag,text,at,gen);}}
+ static synchronized void record(String tag,String text,long at,int gen){if(gen!=generation)return;try{String line=tag+" · "+sanitize(text).replace('\n',' ').trim();if(line.equals(last))return;last=line;write("events.log",stamp(at)+"  "+line+"\n");}catch(Throwable ignored){}}
+ static synchronized void clear(){generation++;last="";try{if(dir!=null){new File(dir,"crash.log").delete();new File(dir,"events.log").delete();}}catch(Exception ignored){}}
  static String stamp(long at){return new SimpleDateFormat("MM-dd HH:mm:ss",Locale.CHINA).format(new Date(at));}
  /** 等已排队的事件写完，最多等 millis 毫秒（写线程自己调用时直接返回）。 */
  static void flush(long millis){if("debug-log".equals(Thread.currentThread().getName()))return;try{WRITER.submit(()->{}).get(millis,java.util.concurrent.TimeUnit.MILLISECONDS);}catch(Throwable ignored){}}
@@ -49,6 +53,6 @@ final class DebugLog {
   new AlertDialog.Builder(a).setTitle("调试信息").setView(sv)
    .setPositiveButton("分享",(d,n)->{try{Intent i=new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_SUBJECT,"随影调试信息").putExtra(Intent.EXTRA_TEXT,text);a.startActivity(Intent.createChooser(i,"发送调试信息"));}catch(Exception ignored){}})
    .setNeutralButton("复制",(d,n)->{try{((ClipboardManager)a.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("随影调试信息",text));android.widget.Toast.makeText(a,"已复制",android.widget.Toast.LENGTH_SHORT).show();}catch(Exception ignored){}})
-   .setNegativeButton("清空",(d,n)->{try{new File(dir,"crash.log").delete();new File(dir,"events.log").delete();last="";}catch(Exception ignored){}}).show();
+   .setNegativeButton("清空",(d,n)->clear()).show();
  }
 }
