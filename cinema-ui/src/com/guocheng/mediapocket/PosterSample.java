@@ -1,6 +1,9 @@
 package com.guocheng.mediapocket;
 /** 封面解码尺寸。不依赖 Android，方便核对 inSampleSize。 */
 final class PosterSample {
+ /** 0.1.182 磁盘缓存清理的最小间隔；第一次加载图片时就清一次（next 为 0）。 */
+ static final long TRIM_GAP_MS=30_000;
+ static boolean trimDue(long nowMs,long nextMs){return nowMs>=nextMs;}
  private PosterSample(){}
  /**
   * 最大的 2 的幂，使抽样后的宽度仍然不小于目标宽。

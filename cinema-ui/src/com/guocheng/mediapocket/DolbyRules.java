@@ -28,9 +28,9 @@ final class DolbyRules {
   return SDR;
  }
  /** 「DoviProfile50」「Profile 5」「Dolby Vision Profile 8.1」→ 5 / 8；看不出返回 -1。 */
- static int profileIn(String text){if(text==null)return -1;java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?i)(?:dovi\\s*profile|profile)\\s*(\\d)").matcher(text);return m.find()?Integer.parseInt(m.group(1)):-1;}
+ static int profileIn(String text){if(text==null)return -1;java.util.regex.Matcher m=Rx.of("(?i)(?:dovi\\s*profile|profile)\\s*(\\d)").matcher(text);return m.find()?Integer.parseInt(m.group(1)):-1;}
  /** 文件名 / 标题里写了杜比视界（DV、DoVi、Dolby Vision、杜比视界）。避免把 DVD、DVB 这类词误判。 */
- static boolean mentionsDv(String text){if(text==null||text.isEmpty())return false;String t=text.toLowerCase(Locale.ROOT);if(t.contains("dolby vision")||t.contains("dolby.vision")||t.contains("dolbyvision")||t.contains("dovi")||t.contains("杜比视界"))return true;return java.util.regex.Pattern.compile("(?i)(^|[ ._\\-\\[(])dv([ ._\\-\\])]|$)").matcher(text).find();}
+ static boolean mentionsDv(String text){if(text==null||text.isEmpty())return false;String t=text.toLowerCase(Locale.ROOT);if(t.contains("dolby vision")||t.contains("dolby.vision")||t.contains("dolbyvision")||t.contains("dovi")||t.contains("杜比视界"))return true;return Rx.of("(?i)(^|[ ._\\-\\[(])dv([ ._\\-\\])]|$)").matcher(text).find();}
  /** VLC 播放会颜色异常的类型。 */
  static boolean risky(String kind){return P5.equals(kind)||DV.equals(kind);}
  /** 版本名后面的标记。 */

@@ -13,20 +13,35 @@ final class StreamInfo {
  static String classifyHdr(String raw){String u=raw==null?"":raw.toUpperCase(Locale.ROOT);boolean dv=dvToken(raw),hdr10p=has(u,"HDR10\\+|HDR10PLUS"),hdr10=has(u,"HDR10\\b"),hlg=has(u,"\\bHLG\\b"),hdr=has(u,"\\bHDR\\b");return dv&&(hdr10p||hdr10||hdr)?"DV+HDR":dv?"DV":hdr10p?"HDR10+":hdr10?"HDR10":hlg?"HLG":hdr?"HDR":"";}
  /** Profile 只在同一段文字已经写了杜比视界时才认，避免把 x264 High Profile 5.1 当成杜比 Profile 5。 */
  static int dvProfile(String raw){return dvToken(raw)?DolbyRules.profileIn(raw):-1;}
- static StreamInfo parse(JSONObject s){StreamInfo i=new StreamInfo();if(s==null)return i;String t=text(s),u=t.toUpperCase(Locale.ROOT);
+ /**
+  * 0.1.182：同一条片源的文字只解析一次。排序打分、DV 风险判断、筛选、画卡片各自都会调 parse，一条片源要过二十多个正则；
+  * 上百条片源时这些重复解析都在主线程上。文字相同（name / title / description / filename 都一样）时，画质、编码、音频、
+  * 帧率、文字里的体积和做种数必然相同，直接复用；behaviorHints.videoSize、是否种子、文件名每次仍从条目本身现取。
+  * 每次返回新对象，调用方改它不影响缓存。最多记 {@link #MEMO_LIMIT} 条，按最近使用淘汰。
+  */
+ static final int MEMO_LIMIT=600;
+ private static final LinkedHashMap<String,StreamInfo> MEMO=new LinkedHashMap<String,StreamInfo>(256,0.75f,true){protected boolean removeEldestEntry(Map.Entry<String,StreamInfo> e){return size()>MEMO_LIMIT;}};
+ static StreamInfo parse(JSONObject s){StreamInfo i=new StreamInfo();if(s==null)return i;String t=text(s),release=releaseText(s),key=t+'\u0000'+release;
+  StreamInfo known;synchronized(MEMO){known=MEMO.get(key);}
+  if(known==null){known=fromText(t,release);synchronized(MEMO){MEMO.put(key,known);}}
+  i.height=known.height;i.hdr=known.hdr;i.dvProfile=known.dvProfile;i.codec=known.codec;i.audio=known.audio;i.fps=known.fps;i.seeds=known.seeds;i.bytes=known.bytes;
+  JSONObject h=s.optJSONObject("behaviorHints");long hinted=h==null?0:h.optLong("videoSize",0);if(hinted>0)i.bytes=hinted;
+  i.file=h==null?"":h.optString("filename");i.p2p=s.has("infoHash")||s.optString("url").startsWith("magnet:");return i;}
+ /** 只由文字决定的部分。bytes 是文字里写的体积，条目带 videoSize 时由 parse 覆盖。 */
+ static StreamInfo fromText(String t,String release){StreamInfo i=new StreamInfo();String u=t.toUpperCase(Locale.ROOT);
   if(has(u,"2160P|\\b4K\\b|\\bUHD\\b"))i.height=2160;else if(has(u,"1440P|\\b2K\\b"))i.height=1440;else if(has(u,"1080P|\\bFHD\\b"))i.height=1080;else if(has(u,"720P"))i.height=720;else if(has(u,"576P|480P|\\bSD\\b|DVDRIP"))i.height=480;
-  String release=releaseText(s),hdrFrom=release.isEmpty()?t:release;i.hdr=classifyHdr(hdrFrom);i.dvProfile=dvProfile(hdrFrom);
+  String hdrFrom=release.isEmpty()?t:release;i.hdr=classifyHdr(hdrFrom);i.dvProfile=dvProfile(hdrFrom);
   if(i.dvProfile==5&&(i.hdr.startsWith("DV")||i.hdr.isEmpty()))i.hdr="DV";else if(i.dvProfile>5&&("DV".equals(i.hdr)||i.hdr.isEmpty()))i.hdr="DV+HDR";
   i.codec=has(u,"\\bAV1\\b")?"AV1":has(u,"HEVC|X265|H\\.?265")?"HEVC":has(u,"\\bAVC\\b|X264|H\\.?264")?"AVC":has(u,"\\bVP9\\b")?"VP9":"";
   i.audio=has(u,"ATMOS")?"Atmos":has(u,"TRUEHD")?"TrueHD":has(u,"DTS-?HD|DTS:?X")?"DTS-HD":has(u,"\\bDTS\\b")?"DTS":has(u,"DDP|E-?AC-?3|DD\\+")?"DD+":has(u,"\\bAC-?3\\b|\\bDD5")?"AC3":has(u,"\\bAAC\\b")?"AAC":"";
   Matcher f=FPS.matcher(t);if(f.find())i.fps=f.group(1).replaceAll("\\.0+$","");
-  JSONObject h=s.optJSONObject("behaviorHints");long hinted=h==null?0:h.optLong("videoSize",0);if(hinted>0)i.bytes=hinted;else{Matcher m=SIZE.matcher(t);if(m.find()){double v=Double.parseDouble(m.group(1).replace(',','.'));String unit=m.group(2).toUpperCase(Locale.ROOT);double mul=unit.equals("GIB")?1073741824d:unit.equals("MIB")?1048576d:unit.startsWith("T")?1e12:unit.startsWith("G")?1e9:1e6;i.bytes=(long)(v*mul);}}
+  {Matcher m=SIZE.matcher(t);if(m.find()){double v=Double.parseDouble(m.group(1).replace(',','.'));String unit=m.group(2).toUpperCase(Locale.ROOT);double mul=unit.equals("GIB")?1073741824d:unit.equals("MIB")?1048576d:unit.startsWith("T")?1e12:unit.startsWith("G")?1e9:1e6;i.bytes=(long)(v*mul);}}
   Matcher sd=SEEDS.matcher(t);if(sd.find())try{i.seeds=Integer.parseInt(sd.group(1));}catch(NumberFormatException ignored){}
-  i.file=h==null?"":h.optString("filename");i.p2p=s.has("infoHash")||s.optString("url").startsWith("magnet:");return i;}
- static boolean has(String u,String re){return Pattern.compile(re).matcher(u).find();}
+  return i;}
+ static boolean has(String u,String re){return Rx.of(re).matcher(u).find();}
  String resolution(){return height>=2160?"4K":height>0?height+"p":"";}
  /** runtime 形如 "2h 14m"/"134 min"/"134"；返回分钟，未知为 0。 */
- static int minutes(String runtime){if(runtime==null)return 0;Matcher h=Pattern.compile("(\\d+)\\s*h").matcher(runtime),m=Pattern.compile("(\\d+)\\s*m").matcher(runtime);int total=0;boolean any=false;if(h.find()){total+=Integer.parseInt(h.group(1))*60;any=true;}if(m.find()){total+=Integer.parseInt(m.group(1));any=true;}if(!any){Matcher n=Pattern.compile("^\\s*(\\d+)\\s*$").matcher(runtime);if(n.find())total=Integer.parseInt(n.group(1));}return total;}
+ static int minutes(String runtime){if(runtime==null)return 0;Matcher h=Rx.of("(\\d+)\\s*h").matcher(runtime),m=Rx.of("(\\d+)\\s*m").matcher(runtime);int total=0;boolean any=false;if(h.find()){total+=Integer.parseInt(h.group(1))*60;any=true;}if(m.find()){total+=Integer.parseInt(m.group(1));any=true;}if(!any){Matcher n=Rx.of("^\\s*(\\d+)\\s*$").matcher(runtime);if(n.find())total=Integer.parseInt(n.group(1));}return total;}
  /** 估算码率（Mbps），大小或片长未知时返回 0。 */
  double mbps(int minutes){return bytes<=0||minutes<=0?0:bytes*8.0/(minutes*60.0)/1e6;}
  static String size(long b){if(b<=0)return "";return b>=1e9?String.format(Locale.ROOT,"%.1f GB",b/1e9):String.format(Locale.ROOT,"%d MB",Math.round(b/1e6));}
