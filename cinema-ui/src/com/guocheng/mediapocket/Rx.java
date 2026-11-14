@@ -10,11 +10,15 @@ final class Rx {
  private Rx(){}
  static final int LIMIT=512;
  private static final ConcurrentHashMap<String,Pattern> CACHE=new ConcurrentHashMap<>();
+ /** 测试可以换成计数实现，确认命中缓存时不再编译。 */
+ interface Compiler { Pattern compile(String regex,int flags); }
+ static Compiler compiler=Pattern::compile;
  static Pattern of(String regex){return of(regex,0);}
  static Pattern of(String regex,int flags){
   String key=flags==0?regex:flags+"\u0000"+regex;
-  Pattern compiled=Pattern.compile(regex,flags);
-  synchronized(CACHE){Pattern p=CACHE.get(key);if(p!=null)return p;if(CACHE.size()<LIMIT)CACHE.put(key,compiled);return compiled;}
+  Pattern hit=CACHE.get(key);if(hit!=null)return hit;
+  Pattern compiled=compiler.compile(regex,flags);
+  synchronized(CACHE){Pattern existing=CACHE.get(key);if(existing!=null)return existing;if(CACHE.size()<LIMIT)CACHE.put(key,compiled);return compiled;}
  }
  static int size(){return CACHE.size();}
 }

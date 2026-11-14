@@ -28,6 +28,11 @@ public class HotPathCacheTest {
   check(ReflectCache.key("m",new Class<?>[]{int.class,String.class}).equals("m,int,java.lang.String")&&ReflectCache.key("m",null).equals("m"),"method key");
 
   check(Rx.of("a+b")==Rx.of("a+b"),"same regex compiled once");
+  int[] compiles={0};Rx.Compiler previous=Rx.compiler;
+  Rx.compiler=(regex,flags)->{compiles[0]++;return Pattern.compile(regex,flags);};
+  try{Pattern first=Rx.of("cache-hit-does-not-recompile");Pattern second=Rx.of("cache-hit-does-not-recompile");
+   check(first==second&&compiles[0]==1,"a cache hit returns the stored pattern without compiling again: "+compiles[0]);
+  }finally{Rx.compiler=previous;}
   check(Rx.of("abc",Pattern.CASE_INSENSITIVE)!=Rx.of("abc")&&Rx.of("abc",Pattern.CASE_INSENSITIVE).matcher("ABC").find()&&!Rx.of("abc").matcher("ABC").find(),"flags are part of the key");
   int before=Rx.size();for(int i=0;i<Rx.LIMIT*2;i++)check(Rx.of("dyn"+i).matcher("dyn"+i).matches(),"dynamic regex still works");check(Rx.size()<=Rx.LIMIT&&Rx.size()>=before,"cache stops growing at the limit: "+Rx.size());
 
