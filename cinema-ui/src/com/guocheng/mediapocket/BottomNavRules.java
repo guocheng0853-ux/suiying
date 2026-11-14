@@ -27,6 +27,9 @@ final class BottomNavRules {
  static final int PAGE_INSET_DP=16;
  static final int DETAIL_BOTTOM_DP=24;
  static final int ICON_DP=24;
+ /** 0.1.184 图标线条粗细（24 视口）。未选中 1.8，选中 2.1，选中时也不填实。1.6 在日间浅色胶囊和半透明侧轨上偏淡，未选中加到 1.8。 */
+ static final float ICON_STROKE=1.8f,ICON_STROKE_LIT=2.1f;
+ static float iconStroke(float lit){float u=lit<0f?0f:lit>1f?1f:lit;return ICON_STROKE+(ICON_STROKE_LIT-ICON_STROKE)*u;}
  static final int LABEL_SP=12;
  /** 选中块滑动。落在 220–280ms，减速，不回弹。 */
  static final int SLIDE_MS=260;
