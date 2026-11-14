@@ -17,8 +17,8 @@ public class BottomNavRulesTest {
   check(!BottomNavRules.useRail(844,390,0),"unknown shortest side and a short height stays a pill");
   check(BottomNavRules.useRail(980,700,0),"unknown shortest side with a tall landscape window uses the rail");
   check(BottomNavRules.keptIndex(2,4)==2&&BottomNavRules.keptIndex(-1,4)==0&&BottomNavRules.keptIndex(9,4)==0,"rotation keeps a valid tab");
-  check(BottomNavRules.iconStroke(0f)==1.6f&&BottomNavRules.iconStroke(1f)==2.1f&&BottomNavRules.iconStroke(-3f)==1.6f&&BottomNavRules.iconStroke(9f)==2.1f,"0.1.184 line icons: thin when idle, a little heavier when selected, never filled");
-  check(BottomNavRules.iconStroke(.5f)>1.6f&&BottomNavRules.iconStroke(.5f)<2.1f,"stroke eases with the slide");
+  check(BottomNavRules.iconStroke(0f)==1.8f&&BottomNavRules.iconStroke(1f)==2.1f&&BottomNavRules.iconStroke(-3f)==1.8f&&BottomNavRules.iconStroke(9f)==2.1f,"0.1.184 line icons: idle stroke stays readable on a light capsule, a little heavier when selected, never filled");
+  check(BottomNavRules.iconStroke(.5f)>1.8f&&BottomNavRules.iconStroke(.5f)<2.1f,"stroke eases with the slide");
   check(BottomNavRules.labelVisible(false,false)&&BottomNavRules.labelVisible(false,true)&&BottomNavRules.labelVisible(true,false),"every item keeps its label");
   check(BottomNavRules.labelSp(false)>=12&&BottomNavRules.labelSp(true)>=12&&BottomNavRules.LABEL_SP==12,"labels are 12sp");
   check(BottomNavRules.pillItemMinDp()>=48&&BottomNavRules.railItemWidthDp()>=48&&BottomNavRules.railItemMinDp()>=48,"touch targets at least 48dp");
