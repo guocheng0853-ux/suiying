@@ -69,6 +69,11 @@ public class PosterDetailRulesTest {
   check(PosterDetailRules.detailPage(true,true,true,8,-1)==PosterDetailRules.PAGE_EPISODE,"missing focus id keeps the opened episode");
   check(PosterDetailRules.detailPage(true,true,true,8,1)==PosterDetailRules.PAGE_ENRICH,"complete supplement shows the series and selects the episode");
   check(PosterDetailRules.detailPage(false,false,false,0,-1)==PosterDetailRules.PAGE_SERIES,"opening a series is not the episode fallback");
+  check("目录片名".equals(PosterDetailRules.fusionTitle("影片","目录片名")),"detail placeholder falls back to catalog title");
+  check("详情片名".equals(PosterDetailRules.fusionTitle(" 详情片名 ","目录片名")),"valid detail title wins");
+  check("影片详情".equals(PosterDetailRules.fusionTitle(null,"剧集")),"no invented title when both fields are unavailable");
+  check(PosterDetailRules.fusionPeople("美国、暂无、—","美国").isEmpty(),"country and missing values are not displayed as people");
+  check("郭帆、Christopher Nolan".equals(PosterDetailRules.fusionPeople("美国 / 郭帆, Christopher Nolan / 郭帆","美国")),"retain genuine names in order without duplicates");
   System.out.println("PASS: poster detail rules (wide, duration, episode meta, jump, fusion stills, tracks without paths, tablet column, episode list, episode fallback).");
  }
 }

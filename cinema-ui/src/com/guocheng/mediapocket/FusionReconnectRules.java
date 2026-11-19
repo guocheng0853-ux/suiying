@@ -1,7 +1,7 @@
 package com.guocheng.mediapocket;
-import java.util.Locale;
+import java.util.*;
 /**
- * 0.1.183：影视仓片源播到一半断掉后的自动重连。不依赖 Android。
+ * 影视仓开播失败或中途断流后的自动重连。不依赖 Android。
  * 影视仓站点给的播放地址大多带时效（几十分钟的 token、会换节点的 m3u8），播到一半地址失效，播放器只会报读取失败或
  * 「提前结束」。原来的处理是直接弹「暂时无法播放」，手动点「重新连接」也只是拿同一个旧地址重开，所以总是不行。
  * 现在的顺序：① 向同一站点、同一线路重新要一次播放地址，从断掉的位置续播；② 还不行，换同一集的其他线路（最多 ALT_MAX 条）；
@@ -11,7 +11,7 @@ final class FusionReconnectRules {
  private FusionReconnectRules(){}
  /** 同一线路连续最多重取几次；同一集最多换几条其他线路；同一集一共最多自动处理几次。 */
  static final int SAME_MAX=2,ALT_MAX=3,TOTAL_MAX=8;
- /** 至少播到这里才算「播到一半」。一开始就打不开的地址刚取到，重取没有意义，仍走原来的换站流程。 */
+ /** 开播前失败先刷新详情，播放中断开先用当前线路值重新解析。 */
  static final long MIN_PLAYED_MS=5000;
  /** 重连后又正常播了这么久，连续计数清零：隔几十分钟地址再过期时还能再重连。 */
  static final long RESET_AFTER_MS=30000;
@@ -22,14 +22,53 @@ final class FusionReconnectRules {
   if(embyItem!=null&&!embyItem.isEmpty())return false;
   return !value.trim().toLowerCase(Locale.ROOT).startsWith("magnet:");
  }
+ /** The caller has already looked up the exact same site's detail ID. */
+ static List<FusionPlaybackRules.Route> sameDetailRoutes(List<FusionPlaybackRules.Route> choices,String wanted,String title,boolean episodic){
+  if(!episodic)return choices;
+  ArrayList<FusionPlaybackRules.Route> out=new ArrayList<>();
+  FusionPlaybackRules.Episode expected=FusionPlaybackRules.episode(wanted,"");
+  for(FusionPlaybackRules.Route route:choices){
+   FusionPlaybackRules.Episode actual=FusionPlaybackRules.episode(route.name,route.flag+" "+title);
+   if(expected.season>=0&&actual.season>=0&&expected.season!=actual.season)continue;
+   if(expected.number>0&&actual.number>0){
+    if(expected.number==actual.number)out.add(route);
+   }else if(!wanted.isEmpty()&&FusionPlaybackRules.episodeKey(wanted).equals(FusionPlaybackRules.episodeKey(route.name))){
+    out.add(route);
+   }
+  }
+  return out;
+ }
+ static String routeKey(FusionPlaybackRules.Route route){return route.flag+"\n"+route.value;}
+ static FusionPlaybackRules.Route refreshSameRoute(FusionPlaybackRules.Route original,List<FusionPlaybackRules.Route> refreshed){
+  FusionPlaybackRules.Route match=null;
+  for(FusionPlaybackRules.Route candidate:refreshed){
+   if(!original.flag.equals(candidate.flag)||!usable(candidate))continue;
+   if(match!=null&&!match.value.equals(candidate.value))return original;
+   match=candidate;
+  }
+  return match==null?original:match;
+ }
+ static List<FusionPlaybackRules.Route> alternatives(List<FusionPlaybackRules.Route> refreshed,String currentFlag){
+  ArrayList<FusionPlaybackRules.Route> out=new ArrayList<>();
+  Set<String> seen=new HashSet<>();
+  for(FusionPlaybackRules.Route candidate:refreshed){
+   if(currentFlag.equals(candidate.flag)||!usable(candidate)||!seen.add(routeKey(candidate)))continue;
+   out.add(candidate);
+   if(out.size()==ALT_MAX)break;
+  }
+  return out;
+ }
+ private static boolean usable(FusionPlaybackRules.Route route){
+  return !route.value.trim().isEmpty()&&!route.value.trim().toLowerCase(Locale.ROOT).startsWith("magnet:");
+ }
  /** 开播时记下的续播点和播放中更新的位置，取更大的那个。读取失败不会回写 resumePos，只涨 lastPos。 */
  static long playedMs(long resumePos,long lastPos){return Math.max(resumePos,lastPos);}
  /** 成功换源后这么久内，250ms 轮询即使还看见旧的失败状态也不再 start。 */
  static final long GRACE_MS=2000;
  static boolean holdOff(long nowMs,long graceUntilMs){return graceUntilMs>nowMs;}
  /** blocked：用户正开着面板或菜单（可能正在自己选片源），这时不抢。 */
- static boolean eligible(boolean enabled,boolean route,boolean failure,boolean active,boolean blocked,long playedMs,int total){
-  return enabled&&route&&failure&&active&&!blocked&&playedMs>=MIN_PLAYED_MS&&total<TOTAL_MAX;
+ static boolean eligible(boolean enabled,boolean route,boolean failure,boolean active,boolean blocked,int total){
+  return enabled&&route&&failure&&active&&!blocked&&total<TOTAL_MAX;
  }
  /** 下一步做什么。same：同一线路已连续重取的次数；altTried / altCount：其他线路已试过几条、一共有几条（还没查过详情时传 -1）。 */
  static int next(int same,int altTried,int altCount,int total){
@@ -43,8 +82,8 @@ final class FusionReconnectRules {
  static String title(){return "正在重新连接";}
  static String hint(int step,int same,String flag){
   if(step==ALT)return "原线路没有恢复，正在换到「"+(flag==null||flag.isEmpty()?"其他线路":flag)+"」…";
-  return "播放地址失效了，正在重新获取（"+Math.max(1,same)+"/"+SAME_MAX+"）…";
+  return "正在重新获取播放地址（"+Math.max(1,same)+"/"+SAME_MAX+"）…";
  }
  static String resumed(long positionMs){return "已重新连接 · 从 "+PlaybackEndRules.mmss(positionMs)+" 继续";}
- static String exhausted(){return "已自动重新获取地址并换过线路，仍然连不上。可以再试一次，或选择其他片源。";}
+ static String exhausted(){return "重连未成功。可以再试一次，或选择其他片源。";}
 }

@@ -81,6 +81,25 @@ final class PosterDetailRules {
  static String fileName(String name){if(name==null)return "";String t=name.trim();int s=Math.max(t.lastIndexOf('/'),t.lastIndexOf('\\'));return (s>=0?t.substring(s+1):t).trim();}
  static String bytes(long n){if(n<=0)return "";if(n>=1_000_000_000L)return String.format(Locale.ROOT,"%.1f GB",n/1_000_000_000d);if(n>=1_000_000L)return String.format(Locale.ROOT,"%.1f MB",n/1_000_000d);if(n>=1_000L)return String.format(Locale.ROOT,"%.0f KB",n/1_000d);return n+" B";}
  static String bitrate(long bps){if(bps<=0)return "";if(bps>=1_000_000L)return String.format(Locale.ROOT,"%.1f Mbps",bps/1_000_000d);if(bps>=1_000L)return String.format(Locale.ROOT,"%.0f Kbps",bps/1_000d);return bps+" bps";}
+ static boolean usableFusionTitle(String title){
+  String value=title==null?"":title.trim();
+  return !value.isEmpty()&&!Arrays.asList("影片","电影","剧集","影片详情","未知","无","null").contains(value.toLowerCase(Locale.ROOT));
+ }
+ static String fusionTitle(String detail,String summary){
+  if(usableFusionTitle(detail))return detail.trim();
+  return usableFusionTitle(summary)?summary.trim():"影片详情";
+ }
+ private static final Set<String> CREDIT_PLACEHOLDERS=new HashSet<>(Arrays.asList(
+  "暂无","未知","未知演员","未知导演","未填写","无","null","n/a","美国","中国","中国大陆","中国香港","中国台湾",
+  "大陆","香港","台湾","日本","韩国","英国","法国","德国","印度","泰国","欧美","内地"));
+ static String fusionPeople(String raw,String area){
+  Set<String> regions=new HashSet<>(Arrays.asList(names(area)));
+  StringJoiner people=new StringJoiner("、");
+  for(String name:names(raw)){
+   if(!regions.contains(name)&&!CREDIT_PLACEHOLDERS.contains(name.toLowerCase(Locale.ROOT))&&name.matches(".*[\\p{L}].*"))people.add(name);
+  }
+  return people.toString();
+ }
  static String[] names(String raw){if(raw==null)return new String[0];ArrayList<String> out=new ArrayList<>();for(String bit:raw.split("[,，、/|]")){String t=bit.trim();if(t.isEmpty()||out.contains(t))continue;out.add(t);if(out.size()==20)break;}return out.toArray(new String[0]);}
  static final class Card {
   final String videoTitle,videoSub,audioTitle,audioSub,info;final int sources,audios;
