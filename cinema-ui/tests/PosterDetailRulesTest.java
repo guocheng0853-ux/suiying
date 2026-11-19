@@ -50,6 +50,10 @@ public class PosterDetailRulesTest {
   check(Math.abs(PosterDetailRules.spacerFraction(800,400)-0.22f)<0.001f,"short wide spacer");
   check(Math.abs(PosterDetailRules.spacerFraction(1143,808)-0.30f)<0.001f,"tablet landscape spacer");
   check(PosterDetailRules.spacer(2120,147,3000,2.625f)==Math.round(2120*0.30f),"tablet spacer clears the hero subject");
+  check(PosterDetailRules.fusionSpacer(2120,126,3000,2.625f)==806,"TVBox tablet leaves 38% of the stage before the title");
+  check(PosterDetailRules.fusionSpacer(800,56,400,1f)==256,"TVBox phone portrait leaves 32%");
+  check(PosterDetailRules.fusionSpacer(400,56,800,1f)==104,"TVBox phone landscape keeps controls closer");
+  check(PosterDetailRules.fusionSpacer(300,80,400,1f)==96,"TVBox title always clears the measured header");
   PosterDetailRules.EpisodeList movie=PosterDetailRules.episodes("Movie","m","","");
   check(!movie.show,"movie has no episode list");
   PosterDetailRules.EpisodeList seriesList=PosterDetailRules.episodes("Series","s1","","");

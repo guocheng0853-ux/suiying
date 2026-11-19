@@ -1,7 +1,7 @@
 {
   "base": "0.1.20",
-  "ui_version": "0.1.186",
-  "android_device_tested": false,
+  "ui_version": "0.1.187",
+  "android_device_tested": true,
   "original_code_assets_native_preserved": [
     "resources.arsc",
     "assets/default-addon.txt",
@@ -22,11 +22,11 @@
   "apk_class_resolution": "passed",
   "unique_classes": 9490,
   "dex_files": 3,
-  "main_version_code": 187,
+  "main_version_code": 188,
   "application_id": "com.guocheng.mediapocket.next",
   "review_build": false,
   "default_home_provider": "fusion",
-  "apk_signature_present": false,
+  "apk_signature_present": true,
   "xiaoya_sample_phone_evidence": "0.1.21-probe7: video_display_and_audio_output; all_sites_playback_tested=false",
   "tablet_torrentclaw_failure_reproduced": false,
   "presets_empty": true,
@@ -42,5 +42,6 @@
   "torrent_boost": "TorrentEngine.acquireSession +tune (upload 512KB/s, connection_speed 80, connect boost 60, LSD/UPnP/NAT-PMP, announce to all tiers); magnet +public trackers. Patch self-check only; libtorrent native cannot run on JVM",
   "torrent_boost_android_tested": false,
   "real_source_playback_tested": false,
-  "real_source_note": "cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build"
+  "real_source_note": "Real TVBox detail reproduced Retry on the installed 0.1.187 build. Host log shows IllegalArgumentException from TvSpiderRules.verify during category and detail requests, before detail rendering.",
+  "device_test_scope": "OPD2401 signed 0.1.187 in-place install, version 188 confirmed, cold launch passed. Tablet landscape TVBox poster sizing verified with the local CMS fixture in the pre-release preview."
 }
