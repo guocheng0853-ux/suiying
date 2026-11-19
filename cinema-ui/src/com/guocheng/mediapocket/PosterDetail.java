@@ -46,14 +46,17 @@ final class PosterDetail {
  static Page hero(Activity a,LinearLayout body,String title,int accent,int onAccent,Clicks clicks){
   return hero(a,body,title,accent,onAccent,clicks,false);
  }
- static Page hero(Activity a,LinearLayout body,String title,int accent,int onAccent,Clicks clicks,boolean compact){boolean wide=wide(a);android.util.DisplayMetrics dm=a.getResources().getDisplayMetrics();int screen=dm.heightPixels,widthPx=dm.widthPixels;View spacer=new View(a);body.addView(spacer,new LinearLayout.LayoutParams(-1,PosterDetailRules.spacer(screen,dp(a,56),widthPx,dm.density)));
+ static Page hero(Activity a,LinearLayout body,String title,int accent,int onAccent,Clicks clicks,boolean compact){boolean wide=wide(a);android.util.DisplayMetrics dm=a.getResources().getDisplayMetrics();int screen=dm.heightPixels,widthPx=dm.widthPixels;View spacer=new View(a);
+  int spacerHeight=compact?PosterDetailRules.fusionSpacer(screen,dp(a,56),widthPx,dm.density):PosterDetailRules.spacer(screen,dp(a,56),widthPx,dm.density);
+  body.addView(spacer,new LinearLayout.LayoutParams(-1,spacerHeight));
   if(compact){
    View frame=body.getParent() instanceof View ? (View)((View)body.getParent()).getParent() : null;
    if(frame!=null&&frame.getParent() instanceof LinearLayout){
     View header=((LinearLayout)frame.getParent()).getChildAt(0);
     spacer.post(()->{
-     int height=header.getHeight()+dp(a,16);
-     if(height>dp(a,16)&&spacer.getParent()==body)spacer.setLayoutParams(new LinearLayout.LayoutParams(-1,height));
+     if(header.getHeight()<=0||frame.getHeight()<=0||spacer.getParent()!=body)return;
+     int height=PosterDetailRules.fusionSpacer(frame.getHeight(),header.getHeight(),frame.getWidth(),dm.density);
+     if(height!=spacerHeight)spacer.setLayoutParams(new LinearLayout.LayoutParams(-1,height));
     });
    }
   }

@@ -17,6 +17,13 @@ final class PosterDetailRules {
  static float spacerFraction(int widthDp,int heightDp){if(wide(widthDp)&&heightDp>=640)return 0.30f;if(wide(widthDp))return 0.22f;return 0.16f;}
  /** 第一屏把标题压在海报下半。顶栏高度以下再留一点，避免和返回叠在一起。 */
  static int spacer(int screenPx,int headerPx,int widthPx,float density){float d=density<=0?1f:density;int widthDp=widthPx<=0?0:Math.round(widthPx/d),heightDp=screenPx<=0?0:Math.round(screenPx/d);int want=Math.round(Math.max(0,screenPx)*spacerFraction(widthDp,heightDp));int min=Math.max(0,headerPx)+Math.round(Math.max(0,screenPx)*0.02f);return Math.max(min,want);}
+ /** 影视仓详情页为海报留出首屏空间，矮窗口优先保证播放按钮可见。 */
+ static int fusionSpacer(int heightPx,int headerPx,int widthPx,float density){
+  float scale=density>0?density:1f;
+  boolean wideLandscape=wide(Math.round(widthPx/scale))&&widthPx>heightPx;
+  float fraction=heightPx<480*scale?0.26f:wideLandscape?0.38f:0.32f;
+  return Math.max(Math.max(0,headerPx)+Math.round(16*scale),Math.round(heightPx*fraction));
+ }
  /**
   * 详情页要不要画选集。剧集本身画自己的季。单集、季要回到所属剧，否则页面只有这一集，选集不会出现。
   * 没有 SeriesId 时无法查询，不画空列表。电影不画。
