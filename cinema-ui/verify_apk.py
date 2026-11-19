@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json,subprocess,re,sys
 root=Path(__file__).resolve().parent
-apk=Path(sys.argv[1]) if len(sys.argv)>1 else root.parent/'deliverables/MediaPocket-0.1.187-tvbox-poster-arm64.apk'
+apk=Path(sys.argv[1]) if len(sys.argv)>1 else root.parent/'deliverables/MediaPocket-0.1.188-tvbox-config-text-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]
@@ -23,7 +23,7 @@ def dex(d):
  return classes,methods
 badging=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','badging',str(apk)],text=True).splitlines()[0]
 match=re.search(r"name='([^']+)' versionCode='([^']+)' versionName='([^']+)'",badging)
-assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='188' and match.group(3)=='0.1.187',badging
+assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='189' and match.group(3)=='0.1.188',badging
 xml=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','xmltree',str(apk),'--file','AndroidManifest.xml'],text=True)
 assert 'ExternalPlayActivity' in xml and '随影 (VLC)' in xml and 'suiying' in xml, 'external player or import link missing'
 seen=set();refs=[];count=0;dex_classes={};dex_methods={}
@@ -52,6 +52,7 @@ PATCH_MARKS=[
  ('PatchPlaybackBackend','Lcom/guocheng/mediapocket/PlayerActivity;',('class','Lcom/guocheng/mediapocket/PlaybackBackend;')),
  ('PatchDecodePolicy','Lcom/guocheng/mediapocket/VlcPlayback;',('class','Lcom/guocheng/mediapocket/DecodePolicyRules;')),
  ('PatchSubtitleVlc','Lcom/guocheng/mediapocket/VlcPlayback;',('class','Lcom/guocheng/mediapocket/SubtitleVlc;')),
+ ('PatchTvBoxConfig','Lcom/guocheng/mediapocket/TvBoxActivity;',('class','Lcom/guocheng/mediapocket/TvBoxConfigText;')),
 ]
 with zipfile.ZipFile(apk) as z:
  dexbytes={n:z.read(n) for n in dex_classes}
@@ -92,4 +93,4 @@ validation.setdefault('android_device_tested',False)
 if 'real_source_playback_tested' not in validation:
  validation['real_source_playback_tested']=False
  validation.setdefault('real_source_note','cloud egress blocks xiaoya/Stremio/TVBox hosts; user computer bridge offline during this build')
-(root/'VALIDATION.json').write_text(json.dumps(validation,indent=2));print('PASS: unique classes, component method ABI, manifest build/version, runtime assets, native module, original code preservation, 9 patch marks present.')
+(root/'VALIDATION.json').write_text(json.dumps(validation,indent=2));print('PASS: unique classes, component method ABI, manifest build/version, runtime assets, native module, original code preservation, 10 patch marks present.')

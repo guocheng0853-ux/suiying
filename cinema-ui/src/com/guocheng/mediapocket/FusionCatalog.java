@@ -9,7 +9,7 @@ final class FusionCatalog {
   try(InputStream in=c.getAssets().open("fusion-default.json");ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[8192];int n;while((n=in.read(b))!=-1)out.write(b,0,n);bundled=new JSONObject(out.toString("UTF-8"));}
   String url=requestedUrl==null||requestedUrl.isEmpty()?p.getString("tvbox.active",bundled.getString("base")):requestedUrl;
   JSONObject config;String stored=p.getString("tvbox.config:"+url,"");
-  if(!stored.isEmpty())config=new JSONObject(stored);else if(url.equals(bundled.getString("base")))config=bundled.getJSONObject("config");else config=new JSONObject(TvBoxNet.fetch(url,null,null));
+  if(!stored.isEmpty())config=new JSONObject(stored);else if(url.equals(bundled.getString("base")))config=bundled.getJSONObject("config");else config=parseFetched(TvBoxNet.fetch(url,null,null));
   config=HomeSources.merge(c,config);JSONArray sites=config.optJSONArray("sites");if(sites==null)throw new IOException("配置没有站点");
   String selected=requestedSite==null||requestedSite.isEmpty()?p.getString("fusion.site:"+url,""):requestedSite;
   JSONObject found=null,first=null;
@@ -21,6 +21,7 @@ final class FusionCatalog {
   if(found.optString("api").equals("csp_AListSh")){found=new JSONObject(found.toString());JSONArray ext=found.optJSONArray("ext");for(int i=0;ext!=null&&i<ext.length();i++){JSONObject entry=ext.optJSONObject(i);if(entry!=null&&entry.has("noPoster"))entry.put("noPoster",false);}}
   return new Session(url,config,found);
  }
+ static JSONObject parseFetched(String raw)throws Exception{try{return new JSONObject(TvBoxConfigText.normalize(raw));}catch(JSONException e){throw new IOException("配置不是合法 JSON");}}
  static JSONObject request(Context context,Session s,String op,String value,String flag,int page)throws Exception{if(CmsApi.MARKER.equals(s.site.optString("api")))return CmsApi.request(s.site,op,value,flag,page);return TvSpiderRuntime.get(context).request(s.config,s.site,s.url,op,value,flag,page);}
  static String cacheKey(Session s,String category){return "fusion.catalog.v3:"+s.url+"|"+s.site.optString("key")+"|"+category;}
  static JSONArray normalize(Session s,JSONArray list,String category)throws Exception{
