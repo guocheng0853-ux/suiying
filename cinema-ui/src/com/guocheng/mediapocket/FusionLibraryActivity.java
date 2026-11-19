@@ -2,20 +2,20 @@ package com.guocheng.mediapocket;
 import android.app.*;import android.os.*;import android.content.*;import android.view.*;import android.widget.*;import android.graphics.drawable.*;import org.json.*;import java.util.*;import java.util.concurrent.*;
 /** TVBox detail/episode routing uses the stable player. Player code is not replaced. */
 public final class FusionLibraryActivity extends Activity {
- LinearLayout root,body;TextView status;SharedPreferences prefs;boolean light,dead,gold,clay;int epoch;FusionCatalog.Session session;UiImages images=new UiImages();ExecutorService io=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"tvbox-ui");t.setDaemon(true);return t;});android.os.Handler watch=new android.os.Handler(android.os.Looper.getMainLooper());Future<?> pending;ArrayDeque<Runnable> back=new ArrayDeque<>();JSONObject current,detailMeta;String batchId="",batchTitle="",batchFlag="";java.util.List<String[]> batchEps;int batchCurrent;PosterDetail.Page poster;String[] lineFlags=new String[0],lineGroups=new String[0];int lineAt,stripAnchor=-1;String fusionId="",fusionTitle="",playFlag="",playName="",playValue="";TextView seasonLabel;HorizontalScrollView episodeScroller;LinearLayout episodeStrip;ImageView detailArt;boolean fusionEpisodeArt;
+ LinearLayout root,body;TextView status;SharedPreferences prefs;boolean light,dead,gold,clay;int epoch;FusionCatalog.Session session;UiImages images=new UiImages();ExecutorService io=Executors.newCachedThreadPool(r->{Thread t=new Thread(r,"tvbox-ui");t.setDaemon(true);return t;});android.os.Handler watch=new android.os.Handler(android.os.Looper.getMainLooper());Future<?> pending;ArrayDeque<Runnable> back=new ArrayDeque<>();JSONObject current,detailMeta;String batchId="",batchTitle="",batchFlag="";java.util.List<String[]> batchEps;int batchCurrent;PosterDetail.Page poster;String[] lineFlags=new String[0],lineGroups=new String[0];int lineAt,stripAnchor=-1;String fusionId="",fusionTitle="",playFlag="",playName="",playValue="";HorizontalScrollView episodeScroller;LinearLayout episodeStrip;ImageView detailArt;String detailArtUrl="",detailArtFallback="",detailArtRequest="";
  interface Work {Runnable run()throws Exception;}
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}int ink(){return light?(clay?CinemaTheme.SLATE:0xff173740):gold?CinemaTheme.INK:0xfff5fafb;}int muted(){return light?(clay?CinemaTheme.STONE:0xff52757c):gold?CinemaTheme.MUTED:0xffafcbd2;}int surface(){return light?(clay?CinemaTheme.PAPER:0xffedf5f5):gold?CinemaTheme.BG:0xff10343e;}int card(){return light?(clay?CinemaTheme.SHEET:0xffffffff):gold?CinemaTheme.CARD:0xff19434e;}
  GradientDrawable rounded(int color,int r){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(Ui.radius(r)));return d;}
  @Override public void onCreate(Bundle saved){prefs=getSharedPreferences("data",0);light=CinemaTheme.light(this);gold=!light&&CinemaTheme.gold(this);clay=light&&CinemaTheme.clay(this);getTheme().applyStyle(light?android.R.style.Theme_Material_Light_NoActionBar:android.R.style.Theme_Material_NoActionBar,true);super.onCreate(saved);UiImages.configure(getCacheDir());getWindow().setStatusBarColor(surface());getWindow().setNavigationBarColor(surface());getWindow().getDecorView().setSystemUiVisibility(light?View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR:0);
   root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(surface());root.setPadding(dp(16),0,dp(16),0);setContentView(root);LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);header.addView(button("‹ 返回",()->onBackPressed()));TextView title=text("影视仓",18);if(clay||gold)CinemaTheme.section(title,this,20);else title.setTypeface(null,1);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));header.addView(button("搜索",()->search()));root.addView(header);status=text("",13);status.setTextColor(light?ink():muted());root.addView(status);ScrollView scroll=new ScrollView(this);body=new LinearLayout(this);body.setOrientation(1);body.setPadding(0,0,0,dp(28));scroll.addView(body);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));DetailLandscape.window(this,root,header,status,body);
-  work("正在打开影视仓…",()->{session=FusionCatalog.session(this,getIntent().getStringExtra("config"),getIntent().getStringExtra("site"));return ()->{String id=getIntent().getStringExtra("id"),category=getIntent().getStringExtra("category");if(id!=null&&!id.isEmpty()){back.push(()->{if(category!=null&&!category.isEmpty())category(category,1);else home();});detail(id);}else if(category!=null&&!category.isEmpty()){back.push(()->home());category(category,1);}else home();};},()->finish());
+  work("正在打开影视仓…",()->{session=FusionCatalog.session(this,getIntent().getStringExtra("config"),getIntent().getStringExtra("site"));return ()->{String id=getIntent().getStringExtra("id"),category=getIntent().getStringExtra("category");if(id!=null&&!id.isEmpty()){back.push(()->{if(category!=null&&!category.isEmpty())category(category,1);else home();});detail(id,getIntent().getStringExtra("summaryTitle"),getIntent().getStringExtra("summaryPoster"));}else if(category!=null&&!category.isEmpty()){back.push(()->home());category(category,1);}else home();};},()->finish());
  }
  TextView text(String label,int size){TextView t=new TextView(this);t.setText(label);t.setTextSize(Ui.sp(size));t.setTextColor(ink());t.setIncludeFontPadding(false);t.setPadding(0,dp(8),0,dp(8));return t;}
  Button button(String label,Runnable action){CinemaButton b=new CinemaButton(this,light);b.setText(label);b.setBackground(rounded(card(),12));b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(card()));if(action!=null)b.setOnClickListener(v->action.run());return b;}
  void row(String label,Runnable action){Button b=button(label,action);b.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.bottomMargin=dp(8);body.addView(b,p);}
  /** 0.1.112：离开详情页时收起右上角「收藏 / 下载」，服务器列表、媒体库等页面不显示。 */
  void clearExtras(){try{LinearLayout header=(LinearLayout)root.getChildAt(0);for(int i=header.getChildCount()-1;i>=0;i--){Object tag=header.getChildAt(i).getTag();if("mp-fav".equals(tag)||"mp-dl".equals(tag))header.removeViewAt(i);}}catch(Exception ignored){}}
- void screen(String label){PosterDetail.restore(this,body,card(),light);DetailLandscape.unsplit(body);clearExtras();epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);body.removeAllViews();poster=null;episodeStrip=null;detailArt=null;fusionEpisodeArt=false;status.setVisibility(View.VISIBLE);status.setText(label);}
+ void screen(String label){PosterDetail.restore(this,body,card(),light);DetailLandscape.unsplit(body);clearExtras();epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);body.removeAllViews();poster=null;episodeStrip=null;detailArt=null;detailArtUrl="";detailArtFallback="";detailArtRequest="";episodeScroller=null;detailMeta=null;batchEps=null;playFlag="";playName="";playValue="";status.setVisibility(View.VISIBLE);status.setText(label);}
  void work(String label,Work task,Runnable retry){work(label,task,retry,WORK_LIMIT);}
  void work(String label,Work task,Runnable retry,int limit){int token=++epoch;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);status.setText(label);skeleton(label);
   // 0.1.103：每个任务单独一条线程（原来单线程排队，前一个磁力解析卡住时后面的详情页永远轮不到，一直停在「正在读取…」）；
@@ -35,52 +35,171 @@ public final class FusionLibraryActivity extends Activity {
  void category(String id,int page){screen(session.site.optString("name"));work("正在读取分类 · 第 "+page+" 页…",()->{JSONObject response=FusionCatalog.request(this,session,"category",id,"",page);return ()->{status.setText(session.site.optString("name")+" · 第 "+page+" 页");gallery(response.optJSONArray("list"),()->category(id,page));if(response.optInt("pagecount",page)>page)row("下一页",()->push(()->category(id,page+1),()->category(id,page)));};},()->category(id,page));}
  void search(){if(session==null)return;EditText input=new EditText(this);input.setSingleLine(true);new CinemaDialog(this).setTitle("搜索 "+session.site.optString("name")).setView(input).setPositiveButton("搜索",(d,n)->{String word=input.getText().toString().trim();if(!word.isEmpty())push(()->searchResults(word),()->home());}).setNegativeButton("取消",null).show();}
  void searchResults(String word){screen("搜索："+word);work("正在搜索…",()->{JSONObject r=FusionCatalog.request(this,session,"search",word,"",1);return ()->{status.setText("搜索："+word);gallery(r.optJSONArray("list"),()->searchResults(word));};},()->searchResults(word));}
- void gallery(JSONArray list,Runnable previous){if(list==null||list.length()==0){body.addView(text("此分类暂时没有条目",14));return;}int available=body.getWidth()>0?body.getWidth()-body.getPaddingLeft()-body.getPaddingRight():getResources().getDisplayMetrics().widthPixels-dp(32),columns=Math.max(3,Math.min(6,available/dp(140))),width=(available-dp(10)*(columns-1))/columns;LinearLayout line=null;for(int i=0;i<Math.min(list.length(),300);i++){JSONObject v=list.optJSONObject(i);if(v==null||v.optString("vod_id").isEmpty())continue;if(line==null||line.getChildCount()==columns){line=new LinearLayout(this);line.setGravity(Gravity.TOP);body.addView(line);}LinearLayout tile=new LinearLayout(this);tile.setOrientation(1);FrameLayout frame=new FrameLayout(this);frame.setBackground(rounded(card(),10));frame.setClipToOutline(true);tile.addView(frame,new LinearLayout.LayoutParams(width,(int)(width*1.5)));TextView empty=text("影片",12);empty.setGravity(Gravity.CENTER);frame.addView(empty,new FrameLayout.LayoutParams(-1,-1));ImageView pic=new ImageView(this);pic.setScaleType(ImageView.ScaleType.CENTER_CROP);frame.addView(pic,new FrameLayout.LayoutParams(-1,-1));load(pic,v.optString("vod_pic"),width);if(v.optString("vod_pic").isEmpty()){final int token=epoch;FusionArtwork.resolve(this,v,match->runOnUiThread(()->{if(token==epoch&&!dead)load(pic,match.optString("poster"),width);}));}TextView name=text(v.optString("vod_name","影片"),11);name.setLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setGravity(Gravity.CENTER);tile.addView(name);tile.setOnClickListener(w->push(()->detail(v.optString("vod_id")),previous));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(width,-2);p.rightMargin=dp(10);p.bottomMargin=dp(8);line.addView(tile,p);}}
+ void gallery(JSONArray list,Runnable previous){if(list==null||list.length()==0){body.addView(text("此分类暂时没有条目",14));return;}int available=body.getWidth()>0?body.getWidth()-body.getPaddingLeft()-body.getPaddingRight():getResources().getDisplayMetrics().widthPixels-dp(32),columns=Math.max(3,Math.min(6,available/dp(140))),width=(available-dp(10)*(columns-1))/columns;LinearLayout line=null;for(int i=0;i<Math.min(list.length(),300);i++){JSONObject v=list.optJSONObject(i);if(v==null||v.optString("vod_id").isEmpty())continue;if(line==null||line.getChildCount()==columns){line=new LinearLayout(this);line.setGravity(Gravity.TOP);body.addView(line);}LinearLayout tile=new LinearLayout(this);tile.setOrientation(1);FrameLayout frame=new FrameLayout(this);frame.setBackground(rounded(card(),10));frame.setClipToOutline(true);tile.addView(frame,new LinearLayout.LayoutParams(width,(int)(width*1.5)));TextView empty=text("影片",12);empty.setGravity(Gravity.CENTER);frame.addView(empty,new FrameLayout.LayoutParams(-1,-1));ImageView pic=new ImageView(this);pic.setScaleType(ImageView.ScaleType.CENTER_CROP);frame.addView(pic,new FrameLayout.LayoutParams(-1,-1));load(pic,v.optString("vod_pic"),width);if(v.optString("vod_pic").isEmpty()){final int token=epoch;FusionArtwork.resolve(this,v,match->runOnUiThread(()->{if(token==epoch&&!dead)load(pic,match.optString("poster"),width);}));}TextView name=text(v.optString("vod_name","影片"),11);name.setLines(2);name.setEllipsize(android.text.TextUtils.TruncateAt.END);name.setGravity(Gravity.CENTER);tile.addView(name);tile.setOnClickListener(w->push(()->detail(v.optString("vod_id"),v.optString("vod_name"),v.optString("vod_pic")),previous));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(width,-2);p.rightMargin=dp(10);p.bottomMargin=dp(8);line.addView(tile,p);}}
  void load(ImageView v,String url,int width){if(url.isEmpty())return;try{TvPosterImages.loadPoster(this,v,TvPosterRules.resolve(session.url,url),width);}catch(Exception ignored){}}
  int accentFill(){return light?(clay?CinemaTheme.CLAY:0xff2f6f8f):gold?CinemaTheme.GOLD:0xffa2d0ed;}int accentInk(){return Ui.onFill(accentFill());}
  String watchId(String id,String episode){try{return "tvbox:"+TvSpiderRules.digest((session.url+"|"+session.site.optString("key")+"|"+id+"|"+episode).getBytes("UTF-8"),"SHA-256");}catch(Exception e){return "";}}
  /** 方向 A：与 Emby 详情同一套海报。线路用圆形按钮切换，下载用的 flag 和地址来自同一条线路。 */
- void detail(String id){screen("影片详情");work("正在读取影片与选集…",()->{JSONObject response=FusionCatalog.request(this,session,"detail",id,"",1);JSONArray list=response.optJSONArray("list");JSONObject m=list==null?null:list.optJSONObject(0);if(m==null)throw new Exception("站点未返回详情");return ()->{current=m;fusionId=id;fusionTitle=m.optString("vod_name","影片");detailExtras(id,m);
-  int sw=getResources().getDisplayMetrics().widthPixels;detailArt=PosterDetail.mount(this,body,card(),light);load(detailArt,m.optString("vod_pic"),Math.max(sw,1280));final int detailToken=epoch;if(m.optString("vod_pic").isEmpty())FusionArtwork.resolve(this,m,match->runOnUiThread(()->{if(detailToken==epoch&&!dead&&detailArt!=null)load(detailArt,match.optString("poster"),Math.max(sw,1280));}));
+ void detail(String id,String summaryTitle,String summaryPoster){screen("影片详情");work("正在读取影片与选集…",()->{JSONObject response=FusionCatalog.request(this,session,"detail",id,"",1);JSONArray list=response.optJSONArray("list");JSONObject m=list==null?null:list.optJSONObject(0);if(m==null)throw new Exception("站点未返回详情");return ()->{current=m;fusionId=id;
+  fusionTitle=PosterDetailRules.fusionTitle(m.optString("vod_name"),summaryTitle);
+  try{m.put("vod_name",fusionTitle);}catch(JSONException ignored){}detailExtras(id,m);
+  detailArt=PosterDetail.mount(this,body,card(),light);
+  detailArt.setBackground(new GradientDrawable(GradientDrawable.Orientation.TL_BR,new int[]{0xff392923,0xff211b23,0xff080706}));
+  String detailCover=m.optString("vod_pic").trim();
+  detailArtUrl=detailCover;
+  detailArtFallback=summaryPoster==null?"":summaryPoster.trim();
+  loadDetailArt("");
+
+  if(resolveArt(detailArtUrl).isEmpty()&&resolveArt(detailArtFallback).isEmpty()&&PosterDetailRules.usableFusionTitle(fusionTitle)){
+   ImageView heroImage=detailArt;
+   FusionArtwork.resolve(this,m,match->runOnUiThread(()->{
+    if(dead||detailArt!=heroImage)return;
+    detailArtUrl=matchedArt(match);
+    paintFusion(playName,playValue);
+   }));
+  }
   lineFlags=m.optString("vod_play_from").split("\\$\\$\\$",-1);lineGroups=m.optString("vod_play_url").split("\\$\\$\\$",-1);lineAt=0;
   int fill=light?accentFill():CinemaTheme.GOLD,on=light?accentInk():CinemaTheme.ON_GOLD;
-  poster=PosterDetail.hero(this,body,fusionTitle,fill,on,new PosterDetail.Clicks(){void line(){lineMenu();}void download(){downloadCurrent();}void favorite(){toggleFavorite();}void more(){moreMenu(m);}});
+  poster=PosterDetail.hero(this,body,fusionTitle,fill,on,new PosterDetail.Clicks(){void line(){lineMenu();}void download(){downloadCurrent();}void favorite(){toggleFavorite();}void more(){moreMenu(m);}},true);
   if(detailMeta!=null)poster.setFavorite(FollowRules.contains(FollowUp.favorites(this),detailMeta.optString("id")));
   int episodes=0;for(String g:lineGroups)for(String e:g.split("#")){String[] ep=e.split("\\$",2);if(ep.length==2&&!ep[1].isEmpty())episodes++;}
   boolean strip=episodes>1||lineGroups.length>1;
-  if(strip){episodeStrip=new LinearLayout(this);episodeScroller=PosterDetail.scroller(this,episodeStrip);seasonLabel=PosterDetail.section(this,body,"更多来自",lineGroups.length>1,lineGroups.length>1?this::lineMenu:null,this::jumpFusion);body.addView(episodeScroller);}
-  String[] actors=PosterDetailRules.names(m.optString("vod_actor"));String director=m.optString("vod_director").trim();if(!director.isEmpty()){String[] names=new String[actors.length+1];String[] roles=new String[names.length];names[0]=director;roles[0]="导演";System.arraycopy(actors,0,names,1,actors.length);PosterDetail.people(this,body,names,roles);}else PosterDetail.people(this,body,actors,null);
-  PosterDetail.overview(this,body,FusionCatalog.plain(m.optString("vod_content")));
+  if(strip){
+   episodeStrip=new LinearLayout(this);
+   episodeScroller=PosterDetail.scroller(this,episodeStrip);
+   section("选集","跳至",this::jumpFusion);
+   body.addView(episodeScroller);
+  }
+  String overview=FusionCatalog.plain(m.optString("vod_content")).trim();
+  if(!overview.isEmpty()){
+   section("简介","",null);
+   PosterDetail.overview(this,body,overview);
+  }
+  credits(m);
   if(episodes==0){poster.setPlay("播放",false,null);poster.setMeta("这个站点没有返回可播放的选集");poster.setTracks(PosterDetailRules.line(session.site.optString("name"),""),null,null);return;}
   selectLine(0);
- };},()->detail(id));}
+ };},()->detail(id,summaryTitle,summaryPoster));}
  void detailExtras(String id,JSONObject m){try{clearExtras();JSONObject meta=FusionCatalog.normalize(session,new JSONArray().put(m),getIntent().getStringExtra("category")==null?"":getIntent().getStringExtra("category")).optJSONObject(0);if(meta==null)return;meta.put("fusion.video",id);meta.put("id","tvbox-fav:"+session.site.optString("key")+":"+id);detailMeta=meta;FollowUp.opened(this,meta.optString("id"),FollowRules.fusionCount(m.optString("vod_play_url")));}catch(Exception ignored){}}
  void toggleFavorite(){if(detailMeta==null){Toast.makeText(this,"暂时无法收藏",Toast.LENGTH_SHORT).show();return;}FollowUp.heart(this,detailMeta,CinemaTheme.INK).performClick();if(poster!=null)poster.fav.postDelayed(()->{if(poster!=null&&detailMeta!=null)poster.setFavorite(FollowRules.contains(FollowUp.favorites(this),detailMeta.optString("id")));},160);}
  void downloadCurrent(){if(playValue.isEmpty()){Toast.makeText(this,"没有可下载的选集",Toast.LENGTH_SHORT).show();return;}OfflineDownloads.fusion(this,session,playFlag,playValue,fusionTitle+" · "+playName,watchId(fusionId,playName),current);}
- void moreMenu(JSONObject m){java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();if(batchEps!=null&&!batchEps.isEmpty())rows.add(CinemaMenu.item("批量下载",()->OfflineBatchMenu.fusion(this,session,current,batchId,batchTitle,batchFlag,batchEps,batchCurrent)));rows.add(CinemaMenu.item("换个站点找",()->{FusionCatalog.Session previous=session;new SourcePickerDialog(this,session,MediaMatchRules.clean(fusionTitle),(selected,item)->{if(dead)return;back.push(()->{session=previous;detail(fusionId);});session=selected;detail(item.optString("vod_id"));});}));rows.add(CinemaMenu.item("匹配封面",()->matchArtwork(m,detailArt)));CinemaMenu.show(this,"更多",rows);}
+ void moreMenu(JSONObject m){java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();if(batchEps!=null&&!batchEps.isEmpty())rows.add(CinemaMenu.item("批量下载",()->OfflineBatchMenu.fusion(this,session,current,batchId,batchTitle,batchFlag,batchEps,batchCurrent)));rows.add(CinemaMenu.item("换个站点找",()->{FusionCatalog.Session previous=session;new SourcePickerDialog(this,session,MediaMatchRules.clean(fusionTitle),(selected,item)->{if(dead)return;String originalId=fusionId,originalTitle=fusionTitle,originalPoster=detailArtUrl;back.push(()->{session=previous;detail(originalId,originalTitle,originalPoster);});session=selected;detail(item.optString("vod_id"),item.optString("vod_name"),item.optString("vod_pic"));});}));rows.add(CinemaMenu.item("匹配封面",()->matchArtwork(m,detailArt)));CinemaMenu.show(this,"更多",rows);}
  void lineMenu(){java.util.List<CinemaMenu.Item> rows=new java.util.ArrayList<>();if(lineGroups.length==0){rows.add(CinemaMenu.item("默认线路",()->{}));CinemaMenu.show(this,"线路",rows);return;}for(int g=0;g<lineGroups.length;g++){final int at=g;String flag=g<lineFlags.length&&!lineFlags[g].isEmpty()?lineFlags[g]:"线路 "+(g+1);rows.add(CinemaMenu.choice(flag,g==lineAt,()->selectLine(at)));}CinemaMenu.show(this,"线路",rows);}
  /** 选中的线路名和播放地址必须来自同一组，下载和播放都用这一对。 */
- void selectLine(int index){if(lineGroups.length==0||poster==null)return;int g=Math.max(0,Math.min(index,lineGroups.length-1));lineAt=g;String flag=g<lineFlags.length&&!lineFlags[g].isEmpty()?lineFlags[g]:"线路 "+(g+1);String[] first=null,resume=null;for(String encoded:lineGroups[g].split("#")){String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;if(first==null)first=ep;if(prefs.getInt("pos:"+watchId(fusionId,ep[0]),0)>10000)resume=ep;}String[] pick=resume!=null?resume:first;if(pick==null){playFlag=flag;playName="";playValue="";poster.setPlay("播放",false,null);poster.setTracks(PosterDetailRules.line(flag,""),lineGroups.length>1?this::lineMenu:null,null);if(seasonLabel!=null)seasonLabel.setText("更多来自 "+flag);if(episodeStrip!=null)fillEpisodes(episodeStrip,fusionId,fusionTitle,flag,lineGroups[g]);return;}bindFusion(flag,pick[0],pick[1],resume!=null);if(seasonLabel!=null)seasonLabel.setText("更多来自 "+flag);if(episodeStrip!=null)fillEpisodes(episodeStrip,fusionId,fusionTitle,flag,lineGroups[g]);}
+ void selectLine(int index){if(lineGroups.length==0||poster==null)return;int g=Math.max(0,Math.min(index,lineGroups.length-1));lineAt=g;String flag=g<lineFlags.length&&!lineFlags[g].isEmpty()?lineFlags[g]:"线路 "+(g+1);String[] first=null,resume=null;for(String encoded:lineGroups[g].split("#")){String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;if(first==null)first=ep;if(prefs.getInt("pos:"+watchId(fusionId,ep[0]),0)>10000)resume=ep;}String[] pick=resume!=null?resume:first;if(pick==null){playFlag=flag;playName="";playValue="";poster.setPlay("播放",false,null);poster.setTracks(PosterDetailRules.line(flag,""),lineGroups.length>1?this::lineMenu:null,null);if(episodeStrip!=null)fillEpisodes(episodeStrip,fusionId,fusionTitle,flag,lineGroups[g]);return;}bindFusion(flag,pick[0],pick[1],resume!=null);if(episodeStrip!=null)fillEpisodes(episodeStrip,fusionId,fusionTitle,flag,lineGroups[g]);}
  /** 点瓦片或跳至：更新播放目标、标题下的集信息和片源卡。主海报只在匹配到单集图时换，否则仍是 vod_pic。 */
  void selectFusion(String flag,String name,String value){if(poster==null||value==null||value.isEmpty())return;int pos=prefs.getInt("pos:"+watchId(fusionId,name),0);bindFusion(flag,name,value,pos>10000);if(episodeStrip!=null&&lineAt>=0&&lineAt<lineGroups.length)fillEpisodes(episodeStrip,fusionId,fusionTitle,flag,lineGroups[lineAt]);}
- void bindFusion(String flag,String name,String value,boolean resume){playFlag=flag;playName=name;playValue=value;poster.setPlay(resume?"继续":"播放",true,()->play(fusionId,fusionTitle,flag,name,value));poster.setMeta(PosterDetailRules.fusionMeta(name,current==null?"":current.optString("vod_year"),current==null?"":current.optString("vod_remarks")));poster.setTracks(PosterDetailRules.line(flag,name),lineGroups.length>1?this::lineMenu:null,null);paintFusion(name,value);}
- void paintFusion(String name,String value){if(detailArt==null)return;String vod=current==null?"":current.optString("vod_pic");String still=PosterDetailRules.fusionStill(name,value,vod);boolean episodePic=!still.isEmpty()&&!still.equals(vod);int w=Math.max(getResources().getDisplayMetrics().widthPixels,1280);if(episodePic){fusionEpisodeArt=true;load(detailArt,still,w);return;}if(fusionEpisodeArt){fusionEpisodeArt=false;if(!vod.isEmpty())load(detailArt,vod,w);else detailArt.setImageDrawable(null);}}
+ void bindFusion(String flag,String name,String value,boolean resume){playFlag=flag;playName=name;playValue=value;poster.setPlay(resume?"继续":"播放",true,()->play(fusionId,fusionTitle,flag,name,value));poster.setMeta(PosterDetailRules.fusionMeta(name,current==null?"":current.optString("vod_year"),current==null?"":current.optString("vod_remarks")));poster.setTracks(PosterDetailRules.line("线路 · "+flag,""),lineGroups.length>1?this::lineMenu:null,null);paintFusion(name,value);}
+ void paintFusion(String name,String value){
+  if(detailArt==null)return;
+  loadDetailArt(PosterDetailRules.fusionStill(name,value,""));
+ }
+ void loadDetailArt(String still){
+  int width=Math.max(getResources().getDisplayMetrics().widthPixels,1280);
+  String source=resolveArt(still),cover=resolveArt(detailArtUrl),fallback=resolveArt(detailArtFallback);
+  String request=source+"\n"+cover+"\n"+fallback;
+  if(request.equals(detailArtRequest))return;
+  detailArtRequest=request;
+  if(source.isEmpty()&&cover.isEmpty()&&fallback.isEmpty())detailArt.setImageDrawable(null);
+  TvPosterImages.loadPoster(this,detailArt,source,new String[]{cover,fallback},width);
+ }
+ String resolveArt(String url){
+  if(url==null||url.trim().isEmpty())return "";
+  try{return TvPosterRules.resolve(session.url,url);}catch(Exception ignored){return "";}
+ }
+ String matchedArt(JSONObject match){
+  String background=match.optString("background").trim();
+  return background.isEmpty()?match.optString("poster"):background;
+ }
+ void section(String title,String action,Runnable click){
+  LinearLayout row=new LinearLayout(this);
+  row.setGravity(Gravity.CENTER_VERTICAL);
+  TextView label=PosterDetail.text(this,title,18,CinemaTheme.INK);
+  label.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+  if(Build.VERSION.SDK_INT>=28)label.setAccessibilityHeading(true);
+  row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
+  if(click!=null){
+   TextView button=PosterDetail.text(this,action,14,CinemaTheme.GOLD);
+   button.setGravity(Gravity.CENTER);
+   button.setMinWidth(dp(52));
+   row.addView(button,new LinearLayout.LayoutParams(-2,dp(48)));
+   CinemaControls.action(button,action);
+   button.setOnClickListener(v->click.run());
+  }
+  LinearLayout.LayoutParams spacing=new LinearLayout.LayoutParams(-1,-2);
+  spacing.topMargin=dp(20);
+  spacing.bottomMargin=dp(click==null?2:4);
+  body.addView(row,spacing);
+ }
+ void credits(JSONObject item){
+  String area=item.optString("vod_area");
+  String actors=PosterDetailRules.fusionPeople(item.optString("vod_actor"),area);
+  String directors=PosterDetailRules.fusionPeople(item.optString("vod_director"),area);
+  if(actors.isEmpty()&&directors.isEmpty())return;
+  section("演职人员","",null);
+  if(!directors.isEmpty())credit("导演",directors);
+  if(!actors.isEmpty())credit("主演",actors);
+ }
+ void credit(String role,String names){
+  LinearLayout row=new LinearLayout(this);
+  row.setPadding(0,dp(8),0,0);
+  TextView heading=PosterDetail.text(this,role,14,CinemaTheme.MUTED);
+  row.addView(heading,new LinearLayout.LayoutParams(dp(54),-2));
+  TextView list=PosterDetail.text(this,names,14,CinemaTheme.SOFT);
+  row.addView(list,new LinearLayout.LayoutParams(0,-2,1f));
+  body.addView(row);
+ }
+ View episodeTile(String label,float progress,boolean watched,boolean selected,Runnable choose,Runnable download){
+  LinearLayout tile=new LinearLayout(this);
+  tile.setOrientation(LinearLayout.VERTICAL);
+  tile.setGravity(Gravity.CENTER);
+  tile.setPadding(dp(12),dp(8),dp(12),dp(8));
+  GradientDrawable bg=rounded(selected?0xff382b25:0xff1f1d21,12);
+  bg.setStroke(dp(1),selected?CinemaTheme.GOLD:0x22ffffff);
+  tile.setBackground(bg);
+  TextView title=PosterDetail.text(this,label,14,selected?CinemaTheme.GOLD:CinemaTheme.INK);
+  title.setMaxLines(1);
+  title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  title.setGravity(Gravity.CENTER);
+  if(selected)title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+  tile.addView(title,new LinearLayout.LayoutParams(-1,-2));
+  if(progress>0){
+   ProgressBar bar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
+   bar.setMax(100);
+   bar.setProgress(Math.round(progress*100));
+   bar.setProgressTintList(android.content.res.ColorStateList.valueOf(CinemaTheme.GOLD));
+   bar.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(0x35ffffff));
+   LinearLayout.LayoutParams space=new LinearLayout.LayoutParams(-1,dp(3));
+   space.topMargin=dp(5);
+   tile.addView(bar,space);
+  }
+  LinearLayout.LayoutParams size=new LinearLayout.LayoutParams(dp(104),dp(50));
+  size.rightMargin=dp(8);
+  tile.setLayoutParams(size);
+  CinemaControls.action(tile,label+(selected?"，当前选中":"")+(watched?"，已看完":""));
+  tile.setSelected(selected);
+  tile.setOnClickListener(v->choose.run());
+  if(download!=null)tile.setOnLongClickListener(v->{download.run();return true;});
+  return tile;
+ }
+ View episodePage(String label,Runnable click){
+  return episodeTile(label,0,false,false,click,null);
+ }
  void jumpFusion(){if(lineGroups.length==0||lineAt<0||lineAt>=lineGroups.length){Toast.makeText(this,"正在读取选集…",Toast.LENGTH_SHORT).show();return;}String group=lineGroups[lineAt];java.util.ArrayList<String[]> eps=new java.util.ArrayList<>();for(String encoded:group.split("#")){if(eps.size()>=1000)break;String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;eps.add(ep);}if(eps.isEmpty()){Toast.makeText(this,"没有可跳转的选集",Toast.LENGTH_SHORT).show();return;}PosterDetail.askEpisode(this,n->{if(lineAt<0||lineAt>=lineGroups.length)return false;String nowGroup=lineGroups[lineAt];java.util.ArrayList<String[]> now=new java.util.ArrayList<>();for(String encoded:nowGroup.split("#")){if(now.size()>=1000)break;String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;now.add(ep);}String[] names=new String[now.size()];for(int i=0;i<now.size();i++)names[i]=now.get(i)[0];int at=PosterDetailRules.fusionJump(names,n);if(at<0){Toast.makeText(this,"没有第 "+n+" 集",Toast.LENGTH_SHORT).show();return false;}String useFlag=lineAt<lineFlags.length&&!lineFlags[lineAt].isEmpty()?lineFlags[lineAt]:"线路 "+(lineAt+1);selectFusion(useFlag,now.get(at)[0],now.get(at)[1]);return true;});}
  void fillEpisodes(LinearLayout grid,String id,String title,String flag,String group){
   grid.removeAllViews();java.util.List<String[]> eps=new java.util.ArrayList<>();
   for(String encoded:group.split("#")){if(eps.size()>=1000)break;String[] ep=encoded.split("\\$",2);if(ep.length<2||ep[1].isEmpty())continue;eps.add(ep);}
   boolean[] started=new boolean[eps.size()];for(int n=0;n<eps.size();n++)started[n]=prefs.getInt("pos:"+watchId(id,eps.get(n)[0]),0)>10000;batchEps=eps;batchFlag=flag;batchId=id;batchTitle=title;batchCurrent=OfflineQueueRules.lastTrue(started);
-  int focus=0;for(int i=0;i<eps.size();i++)if(playName.equals(eps.get(i)[0])&&flag.equals(playFlag)){focus=i;break;}int start=stripAnchor>=0?stripAnchor:Math.max(0,focus-10);stripAnchor=-1;if(eps.size()>24)start=Math.min(Math.max(0,start),Math.max(0,eps.size()-24));else start=Math.max(0,Math.min(start,Math.max(0,eps.size()-1)));if(start>0){int earlier=start;grid.addView(PosterDetail.moreTile(this,"更早的集",()->{stripAnchor=Math.max(0,earlier-24);fillEpisodes(grid,id,title,flag,group);}));}
+  int focus=0;for(int i=0;i<eps.size();i++)if(playName.equals(eps.get(i)[0])&&flag.equals(playFlag)){focus=i;break;}int start=stripAnchor>=0?stripAnchor:Math.max(0,focus-10);stripAnchor=-1;if(eps.size()>24)start=Math.min(Math.max(0,start),Math.max(0,eps.size()-24));else start=Math.max(0,Math.min(start,Math.max(0,eps.size()-1)));if(start>0){int earlier=start;grid.addView(episodePage("更早的集",()->{stripAnchor=Math.max(0,earlier-24);fillEpisodes(grid,id,title,flag,group);}));}
   int end=Math.min(eps.size(),start+24);View currentTile=null;
-  for(int i=start;i<end;i++){final String[] ep=eps.get(i);int pos=prefs.getInt("pos:"+watchId(id,ep[0]),0),dur=prefs.getInt("dur:"+watchId(id,ep[0]),0);boolean watched=PosterDetailRules.watchedMs(pos,dur);boolean currentEp=ep[0].equals(playName)&&flag.equals(playFlag);View tile=PosterDetail.tile(this,ep[0],PosterDetailRules.barMs(pos,dur),watched,currentEp,()->selectFusion(flag,ep[0],ep[1]),()->{OfflineDownloads.fusion(this,session,flag,ep[1],title+" · "+ep[0],watchId(id,ep[0]),current);},(image,w)->load(image,current==null?"":current.optString("vod_pic"),w));grid.addView(tile);if(currentEp)currentTile=tile;}
-  if(end<eps.size()){int next=end;grid.addView(PosterDetail.moreTile(this,"更后的集",()->{stripAnchor=next;fillEpisodes(grid,id,title,flag,group);}));}
+  for(int i=start;i<end;i++){final String[] ep=eps.get(i);int pos=prefs.getInt("pos:"+watchId(id,ep[0]),0),dur=prefs.getInt("dur:"+watchId(id,ep[0]),0);boolean watched=PosterDetailRules.watchedMs(pos,dur);boolean currentEp=ep[0].equals(playName)&&flag.equals(playFlag);View tile=episodeTile(ep[0],PosterDetailRules.barMs(pos,dur),watched,currentEp,()->selectFusion(flag,ep[0],ep[1]),()->{OfflineDownloads.fusion(this,session,flag,ep[1],title+" · "+ep[0],watchId(id,ep[0]),current);});grid.addView(tile);if(currentEp)currentTile=tile;}
+  if(end<eps.size()){int next=end;grid.addView(episodePage("更后的集",()->{stripAnchor=next;fillEpisodes(grid,id,title,flag,group);}));}
   if(eps.size()>=1000){TextView more=text("选集较多，仅显示前 1000 项",13);more.setTextColor(CinemaTheme.MUTED);grid.addView(more);}
   PosterDetail.reveal(episodeScroller,currentTile);
  }
  void play(String id,String title,String flag,String episode,String value){work("正在获取并检查播放地址…",()->{JSONObject r;try{r=FusionCatalog.request(this,session,"player",value,flag,1);}catch(Exception e){if(!MagnetLinks.isMagnet(value))throw e;r=null;}r=TvBoxPlay.orMagnet(r,value);TvBoxPlay.Resolved resolved=TvBoxPlay.resolve(this,session,flag,r,40000);JSONObject stream=resolved.stream;{String pick=MagnetFiles.select(stream,episode,flag+" "+title,current,25,getCacheDir());if(!pick.isEmpty())DebugLog.event("磁力合集",pick);}stream.put("name",session.site.optString("name"));
    JSONObject meta=FusionCatalog.normalize(session,new JSONArray().put(current),"").optJSONObject(0);String watch="tvbox:"+TvSpiderRules.digest((session.url+"|"+session.site.optString("key")+"|"+id+"|"+episode).getBytes("UTF-8"),"SHA-256");FusionArtwork.fill(meta,FusionArtwork.cached(this,current));meta.put("subtitleEpisode",episode).put("fusion.title",title).put("fusion.flag",flag);meta.put("id",watch).put("name",title+" · "+episode).put("fusion.video",id).put("videos",FusionPlaybackRules.episodeChoices(current==null?"":current.optString("vod_play_from"),current==null?"":current.optString("vod_play_url"),watch,episode));PlaybackDownload.rememberLine(stream,meta,session.url,session.site.optString("key"),flag,value);return ()->PlaybackCheck.decide(this,session.site.optString("name")+" · "+title+" · "+episode,stream.optString("url"),resolved.via,resolved.check,()->{if(dead)return;status.setVisibility(View.VISIBLE);status.setText(title+" · "+episode+" · "+resolved.check.summary());Intent in=new Intent(this,PlayerActivity.class);in.putExtra("stream",stream.toString());in.putExtra("sources",new JSONArray().put(stream).toString());in.putExtra("id",watch);in.putExtra("type",meta.optString("fusion.mediaType",FusionPlaybackRules.episode(episode,flag+" "+title).number>0?"series":"movie"));in.putExtra("meta",meta.toString());in.putExtra("addons",prefs.getString("addons","[]"));startActivity(in);overridePendingTransition(android.R.anim.fade_in,android.R.anim.fade_out);});},()->play(id,title,flag,episode,value),120000);}
 
- void matchArtwork(JSONObject m,ImageView cover){EditText input=new EditText(this);input.setText(MediaMatchRules.clean(m.optString("vod_name")));new CinemaDialog(this).setTitle("搜索影片元数据").setView(input).setPositiveButton("搜索",(d,n)->work("正在匹配影片…",()->{JSONArray results=FusionArtwork.search(input.getText().toString());return ()->{if(results.length()==0){status.setVisibility(View.VISIBLE);status.setText("未匹配到影片，可改用英文名搜索");return;}String[] labels=new String[results.length()];for(int i=0;i<labels.length;i++){JSONObject v=results.optJSONObject(i);labels[i]=v.optString("name")+" · "+v.optString("releaseInfo")+" · "+v.optString("type");}new CinemaDialog(this).setTitle("确认对应影片").setItems(labels,(x,index)->{JSONObject chosen=results.optJSONObject(index);FusionArtwork.save(this,m,chosen);load(cover,chosen.optString("poster"),dp(600));status.setVisibility(View.VISIBLE);status.setText("匹配已保存 · 字幕将使用此影片身份");}).show();};},()->matchArtwork(m,cover))).setNegativeButton("取消",null).show();}
+ void matchArtwork(JSONObject m,ImageView cover){EditText input=new EditText(this);input.setText(MediaMatchRules.clean(m.optString("vod_name")));new CinemaDialog(this).setTitle("搜索影片元数据").setView(input).setPositiveButton("搜索",(d,n)->work("正在匹配影片…",()->{JSONArray results=FusionArtwork.search(input.getText().toString());return ()->{if(results.length()==0){status.setVisibility(View.VISIBLE);status.setText("未匹配到影片，可改用英文名搜索");return;}String[] labels=new String[results.length()];for(int i=0;i<labels.length;i++){JSONObject v=results.optJSONObject(i);labels[i]=v.optString("name")+" · "+v.optString("releaseInfo")+" · "+v.optString("type");}new CinemaDialog(this).setTitle("确认对应影片").setItems(labels,(x,index)->{JSONObject chosen=results.optJSONObject(index);FusionArtwork.save(this,m,chosen);if(cover==detailArt){detailArtUrl=matchedArt(chosen);paintFusion(playName,playValue);}status.setVisibility(View.VISIBLE);status.setText("匹配已保存 · 字幕将使用此影片身份");}).show();};},()->matchArtwork(m,cover))).setNegativeButton("取消",null).show();}
  @Override public void onBackPressed(){epoch++;watch.removeCallbacksAndMessages(null);if(pending!=null)pending.cancel(true);if(!back.isEmpty())back.pop().run();else super.onBackPressed();}
  @Override protected void onResume(){FollowUp.resumeDownloadNotify(this);PlaybackOrientation.releaseHost(this);super.onResume();}
  @Override public void onDestroy(){dead=true;epoch++;watch.removeCallbacksAndMessages(null);io.shutdownNow();super.onDestroy();}

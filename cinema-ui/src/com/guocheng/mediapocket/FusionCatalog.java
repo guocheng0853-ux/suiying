@@ -33,5 +33,5 @@ final class FusionCatalog {
   }return out;
  }
  static String plain(String html){return SynopsisText.plain(html);}
- static void open(Context c,JSONObject m){Intent in=new Intent(c,FusionLibraryActivity.class);in.putExtra("config",m.optString("fusion.config"));in.putExtra("site",m.optString("fusion.site"));in.putExtra("id",m.optString("id"));in.putExtra("category",m.optString("fusion.category"));c.startActivity(in);}
+ static void open(Context c,JSONObject m){Intent in=new Intent(c,FusionLibraryActivity.class);in.putExtra("config",m.optString("fusion.config"));in.putExtra("site",m.optString("fusion.site"));in.putExtra("id",m.optString("id"));in.putExtra("category",m.optString("fusion.category"));in.putExtra("summaryTitle",m.optString("name"));in.putExtra("summaryPoster",m.optString("poster"));c.startActivity(in);}
 }
