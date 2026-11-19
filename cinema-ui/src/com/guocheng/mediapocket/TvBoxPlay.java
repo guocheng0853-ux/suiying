@@ -26,14 +26,21 @@ final class TvBoxPlay {
    List<JSONObject> parsers=SniffRules.parsers(s.config);
    if(parsers.isEmpty())throw new Exception("此线路需要 VIP 解析接口，但当前配置没有 parses");
    Exception last=null;
+   Resolved uncertain=null,rejected=null;
    for(JSONObject p:parsers){
+    if(System.currentTimeMillis()>=deadline||Thread.currentThread().isInterrupted())break;
     try{
      String target=SniffRules.parserTarget(p.optString("url"),url);JSONObject ph=p.optJSONObject("ext")==null?null:p.optJSONObject("ext").optJSONObject("header");
      JSONObject got=p.optInt("type",0)==1?SniffRules.parseJson(CinemaCatalogClient.text(target,ph==null?new JSONObject():ph)):WebSniffer.sniff(a,target,ph==null?new JSONObject():ph,Math.min(20000,left(deadline)));
-     return checked(s,flag,got.getString("url"),got.getJSONObject("header"),"解析接口 · "+p.optString("name","未命名"),deadline);
+     Resolved candidate=checked(s,flag,got.getString("url"),got.getJSONObject("header"),"解析接口 · "+p.optString("name","未命名"),deadline);
+     if(candidate.check.media)return candidate;
+     if(candidate.check.definitive)rejected=candidate;
+     else if(uncertain==null)uncertain=candidate;
     }catch(Exception e){last=e;}
    }
-   throw new Exception("解析接口均未返回视频地址："+LinkProbe.reason(last));
+   if(uncertain!=null)return uncertain;
+   if(rejected!=null)return rejected;
+   throw new Exception("解析接口均未返回视频地址"+(last==null?"":"："+LinkProbe.reason(last)));
   }
   if(parse!=0){JSONObject got=WebSniffer.sniff(a,url,h,Math.min(20000,left(deadline)));return checked(s,flag,got.getString("url"),got.getJSONObject("header"),"网页嗅探",deadline);}
   Resolved direct=checked(s,flag,url,h,"直接地址",deadline);
