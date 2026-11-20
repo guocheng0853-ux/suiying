@@ -7,8 +7,8 @@ import java.util.Base64;
 /**
  * 影视仓配置正文。设备上的 org.json.JSONTokener 已经接受单引号、双引号，以及字符串外的 //、块注释和 # 行注释
  * （AOSP libcore JSONTokener.nextCleanInternal / nextString）。这里只在同样的字符串边界内去掉注释，并解一层 Base64。
- * 不把 org.json 20240303 当成设备解析器，也不把通过本方法说成 RFC 严格 JSON。
- * 失败抛固定短文案，不附带原文，也不把解析异常设为 cause。
+ * 括号配平之后再用运行时的 JSONObject 验一次。平台 JSONException 的 message 会带上整段原文，所以换成固定 IOException，cause 保持为空。
+ * 完整对象后面的多余文字与 new JSONObject 一样不因此失败。这不是 RFC 严格 JSON。
  */
 final class TvBoxConfigText {
  static final int MAX_CHARS=8*1024*1024;
@@ -31,6 +31,7 @@ final class TvBoxConfigText {
   text=strip(bom(text)).trim();
   if(text.isEmpty()||text.charAt(0)!='{')throw new IOException("配置不是合法 JSON");
   structure(text);
+  try{new JSONObject(text);}catch(JSONException e){throw new IOException("配置不是合法 JSON");}
   return text;
  }
  private static boolean base64(String text){

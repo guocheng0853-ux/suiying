@@ -145,6 +145,23 @@ public class TvBoxConfigTextTest {
   check(afterImport(previous,"{\"sites\":[]}").contains("\"sites\":[]"),"empty sites array still counts as present");
   String joined=TvBoxConfigText.normalize("{\"a\":1,//c\n\"b\":2}");
   check(new JSONObject(joined).getInt("a")==1&&new JSONObject(joined).getInt("b")==2,"line comment keeps the line break");
+  check(new JSONObject(singleOut).getString("spider").equals("https://cdn.example/a//b.jar"),"runtime JSONObject accepts the single-quote fixture");
+  String trailing="{\"sites\":[]} trailing-junk";
+  check(new JSONObject(TvBoxConfigText.normalize(trailing)).optJSONArray("sites")!=null,"trailing text after a finished object is kept, same as JSONObject");
+  String leaked="{\"spider\":\"https://cdn.example/a//b.jar?token=SECRET\",\"sites\":}";
+  String keptConfig=sites("csp_Keep");
+  try{
+   String shown="加载失败："+TvBoxConfigText.normalize(leaked);
+   throw new AssertionError("balanced invalid value accepted "+shown);
+  }catch(IOException e){
+   String shown="加载失败："+(e.getMessage()==null?"":e.getMessage());
+   check(e.getMessage().equals("配置不是合法 JSON")&&e.getCause()==null,"fixed import error");
+   check(shown.indexOf("SECRET")<0&&shown.indexOf("https://")<0&&shown.indexOf("cdn.example")<0&&shown.indexOf(leaked)<0,"ui text hides the config");
+   check(e.toString().indexOf("SECRET")<0,"exception text hides the config");
+  }
+  check(afterImport(keptConfig,leaked).equals(keptConfig),"invalid balanced value keeps the saved config");
+  try{FusionCatalog.parseFetched(leaked);throw new AssertionError("fusion accepted");}
+  catch(IOException e){check(e.getMessage().equals("配置不是合法 JSON")&&e.getCause()==null&&e.getMessage().indexOf("SECRET")<0,"fusion error stays fixed");}
   System.out.println("PASS: tvbox config text comments and one base64 layer.");
  }
 }
