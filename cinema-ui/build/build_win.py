@@ -200,5 +200,19 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
         if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
             if n in final_dex:continue
             assert base.read(n)==updated.read(n),n;preserved.append(n)
-    (root/'VALIDATION.json').write_text(json.dumps({'base':'0.1.20','ui_version':'0.1.188','android_device_tested':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest()},indent=2),encoding='utf-8')
+    evidence={'base':'0.1.20','ui_version':'0.1.188','android_device_tested':False,'on_device_validation':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest(),'note':'Build script evidence only. android_device_tested is false because this script did not run on a device.'}
+    if unsigned:
+        evidence['note']='Unsigned build only. Not a device validation. This file must not replace VALIDATION.json.'
+        (root/'VALIDATION-unsigned.json').write_text(json.dumps(evidence,indent=2),encoding='utf-8')
+    else:
+        path=root/'VALIDATION.json'
+        if path.exists():
+            previous=json.loads(path.read_text(encoding='utf-8'))
+            device=('android_device_tested','phone_tested_this_release','real_source_playback_tested','real_source_note','device_test_scope','device_acceptance_record','device_cleanup_verified','validation_flags_note','dolby_android_device_tested')
+            if previous.get('ui_version')!=evidence['ui_version']:
+                evidence['previous_signed_device_record']={k:previous[k] for k in device if k in previous}
+            else:
+                for k in device:
+                    if k in previous:evidence[k]=previous[k]
+        path.write_text(json.dumps(evidence,indent=2),encoding='utf-8')
 print(subprocess.check_output([str(AAPT2),'dump','badging',str(apk)]).decode().splitlines()[0]);print('APK:',apk)

@@ -5,7 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.charset.*;
 import java.util.Base64;
 /**
- * 影视仓配置正文。只做 JSON 注释和一层 Base64，不解密图片或自定义密文。
+ * 影视仓配置正文。设备上的 org.json.JSONTokener 已经接受单引号、双引号，以及字符串外的 //、块注释和 # 行注释
+ * （AOSP libcore JSONTokener.nextCleanInternal / nextString）。这里只在同样的字符串边界内去掉注释，并解一层 Base64。
+ * 不把 org.json 20240303 当成设备解析器，也不把通过本方法说成 RFC 严格 JSON。
  * 失败抛固定短文案，不附带原文，也不把解析异常设为 cause。
  */
 final class TvBoxConfigText {
@@ -29,7 +31,6 @@ final class TvBoxConfigText {
   text=strip(bom(text)).trim();
   if(text.isEmpty()||text.charAt(0)!='{')throw new IOException("配置不是合法 JSON");
   structure(text);
-  try{new JSONObject(text);}catch(JSONException e){throw new IOException("配置不是合法 JSON");}
   return text;
  }
  private static boolean base64(String text){
@@ -68,17 +69,18 @@ final class TvBoxConfigText {
  }
  private static String strip(String text)throws IOException{
   StringBuilder out=new StringBuilder(text.length());
-  boolean inString=false,escape=false;int n=text.length(),i=0;
+  char quote=0;boolean escape=false;int n=text.length(),i=0;
   while(i<n){
    char c=text.charAt(i);
-   if(inString){
+   if(quote!=0){
     out.append(c);i++;
     if(escape){escape=false;continue;}
     if(c=='\\'){escape=true;continue;}
-    if(c=='"')inString=false;
+    if(c==quote)quote=0;
     continue;
    }
-   if(c=='"'){inString=true;out.append(c);i++;continue;}
+   if(c=='"'||c=='\''){quote=c;out.append(c);i++;continue;}
+   if(c=='#'){i=lineComment(text,i+1,out);continue;}
    if(c=='/'&&i+1<n){
     char next=text.charAt(i+1);
     if(next=='/'){
@@ -100,23 +102,33 @@ final class TvBoxConfigText {
    }
    out.append(c);i++;
   }
-  if(inString||escape)throw new IOException("配置不是合法 JSON");
+   if(quote!=0||escape)throw new IOException("配置不是合法 JSON");
   return out.toString();
+ }
+ private static int lineComment(String text,int i,StringBuilder out){
+  int n=text.length();
+  while(i<n){
+   char d=text.charAt(i);
+   if(d=='\n'||d=='\u2028'||d=='\u2029'){out.append(d);return i+1;}
+   if(d=='\r'){out.append('\n');if(i+1<n&&text.charAt(i+1)=='\n')return i+2;return i+1;}
+   i++;
+  }
+  return i;
  }
  private static void structure(String text)throws IOException{
   int n=text.length(),i=0;
   while(i<n&&ws(text.charAt(i)))i++;
   if(i>=n||text.charAt(i)!='{')throw new IOException("配置不是合法 JSON");
-  int[] stack=new int[MAX_DEPTH];int sp=0;boolean inString=false,escape=false;
+  int[] stack=new int[MAX_DEPTH];int sp=0;char quote=0;boolean escape=false;
   for(;i<n;i++){
    char c=text.charAt(i);
-   if(inString){
+   if(quote!=0){
     if(escape){escape=false;continue;}
     if(c=='\\'){escape=true;continue;}
-    if(c=='"')inString=false;
+    if(c==quote)quote=0;
     continue;
    }
-   if(c=='"'){inString=true;continue;}
+   if(c=='"'||c=='\''){quote=c;continue;}
    if(c=='{'||c=='['){
     if(sp==MAX_DEPTH)throw new IOException("配置结构过深");
     stack[sp++]=c=='{'?'}':']';
@@ -124,7 +136,7 @@ final class TvBoxConfigText {
    }
    if(c=='}'||c==']'){
     if(sp==0||stack[sp-1]!=c)throw new IOException("配置不是合法 JSON");
-    if(--sp==0){for(int j=i+1;j<n;j++)if(!ws(text.charAt(j)))throw new IOException("配置不是合法 JSON");return;}
+    if(--sp==0)return;
    }
   }
   throw new IOException("配置不是合法 JSON");

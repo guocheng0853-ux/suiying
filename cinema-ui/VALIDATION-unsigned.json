@@ -1,0 +1,21 @@
+{
+  "base": "0.1.20",
+  "ui_version": "0.1.188",
+  "android_device_tested": false,
+  "on_device_validation": false,
+  "original_code_assets_native_preserved": [
+    "resources.arsc",
+    "assets/default-addon.txt",
+    "assets/default-manifest.json",
+    "assets/hevc10-test.mp4",
+    "assets/official-addons.json",
+    "assets/player-test.mp4",
+    "assets/torrentclaw.json",
+    "lib/arm64-v8a/libc++_shared.so",
+    "lib/arm64-v8a/libvlcjni.so",
+    "lib/arm64-v8a/libvlc.so",
+    "lib/arm64-v8a/libjlibtorrent-2.0.12.9.so"
+  ],
+  "base_sha256": "7752ab87605613382252ada6aabaa9d1d63146023d4d4c85ba8cd564eb509006",
+  "note": "Unsigned build only. Not a device validation. This file must not replace VALIDATION.json."
+}

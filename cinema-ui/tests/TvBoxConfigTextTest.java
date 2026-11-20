@@ -31,7 +31,46 @@ public class TvBoxConfigTextTest {
   for(int i=0;i<s.length();i++){if(i>0&&i%16==0)out.append("\r\n");out.append(s.charAt(i));}
   return out.append("\n ").toString();
  }
- static String urlSafe(String text){return Base64.getUrlEncoder().withoutPadding().encodeToString(text.getBytes(StandardCharsets.UTF_8));}
+ /** Android JSONTokener.nextString: the opening quote closes the string; a backslash consumes the next character. */
+ static String androidField(String text,String key){
+  int i=0,n=text.length();
+  while(i<n){
+   char c=text.charAt(i);
+   if(c==' '||c=='\n'||c=='\r'||c=='\t'){i++;continue;}
+   if(c=='#'){while(i<n&&text.charAt(i)!='\n'&&text.charAt(i)!='\r')i++;continue;}
+   if(c=='/'&&i+1<n&&(text.charAt(i+1)=='/'||text.charAt(i+1)=='*')){
+    if(text.charAt(i+1)=='/'){i+=2;while(i<n&&text.charAt(i)!='\n'&&text.charAt(i)!='\r')i++;continue;}
+    int end=text.indexOf("*/",i+2);if(end<0)throw new AssertionError("unterminated comment in parity scan");i=end+2;continue;
+   }
+   if(c=='"'||c=='\''){
+    String value=androidString(text,i);
+    int after=i+1+rawLength(text,i);
+    if(value.equals(key)){
+     int j=after;while(j<n&&" \n\r\t".indexOf(text.charAt(j))>=0)j++;
+     if(j<n&&(text.charAt(j)==':'||text.charAt(j)=='=')){j++;if(j<n&&text.charAt(j)=='>')j++;while(j<n&&" \n\r\t".indexOf(text.charAt(j))>=0)j++;if(j<n&&(text.charAt(j)=='"'||text.charAt(j)=='\''))return androidString(text,j);}
+    }
+    i=after;continue;
+   }
+   i++;
+  }
+  throw new AssertionError("missing field");
+ }
+ static int rawLength(String text,int open){
+  char q=text.charAt(open);int i=open+1;boolean escape=false;
+  while(i<text.length()){char c=text.charAt(i);if(escape){escape=false;i++;continue;}if(c=='\\'){escape=true;i++;continue;}if(c==q)return i-open;i++;}
+  throw new AssertionError("unterminated");
+ }
+ static String androidString(String text,int open){
+  char q=text.charAt(open);int i=open+1;StringBuilder out=new StringBuilder();boolean escape=false;
+  while(i<text.length()){
+   char c=text.charAt(i++);
+   if(escape){out.append(c);escape=false;continue;}
+   if(c=='\\'){escape=true;continue;}
+   if(c==q)return out.toString();
+   out.append(c);
+  }
+  throw new AssertionError("unterminated");
+ }
  /** 与底座 lambda$6 相同：sites 或 lives 数组非 null 才替换已存配置。 */
  static String afterImport(String saved,String fetched){
   try{
@@ -52,15 +91,33 @@ public class TvBoxConfigTextTest {
   String literal="{\"url\":\"https://example.com/a//b?q=1#f\",\"note\":\"/* keep */ // keep\",\"esc\":\"quote\\\" and \\\\ slash\"}";
   JSONObject kept=new JSONObject(TvBoxConfigText.normalize(literal));
   check(kept.getString("url").equals("https://example.com/a//b?q=1#f")&&kept.getString("note").equals("/* keep */ // keep")&&kept.getString("esc").equals("quote\" and \\ slash"),"strings keep comment-like text and escapes");
+  String single="{'spider':'https://cdn.example/a//b.jar','note':'/* keep */ // keep #hash','sites':[]}";
+  String singleOut=TvBoxConfigText.normalize(single);
+  check(singleOut.contains("https://cdn.example/a//b.jar")&&singleOut.contains("/* keep */ // keep #hash")&&singleOut.contains("'sites'"),"single quotes keep url and comment markers");
+  check(androidField(single,"spider").equals(androidField(singleOut,"spider")),"single quoted value matches Android string rules");
+  String singleEsc="{'spider':'it\\'s https://cdn.example/a//b.jar','sites':[]}";
+  check(TvBoxConfigText.normalize(singleEsc).contains("https://cdn.example/a//b.jar"),"escaped single quote does not end the string");
+  String doubleHash="{\"spider\":\"https://cdn.example/a//b.jar#frag\", # outside\n\"sites\":[]}";
+  JSONObject hashed=new JSONObject(TvBoxConfigText.normalize(doubleHash));
+  check(hashed.getString("spider").equals("https://cdn.example/a//b.jar#frag"),"hash comment outside a string, hash inside kept");
   String commented="{\n/* head */\n\"url\" /* mid */ : \"https://cdn.example/x//y\",\n// see https://example.com/hidden\n\"sites\":[ // line\n{\"key\":\"k\",\"name\":\"演示\",\"type\":3,\"api\":\"csp_Demo\"}\n]\r\n}\n";
   JSONObject commentedJson=must(commented);
   check(commentedJson.getString("url").equals("https://cdn.example/x//y")&&commentedJson.getJSONArray("sites").getJSONObject(0).getString("api").equals("csp_Demo"),"line and block comments");
   check(new JSONObject(TvBoxConfigText.normalize(commented)).toString().equals(commentedJson.toString()),"fusion load and normalize match");
   String inner="{\n// c\n\"lives\":[{\"name\":\"直播\",\"url\":\"http://live.example/a.m3u\"}]\n}";
-  for(String encoded:new String[]{b64(inner),unpadded(inner),folded(inner),urlSafe(inner),b64(commented)}){
+  for(String encoded:new String[]{b64(inner),unpadded(inner),folded(inner),b64(commented)}){
    JSONObject o=must(encoded);
    check(o.has("lives")||o.has("sites"),"base64 json");
   }
+  String alphabetJson="{\"spider\":\"https://cdn.example/a//b.jar\",\"sites\":[],\"pad\":\">AA?\"}";
+  String urlAlphabet="eyJzcGlkZXIiOiJodHRwczovL2Nkbi5leGFtcGxlL2EvL2IuamFyIiwic2l0ZXMiOltdLCJwYWQiOiI-QUE_In0";
+  String stdAlphabet="eyJzcGlkZXIiOiJodHRwczovL2Nkbi5leGFtcGxlL2EvL2IuamFyIiwic2l0ZXMiOltdLCJwYWQiOiI+QUE/In0=";
+  check(urlAlphabet.indexOf('-')>=0&&urlAlphabet.indexOf('_')>=0&&urlAlphabet.indexOf('+')<0&&urlAlphabet.indexOf('/')<0,"url-safe fixture uses - and _");
+  check(stdAlphabet.indexOf('+')>=0&&stdAlphabet.indexOf('/')>=0,"standard fixture uses + and /");
+  check(must(urlAlphabet).getString("spider").equals("https://cdn.example/a//b.jar"),"url-safe alphabet decodes");
+  check(must(stdAlphabet).getString("spider").equals("https://cdn.example/a//b.jar")&&must(stdAlphabet).getString("pad").equals(">AA?"),"standard alphabet decodes");
+  check(must(alphabetJson).getString("pad").equals(">AA?"),"alphabet json round trip");
+  reject(urlAlphabet.replaceFirst("-","+"),"配置不是合法 JSON");
   check(must(b64(commented)).getJSONArray("sites").getJSONObject(0).getString("api").equals("csp_Demo"),"base64 of commented json");
   reject("<html>"+TOKEN+"</html>","配置不是合法 JSON");
   reject("401 Unauthorized: "+TOKEN,"配置不是合法 JSON");
