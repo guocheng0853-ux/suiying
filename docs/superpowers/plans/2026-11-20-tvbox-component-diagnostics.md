@@ -21,13 +21,14 @@
 
 仓库里的 `fusion-default.example.json` 带 `;md5;`，只是样例，不是用户当时下载到的 jar。不能判断用户那次是 size 还是 checksum，也不能说这份样例修了用户的源。
 
-本次只加原因码，不放宽门槛：
+原因码不放宽门槛。真正下载时，`TvSpiderRuntime.download` 把响应体交给 `TvSpiderRules.readComponent`。读到的字节数一旦超过 16MiB，就停在这一块之前，抛 `size bytes=<已经读到的字节数>`，不再调用 `verify`。空的 HTTP 200 会读成 0 字节，接着 `verify` 报 `size bytes=0`。长度刚好 16MiB 仍然通过这个上限。0.1.187 的 log 把调用点记在 `TvSpiderRules.verify`，那次不可能是「下载超过 16MiB」：旧的 `download` 在 `verify` 之前抛的是 `IOException`（「组件过大」），界面会显示 `线路组件错误：IOException`，调用点也不会是 `verify`。记在 `verify` 上的只剩空正文，或长度合格但 MD5 不一致。没有那次的字节，这两样仍然分不开。
 
-- 长度不在 `1 .. 16MiB`：仍抛出，界面和日志为 `size bytes=<长度>`。空文件即使声明了 MD5，也先报 size，不去算摘要。
 - 长度合格但 MD5 不一致：仍抛出，界面和日志为 `checksum`。不写期望值、实际摘要或地址。
+- `;md5;` 后面不是 32 位十六进制时，`jar()` 在下载之前就由 `TvSpiderRules.md5` 拒绝，原因码 `md5-format`。声明原文不进异常，也不进日志。
+- CSP 类名不合法时，`spider()` 在 `jar()` 成功返回之后、调用爬虫之前，由 `TvSpiderRules.className` 拒绝，原因码 `classname`。类名原文不进异常，也不进日志。
 - 其他异常仍只留类名，不读 `getMessage()`。原因链最多看 8 层，避免成环；更深的包装不再往下读，也不把外层 message 带出来。
-- 宿主栈帧不在 `TvSpiderRules` / `TvBoxRules` / `TvSpiderDispatch` / `TvSpiderRuntime` 上时，仍不写 logcat，和 0.1.187 一样。校验失败的栈在 `TvSpiderRules.verify`，所以 size / checksum 会记下来。
-- 同一行再进应用内调试日志（`DebugLog`，本身会再去一次网址）。日志正文只有原因码。
+- 宿主栈帧不在 `TvSpiderRules` / `TvBoxRules` / `TvSpiderDispatch` / `TvSpiderRuntime` 上时，日志行是 null，`note` 不写。校验和下载上限的栈都在 `TvSpiderRules` 上。
+- `note` 把同一行交给 logcat 和应用内 `DebugLog`。写出去之前先走 `DebugText.sanitize`。
 
 改之前 JVM 断言失败为：`empty component is size bytes=0, got IllegalArgumentException`。这就是旧实现分不出两种失败的证据。
 
@@ -47,7 +48,7 @@
 
 所以这次记录到的是一次正常返回的空白字符串，不是超时、取消，也不是空列表被误判。
 
-同一次进入里，重试和第一次用的是同一组参数：`FusionCatalog.request(session, "category", id, "", page)`。`TvSpiderDispatch` 固定 `categoryContent(id, "1", true, 空 HashMap)`。重试闭包抓住的是同一个 `id` 和 `page`，不会改站点，也不会先调 `homeContent`。爬虫按 `base|site|declaration` 的摘要缓存，`init` 在放进缓存之前做完。`FusionLibraryActivity` 不读、也不写首页那份 6 小时分类缓存。首页海报可以来自缓存，同时这一次实时调用仍返回空白。重试成功的那一页没有被写回缓存，所以离开再进入必然再发一次实时请求。
+同一次进入里，重试和第一次用的是同一组参数：`FusionCatalog.request(session, "category", id, "", page)`。`TvSpiderDispatch` 把页码写成 `String.valueOf(page)`，筛选标志固定为 true，扩展表是空的 `HashMap`。页码不是写死的 `"1"`；「全部」这条路径第一次和重试都传 page 1，所以这两次参数仍然相同。重试闭包抓住的是同一个 `id` 和 `page`，不会改站点，也不会先调 `homeContent`。爬虫按 `base|site|declaration` 的摘要缓存，`init` 在放进缓存之前做完。`FusionLibraryActivity` 不读、也不写首页那份 6 小时分类缓存。首页海报可以来自缓存，同时这一次实时调用仍返回空白。重试成功的那一页没有被写回缓存，所以离开再进入必然再发一次实时请求。
 
 因此「第一次空、重试有数据、再进入又空」不能解释成「爬虫只需要进程内热一次身」：成功之后单例还在，`onDestroy` 也不调用 `destroy()`。也没有找到宿主把「还没准备好」标成空数据、或把一次有效 JSON 丢掉的路径。搜索有另一套方法签名的补调，分类没有。
 
@@ -63,4 +64,4 @@
 
 ## 这次没有做的事
 
-没有放宽或跳过 `verify`。没有给分类加自动重试。没有伪造列表数据。没有打签名包，也没有打未签名包，没有真机点选。`scripts/run_tests.sh` 为 117/117（新断言在原有的 `TvSpiderRulesTest` 里，测试程序个数不变）。源码按 `build_ui.py` 的编译参数通过。`cinema-ui/VALIDATION.json` 仍是 0.1.187 的签名真机记录，本版不覆盖它。
+没有放宽或跳过 `verify`，也没有放宽 16MiB 上限、MD5 格式或 CSP 类名检查。没有给分类加自动重试。没有伪造列表数据。没有打签名包，也没有打未签名包，没有真机点选。`scripts/run_tests.sh` 为 117/117。JVM 上的 `android.jar` 没有方法体，加载 `TvSpiderRuntime` 或调用 `DebugLog` 会在 `android.content.Context` 上抛 `ClassFormatError`，所以测试调用的是 `download` / `componentFailure` / `parsePayload` / `note` 所委托的 `readComponent`、`componentReport`、`payloadReport` 和 `logLine`。`cinema-ui/VALIDATION.json` 仍是 0.1.187 的签名真机记录，本版不覆盖它。用户的小雅组件和豆瓣热门那次空白返回都还没有被这次改动修掉。
