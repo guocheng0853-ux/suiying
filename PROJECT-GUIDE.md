@@ -1,5 +1,7 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
+> 0.1.189（code 190）：影视仓组件失败能分清下载超限 `size bytes=<已读字节数>`、空正文 `size bytes=0`、`checksum`、`md5-format` 和 `classname`。空白返回只记 `empty` / `empty bytes=<字符数>`。不放宽校验，也不给分类自动重试。诊断见 `docs/superpowers/plans/2026-11-20-tvbox-component-diagnostics.md`。没有签名包，没有真机点选。`VALIDATION.json` 仍是 0.1.187 的真机记录。
+
 > 0.1.184（code 185）：首页导航四个图标统一成细线条，选中只加粗（1.6 → 2.1）不填实；房子去掉门洞。只改 `HomeNavIcon` 和 `BottomNavRules.iconStroke`，文字、底块、滑动、侧轨不变。没有真机验证。
 
 > 0.1.183（code 184）：影视仓片源播到一半失败时自动重连。同一线路重新取播放地址（最多连续 2 次）并从断点续播，再换同一集的其他线路（最多 3 条），都不行才交回跨站查找 / 失败卡片；卡片的「重新连接」对影视仓线路改成重新取地址。入口在 `PlayerOverlay.status` → `FusionReconnect.tick`，规则在 `FusionReconnectRules`。没有真机验证。
