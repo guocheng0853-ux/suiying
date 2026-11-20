@@ -17,9 +17,9 @@
 - 字节长度为 0，或大于 16MiB（原来的文案是「组件大小无效」）
 - 声明了非空 `;md5;`，且和正文的 MD5 不一致（原来的文案是「组件校验不一致，已停止加载」）
 
-界面看到的那句不是 `verify` 的原文。`TvSpiderRuntime.request` 把工作线程里的异常包成 `线路组件错误：` 加上 `getSimpleName()`，`FusionLibraryActivity.why` 只显示这句 message。0.1.187 的 `logComponentFailure` 同样只写异常类名和宿主调用位置，故意不写 message，因为别的异常正文可能带地址。所以 logcat 和界面都只剩 `IllegalArgumentException`。没有组件字节时，空文件、超过 16MiB、MD5 不一致这三件事无法区分。
+界面看到的那句不是 `verify` 的原文。`TvSpiderRuntime.request` 把工作线程里的异常包成 `线路组件错误：` 加上 `getSimpleName()`，`FusionLibraryActivity.why` 只显示这句 message。0.1.187 的 `logComponentFailure` 同样只写异常类名和宿主调用位置，故意不写 message，因为别的异常正文可能带地址。所以当时的 logcat 和界面都只剩 `IllegalArgumentException`。那次记录的调用点是 `TvSpiderRules.verify`。旧的 `download` 在进入 `verify` 之前就把超过 16MiB 的响应当 `IOException`（「组件过大」）拒绝了，调用点不会是 `verify`。因此那一次分不开的是空正文和 MD5 不一致，不是超限。`verify` 自己仍会拒绝手里已经超过 16MiB 的字节，但那不是这次真机记录走到的路径。
 
-仓库里的 `fusion-default.example.json` 带 `;md5;`，只是样例，不是用户当时下载到的 jar。不能判断用户那次是 size 还是 checksum，也不能说这份样例修了用户的源。
+仓库里的 `fusion-default.example.json` 带 `;md5;`，只是样例，不是用户当时下载到的 jar。不能判断用户那次是空正文还是 MD5 不一致，也不能说这份样例修了用户的源。
 
 原因码不放宽门槛。真正下载时，`TvSpiderRuntime.download` 把响应体交给 `TvSpiderRules.readComponent`。读到的字节数一旦超过 16MiB，就停在这一块之前，抛 `size bytes=<已经读到的字节数>`，不再调用 `verify`。空的 HTTP 200 会读成 0 字节，接着 `verify` 报 `size bytes=0`。长度刚好 16MiB 仍然通过这个上限。0.1.187 的 log 把调用点记在 `TvSpiderRules.verify`，那次不可能是「下载超过 16MiB」：旧的 `download` 在 `verify` 之前抛的是 `IOException`（「组件过大」），界面会显示 `线路组件错误：IOException`，调用点也不会是 `verify`。记在 `verify` 上的只剩空正文，或长度合格但 MD5 不一致。没有那次的字节，这两样仍然分不开。
 
@@ -58,7 +58,7 @@
 
 ## 仍未知
 
-- 小雅那次下载到的字节到底是 0、超过 16MiB，还是 MD5 不一致。
+- 小雅那次记在 `TvSpiderRules.verify` 上，所以不是下载超限。没有组件字节，分不开的是空正文还是 MD5 不一致。
 - 豆瓣热门在相同的 `categoryContent` 参数下，为什么第一次返回空白、紧接着的下一次又返回带 `list` 的 JSON。
 - 用户机器上的配置正文。样例配置不能代替。
 
