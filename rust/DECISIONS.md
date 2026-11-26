@@ -49,3 +49,9 @@ Status: accepted (2026-11-26)
 Context: First unit gated; APK packs new `lib/*/librules_rs.so` via `runtime-native` without overwriting base.apk libs.
 Decision: Ship the rust-anything JNI shadow as `cinema-ui` `SpiderComponentRules`; keep pure Java in `portables/spider-component` for `record`. `readComponent(InputStream)` stays Java. `CheckFailed(String)` accepts `size|<bytes>` so JNI remapping preserves byte counts while `getMessage()` stays `size`. JVM tests set `-Drust-anything.lib.rules_rs` to the host `.so`.
 Consequences: Rebuild host + Android `.so` after port changes; copy Android libs into `runtime-native` before `build_ui.py`.
+
+## ADR-009: Config-text unit without second JNI yet (0.1.192)
+Status: accepted (2026-11-26)
+Context: `TvBoxConfigText` logic extracted to `ConfigTextRules` + `ConfigTextFailed` under `portables/config-text`. Rust port in `rust/config-text-rs` gates 1515/1515. rust-anything generates a second `rustanything.*` package that would clash with rules-rs JNI classes if both shadows land in the same APK dex.
+Decision: Ship the Java Rules + facade in 0.1.192; keep the Rust port gated and recorded; defer `libconfig_text_rs.so` until natives are namespaced or merged. `ConfigTextFailed` is a `RuntimeException` so a future JNI remap can throw it; the facade still converts to cause-less `IOException` for callers.
+Consequences: APK behavior matches pre-extract for config normalize; product code path is portable and ready for JNI once the clash is solved.

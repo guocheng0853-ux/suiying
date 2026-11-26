@@ -1,0 +1,1515 @@
+{"fn":"normalizeBody","args":["ns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00cline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{name} has {count} items"],"ok":"{name} has {count} items"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[".leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["İstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ns:key.pathkey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["  padded  "],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hello world"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["trailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["Hello World"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[":"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["line1\nline2"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[""],"error":"配置内容是空的","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[":key_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["﻿bom"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abc"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\ude00{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["straße日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["é"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a:b:cstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.tsİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["key_name-1"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["  padded  hello"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["key_name-1ab"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00cabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparated"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[".leadingHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["key_name-1ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["aHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{name} has {count} items{name} has {count} items"],"ok":"{name} has {count} items{name} has {count} items"}
+{"fn":"normalizeBody","args":["key_name-1ns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["HELLOé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語のテキストΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["key_name-1tab\tseparated"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abHello World"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ns:key.pathstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hello worldhello world"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["straßetrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["İstanbulünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["emoji \ud83d\udc4d\ud83c\udffd mix﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["HELLO日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["aba:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["aünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ab﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hello worldkey_name-1"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["Hello World  padded  "],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["key_name-1a..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["trailing.{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.ts  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["  padded  a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hellotrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ns:key.patha:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abcemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.jsonline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["line1\nline2日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["straßeHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a.b.ca.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a..ba\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["HELLO./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["éstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparated{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00c./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abcns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ahello"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[":abc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["line1\nline2a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["emoji \ud83d\udc4d\ud83c\udffd mixİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["Hello Worldé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{name} has {count} itemshello"],"ok":"{name} has {count} itemshello"}
+{"fn":"normalizeBody","args":["hello worldsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a..bé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hellosrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ΣΊΣΥΦΟΣsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ns:key.pathhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ns:key.pathé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["aé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["  padded  \ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\ude00ab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abcΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a:b:ca.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ünïcödéa"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ünïcödékey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abc  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語のテキストa\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[".leadingΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["straßeabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[".leading日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["﻿bomns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["Hello Worldabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.tshello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hello./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["helloİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["line1\nline2ns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abca..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{name} has {count} itemstrailing."],"ok":"{name} has {count} itemstrailing."}
+{"fn":"normalizeBody","args":["line1\nline2.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[".leadinghello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ünïcödéünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.jsona:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.jsonabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ΣΊΣΥΦΟΣns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ünïcödéabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ns:key.pathİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hello world:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abc./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ans:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abcsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.jsonkey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["trailing.line1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[":a"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparatedline1\nline2"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["key_name-1{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ünïcödé.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00cİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00chello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["helloHello World"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["  padded  İstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a:b:c﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.tsa.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\ude00a..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparated  padded  "],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["﻿bomtab\tseparated"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.json.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["İstanbulHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["İstanbul  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語のテキスト日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["emoji \ud83d\udc4d\ud83c\udffd mix日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["﻿bomline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["trailing.  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.jsoné"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["éhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["emoji \ud83d\udc4d\ud83c\udffd mixsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語のテキストünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["é\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.jsonhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[":  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["İstanbulab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語のテキストline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a.b.cemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["HELLOΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.tsns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[".leadinga.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a..bİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ab  padded  "],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[":é"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{name} has {count} itemsΣΊΣΥΦΟΣ"],"ok":"{name} has {count} itemsΣΊΣΥΦΟΣ"}
+{"fn":"normalizeBody","args":["emoji \ud83d\udc4d\ud83c\udffd mixhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a.b.ca:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["﻿bom{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00c﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\ude00.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ΣΊΣΥΦΟΣtab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["emoji \ud83d\udc4d\ud83c\udffd mix:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\ude00a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b\ud83d\ude00cHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["éé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語のテキストé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparateda\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ΣΊΣΥΦΟΣ  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{name} has {count} itemshello world"],"ok":"{name} has {count} itemshello world"}
+{"fn":"normalizeBody","args":["trailing.straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["hello worlda..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["helloa..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a:b:cé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["straßetab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["./x/**/*.jsontrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["HELLOhello world"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["line1\nline2\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["trailing.hello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abc﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["line1\nline2ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparatedsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.tsemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["key_name-1é"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparatedstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["abcabc"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["éa"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ns:key.patha.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["src/a/b.tssrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["tab\tseparated\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["héllo wörld"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["日本語"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["ılık ırmak"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud83d\ude00b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a²b x½ y①"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["aⅠb Ⅻ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["a\ud801\udc00b \ud835\udc00bc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["कि ٣٤"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"bom","args":["HELLO"],"ok":"HELLO"}
+{"fn":"bom","args":["﻿bom"],"ok":"bom"}
+{"fn":"bom","args":["ab"],"ok":"ab"}
+{"fn":"bom","args":["Hello Worldhello world"],"ok":"Hello Worldhello world"}
+{"fn":"bom","args":["key_name-1"],"ok":"key_name-1"}
+{"fn":"bom","args":["\ud83d\ude00"],"ok":"\ud83d\ude00"}
+{"fn":"bom","args":["aba"],"ok":"aba"}
+{"fn":"bom","args":["hello world"],"ok":"hello world"}
+{"fn":"bom","args":["./x/**/*.json"],"ok":"./x/**/*.json"}
+{"fn":"bom","args":["ünïcödé  padded  "],"ok":"ünïcödé  padded  "}
+{"fn":"bom","args":["src/a/b.ts"],"ok":"src/a/b.ts"}
+{"fn":"bom","args":["straßeab"],"ok":"straßeab"}
+{"fn":"bom","args":["a:b:c"],"ok":"a:b:c"}
+{"fn":"bom","args":["aa..b"],"ok":"aa..b"}
+{"fn":"bom","args":["Hello World"],"ok":"Hello World"}
+{"fn":"bom","args":["{name} has {count} items"],"ok":"{name} has {count} items"}
+{"fn":"bom","args":["a"],"ok":"a"}
+{"fn":"bom","args":["trailing."],"ok":"trailing."}
+{"fn":"bom","args":["é"],"ok":"é"}
+{"fn":"bom","args":["ünïcödé"],"ok":"ünïcödé"}
+{"fn":"bom","args":["straße"],"ok":"straße"}
+{"fn":"bom","args":["  padded  "],"ok":"  padded  "}
+{"fn":"bom","args":[".leading"],"ok":".leading"}
+{"fn":"bom","args":["line1\nline2"],"ok":"line1\nline2"}
+{"fn":"bom","args":["key_name-1tab\tseparated"],"ok":"key_name-1tab\tseparated"}
+{"fn":"bom","args":["a..b"],"ok":"a..b"}
+{"fn":"bom","args":["\ud83d\ude00﻿bom"],"ok":"\ud83d\ude00﻿bom"}
+{"fn":"bom","args":["İstanbul"],"ok":"İstanbul"}
+{"fn":"bom","args":["a\ud83d\ude00b\ud83d\ude00c"],"ok":"a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"bom","args":["éline1\nline2"],"ok":"éline1\nline2"}
+{"fn":"bom","args":[":"],"ok":":"}
+{"fn":"bom","args":[""],"ok":""}
+{"fn":"bom","args":["hello world.leading"],"ok":"hello world.leading"}
+{"fn":"bom","args":["ns:key.path\ud83d\ude00"],"ok":"ns:key.path\ud83d\ude00"}
+{"fn":"bom","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"bom","args":["a.b.cline1\nline2"],"ok":"a.b.cline1\nline2"}
+{"fn":"bom","args":["日本語のテキスト"],"ok":"日本語のテキスト"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣ"],"ok":"ΣΊΣΥΦΟΣ"}
+{"fn":"bom","args":["a..b./x/**/*.json"],"ok":"a..b./x/**/*.json"}
+{"fn":"bom","args":["emoji \ud83d\udc4d\ud83c\udffd mixa:b:c"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixa:b:c"}
+{"fn":"bom","args":["İstanbul\ud83d\ude00"],"ok":"İstanbul\ud83d\ude00"}
+{"fn":"bom","args":["abc"],"ok":"abc"}
+{"fn":"bom","args":["ünïcödéa.b.c"],"ok":"ünïcödéa.b.c"}
+{"fn":"bom","args":["src/a/b.tsHello World"],"ok":"src/a/b.tsHello World"}
+{"fn":"bom","args":["a.b.c"],"ok":"a.b.c"}
+{"fn":"bom","args":["abcab"],"ok":"abcab"}
+{"fn":"bom","args":[".leadingtab\tseparated"],"ok":".leadingtab\tseparated"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣ.leading"],"ok":"ΣΊΣΥΦΟΣ.leading"}
+{"fn":"bom","args":["helloa:b:c"],"ok":"helloa:b:c"}
+{"fn":"bom","args":["hello"],"ok":"hello"}
+{"fn":"bom","args":["hello world日本語のテキスト"],"ok":"hello world日本語のテキスト"}
+{"fn":"bom","args":["ab.leading"],"ok":"ab.leading"}
+{"fn":"bom","args":["﻿boma"],"ok":"boma"}
+{"fn":"bom","args":["tab\tseparated"],"ok":"tab\tseparated"}
+{"fn":"bom","args":["ünïcödé.leading"],"ok":"ünïcödé.leading"}
+{"fn":"bom","args":["straßeΣΊΣΥΦΟΣ"],"ok":"straßeΣΊΣΥΦΟΣ"}
+{"fn":"bom","args":["./x/**/*.jsona..b"],"ok":"./x/**/*.jsona..b"}
+{"fn":"bom","args":["ns:key.path"],"ok":"ns:key.path"}
+{"fn":"bom","args":["﻿bomΣΊΣΥΦΟΣ"],"ok":"bomΣΊΣΥΦΟΣ"}
+{"fn":"bom","args":["\ud83d\ude00trailing."],"ok":"\ud83d\ude00trailing."}
+{"fn":"bom","args":["﻿bomline1\nline2"],"ok":"bomline1\nline2"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣHELLO"],"ok":"ΣΊΣΥΦΟΣHELLO"}
+{"fn":"bom","args":["src/a/b.tshello"],"ok":"src/a/b.tshello"}
+{"fn":"bom","args":["abcns:key.path"],"ok":"abcns:key.path"}
+{"fn":"bom","args":["  padded  a"],"ok":"  padded  a"}
+{"fn":"bom","args":["./x/**/*.jsontab\tseparated"],"ok":"./x/**/*.jsontab\tseparated"}
+{"fn":"bom","args":["İstanbulünïcödé"],"ok":"İstanbulünïcödé"}
+{"fn":"bom","args":["ünïcödéline1\nline2"],"ok":"ünïcödéline1\nline2"}
+{"fn":"bom","args":["a..bHELLO"],"ok":"a..bHELLO"}
+{"fn":"bom","args":[":emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":":emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"bom","args":["  padded  .leading"],"ok":"  padded  .leading"}
+{"fn":"bom","args":["helloa"],"ok":"helloa"}
+{"fn":"bom","args":[":trailing."],"ok":":trailing."}
+{"fn":"bom","args":["HELLOab"],"ok":"HELLOab"}
+{"fn":"bom","args":["a\ud83d\ude00b\ud83d\ude00cünïcödé"],"ok":"a\ud83d\ude00b\ud83d\ude00cünïcödé"}
+{"fn":"bom","args":["  padded  line1\nline2"],"ok":"  padded  line1\nline2"}
+{"fn":"bom","args":["line1\nline2./x/**/*.json"],"ok":"line1\nline2./x/**/*.json"}
+{"fn":"bom","args":["  padded  HELLO"],"ok":"  padded  HELLO"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣa"],"ok":"ΣΊΣΥΦΟΣa"}
+{"fn":"bom","args":["line1\nline2emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"line1\nline2emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"bom","args":["tab\tseparatedhello"],"ok":"tab\tseparatedhello"}
+{"fn":"bom","args":["a..ba.b.c"],"ok":"a..ba.b.c"}
+{"fn":"bom","args":["\ud83d\ude00a.b.c"],"ok":"\ud83d\ude00a.b.c"}
+{"fn":"bom","args":["ahello"],"ok":"ahello"}
+{"fn":"bom","args":["trailing.tab\tseparated"],"ok":"trailing.tab\tseparated"}
+{"fn":"bom","args":["src/a/b.tsns:key.path"],"ok":"src/a/b.tsns:key.path"}
+{"fn":"bom","args":["HELLO\ud83d\ude00"],"ok":"HELLO\ud83d\ude00"}
+{"fn":"bom","args":["./x/**/*.jsontrailing."],"ok":"./x/**/*.jsontrailing."}
+{"fn":"bom","args":["éns:key.path"],"ok":"éns:key.path"}
+{"fn":"bom","args":["﻿bom{name} has {count} items"],"ok":"bom{name} has {count} items"}
+{"fn":"bom","args":["a:b:c\ud83d\ude00"],"ok":"a:b:c\ud83d\ude00"}
+{"fn":"bom","args":["a:b:ctrailing."],"ok":"a:b:ctrailing."}
+{"fn":"bom","args":["ünïcödéabc"],"ok":"ünïcödéabc"}
+{"fn":"bom","args":["abtab\tseparated"],"ok":"abtab\tseparated"}
+{"fn":"bom","args":["emoji \ud83d\udc4d\ud83c\udffd mix{name} has {count} items"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix{name} has {count} items"}
+{"fn":"bom","args":[".leadingline1\nline2"],"ok":".leadingline1\nline2"}
+{"fn":"bom","args":["emoji \ud83d\udc4d\ud83c\udffd mixhello"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixhello"}
+{"fn":"bom","args":["HELLOa.b.c"],"ok":"HELLOa.b.c"}
+{"fn":"bom","args":["ns:key.pathHello World"],"ok":"ns:key.pathHello World"}
+{"fn":"bom","args":["﻿bomstraße"],"ok":"bomstraße"}
+{"fn":"bom","args":["abc./x/**/*.json"],"ok":"abc./x/**/*.json"}
+{"fn":"bom","args":["key_name-1trailing."],"ok":"key_name-1trailing."}
+{"fn":"bom","args":["İstanbulhello world"],"ok":"İstanbulhello world"}
+{"fn":"bom","args":["astraße"],"ok":"astraße"}
+{"fn":"bom","args":[":a.b.c"],"ok":":a.b.c"}
+{"fn":"bom","args":["key_name-1hello"],"ok":"key_name-1hello"}
+{"fn":"bom","args":["trailing..leading"],"ok":"trailing..leading"}
+{"fn":"bom","args":["ünïcödéİstanbul"],"ok":"ünïcödéİstanbul"}
+{"fn":"bom","args":["a:b:c:"],"ok":"a:b:c:"}
+{"fn":"bom","args":["﻿bomhello"],"ok":"bomhello"}
+{"fn":"bom","args":["日本語のテキストHello World"],"ok":"日本語のテキストHello World"}
+{"fn":"bom","args":["a./x/**/*.json"],"ok":"a./x/**/*.json"}
+{"fn":"bom","args":["tab\tseparatedΣΊΣΥΦΟΣ"],"ok":"tab\tseparatedΣΊΣΥΦΟΣ"}
+{"fn":"bom","args":["HELLO  padded  "],"ok":"HELLO  padded  "}
+{"fn":"bom","args":[":straße"],"ok":":straße"}
+{"fn":"bom","args":[".leadingünïcödé"],"ok":".leadingünïcödé"}
+{"fn":"bom","args":["hello worldhello world"],"ok":"hello worldhello world"}
+{"fn":"bom","args":["emoji \ud83d\udc4d\ud83c\udffd mixa"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixa"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣtab\tseparated"],"ok":"ΣΊΣΥΦΟΣtab\tseparated"}
+{"fn":"bom","args":["src/a/b.tsé"],"ok":"src/a/b.tsé"}
+{"fn":"bom","args":["straße日本語のテキスト"],"ok":"straße日本語のテキスト"}
+{"fn":"bom","args":["日本語のテキストa"],"ok":"日本語のテキストa"}
+{"fn":"bom","args":["a\ud83d\ude00b\ud83d\ude00c﻿bom"],"ok":"a\ud83d\ude00b\ud83d\ude00c﻿bom"}
+{"fn":"bom","args":["emoji \ud83d\udc4d\ud83c\udffd mixa.b.c"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixa.b.c"}
+{"fn":"bom","args":["İstanbulİstanbul"],"ok":"İstanbulİstanbul"}
+{"fn":"bom","args":["abchello"],"ok":"abchello"}
+{"fn":"bom","args":["a.b.cHello World"],"ok":"a.b.cHello World"}
+{"fn":"bom","args":["a..bstraße"],"ok":"a..bstraße"}
+{"fn":"bom","args":["straßeİstanbul"],"ok":"straßeİstanbul"}
+{"fn":"bom","args":["ns:key.pathtab\tseparated"],"ok":"ns:key.pathtab\tseparated"}
+{"fn":"bom","args":["  padded  ns:key.path"],"ok":"  padded  ns:key.path"}
+{"fn":"bom","args":["straße\ud83d\ude00"],"ok":"straße\ud83d\ude00"}
+{"fn":"bom","args":["hello worldünïcödé"],"ok":"hello worldünïcödé"}
+{"fn":"bom","args":["trailing.:"],"ok":"trailing.:"}
+{"fn":"bom","args":[".leadingkey_name-1"],"ok":".leadingkey_name-1"}
+{"fn":"bom","args":["aa"],"ok":"aa"}
+{"fn":"bom","args":["a..b﻿bom"],"ok":"a..b﻿bom"}
+{"fn":"bom","args":["İstanbula..b"],"ok":"İstanbula..b"}
+{"fn":"bom","args":["emoji \ud83d\udc4d\ud83c\udffd mixabc"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixabc"}
+{"fn":"bom","args":["a.b.c﻿bom"],"ok":"a.b.c﻿bom"}
+{"fn":"bom","args":["ns:key.pathsrc/a/b.ts"],"ok":"ns:key.pathsrc/a/b.ts"}
+{"fn":"bom","args":["ns:key.path.leading"],"ok":"ns:key.path.leading"}
+{"fn":"bom","args":["line1\nline2a\ud83d\ude00b\ud83d\ude00c"],"ok":"line1\nline2a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"bom","args":["HELLOHELLO"],"ok":"HELLOHELLO"}
+{"fn":"bom","args":["abchello world"],"ok":"abchello world"}
+{"fn":"bom","args":["abHello World"],"ok":"abHello World"}
+{"fn":"bom","args":["hello worlda..b"],"ok":"hello worlda..b"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣns:key.path"],"ok":"ΣΊΣΥΦΟΣns:key.path"}
+{"fn":"bom","args":["line1\nline2a..b"],"ok":"line1\nline2a..b"}
+{"fn":"bom","args":["aab"],"ok":"aab"}
+{"fn":"bom","args":["line1\nline2hello"],"ok":"line1\nline2hello"}
+{"fn":"bom","args":["HELLOa"],"ok":"HELLOa"}
+{"fn":"bom","args":["{name} has {count} items.leading"],"ok":"{name} has {count} items.leading"}
+{"fn":"bom","args":["é./x/**/*.json"],"ok":"é./x/**/*.json"}
+{"fn":"bom","args":["src/a/b.ts﻿bom"],"ok":"src/a/b.ts﻿bom"}
+{"fn":"bom","args":["{name} has {count} itemsİstanbul"],"ok":"{name} has {count} itemsİstanbul"}
+{"fn":"bom","args":["helloline1\nline2"],"ok":"helloline1\nline2"}
+{"fn":"bom","args":["Hello World./x/**/*.json"],"ok":"Hello World./x/**/*.json"}
+{"fn":"bom","args":["\ud83d\ude00a\ud83d\ude00b\ud83d\ude00c"],"ok":"\ud83d\ude00a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"bom","args":["ünïcödé./x/**/*.json"],"ok":"ünïcödé./x/**/*.json"}
+{"fn":"bom","args":["src/a/b.tsHELLO"],"ok":"src/a/b.tsHELLO"}
+{"fn":"bom","args":["  padded  trailing."],"ok":"  padded  trailing."}
+{"fn":"bom","args":["HELLOstraße"],"ok":"HELLOstraße"}
+{"fn":"bom","args":["src/a/b.ts日本語のテキスト"],"ok":"src/a/b.ts日本語のテキスト"}
+{"fn":"bom","args":["﻿boma..b"],"ok":"boma..b"}
+{"fn":"bom","args":["Hello Worldhello"],"ok":"Hello Worldhello"}
+{"fn":"bom","args":["Hello Worldemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"Hello Worldemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣabc"],"ok":"ΣΊΣΥΦΟΣabc"}
+{"fn":"bom","args":["İstanbulsrc/a/b.ts"],"ok":"İstanbulsrc/a/b.ts"}
+{"fn":"bom","args":["trailing.ünïcödé"],"ok":"trailing.ünïcödé"}
+{"fn":"bom","args":["İstanbultrailing."],"ok":"İstanbultrailing."}
+{"fn":"bom","args":["abcİstanbul"],"ok":"abcİstanbul"}
+{"fn":"bom","args":["  padded  İstanbul"],"ok":"  padded  İstanbul"}
+{"fn":"bom","args":["a.b.cab"],"ok":"a.b.cab"}
+{"fn":"bom","args":["trailing.日本語のテキスト"],"ok":"trailing.日本語のテキスト"}
+{"fn":"bom","args":["  padded  a.b.c"],"ok":"  padded  a.b.c"}
+{"fn":"bom","args":[":key_name-1"],"ok":":key_name-1"}
+{"fn":"bom","args":[".leadinga..b"],"ok":".leadinga..b"}
+{"fn":"bom","args":["\ud83d\ude00ab"],"ok":"\ud83d\ude00ab"}
+{"fn":"bom","args":["key_name-1a"],"ok":"key_name-1a"}
+{"fn":"bom","args":["trailing.\ud83d\ude00"],"ok":"trailing.\ud83d\ude00"}
+{"fn":"bom","args":[":hello"],"ok":":hello"}
+{"fn":"bom","args":["./x/**/*.jsonsrc/a/b.ts"],"ok":"./x/**/*.jsonsrc/a/b.ts"}
+{"fn":"bom","args":["İstanbulabc"],"ok":"İstanbulabc"}
+{"fn":"bom","args":["line1\nline2trailing."],"ok":"line1\nline2trailing."}
+{"fn":"bom","args":["hello\ud83d\ude00"],"ok":"hello\ud83d\ude00"}
+{"fn":"bom","args":["\ud83d\ude00İstanbul"],"ok":"\ud83d\ude00İstanbul"}
+{"fn":"bom","args":["  padded  ./x/**/*.json"],"ok":"  padded  ./x/**/*.json"}
+{"fn":"bom","args":["﻿bom  padded  "],"ok":"bom  padded"}
+{"fn":"bom","args":["日本語のテキストa.b.c"],"ok":"日本語のテキストa.b.c"}
+{"fn":"bom","args":["hellons:key.path"],"ok":"hellons:key.path"}
+{"fn":"bom","args":["a:b:cİstanbul"],"ok":"a:b:cİstanbul"}
+{"fn":"bom","args":["日本語のテキストa:b:c"],"ok":"日本語のテキストa:b:c"}
+{"fn":"bom","args":["ns:key.pathhello"],"ok":"ns:key.pathhello"}
+{"fn":"bom","args":["日本語のテキストemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"日本語のテキストemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"bom","args":["src/a/b.tsline1\nline2"],"ok":"src/a/b.tsline1\nline2"}
+{"fn":"bom","args":["ΣΊΣΥΦΟΣa:b:c"],"ok":"ΣΊΣΥΦΟΣa:b:c"}
+{"fn":"bom","args":["src/a/b.tsabc"],"ok":"src/a/b.tsabc"}
+{"fn":"bom","args":["line1\nline2hello world"],"ok":"line1\nline2hello world"}
+{"fn":"bom","args":["hello world{name} has {count} items"],"ok":"hello world{name} has {count} items"}
+{"fn":"bom","args":["héllo wörld"],"ok":"héllo wörld"}
+{"fn":"bom","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"ok":"\ud83d\udc4d\ud83c\udffd thumbs"}
+{"fn":"bom","args":["日本語"],"ok":"日本語"}
+{"fn":"bom","args":["ılık ırmak"],"ok":"ılık ırmak"}
+{"fn":"bom","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"ok":"\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"}
+{"fn":"bom","args":["a b"],"ok":"a b"}
+{"fn":"bom","args":["a\ud83d\ude00b"],"ok":"a\ud83d\ude00b"}
+{"fn":"bom","args":["a²b x½ y①"],"ok":"a²b x½ y①"}
+{"fn":"bom","args":["aⅠb Ⅻ"],"ok":"aⅠb Ⅻ"}
+{"fn":"bom","args":["a\ud801\udc00b \ud835\udc00bc"],"ok":"a\ud801\udc00b \ud835\udc00bc"}
+{"fn":"bom","args":["कि ٣٤"],"ok":"कि ٣٤"}
+{"fn":"preparedJson","args":[":"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing.hello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a:b:cHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["{name} has {count} items"],"ok":"{name} has {count} items"}
+{"fn":"preparedJson","args":["src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a.b.cab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":Hello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["İstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ns:key.pathsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["İstanbul﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["key_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["Hello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[".leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["tab\tseparatedé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["absrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straße./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[""],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straße﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[".leading{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["é"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["src/a/b.tsé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["éé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["日本語のテキストa\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a:b:chello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["tab\tseparatedHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ΣΊΣΥΦΟΣ\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ns:key.patha:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["./x/**/*.jsoné"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello worldHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["  padded  ns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing.emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00csrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ünïcödékey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ns:key.pathtab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a.b.ca..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[".leading\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["HELLOkey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straßehello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["tab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00c日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["İstanbula.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello worldemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["﻿boma..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["Hello Worldabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello world﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2tab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hellohello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["﻿bom.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2hello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["atab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ab日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["日本語のテキストhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straßesrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["HELLO  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["./x/**/*.jsonline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["İstanbulsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2abc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["helloa\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing.hello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello worldabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["HELLOa:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ab./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abc﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["tab\tseparatedab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a:b:ca:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["aé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\ude00日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["  padded  a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["emoji \ud83d\udc4d\ud83c\udffd mixline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["./x/**/*.jsonİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["日本語のテキスト  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["﻿bom{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["emoji \ud83d\udc4d\ud83c\udffd mixHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["HELLO\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["éa.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello worldΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["emoji \ud83d\udc4d\ud83c\udffd mixkey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["src/a/b.ts日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["key_name-1a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["éİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["éab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ab  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["helloa:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["./x/**/*.jsonkey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a.b.cline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["src/a/b.tsİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["{name} has {count} items:"],"ok":"{name} has {count} items:"}
+{"fn":"preparedJson","args":[".leadinga:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ΣΊΣΥΦΟΣns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":key_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00cab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a:b:ctab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["HELLO日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["{name} has {count} itemsemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"{name} has {count} itemsemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"preparedJson","args":["Hello Worldünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a..bns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["日本語のテキストhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing.:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing.İstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["﻿bom\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straßea:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["  padded  a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straßens:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\ude00﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["İstanbul./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ns:key.path\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["astraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello worlda:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ünïcödéHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["{name} has {count} itemsHELLO"],"ok":"{name} has {count} itemsHELLO"}
+{"fn":"preparedJson","args":["straße  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["aba:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["tab\tseparated\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["straßeünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[":a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00cns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello world\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ns:key.path.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00ctrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abcline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["﻿bomline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\ude00src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ΣΊΣΥΦΟΣ  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing.ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abchello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[".leading  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00chello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["aline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ns:key.pathhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["éHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[".leading:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["日本語のテキストünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["  padded  HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ΣΊΣΥΦΟΣkey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["{name} has {count} itemsΣΊΣΥΦΟΣ"],"ok":"{name} has {count} itemsΣΊΣΥΦΟΣ"}
+{"fn":"preparedJson","args":["HELLOab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["./x/**/*.jsona..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["trailing.straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00cemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abcns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\ude00abc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abcΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["﻿bomHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["./x/**/*.jsonhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\ude00İstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b\ud83d\ude00c./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["abcHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["aΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":[".leading.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ΣΊΣΥΦΟΣa:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["{name} has {count} itemsstraße"],"ok":"{name} has {count} itemsstraße"}
+{"fn":"preparedJson","args":["﻿bomtrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["aa:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ünïcödéİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello worlda"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hello{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["line1\nline2﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["İstanbulHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["aHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["hellohello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["héllo wörld"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["日本語"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["ılık ırmak"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud83d\ude00b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a²b x½ y①"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["aⅠb Ⅻ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["a\ud801\udc00b \ud835\udc00bc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"preparedJson","args":["कि ٣٤"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"base64","args":["HELLO"],"ok":false}
+{"fn":"base64","args":["hello"],"ok":false}
+{"fn":"base64","args":["src/a/b.ts"],"ok":false}
+{"fn":"base64","args":["line1\nline2"],"ok":true}
+{"fn":"base64","args":["a"],"ok":false}
+{"fn":"base64","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":false}
+{"fn":"base64","args":["HELLOa"],"ok":true}
+{"fn":"base64","args":["./x/**/*.json"],"ok":false}
+{"fn":"base64","args":["ab"],"ok":true}
+{"fn":"base64","args":["日本語のテキスト"],"ok":false}
+{"fn":"base64","args":["key_name-1"],"ok":true}
+{"fn":"base64","args":["ΣΊΣΥΦΟΣ"],"ok":false}
+{"fn":"base64","args":["trailing."],"ok":false}
+{"fn":"base64","args":["a\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["tab\tseparated"],"ok":true}
+{"fn":"base64","args":["a..b"],"ok":false}
+{"fn":"base64","args":["é"],"ok":false}
+{"fn":"base64","args":["straße"],"ok":false}
+{"fn":"base64","args":["{name} has {count} items"],"ok":false}
+{"fn":"base64","args":["a:b:c"],"ok":false}
+{"fn":"base64","args":["ns:key.pathkey_name-1"],"ok":false}
+{"fn":"base64","args":["a.b.c"],"ok":false}
+{"fn":"base64","args":["\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":[""],"ok":false}
+{"fn":"base64","args":["line1\nline2ab"],"ok":true}
+{"fn":"base64","args":["﻿bom"],"ok":false}
+{"fn":"base64","args":["é:"],"ok":false}
+{"fn":"base64","args":["a\ud83d\ude00b\ud83d\ude00cé"],"ok":false}
+{"fn":"base64","args":["ns:key.pathhello world"],"ok":false}
+{"fn":"base64","args":["hello world"],"ok":true}
+{"fn":"base64","args":["tab\tseparated﻿bom"],"ok":false}
+{"fn":"base64","args":["hello.leading"],"ok":false}
+{"fn":"base64","args":["abcemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":false}
+{"fn":"base64","args":[".leadingab"],"ok":false}
+{"fn":"base64","args":["Hello Worldab"],"ok":true}
+{"fn":"base64","args":["İstanbul  padded  "],"ok":false}
+{"fn":"base64","args":["İstanbul"],"ok":false}
+{"fn":"base64","args":["ünïcödé"],"ok":false}
+{"fn":"base64","args":[":﻿bom"],"ok":false}
+{"fn":"base64","args":[".leading"],"ok":false}
+{"fn":"base64","args":["{name} has {count} items:"],"ok":false}
+{"fn":"base64","args":["ns:key.path"],"ok":false}
+{"fn":"base64","args":[":"],"ok":false}
+{"fn":"base64","args":["src/a/b.tsab"],"ok":false}
+{"fn":"base64","args":["./x/**/*.json:"],"ok":false}
+{"fn":"base64","args":["trailing.ns:key.path"],"ok":false}
+{"fn":"base64","args":["Hello World"],"ok":true}
+{"fn":"base64","args":["trailing.ünïcödé"],"ok":false}
+{"fn":"base64","args":["  padded  "],"ok":true}
+{"fn":"base64","args":["İstanbulhello world"],"ok":false}
+{"fn":"base64","args":["key_name-1tab\tseparated"],"ok":true}
+{"fn":"base64","args":["İstanbulstraße"],"ok":false}
+{"fn":"base64","args":["  padded  é"],"ok":false}
+{"fn":"base64","args":["éHELLO"],"ok":false}
+{"fn":"base64","args":["abc"],"ok":true}
+{"fn":"base64","args":["abchello"],"ok":true}
+{"fn":"base64","args":["hello world  padded  "],"ok":true}
+{"fn":"base64","args":["line1\nline2a..b"],"ok":false}
+{"fn":"base64","args":["abkey_name-1"],"ok":true}
+{"fn":"base64","args":["./x/**/*.json./x/**/*.json"],"ok":false}
+{"fn":"base64","args":["src/a/b.tsHello World"],"ok":false}
+{"fn":"base64","args":["straßehello world"],"ok":false}
+{"fn":"base64","args":["é  padded  "],"ok":false}
+{"fn":"base64","args":["ababc"],"ok":false}
+{"fn":"base64","args":["straßea:b:c"],"ok":false}
+{"fn":"base64","args":["éé"],"ok":false}
+{"fn":"base64","args":["{name} has {count} itemsa..b"],"ok":false}
+{"fn":"base64","args":["a:b:ctab\tseparated"],"ok":false}
+{"fn":"base64","args":["Hello World{name} has {count} items"],"ok":false}
+{"fn":"base64","args":["{name} has {count} itemsİstanbul"],"ok":false}
+{"fn":"base64","args":["éhello"],"ok":false}
+{"fn":"base64","args":["HELLOns:key.path"],"ok":false}
+{"fn":"base64","args":["\ud83d\ude00ns:key.path"],"ok":false}
+{"fn":"base64","args":["helloa.b.c"],"ok":false}
+{"fn":"base64","args":["./x/**/*.jsona\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["İstanbula.b.c"],"ok":false}
+{"fn":"base64","args":["é{name} has {count} items"],"ok":false}
+{"fn":"base64","args":["tab\tseparatedkey_name-1"],"ok":true}
+{"fn":"base64","args":["trailing.emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":false}
+{"fn":"base64","args":["hellohello"],"ok":true}
+{"fn":"base64","args":["日本語のテキストΣΊΣΥΦΟΣ"],"ok":false}
+{"fn":"base64","args":["{name} has {count} items{name} has {count} items"],"ok":false}
+{"fn":"base64","args":["hello{name} has {count} items"],"ok":false}
+{"fn":"base64","args":["hello日本語のテキスト"],"ok":false}
+{"fn":"base64","args":["a.b.ca\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["trailing.İstanbul"],"ok":false}
+{"fn":"base64","args":["İstanbulns:key.path"],"ok":false}
+{"fn":"base64","args":["abca..b"],"ok":false}
+{"fn":"base64","args":["HELLOsrc/a/b.ts"],"ok":false}
+{"fn":"base64","args":["src/a/b.tsstraße"],"ok":false}
+{"fn":"base64","args":["abhello"],"ok":true}
+{"fn":"base64","args":["日本語のテキストa\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["HELLO  padded  "],"ok":true}
+{"fn":"base64","args":["ns:key.path\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":["Hello Worldline1\nline2"],"ok":true}
+{"fn":"base64","args":["aba..b"],"ok":false}
+{"fn":"base64","args":["﻿bom:"],"ok":false}
+{"fn":"base64","args":["./x/**/*.jsonstraße"],"ok":false}
+{"fn":"base64","args":["abc\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":["a:b:c\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":["abc:"],"ok":false}
+{"fn":"base64","args":["a:b:cΣΊΣΥΦΟΣ"],"ok":false}
+{"fn":"base64","args":["  padded  hello world"],"ok":true}
+{"fn":"base64","args":["a\ud83d\ude00b\ud83d\ude00c:"],"ok":false}
+{"fn":"base64","args":["./x/**/*.jsonİstanbul"],"ok":false}
+{"fn":"base64","args":["a:b:c.leading"],"ok":false}
+{"fn":"base64","args":["emoji \ud83d\udc4d\ud83c\udffd mixabc"],"ok":false}
+{"fn":"base64","args":[".leadingemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":false}
+{"fn":"base64","args":["a..babc"],"ok":false}
+{"fn":"base64","args":["trailing.:"],"ok":false}
+{"fn":"base64","args":["tab\tseparated日本語のテキスト"],"ok":false}
+{"fn":"base64","args":["ns:key.path﻿bom"],"ok":false}
+{"fn":"base64","args":["emoji \ud83d\udc4d\ud83c\udffd mix{name} has {count} items"],"ok":false}
+{"fn":"base64","args":["hellostraße"],"ok":false}
+{"fn":"base64","args":["ΣΊΣΥΦΟΣ:"],"ok":false}
+{"fn":"base64","args":["./x/**/*.jsona.b.c"],"ok":false}
+{"fn":"base64","args":["hello world./x/**/*.json"],"ok":false}
+{"fn":"base64","args":["{name} has {count} itemsHello World"],"ok":false}
+{"fn":"base64","args":["trailing.Hello World"],"ok":false}
+{"fn":"base64","args":["trailing.hello world"],"ok":false}
+{"fn":"base64","args":["key_name-1src/a/b.ts"],"ok":false}
+{"fn":"base64","args":["tab\tseparatedİstanbul"],"ok":false}
+{"fn":"base64","args":["aline1\nline2"],"ok":true}
+{"fn":"base64","args":["日本語のテキストa:b:c"],"ok":false}
+{"fn":"base64","args":["line1\nline2:"],"ok":false}
+{"fn":"base64","args":["日本語のテキストhello world"],"ok":false}
+{"fn":"base64","args":["ünïcödéns:key.path"],"ok":false}
+{"fn":"base64","args":["ünïcödéa.b.c"],"ok":false}
+{"fn":"base64","args":["straßeünïcödé"],"ok":false}
+{"fn":"base64","args":["line1\nline2a.b.c"],"ok":false}
+{"fn":"base64","args":["tab\tseparated  padded  "],"ok":true}
+{"fn":"base64","args":["tab\tseparatedΣΊΣΥΦΟΣ"],"ok":false}
+{"fn":"base64","args":[".leadinga\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["aba\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["ns:key.patha\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["abİstanbul"],"ok":false}
+{"fn":"base64","args":["İstanbulé"],"ok":false}
+{"fn":"base64","args":["key_name-1日本語のテキスト"],"ok":false}
+{"fn":"base64","args":["ΣΊΣΥΦΟΣ\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":["ünïcödétab\tseparated"],"ok":false}
+{"fn":"base64","args":["a\ud83d\ude00b\ud83d\ude00chello world"],"ok":false}
+{"fn":"base64","args":["a\ud83d\ude00b\ud83d\ude00ckey_name-1"],"ok":false}
+{"fn":"base64","args":["src/a/b.tsİstanbul"],"ok":false}
+{"fn":"base64","args":["日本語のテキストabc"],"ok":false}
+{"fn":"base64","args":["HELLO﻿bom"],"ok":false}
+{"fn":"base64","args":["{name} has {count} itemssrc/a/b.ts"],"ok":false}
+{"fn":"base64","args":["Hello World日本語のテキスト"],"ok":false}
+{"fn":"base64","args":["\ud83d\ude00é"],"ok":false}
+{"fn":"base64","args":["straßea.b.c"],"ok":false}
+{"fn":"base64","args":["tab\tseparatedHELLO"],"ok":false}
+{"fn":"base64","args":["src/a/b.ts:"],"ok":false}
+{"fn":"base64","args":["abcünïcödé"],"ok":false}
+{"fn":"base64","args":["aba"],"ok":true}
+{"fn":"base64","args":[".leadinga"],"ok":false}
+{"fn":"base64","args":["a..b:"],"ok":false}
+{"fn":"base64","args":["İstanbula\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["key_name-1Hello World"],"ok":true}
+{"fn":"base64","args":["ΣΊΣΥΦΟΣab"],"ok":false}
+{"fn":"base64","args":["ab\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":["key_name-1  padded  "],"ok":true}
+{"fn":"base64","args":["日本語のテキスト.leading"],"ok":false}
+{"fn":"base64","args":["tab\tseparatedabc"],"ok":true}
+{"fn":"base64","args":["İstanbulünïcödé"],"ok":false}
+{"fn":"base64","args":["./x/**/*.jsona"],"ok":false}
+{"fn":"base64","args":["a.b.c.leading"],"ok":false}
+{"fn":"base64","args":["src/a/b.ts\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":["\ud83d\ude00ab"],"ok":false}
+{"fn":"base64","args":["\ud83d\ude00key_name-1"],"ok":false}
+{"fn":"base64","args":["trailing.\ud83d\ude00"],"ok":false}
+{"fn":"base64","args":["a..b.leading"],"ok":false}
+{"fn":"base64","args":[":straße"],"ok":false}
+{"fn":"base64","args":["straße  padded  "],"ok":false}
+{"fn":"base64","args":["Hello Worldé"],"ok":false}
+{"fn":"base64","args":["abchello world"],"ok":false}
+{"fn":"base64","args":["abab"],"ok":true}
+{"fn":"base64","args":["abcİstanbul"],"ok":false}
+{"fn":"base64","args":["ahello world"],"ok":true}
+{"fn":"base64","args":["emoji \ud83d\udc4d\ud83c\udffd mixhello"],"ok":false}
+{"fn":"base64","args":["line1\nline2Hello World"],"ok":true}
+{"fn":"base64","args":["straße:"],"ok":false}
+{"fn":"base64","args":["Hello Worlda:b:c"],"ok":false}
+{"fn":"base64","args":["  padded  src/a/b.ts"],"ok":false}
+{"fn":"base64","args":[".leading﻿bom"],"ok":false}
+{"fn":"base64","args":["src/a/b.tsΣΊΣΥΦΟΣ"],"ok":false}
+{"fn":"base64","args":["helloabc"],"ok":true}
+{"fn":"base64","args":["日本語のテキスト日本語のテキスト"],"ok":false}
+{"fn":"base64","args":["日本語のテキストab"],"ok":false}
+{"fn":"base64","args":["line1\nline2hello"],"ok":true}
+{"fn":"base64","args":["a\ud83d\ude00b\ud83d\ude00ctrailing."],"ok":false}
+{"fn":"base64","args":["./x/**/*.jsontrailing."],"ok":false}
+{"fn":"base64","args":["a.b.ca:b:c"],"ok":false}
+{"fn":"base64","args":["a:b:ca..b"],"ok":false}
+{"fn":"base64","args":["src/a/b.tshello world"],"ok":false}
+{"fn":"base64","args":["hellotrailing."],"ok":false}
+{"fn":"base64","args":["ns:key.path.leading"],"ok":false}
+{"fn":"base64","args":["line1\nline2日本語のテキスト"],"ok":false}
+{"fn":"base64","args":["  padded  a\ud83d\ude00b\ud83d\ude00c"],"ok":false}
+{"fn":"base64","args":["straßeline1\nline2"],"ok":false}
+{"fn":"base64","args":["ΣΊΣΥΦΟΣhello world"],"ok":false}
+{"fn":"base64","args":["a..bHello World"],"ok":false}
+{"fn":"base64","args":["héllo wörld"],"ok":false}
+{"fn":"base64","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"ok":false}
+{"fn":"base64","args":["日本語"],"ok":false}
+{"fn":"base64","args":["ılık ırmak"],"ok":false}
+{"fn":"base64","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"ok":false}
+{"fn":"base64","args":["a b"],"ok":false}
+{"fn":"base64","args":["a\ud83d\ude00b"],"ok":false}
+{"fn":"base64","args":["a²b x½ y①"],"ok":false}
+{"fn":"base64","args":["aⅠb Ⅻ"],"ok":false}
+{"fn":"base64","args":["a\ud801\udc00b \ud835\udc00bc"],"ok":false}
+{"fn":"base64","args":["कि ٣٤"],"ok":false}
+{"fn":"decode","args":[".leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ünïcödé  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ab"],"ok":"i"}
+{"fn":"decode","args":["\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["  padded  "],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparated"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["Hello World"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[""],"ok":""}
+{"fn":"decode","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} items日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ünïcödéhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a..ba..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["﻿bom.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["trailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["abc"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbulhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} items.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["src/a/b.ts.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語のテキスト﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["astraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a..b﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hello world"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbulünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a:b:cns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a..bhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ΣΊΣΥΦΟΣstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["helloé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ünïcödé﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[".leadinga:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[".leading./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a.b.chello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} itemsa\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} items./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00cemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["emoji \ud83d\udc4d\ud83c\udffd mixhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["é"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語のテキストé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hello worldline1\nline2"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ns:key.patha.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["aba:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["straßetab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparatedİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ékey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["  padded  ﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["trailing.abc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[".leading﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["HELLOa:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["helloHello World"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["Hello Worldhello"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ns:key.path{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["abc.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["./x/**/*.jsona:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["﻿bomΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["éhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語のテキストtrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparateda..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[".leadingtrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["emoji \ud83d\udc4d\ud83c\udffd mixé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00c{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ns:key.patha:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["\ud83d\ude00  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["trailing.trailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["abcHELLO"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["src/a/b.tsa.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["Hello Worlda..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["é:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ΣΊΣΥΦΟΣ./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":hello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["HELLOab"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ΣΊΣΥΦΟΣsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[".leading日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["abHELLO"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbultrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hello worldhello"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["aba\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hellosrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a.b.c\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["﻿bom:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbula..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ünïcödé./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ns:key.path:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["aİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ns:key.path.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00ca:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbul:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a.b.ca"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a:b:cstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["abcé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["abcline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparatedΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["atab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["akey_name-1"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["trailing.  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} itemsa.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["straßeİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["éa..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00cHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["éabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparatedhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["Hello Worldé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語のテキストabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["abns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["straßeab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1a"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00ctrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00ckey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["﻿bomhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["Hello Worlda:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2hello world"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hellostraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["straße日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1key_name-1"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[".leadinga.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["aa.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a.b.cline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1line1\nline2"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語のテキスト{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1hello world"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["helloΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ünïcödé\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["\ud83d\ude00HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hello worldHELLO"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} itemsabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a:b:cabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparatedtrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["\ud83d\ude00a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["./x/**/*.json.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":é"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ns:key.pathtrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["é./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a:b:cab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a..b.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparateda"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparateda:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["HELLOstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ab:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["\ud83d\ude00line1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["./x/**/*.jsonline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} itemsab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ab  padded  "],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbula\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hello worldtab\tseparated"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b\ud83d\ude00ca\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparatedabc"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["trailing.日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["İstanbulns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a:b:c日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["HELLOa\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["hello\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語のテキスト./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["src/a/b.tsHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a..b:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} itemssrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["key_name-1straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["éline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["éünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["Hello World:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["straßetrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["./x/**/*.json{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["helloa"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["line1\nline2Hello World"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparatedsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a.b.cstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["Hello Worldhello world"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":[":./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["tab\tseparatedstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["trailing.line1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["{name} has {count} itemsstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["héllo wörld"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["日本語"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ılık ırmak"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud83d\ude00b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a²b x½ y①"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["aⅠb Ⅻ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["a\ud801\udc00b \ud835\udc00bc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["कि ٣٤"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"strip","args":["é"],"ok":"é"}
+{"fn":"strip","args":["a..b"],"ok":"a..b"}
+{"fn":"strip","args":["İstanbul"],"ok":"İstanbul"}
+{"fn":"strip","args":["ns:key.path"],"ok":"ns:key.path"}
+{"fn":"strip","args":["ünïcödé"],"ok":"ünïcödé"}
+{"fn":"strip","args":["tab\tseparated"],"ok":"tab\tseparated"}
+{"fn":"strip","args":["日本語のテキスト"],"ok":"日本語のテキスト"}
+{"fn":"strip","args":["Hello World.leading"],"ok":"Hello World.leading"}
+{"fn":"strip","args":["key_name-1"],"ok":"key_name-1"}
+{"fn":"strip","args":[":"],"ok":":"}
+{"fn":"strip","args":["Hello Worldns:key.path"],"ok":"Hello Worldns:key.path"}
+{"fn":"strip","args":["\ud83d\ude00"],"ok":"\ud83d\ude00"}
+{"fn":"strip","args":["hello"],"ok":"hello"}
+{"fn":"strip","args":["src/a/b.ts"],"ok":"src/a/b.ts"}
+{"fn":"strip","args":["é./x/**/*.json"],"ok":"é./x *.json"}
+{"fn":"strip","args":[".leading"],"ok":".leading"}
+{"fn":"strip","args":["a.b.c"],"ok":"a.b.c"}
+{"fn":"strip","args":["line1\nline2"],"ok":"line1\nline2"}
+{"fn":"strip","args":["ΣΊΣΥΦΟΣemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"ΣΊΣΥΦΟΣemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":["a\ud83d\ude00b\ud83d\ude00c"],"ok":"a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"strip","args":["./x/**/*.json"],"ok":"./x *.json"}
+{"fn":"strip","args":[""],"ok":""}
+{"fn":"strip","args":["{name} has {count} items"],"ok":"{name} has {count} items"}
+{"fn":"strip","args":["ΣΊΣΥΦΟΣ"],"ok":"ΣΊΣΥΦΟΣ"}
+{"fn":"strip","args":["straße"],"ok":"straße"}
+{"fn":"strip","args":["  padded  "],"ok":"  padded  "}
+{"fn":"strip","args":["a"],"ok":"a"}
+{"fn":"strip","args":["emoji \ud83d\udc4d\ud83c\udffd mixtab\tseparated"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixtab\tseparated"}
+{"fn":"strip","args":["﻿bom"],"ok":"﻿bom"}
+{"fn":"strip","args":["Hello World"],"ok":"Hello World"}
+{"fn":"strip","args":["a:b:c"],"ok":"a:b:c"}
+{"fn":"strip","args":["trailing."],"ok":"trailing."}
+{"fn":"strip","args":["HELLO"],"ok":"HELLO"}
+{"fn":"strip","args":["hello world"],"ok":"hello world"}
+{"fn":"strip","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":[":a..b"],"ok":":a..b"}
+{"fn":"strip","args":["ab"],"ok":"ab"}
+{"fn":"strip","args":["abemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"abemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":["ünïcödéline1\nline2"],"ok":"ünïcödéline1\nline2"}
+{"fn":"strip","args":["a.b.ckey_name-1"],"ok":"a.b.ckey_name-1"}
+{"fn":"strip","args":["abünïcödé"],"ok":"abünïcödé"}
+{"fn":"strip","args":["./x/**/*.jsona..b"],"ok":"./x *.jsona..b"}
+{"fn":"strip","args":["ns:key.pathabc"],"ok":"ns:key.pathabc"}
+{"fn":"strip","args":["abcé"],"ok":"abcé"}
+{"fn":"strip","args":["HELLOΣΊΣΥΦΟΣ"],"ok":"HELLOΣΊΣΥΦΟΣ"}
+{"fn":"strip","args":["日本語のテキスト日本語のテキスト"],"ok":"日本語のテキスト日本語のテキスト"}
+{"fn":"strip","args":["a.b.c  padded  "],"ok":"a.b.c  padded  "}
+{"fn":"strip","args":["emoji \ud83d\udc4d\ud83c\udffd mixİstanbul"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixİstanbul"}
+{"fn":"strip","args":["abab"],"ok":"abab"}
+{"fn":"strip","args":["a\ud83d\ude00b\ud83d\ude00ca"],"ok":"a\ud83d\ude00b\ud83d\ude00ca"}
+{"fn":"strip","args":["line1\nline2:"],"ok":"line1\nline2:"}
+{"fn":"strip","args":["ünïcödéa.b.c"],"ok":"ünïcödéa.b.c"}
+{"fn":"strip","args":["a..bΣΊΣΥΦΟΣ"],"ok":"a..bΣΊΣΥΦΟΣ"}
+{"fn":"strip","args":["é﻿bom"],"ok":"é﻿bom"}
+{"fn":"strip","args":["日本語のテキスト{name} has {count} items"],"ok":"日本語のテキスト{name} has {count} items"}
+{"fn":"strip","args":["ΣΊΣΥΦΟΣΣΊΣΥΦΟΣ"],"ok":"ΣΊΣΥΦΟΣΣΊΣΥΦΟΣ"}
+{"fn":"strip","args":["abc"],"ok":"abc"}
+{"fn":"strip","args":["\ud83d\ude00\ud83d\ude00"],"ok":"\ud83d\ude00\ud83d\ude00"}
+{"fn":"strip","args":["a:b:cünïcödé"],"ok":"a:b:cünïcödé"}
+{"fn":"strip","args":["straßeé"],"ok":"straßeé"}
+{"fn":"strip","args":["﻿bom:"],"ok":"﻿bom:"}
+{"fn":"strip","args":["\ud83d\ude00./x/**/*.json"],"ok":"\ud83d\ude00./x *.json"}
+{"fn":"strip","args":["{name} has {count} itemsa.b.c"],"ok":"{name} has {count} itemsa.b.c"}
+{"fn":"strip","args":["hello worldhello world"],"ok":"hello worldhello world"}
+{"fn":"strip","args":["é{name} has {count} items"],"ok":"é{name} has {count} items"}
+{"fn":"strip","args":["a:"],"ok":"a:"}
+{"fn":"strip","args":["﻿bom  padded  "],"ok":"﻿bom  padded  "}
+{"fn":"strip","args":["./x/**/*.jsonhello"],"ok":"./x *.jsonhello"}
+{"fn":"strip","args":["src/a/b.ts{name} has {count} items"],"ok":"src/a/b.ts{name} has {count} items"}
+{"fn":"strip","args":["a.b.chello"],"ok":"a.b.chello"}
+{"fn":"strip","args":["HELLOa\ud83d\ude00b\ud83d\ude00c"],"ok":"HELLOa\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"strip","args":["abé"],"ok":"abé"}
+{"fn":"strip","args":["a:b:cHELLO"],"ok":"a:b:cHELLO"}
+{"fn":"strip","args":["İstanbul:"],"ok":"İstanbul:"}
+{"fn":"strip","args":["HELLO{name} has {count} items"],"ok":"HELLO{name} has {count} items"}
+{"fn":"strip","args":["a..babc"],"ok":"a..babc"}
+{"fn":"strip","args":["HELLO\ud83d\ude00"],"ok":"HELLO\ud83d\ude00"}
+{"fn":"strip","args":["a..bhello world"],"ok":"a..bhello world"}
+{"fn":"strip","args":["key_name-1a:b:c"],"ok":"key_name-1a:b:c"}
+{"fn":"strip","args":["ns:key.pathünïcödé"],"ok":"ns:key.pathünïcödé"}
+{"fn":"strip","args":[":HELLO"],"ok":":HELLO"}
+{"fn":"strip","args":["key_name-1:"],"ok":"key_name-1:"}
+{"fn":"strip","args":["a..btrailing."],"ok":"a..btrailing."}
+{"fn":"strip","args":["hello worldé"],"ok":"hello worldé"}
+{"fn":"strip","args":["日本語のテキストa:b:c"],"ok":"日本語のテキストa:b:c"}
+{"fn":"strip","args":["﻿boma\ud83d\ude00b\ud83d\ude00c"],"ok":"﻿boma\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"strip","args":["line1\nline2Hello World"],"ok":"line1\nline2Hello World"}
+{"fn":"strip","args":["éHello World"],"ok":"éHello World"}
+{"fn":"strip","args":["﻿bom{name} has {count} items"],"ok":"﻿bom{name} has {count} items"}
+{"fn":"strip","args":["hello worlda:b:c"],"ok":"hello worlda:b:c"}
+{"fn":"strip","args":["ΣΊΣΥΦΟΣsrc/a/b.ts"],"ok":"ΣΊΣΥΦΟΣsrc/a/b.ts"}
+{"fn":"strip","args":["a.b.cab"],"ok":"a.b.cab"}
+{"fn":"strip","args":["abckey_name-1"],"ok":"abckey_name-1"}
+{"fn":"strip","args":["tab\tseparatedline1\nline2"],"ok":"tab\tseparatedline1\nline2"}
+{"fn":"strip","args":["{name} has {count} itemsa:b:c"],"ok":"{name} has {count} itemsa:b:c"}
+{"fn":"strip","args":["aba"],"ok":"aba"}
+{"fn":"strip","args":["trailing.trailing."],"ok":"trailing.trailing."}
+{"fn":"strip","args":[".leadingtrailing."],"ok":".leadingtrailing."}
+{"fn":"strip","args":["ns:key.path{name} has {count} items"],"ok":"ns:key.path{name} has {count} items"}
+{"fn":"strip","args":["HELLOhello world"],"ok":"HELLOhello world"}
+{"fn":"strip","args":["a.b.ca\ud83d\ude00b\ud83d\ude00c"],"ok":"a.b.ca\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"strip","args":["trailing.日本語のテキスト"],"ok":"trailing.日本語のテキスト"}
+{"fn":"strip","args":["line1\nline2İstanbul"],"ok":"line1\nline2İstanbul"}
+{"fn":"strip","args":["a:b:c./x/**/*.json"],"ok":"a:b:c./x *.json"}
+{"fn":"strip","args":["aba..b"],"ok":"aba..b"}
+{"fn":"strip","args":["a.b.c\ud83d\ude00"],"ok":"a.b.c\ud83d\ude00"}
+{"fn":"strip","args":["tab\tseparated  padded  "],"ok":"tab\tseparated  padded  "}
+{"fn":"strip","args":["HELLO日本語のテキスト"],"ok":"HELLO日本語のテキスト"}
+{"fn":"strip","args":["ab  padded  "],"ok":"ab  padded  "}
+{"fn":"strip","args":["./x/**/*.jsonHELLO"],"ok":"./x *.jsonHELLO"}
+{"fn":"strip","args":["ns:key.pathhello"],"ok":"ns:key.pathhello"}
+{"fn":"strip","args":["./x/**/*.jsonΣΊΣΥΦΟΣ"],"ok":"./x *.jsonΣΊΣΥΦΟΣ"}
+{"fn":"strip","args":[":a\ud83d\ude00b\ud83d\ude00c"],"ok":":a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"strip","args":["Hello Worldemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"Hello Worldemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":["a:b:ctrailing."],"ok":"a:b:ctrailing."}
+{"fn":"strip","args":["hello worldabc"],"ok":"hello worldabc"}
+{"fn":"strip","args":["ΣΊΣΥΦΟΣtab\tseparated"],"ok":"ΣΊΣΥΦΟΣtab\tseparated"}
+{"fn":"strip","args":["hello{name} has {count} items"],"ok":"hello{name} has {count} items"}
+{"fn":"strip","args":["  padded  Hello World"],"ok":"  padded  Hello World"}
+{"fn":"strip","args":["a:b:cabc"],"ok":"a:b:cabc"}
+{"fn":"strip","args":["a\ud83d\ude00b\ud83d\ude00cHello World"],"ok":"a\ud83d\ude00b\ud83d\ude00cHello World"}
+{"fn":"strip","args":["a:b:c﻿bom"],"ok":"a:b:c﻿bom"}
+{"fn":"strip","args":["  padded  ünïcödé"],"ok":"  padded  ünïcödé"}
+{"fn":"strip","args":["{name} has {count} itemsHello World"],"ok":"{name} has {count} itemsHello World"}
+{"fn":"strip","args":["line1\nline2{name} has {count} items"],"ok":"line1\nline2{name} has {count} items"}
+{"fn":"strip","args":["emoji \ud83d\udc4d\ud83c\udffd mix./x/**/*.json"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix./x *.json"}
+{"fn":"strip","args":["./x/**/*.jsonabc"],"ok":"./x *.jsonabc"}
+{"fn":"strip","args":["helloa.b.c"],"ok":"helloa.b.c"}
+{"fn":"strip","args":["line1\nline2emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"line1\nline2emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":["trailing../x/**/*.json"],"ok":"trailing../x *.json"}
+{"fn":"strip","args":["a\ud83d\ude00b\ud83d\ude00ca..b"],"ok":"a\ud83d\ude00b\ud83d\ude00ca..b"}
+{"fn":"strip","args":["abİstanbul"],"ok":"abİstanbul"}
+{"fn":"strip","args":["src/a/b.tsa:b:c"],"ok":"src/a/b.tsa:b:c"}
+{"fn":"strip","args":["line1\nline2a:b:c"],"ok":"line1\nline2a:b:c"}
+{"fn":"strip","args":["./x/**/*.jsonsrc/a/b.ts"],"ok":"./x *.jsonsrc/a/b.ts"}
+{"fn":"strip","args":["a..bemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"a..bemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":["ababc"],"ok":"ababc"}
+{"fn":"strip","args":["ns:key.patha"],"ok":"ns:key.patha"}
+{"fn":"strip","args":["ns:key.path:"],"ok":"ns:key.path:"}
+{"fn":"strip","args":["ΣΊΣΥΦΟΣ{name} has {count} items"],"ok":"ΣΊΣΥΦΟΣ{name} has {count} items"}
+{"fn":"strip","args":["{name} has {count} itemskey_name-1"],"ok":"{name} has {count} itemskey_name-1"}
+{"fn":"strip","args":["ünïcödéa"],"ok":"ünïcödéa"}
+{"fn":"strip","args":["abtrailing."],"ok":"abtrailing."}
+{"fn":"strip","args":["éé"],"ok":"éé"}
+{"fn":"strip","args":["src/a/b.tsHELLO"],"ok":"src/a/b.tsHELLO"}
+{"fn":"strip","args":["abhello"],"ok":"abhello"}
+{"fn":"strip","args":["abcemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"abcemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":["trailing.hello"],"ok":"trailing.hello"}
+{"fn":"strip","args":["helloa..b"],"ok":"helloa..b"}
+{"fn":"strip","args":["HELLOİstanbul"],"ok":"HELLOİstanbul"}
+{"fn":"strip","args":["abca"],"ok":"abca"}
+{"fn":"strip","args":["abc./x/**/*.json"],"ok":"abc./x *.json"}
+{"fn":"strip","args":["key_name-1tab\tseparated"],"ok":"key_name-1tab\tseparated"}
+{"fn":"strip","args":["Hello World  padded  "],"ok":"Hello World  padded  "}
+{"fn":"strip","args":["trailing.ab"],"ok":"trailing.ab"}
+{"fn":"strip","args":["trailing.a\ud83d\ude00b\ud83d\ude00c"],"ok":"trailing.a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"strip","args":["line1\nline2HELLO"],"ok":"line1\nline2HELLO"}
+{"fn":"strip","args":["  padded  ns:key.path"],"ok":"  padded  ns:key.path"}
+{"fn":"strip","args":["Hello Worldstraße"],"ok":"Hello Worldstraße"}
+{"fn":"strip","args":["a..bünïcödé"],"ok":"a..bünïcödé"}
+{"fn":"strip","args":["a.b.csrc/a/b.ts"],"ok":"a.b.csrc/a/b.ts"}
+{"fn":"strip","args":["﻿bomstraße"],"ok":"﻿bomstraße"}
+{"fn":"strip","args":["a..ba"],"ok":"a..ba"}
+{"fn":"strip","args":["./x/**/*.json./x/**/*.json"],"ok":"./x *.json./x *.json"}
+{"fn":"strip","args":["src/a/b.ts./x/**/*.json"],"ok":"src/a/b.ts./x *.json"}
+{"fn":"strip","args":["helloline1\nline2"],"ok":"helloline1\nline2"}
+{"fn":"strip","args":[".leadinghello"],"ok":".leadinghello"}
+{"fn":"strip","args":["abcab"],"ok":"abcab"}
+{"fn":"strip","args":["key_name-1ΣΊΣΥΦΟΣ"],"ok":"key_name-1ΣΊΣΥΦΟΣ"}
+{"fn":"strip","args":["HELLOabc"],"ok":"HELLOabc"}
+{"fn":"strip","args":["tab\tseparatedΣΊΣΥΦΟΣ"],"ok":"tab\tseparatedΣΊΣΥΦΟΣ"}
+{"fn":"strip","args":["Hello Worldİstanbul"],"ok":"Hello Worldİstanbul"}
+{"fn":"strip","args":["key_name-1straße"],"ok":"key_name-1straße"}
+{"fn":"strip","args":["ns:key.pathHELLO"],"ok":"ns:key.pathHELLO"}
+{"fn":"strip","args":["a.leading"],"ok":"a.leading"}
+{"fn":"strip","args":["étab\tseparated"],"ok":"étab\tseparated"}
+{"fn":"strip","args":["a\ud83d\ude00b\ud83d\ude00ckey_name-1"],"ok":"a\ud83d\ude00b\ud83d\ude00ckey_name-1"}
+{"fn":"strip","args":["a.b.ctrailing."],"ok":"a.b.ctrailing."}
+{"fn":"strip","args":["日本語のテキスト.leading"],"ok":"日本語のテキスト.leading"}
+{"fn":"strip","args":["a\ud83d\ude00b\ud83d\ude00c.leading"],"ok":"a\ud83d\ude00b\ud83d\ude00c.leading"}
+{"fn":"strip","args":["﻿bomabc"],"ok":"﻿bomabc"}
+{"fn":"strip","args":["a:b:cline1\nline2"],"ok":"a:b:cline1\nline2"}
+{"fn":"strip","args":["{name} has {count} itemsns:key.path"],"ok":"{name} has {count} itemsns:key.path"}
+{"fn":"strip","args":["straßeHELLO"],"ok":"straßeHELLO"}
+{"fn":"strip","args":["emoji \ud83d\udc4d\ud83c\udffd mixkey_name-1"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixkey_name-1"}
+{"fn":"strip","args":["日本語のテキスト  padded  "],"ok":"日本語のテキスト  padded  "}
+{"fn":"strip","args":["src/a/b.tsstraße"],"ok":"src/a/b.tsstraße"}
+{"fn":"strip","args":["\ud83d\ude00hello world"],"ok":"\ud83d\ude00hello world"}
+{"fn":"strip","args":["  padded  hello world"],"ok":"  padded  hello world"}
+{"fn":"strip","args":["helloemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":"helloemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"strip","args":["{name} has {count} itemshello world"],"ok":"{name} has {count} itemshello world"}
+{"fn":"strip","args":["abcHello World"],"ok":"abcHello World"}
+{"fn":"strip","args":["a..b{name} has {count} items"],"ok":"a..b{name} has {count} items"}
+{"fn":"strip","args":["emoji \ud83d\udc4d\ud83c\udffd mixhello world"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixhello world"}
+{"fn":"strip","args":["straßetab\tseparated"],"ok":"straßetab\tseparated"}
+{"fn":"strip","args":["emoji \ud83d\udc4d\ud83c\udffd mixhello"],"ok":"emoji \ud83d\udc4d\ud83c\udffd mixhello"}
+{"fn":"strip","args":["./x/**/*.json日本語のテキスト"],"ok":"./x *.json日本語のテキスト"}
+{"fn":"strip","args":["abcstraße"],"ok":"abcstraße"}
+{"fn":"strip","args":["İstanbultab\tseparated"],"ok":"İstanbultab\tseparated"}
+{"fn":"strip","args":["\ud83d\ude00a\ud83d\ude00b\ud83d\ude00c"],"ok":"\ud83d\ude00a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"strip","args":["héllo wörld"],"ok":"héllo wörld"}
+{"fn":"strip","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"ok":"\ud83d\udc4d\ud83c\udffd thumbs"}
+{"fn":"strip","args":["日本語"],"ok":"日本語"}
+{"fn":"strip","args":["ılık ırmak"],"ok":"ılık ırmak"}
+{"fn":"strip","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"ok":"\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"}
+{"fn":"strip","args":["a b"],"ok":"a b"}
+{"fn":"strip","args":["a\ud83d\ude00b"],"ok":"a\ud83d\ude00b"}
+{"fn":"strip","args":["a²b x½ y①"],"ok":"a²b x½ y①"}
+{"fn":"strip","args":["aⅠb Ⅻ"],"ok":"aⅠb Ⅻ"}
+{"fn":"strip","args":["a\ud801\udc00b \ud835\udc00bc"],"ok":"a\ud801\udc00b \ud835\udc00bc"}
+{"fn":"strip","args":["कि ٣٤"],"ok":"कि ٣٤"}
+{"fn":"structure","args":["ns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.tstrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["./x/**/*.jsontrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語のテキスト﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[""],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["Hello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["é./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{name} has {count} items"],"ok":null}
+{"fn":"structure","args":["key_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing.a\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語のテキストΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["./x/**/*.jsonstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["straßeHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["tab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[".leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["abc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["straße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing.\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["é"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["HELLO﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["é\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["﻿boma\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b\ud83d\ude00c﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["line1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["é.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["HELLOtrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[".leading.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["éa:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hello worldHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing.trailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["line1\nline2a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing.emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["key_name-1.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a.b.c./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["straße:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ab.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hello worlda..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["HELLO./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{name} has {count} itemshello"],"ok":null}
+{"fn":"structure","args":["﻿boma..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\ude00ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["éünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.tsabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語のテキストHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a:b:ctrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["é﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["aba:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödéemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[".leadingΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a..ba:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a..b  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["  padded  a.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["emoji \ud83d\udc4d\ud83c\udffd mixns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödé:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["﻿boma"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["aa"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödéa"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語のテキストstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{name} has {count} itemssrc/a/b.ts"],"ok":null}
+{"fn":"structure","args":["ns:key.pathHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["aba"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödétab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbula..b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.tsHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["  padded  a"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ns:key.pathline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["Hello WorldΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["aHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a.b.cHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["﻿bomab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["  padded  ./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbulsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["Hello World:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣ./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["abemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing..leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["éab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hellokey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["﻿bomabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{name} has {count} itemsHello World"],"ok":null}
+{"fn":"structure","args":[":{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["key_name-1ünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["abhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ns:key.pathé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbulHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b\ud83d\ude00csrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödéhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["key_name-1hello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödéİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ns:key.pathab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["helloHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["line1\nline2tab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["atrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a:b:c./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ns:key.path\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\ude00ΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ns:key.pathsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["Hello Worldİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödéa.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.tsé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b\ud83d\ude00ca\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing.﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["éns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbula"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["﻿bomé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hello worldkey_name-1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a:b:cHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["aİstanbul"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["tab\tseparatedHello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["Hello Worldstraße"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣ  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\ude00emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["./x/**/*.jsonsrc/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["éemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["HELLO\ud83d\ude00"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["abcünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["é:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbulΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hello world:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hellons:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a.b.chello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbul.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["helloa"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["helloab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣ日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbulhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣtrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["emoji \ud83d\udc4d\ud83c\udffd mixa"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["  padded  .leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["abc﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.tsemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["line1\nline2Hello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["key_name-1﻿bom"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["HELLOhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\ude00src/a/b.ts"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["éabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["straßeemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a..btrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["hellotrailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語のテキスト日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["atab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ünïcödéab"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ns:key.pathns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["helloline1\nline2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b\ud83d\ude00chello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["helloa\ud83d\ude00b\ud83d\ude00c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["İstanbulHELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["key_name-1trailing."],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a:b:c{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":HELLO"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b\ud83d\ude00c./x/**/*.json"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["é日本語のテキスト"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.ts{name} has {count} items"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["tab\tseparatedabc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a:b:ca.b.c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["line1\nline2hello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["abchello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["trailing.a:b:c"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣünïcödé"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["./x/**/*.json  padded  "],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\ude00hello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.ts.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a..bemoji \ud83d\udc4d\ud83c\udffd mix"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b\ud83d\ude00c.leading"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣ:"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":Hello World"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["src/a/b.tsns:key.path"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ΣΊΣΥΦΟΣhello"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語のテキストtab\tseparated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":[":ΣΊΣΥΦΟΣ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ns:key.pathhello world"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["héllo wörld"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["日本語"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["ılık ırmak"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud83d\ude00b"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a²b x½ y①"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["aⅠb Ⅻ"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["a\ud801\udc00b \ud835\udc00bc"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["कि ٣٤"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{\"sites\":[]}"],"ok":"{\"sites\":[]}"}
+{"fn":"normalizeBody","args":["  {\"a\":1}  "],"ok":"{\"a\":1}"}
+{"fn":"normalizeBody","args":[""],"error":"配置内容是空的","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":[null],"error":"配置内容是空的","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["not-json"],"error":"配置编码无法识别","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{\"a\":1 // comment\n}"],"ok":"{\"a\":1 \n}"}
+{"fn":"normalizeBody","args":["{\"a\":1 /* c */ }"],"ok":"{\"a\":1   }"}
+{"fn":"normalizeBody","args":["# head\n{\"a\":1}"],"ok":"{\"a\":1}"}
+{"fn":"normalizeBody","args":["{'a':1}"],"ok":"{'a':1}"}
+{"fn":"normalizeBody","args":["{\"a\":1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"normalizeBody","args":["{\"a\": /*"],"error":"配置注释不完整","error_type":"ConfigTextFailed"}
+{"fn":"base64","args":["eyJhfQ=="],"ok":true}
+{"fn":"base64","args":["eyJhIjoxfQ"],"ok":true}
+{"fn":"base64","args":["not!!!"],"ok":false}
+{"fn":"base64","args":["++++----"],"ok":false}
+{"fn":"bom","args":["﻿{\"a\":1}"],"ok":"{\"a\":1}"}
+{"fn":"bom","args":["  hi  "],"ok":"  hi  "}
+{"fn":"strip","args":["{\"a\":1 // x\n}"],"ok":"{\"a\":1 \n}"}
+{"fn":"strip","args":["{\"a\":\"http://x\"}"],"ok":"{\"a\":\"http://x\"}"}
+{"fn":"strip","args":["{'a':1}"],"ok":"{'a':1}"}
+{"fn":"preparedJson","args":["{\"a\":1}"],"ok":"{\"a\":1}"}
+{"fn":"preparedJson","args":["[]"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{\"a\":1}"],"ok":null}
+{"fn":"structure","args":["{\"a\":"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["eyJhfQ=="],"ok":"{\"a}"}
+{"fn":"decode","args":["!!!!"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"strip","args":["{\"a\": /*"],"error":"配置注释不完整","error_type":"ConfigTextFailed"}
+{"fn":"strip","args":["{\"a\": \"unterminated"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"strip","args":["{\"a\": \\"],"ok":"{\"a\": \\"}
+{"fn":"structure","args":["{\"a\":1"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{\"a\":[1,2"],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"structure","args":["{\"a\":{\"b\":1}}"],"ok":null}
+{"fn":"normalizeBody","args":["{\"a\": /* unclosed"],"error":"配置注释不完整","error_type":"ConfigTextFailed"}
+{"fn":"decode","args":["ab"],"ok":"i"}
+{"fn":"decode","args":["===="],"error":"配置不是合法 JSON","error_type":"ConfigTextFailed"}
+{"fn":"strip","args":["/*"],"error":"配置注释不完整","error_type":"ConfigTextFailed"}
+{"fn":"strip","args":["{ /* no end"],"error":"配置注释不完整","error_type":"ConfigTextFailed"}
