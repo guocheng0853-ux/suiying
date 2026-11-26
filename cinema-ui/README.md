@@ -1,3 +1,7 @@
+# 随影 0.1.191 rust-anything JNI 接入（code 192）
+
+基于本分支 0.1.190。`SpiderComponentRules` 在 APK 里走 `librules_rs.so`（arm64-v8a / armeabi-v7a / x86_64），`readComponent(InputStream)` 仍在 JVM。`CheckFailed` 单参构造支持 `size|<bytes>` 线格式，JNI 还原后 `getMessage()` 仍是 `size`。`scripts/run_tests.sh` 用 `-Drust-anything.lib.rules_rs=` 加载本机 `.so`。`rust/rules-rs` gate 483/483；JVM 117/117。未签名包含三份 `.so`。没有真机点选。
+
 # 随影 0.1.190 rust-anything 首单元（code 191）
 
 基于 `origin/main` `b280ace`（0.1.189 / versionCode 190）。整应用迁移按 `rust/DECISIONS.md`：Android 库 + JNI，UI / base.apk 暂留 Java。本版抽出 `com.guocheng.mediapocket.rules`（`SpiderComponentRules` + `CheckFailed`），`TvSpiderRules` 改成门面；`portables/spider-component` 是给 rust-anything 用的无编译根。Rust 单元在 `rust/rules-rs`，`diff` 483/483，`gate` 通过。APK 仍走 Java 实现，尚未链入 JNI `.so`。没有签名包，没有真机。

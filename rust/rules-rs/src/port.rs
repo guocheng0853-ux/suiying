@@ -39,6 +39,10 @@ fn check_failed(code: &str) -> String {
     format!("com.guocheng.mediapocket.rules.CheckFailed: {code}")
 }
 
+fn check_failed_size(bytes: i64) -> String {
+    format!("com.guocheng.mediapocket.rules.CheckFailed: size|{bytes}")
+}
+
 /// Port of `className`.
 pub fn class_name(api: String) -> Result<String, String> {
     if !class_name_re().is_match(&api) {
@@ -91,7 +95,7 @@ pub fn digest(bytes: Vec<i64>, algorithm: String) -> Result<String, String> {
 pub fn verify(bytes: Vec<i64>, expected: String) -> Result<(), String> {
     let len = bytes.len() as i64;
     if len == 0 || len > MAX_COMPONENT_BYTES {
-        return Err(check_failed("size"));
+        return Err(check_failed_size(len));
     }
     if !expected.is_empty() {
         let actual = digest(bytes, "MD5".into())?;
@@ -134,7 +138,7 @@ pub fn read_all_capped(source: Vec<i64>) -> Result<Vec<i64>, String> {
         let n = end - offset;
         let seen = out.len() as i64 + n as i64;
         if seen > MAX_COMPONENT_BYTES {
-            return Err(check_failed("size"));
+            return Err(check_failed_size(seen));
         }
         out.extend_from_slice(&source[offset..end]);
         offset = end;

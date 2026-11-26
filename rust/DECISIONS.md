@@ -43,3 +43,9 @@ Status: accepted (2026-11-26)
 Context: base.apk embeds VLC 3.0.22 and jlibtorrent; UI is programmatic Android Views.
 Decision: Do not port `base.apk` natives, Media3, or Activity UI in this migration. Dex patch tools under `cinema-ui/tools/` stay Java. Stubs stay stubs.
 Consequences: Analyzer units for stubs/tools are skipped (`keep` / not claimed).
+
+## ADR-008: JNI wire for rules-rs (0.1.191)
+Status: accepted (2026-11-26)
+Context: First unit gated; APK packs new `lib/*/librules_rs.so` via `runtime-native` without overwriting base.apk libs.
+Decision: Ship the rust-anything JNI shadow as `cinema-ui` `SpiderComponentRules`; keep pure Java in `portables/spider-component` for `record`. `readComponent(InputStream)` stays Java. `CheckFailed(String)` accepts `size|<bytes>` so JNI remapping preserves byte counts while `getMessage()` stays `size`. JVM tests set `-Drust-anything.lib.rules_rs` to the host `.so`.
+Consequences: Rebuild host + Android `.so` after port changes; copy Android libs into `runtime-native` before `build_ui.py`.

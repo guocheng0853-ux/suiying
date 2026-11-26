@@ -15,7 +15,7 @@ See `DECISIONS.md` (ADR-001 … ADR-007).
 
 | Unit | State | Notes |
 | --- | --- | --- |
-| `cinema-ui/src/com/guocheng/mediapocket/rules/` (via `portables/spider-component`) | done — gate 483/483 | `rust/rules-rs`; APK still on Java until JNI wire |
+| `cinema-ui/src/com/guocheng/mediapocket/rules/` (via `portables/spider-component`) | done — gate 483/483 + JNI in APK (0.1.191) | pure Java in `portables/`; shadow + `.so` in cinema-ui |
 | Other `*Rules` (to be extracted under `rules/`) | open | Later waves |
 | `cinema-ui/src/com/guocheng/mediapocket/` hosts | keep | UI / Android / network |
 | `cinema-ui/runtime-src/**` | open | TVBox runtime; after Rules |
