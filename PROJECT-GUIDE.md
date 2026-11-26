@@ -1,6 +1,8 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
-> 0.1.192（code 193）：影视仓配置正文抽出 `ConfigTextRules` / `ConfigTextFailed`；`TvBoxConfigText` 改成门面。`rust/config-text-rs` gate 1515/1515。APK 仍走纯 Java（JNI 因 `rustanything` 与 rules-rs 冲突暂缓）。rules-rs JNI 仍在。没有真机点选。
+> 0.1.193（code 194）：`libconfig_text_rs.so` 打进 APK（三 ABI），`ConfigTextRules` 经 `ConfigTextRsNative` 调 Rust；共用已有 `rustanything` Wire/Error，不复制第二套（ADR-010）。`rust/config-text-rs` gate 1515/1515。rules-rs JNI 仍在。没有真机点选。
+
+> 0.1.192（code 193）：影视仓配置正文抽出 `ConfigTextRules` / `ConfigTextFailed`；`TvBoxConfigText` 改成门面。`rust/config-text-rs` gate 1515/1515。APK 当时仍走纯 Java（JNI 暂缓，见 ADR-009→010）。rules-rs JNI 仍在。没有真机点选。
 
 > 0.1.191（code 192）：`librules_rs.so` 打进 APK（三 ABI），`SpiderComponentRules` 经 JNI 调 Rust；流式 `readComponent` 仍在 Java。JVM 测试加载本机 `.so`。gate 483/483，JVM 117/117。没有真机点选。
 

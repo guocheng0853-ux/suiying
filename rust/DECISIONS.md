@@ -51,7 +51,13 @@ Decision: Ship the rust-anything JNI shadow as `cinema-ui` `SpiderComponentRules
 Consequences: Rebuild host + Android `.so` after port changes; copy Android libs into `runtime-native` before `build_ui.py`.
 
 ## ADR-009: Config-text unit without second JNI yet (0.1.192)
-Status: accepted (2026-11-26)
+Status: superseded (2026-11-26) by ADR-010
 Context: `TvBoxConfigText` logic extracted to `ConfigTextRules` + `ConfigTextFailed` under `portables/config-text`. Rust port in `rust/config-text-rs` gates 1515/1515. rust-anything generates a second `rustanything.*` package that would clash with rules-rs JNI classes if both shadows land in the same APK dex.
 Decision: Ship the Java Rules + facade in 0.1.192; keep the Rust port gated and recorded; defer `libconfig_text_rs.so` until natives are namespaced or merged. `ConfigTextFailed` is a `RuntimeException` so a future JNI remap can throw it; the facade still converts to cause-less `IOException` for callers.
 Consequences: APK behavior matches pre-extract for config normalize; product code path is portable and ready for JNI once the clash is solved.
+
+## ADR-010: Config-text JNI via ConfigTextRsNative only (0.1.193)
+Status: accepted (2026-11-26)
+Context: A full second rust-anything `rustanything.*` tree would clash with rules-rs in one dex. The generated `ConfigTextRsNative` alone is enough; Wire/Json/Error stay shared.
+Decision: Shadow `cinema-ui` `ConfigTextRules` through `ConfigTextRsNative` + `libconfig_text_rs.so` (three ABIs in `runtime-native`). Keep pure Java in `portables/config-text` for `record`. Do not copy a second Wire/Error/Json set into the APK.
+Consequences: Rebuild host + Android `.so` after port changes; JVM tests set `-Drust-anything.lib.config_text_rs` alongside rules.

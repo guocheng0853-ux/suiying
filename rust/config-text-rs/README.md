@@ -2,7 +2,7 @@
 
 Rust port of `com.guocheng.mediapocket.config.ConfigTextRules` (portable root: `portables/config-text`). Bridged with a JSON dispatcher by rust-anything.
 
-**Status (0.1.192):** `gate` passed — **1515/1515** recorded cases. APK still runs the pure Java Rules via `TvBoxConfigText` facade; JNI is deferred (ADR-009: `rustanything` package clash with `rules-rs`).
+**Status (0.1.193):** `gate` passed — **1515/1515** recorded cases. APK runs JNI via `ConfigTextRsNative` + `libconfig_text_rs.so` (ADR-010); pure Java stays in `portables/config-text` for `record`.
 
 ## Functions
 

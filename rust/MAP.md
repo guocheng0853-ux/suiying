@@ -16,17 +16,17 @@ See `DECISIONS.md` (ADR-001 … ADR-007).
 | Unit | State | Notes |
 | --- | --- | --- |
 | `cinema-ui/.../rules/` (via `portables/spider-component`) | done — gate 483/483 + JNI in APK (0.1.191) | pure Java in `portables/`; shadow + `.so` in cinema-ui |
-| `cinema-ui/.../config/` (via `portables/config-text`) | done — gate 1515/1515 (0.1.192) | pure Java in APK; Rust port ready; JNI deferred (rustanything clash) |
+| `cinema-ui/.../config/` (via `portables/config-text`) | done — gate 1515/1515 + JNI wiring (ADR-010) | shadow + `ConfigTextRsNative` + `libconfig_text_rs.so` in cinema-ui |
+| fullscreen cluster (`FullscreenRules` / `VideoFullscreenRules` / `Media3ControlRules`) | in progress | extract → `portables/fullscreen` → `fullscreen-rs` |
 | Other `*Rules` (to be extracted under portable roots) | open | Later waves |
 | `cinema-ui/src/com/guocheng/mediapocket/` hosts | keep | UI / Android / network |
 | `cinema-ui/runtime-src/**` | open | TVBox runtime; after Rules |
 | stubs / tools / scripts | keep | Not product runtime |
 
 ## Open questions
-- How to ship a second JNI lib without colliding on `rustanything.*` class names
 - Whether QuickJS spider host ever moves, or only config/verify stays Rust
 
 ## Next
-1. Namespace or merge JNI loaders so config-text `.so` can land in APK
-2. Device smoke on 0.1.192
+1. Device smoke after packaging with both `.so`s (0.1.193)
+2. Finish `fullscreen-rs` gate (sameLook NaN short-circuit; stage int overflow)
 3. Extract next Rules unit

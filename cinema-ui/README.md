@@ -1,6 +1,10 @@
+# 随影 0.1.193 config-text JNI（code 194）
+
+基于本分支 0.1.192。`ConfigTextRules` 在 APK 里走 `libconfig_text_rs.so`（arm64-v8a / armeabi-v7a / x86_64），只加 `ConfigTextRsNative`，共用 rules-rs 的 `rustanything` Wire/Error（ADR-010）。纯 Java 仍在 `portables/config-text`。`scripts/run_tests.sh` 同时加载 rules + config-text host 库。`rust/config-text-rs` gate 1515/1515。没有真机点选。
+
 # 随影 0.1.192 影视仓配置正文 Rules（code 193）
 
-基于本分支 0.1.191。抽出 `com.guocheng.mediapocket.config.ConfigTextRules` / `ConfigTextFailed`，`TvBoxConfigText` 改成门面（只做 `JSONObject` 验收并把失败转成无 cause 的 `IOException`）。可移植根在 `portables/config-text`；Rust 单元 `rust/config-text-rs` gate **1515/1515**。APK 仍跑纯 Java Rules——第二份 JNI 会与 rules-rs 的 `rustanything` 包名冲突，暂缓（见 `rust/DECISIONS.md` ADR-009）。`librules_rs.so` 仍在。`scripts/run_tests.sh`：117/117。没有真机点选。
+基于本分支 0.1.191。抽出 `com.guocheng.mediapocket.config.ConfigTextRules` / `ConfigTextFailed`，`TvBoxConfigText` 改成门面（只做 `JSONObject` 验收并把失败转成无 cause 的 `IOException`）。可移植根在 `portables/config-text`；Rust 单元 `rust/config-text-rs` gate **1515/1515**。当时 APK 仍跑纯 Java Rules——第二份 JNI 暂缓（ADR-009，后由 ADR-010 落地）。`librules_rs.so` 仍在。`scripts/run_tests.sh`：117/117。没有真机点选。
 
 # 随影 0.1.191 rust-anything JNI 接入（code 192）
 
