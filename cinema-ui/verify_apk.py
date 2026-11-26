@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json,subprocess,re,sys
 root=Path(__file__).resolve().parent
-apk=Path(sys.argv[1]) if len(sys.argv)>1 else root.parent/'deliverables/MediaPocket-0.1.189-tvbox-component-diagnostics-arm64.apk'
+apk=Path(sys.argv[1]) if len(sys.argv)>1 else root.parent/'deliverables/MediaPocket-0.1.190-rust-anything-rules-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]

@@ -1,3 +1,7 @@
+# 随影 0.1.190 rust-anything 首单元（code 191）
+
+基于 `origin/main` `b280ace`（0.1.189 / versionCode 190）。整应用迁移按 `rust/DECISIONS.md`：Android 库 + JNI，UI / base.apk 暂留 Java。本版抽出 `com.guocheng.mediapocket.rules`（`SpiderComponentRules` + `CheckFailed`），`TvSpiderRules` 改成门面；`portables/spider-component` 是给 rust-anything 用的无编译根。Rust 单元在 `rust/rules-rs`，`diff` 483/483，`gate` 通过。APK 仍走 Java 实现，尚未链入 JNI `.so`。没有签名包，没有真机。
+
 # 随影 0.1.189 影视仓组件失败原因码（code 190）
 
 基于 `origin/main` `1bf9617`（0.1.188 / versionCode 189）。`git fetch` 之后核对了全部分支清单：最高就是 0.1.188 / 189，没有 `zcode/*`。开放的只有 PR #30（0.1.147）和 issue #38（旧的 0.1.161 打包说明）。没有人占用 0.1.189 / versionCode 190。0.1.185–0.1.188 不复用。
