@@ -1,0 +1,187 @@
+{
+  "schema": "rust-anything/bridge@1",
+  "root": "/workspace/portables/spider-component",
+  "unit": "com/guocheng/mediapocket/rules/",
+  "language": "java",
+  "kind": "ffi",
+  "crate_name": "rules-rs",
+  "exports": [
+    {
+      "name": "className",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 16,
+      "params": [
+        {
+          "name": "api",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.rules.SpiderComponentRules.className(String api)"
+    },
+    {
+      "name": "md5",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 23,
+      "params": [
+        {
+          "name": "declaration",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.rules.SpiderComponentRules.md5(String declaration)"
+    },
+    {
+      "name": "digest",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 32,
+      "params": [
+        {
+          "name": "bytes",
+          "ts_type": "int[]",
+          "optional": false,
+          "rest": false,
+          "native_type": "byte[]"
+        },
+        {
+          "name": "algorithm",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.rules.SpiderComponentRules.digest(byte[] bytes, String algorithm)"
+    },
+    {
+      "name": "verify",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 46,
+      "params": [
+        {
+          "name": "bytes",
+          "ts_type": "int[]",
+          "optional": false,
+          "rest": false,
+          "native_type": "byte[]"
+        },
+        {
+          "name": "expected",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "void",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "void",
+      "prototype": "com.guocheng.mediapocket.rules.SpiderComponentRules.verify(byte[] bytes, String expected)"
+    },
+    {
+      "name": "payloadFault",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 56,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.rules.SpiderComponentRules.payloadFault(String text)"
+    },
+    {
+      "name": "readAllCapped",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 69,
+      "params": [
+        {
+          "name": "source",
+          "ts_type": "int[]",
+          "optional": false,
+          "rest": false,
+          "native_type": "byte[]"
+        }
+      ],
+      "returns": "int[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "byte[]",
+      "prototype": "com.guocheng.mediapocket.rules.SpiderComponentRules.readAllCapped(byte[] source)"
+    },
+    {
+      "name": "checkLabel",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 90,
+      "params": [
+        {
+          "name": "code",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "bytes",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.rules.SpiderComponentRules.checkLabel(String code, int bytes)"
+    }
+  ],
+  "classes": [],
+  "js_only": [
+    {
+      "name": "readComponent",
+      "file": "com/guocheng/mediapocket/rules/SpiderComponentRules.java",
+      "line": 70,
+      "reason": "uses the class `InputStream`"
+    }
+  ]
+}

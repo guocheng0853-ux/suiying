@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,struct,json,subprocess,re,sys
 root=Path(__file__).resolve().parent
-apk=Path(sys.argv[1]) if len(sys.argv)>1 else root.parent/'deliverables/MediaPocket-0.1.189-tvbox-component-diagnostics-arm64.apk'
+apk=Path(sys.argv[1]) if len(sys.argv)>1 else root.parent/'deliverables/MediaPocket-0.1.192-config-text-arm64.apk'
 def dex(d):
  def u(at):return struct.unpack_from('<I',d,at)[0]
  strings=[]
@@ -23,7 +23,7 @@ def dex(d):
  return classes,methods
 badging=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','badging',str(apk)],text=True).splitlines()[0]
 match=re.search(r"name='([^']+)' versionCode='([^']+)' versionName='([^']+)'",badging)
-assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='190' and match.group(3)=='0.1.189',badging
+assert match and match.group(1) in ('com.guocheng.mediapocket.next','com.guocheng.mediapocket.review') and match.group(2)=='193' and match.group(3)=='0.1.192',badging
 xml=subprocess.check_output([str(root.parent/'build-tools/android-15/aapt2'),'dump','xmltree',str(apk),'--file','AndroidManifest.xml'],text=True)
 assert 'ExternalPlayActivity' in xml and '随影 (VLC)' in xml and 'suiying' in xml, 'external player or import link missing'
 seen=set();refs=[];count=0;dex_classes={};dex_methods={}
@@ -34,6 +34,7 @@ with zipfile.ZipFile(apk) as z:
  assert 'lib/arm64-v8a/libquickjs-android-wrapper.so' in z.namelist()
  for n in ['assets/Media3-Apache-2.0.txt','assets/public-home-sources.json','assets/fusion-default.json','assets/js/lib/host-compat.js','assets/js/lib/cheerio.min.js','assets/Fusion-runtime-license.txt']:assert n in z.namelist(),n
  for c in ['EpisodeHandoff','EmbyResumeRules','NativeNext','PlayerMedia','Media3Controls','Media3ControlRules','Media3Sound','Media3ErrorRules','Media3VideoView','SystemPlayerActivity','DolbyChoice','DolbyRules','SourcePickerDialog','HomeSources','CmsApi','ScrapedMainActivity','FusionCatalog','FusionLibraryActivity','TvSpiderRuntime','ClawConnectionProbe','SourceSubtitleLoader','FusionPlaybackSources','SubtitleTextRules','SubtitleHttp','PlaybackSitePicker','SourceSearchClient','SourceSearchRules','FullscreenMode','FullscreenRules','VideoFullscreen','VideoFullscreenRules','HeaderRoute','LinkProbe','PlaybackCheck','StremioSourceDialog','StremioStreams','DebugLog','DebugText','PlayerRedesign','PlayerIcons','TvBoxPlay','WebSniffer','SniffRules','RangeAccelerator','TorrentBoost','PlayerChrome','PlayerChromeRules','PlayerOverlay','PlayerOverlayRules','PlaybackPrefs','StreamInfo','DetailChrome','HomeChrome','HomeRules','BottomNavRules','HomeNavBar','PieceDeadlines','DetailMetadata','SourceTracks','TrackSelection','HeroSwipe','CarouselRules','EpisodeActions','DlnaClient','DlnaCastDialog','CastRules','HomeAtmosphere','HomeHeroRules','SceneRules','PlaybackOrientation','EmbyApi','EmbyClient','EmbyStore','EmbyPlayback','EmbyHome','EmbySearch','EmbyLibraryActivity','EmbyCue','EmbyPlayerUi','BifIndex','SpeedHold','PlayerSidePanel','PlayerStatus','PlayerIconPaths','PlayerLayoutMetrics','DanDanPlayRules','DanDanPlayClient','DanmuRules','DanmuView','DanmuController','OnlineSubtitleRules','OnlineSubtitleClient','OnlineSubtitleController','ExternalSubtitleStore','ExternalPlayRules','ExternalPlayActivity','ConfigImport','PlayerSwitchRules','PlayerSwitches','PlayerFeatureSettings','LevelHud','LevelIcons','LevelIconGeometry','LevelHudMetrics','RequestHeaders','HttpRange','ScopedHttpDataSource','OfflineProgress','OfflineQueueRules','PlaybackDownload','OfflineBatchMenu']:assert 'Lcom/guocheng/mediapocket/'+c+';' in seen
+ assert 'Lcom/guocheng/mediapocket/config/ConfigTextRules;' in seen and 'Lcom/guocheng/mediapocket/config/ConfigTextFailed;' in seen
  for component in ['Landroidx/media3/exoplayer/ExoPlayer;','Landroidx/media3/exoplayer/video/MediaCodecVideoRenderer;','Landroidx/media3/extractor/mkv/MatroskaExtractor;','Landroidx/media3/extractor/mp4/Mp4Extractor;']:assert component in seen,component
  missing_media3=sorted({cls for cls,_,_ in refs if cls.startswith('Landroidx/media3/') and cls not in seen})
  assert not missing_media3,missing_media3

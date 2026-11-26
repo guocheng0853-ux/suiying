@@ -1,0 +1,159 @@
+{
+  "schema": "rust-anything/bridge@1",
+  "root": "/workspace/portables/config-text",
+  "unit": "com/guocheng/mediapocket/config/",
+  "language": "java",
+  "kind": "ffi",
+  "crate_name": "config-text-rs",
+  "exports": [
+    {
+      "name": "normalizeBody",
+      "file": "com/guocheng/mediapocket/config/ConfigTextRules.java",
+      "line": 20,
+      "params": [
+        {
+          "name": "raw",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.config.ConfigTextRules.normalizeBody(String raw)"
+    },
+    {
+      "name": "bom",
+      "file": "com/guocheng/mediapocket/config/ConfigTextRules.java",
+      "line": 33,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.config.ConfigTextRules.bom(String text)"
+    },
+    {
+      "name": "preparedJson",
+      "file": "com/guocheng/mediapocket/config/ConfigTextRules.java",
+      "line": 39,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.config.ConfigTextRules.preparedJson(String text)"
+    },
+    {
+      "name": "base64",
+      "file": "com/guocheng/mediapocket/config/ConfigTextRules.java",
+      "line": 46,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.config.ConfigTextRules.base64(String text)"
+    },
+    {
+      "name": "decode",
+      "file": "com/guocheng/mediapocket/config/ConfigTextRules.java",
+      "line": 67,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.config.ConfigTextRules.decode(String text)"
+    },
+    {
+      "name": "strip",
+      "file": "com/guocheng/mediapocket/config/ConfigTextRules.java",
+      "line": 110,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.config.ConfigTextRules.strip(String text)"
+    },
+    {
+      "name": "structure",
+      "file": "com/guocheng/mediapocket/config/ConfigTextRules.java",
+      "line": 178,
+      "params": [
+        {
+          "name": "text",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "void",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "void",
+      "prototype": "com.guocheng.mediapocket.config.ConfigTextRules.structure(String text)"
+    }
+  ],
+  "classes": [],
+  "js_only": []
+}

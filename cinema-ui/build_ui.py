@@ -121,7 +121,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(work/'manifest.apk
     out.write(p,n)
  out.write(root/'RUNTIME-LICENSE.md','assets/Fusion-runtime-license.txt')
 run(bt/'zipalign','-P','16','-f','4',work/'unsigned.apk',work/'aligned.apk')
-dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.189-tvbox-component-diagnostics-arm64.apk'
+dest=root.parent/'deliverables';dest.mkdir(exist_ok=True);apk=dest/'MediaPocket-0.1.192-config-text-arm64.apk'
 ks=Path(os.environ.get('MEDIAPOCKET_KEYSTORE',str(root/'signing.jks')))
 unsigned='--unsigned' in sys.argv
 if ks.is_file() and not unsigned:
@@ -139,7 +139,7 @@ with zipfile.ZipFile(root/'base.apk') as base,zipfile.ZipFile(apk) as updated:
   if n.startswith('lib/') or (n.startswith('classes') and n.endswith('.dex')) or n.startswith('assets/') or n=='resources.arsc':
    if n in final_dex:continue
    assert base.read(n)==updated.read(n),n;preserved.append(n)
- evidence={'base':'0.1.20','ui_version':'0.1.189','android_device_tested':False,'on_device_validation':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest(),'note':'Build script evidence only. android_device_tested is false because this script did not run on a device.'}
+ evidence={'base':'0.1.20','ui_version':'0.1.192','android_device_tested':False,'on_device_validation':False,'original_code_assets_native_preserved':preserved,'base_sha256':hashlib.sha256((root/'base.apk').read_bytes()).hexdigest(),'note':'Build script evidence only. android_device_tested is false because this script did not run on a device.'}
  if unsigned:
   evidence['note']='Unsigned build only. Not a device validation. This file must not replace VALIDATION.json.'
   (root/'VALIDATION-unsigned.json').write_text(json.dumps(evidence,indent=2))

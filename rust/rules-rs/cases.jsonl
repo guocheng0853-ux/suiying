@@ -1,0 +1,483 @@
+{"fn":"className","args":["Hello World"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["abc"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":[":src/a/b.ts"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":[".leading"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a:b:c"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["key_name-1"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a..b"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["日本語のテキスト"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["./x/**/*.json"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["  padded  "],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["straße.leading"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["emoji \ud83d\udc4d\ud83c\udffd mix\ud83d\ude00"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["hello worlda.b.c"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a.b.c:"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a..babc"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["trailing.﻿bom"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a.b.c"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["İstanbul"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["{name} has {count} items"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["HELLO日本語のテキスト"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a\ud83d\ude00b\ud83d\ude00c"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["trailing."],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["hello"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["key_name-1ünïcödé"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["tab\tseparated"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["﻿bom"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["ünïcödé"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["straße"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["emoji \ud83d\udc4d\ud83c\udffd mixHello World"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["HELLO"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["src/a/b.tsns:key.path"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":[":"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["ΣΊΣΥΦΟΣ"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["é"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["HELLOab"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["ns:key.path"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["hellotab\tseparated"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":[":a.b.c"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["İstanbula"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["./x/**/*.jsonünïcödé"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["\ud83d\ude00"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["hello world"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["line1\nline2"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["aünïcödé"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["src/a/b.ts"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["Hello World  padded  "],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["İstanbula..b"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["key_name-1.leading"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["héllo wörld"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["日本語"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":[""],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["ılık ırmak"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a b"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a\ud83d\ude00b"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a²b x½ y①"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["aⅠb Ⅻ"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a\ud801\udc00b \ud835\udc00bc"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["कि ٣٤"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["Iı İi"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["K K k"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["ſ s S"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["a b c　d"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["١٢٣ ٤٥"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["\ud835\udfd8\ud835\udfd9 ²³"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["snake_case foo-bar o'neil"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["ǅungla Ǆ"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["one\r\ntwo threefour"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["café café"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["ΣΑΣ σας ς"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"md5","args":["  padded  "],"ok":""}
+{"fn":"md5","args":["a"],"ok":""}
+{"fn":"md5","args":["ns:key.path"],"ok":""}
+{"fn":"md5","args":["HELLOa.b.c"],"ok":""}
+{"fn":"md5","args":["﻿bom"],"ok":""}
+{"fn":"md5","args":["tab\tseparated"],"ok":""}
+{"fn":"md5","args":["Hello World"],"ok":""}
+{"fn":"md5","args":["ab"],"ok":""}
+{"fn":"md5","args":["İstanbul"],"ok":""}
+{"fn":"md5","args":["\ud83d\ude00"],"ok":""}
+{"fn":"md5","args":["straße"],"ok":""}
+{"fn":"md5","args":["line1\nline2"],"ok":""}
+{"fn":"md5","args":["  padded  ΣΊΣΥΦΟΣ"],"ok":""}
+{"fn":"md5","args":["HELLO"],"ok":""}
+{"fn":"md5","args":["./x/**/*.json"],"ok":""}
+{"fn":"md5","args":["HELLOline1\nline2"],"ok":""}
+{"fn":"md5","args":[":"],"ok":""}
+{"fn":"md5","args":["hello"],"ok":""}
+{"fn":"md5","args":[""],"ok":""}
+{"fn":"md5","args":["ab{name} has {count} items"],"ok":""}
+{"fn":"md5","args":["trailing."],"ok":""}
+{"fn":"md5","args":["a:b:cHELLO"],"ok":""}
+{"fn":"md5","args":["a..b"],"ok":""}
+{"fn":"md5","args":["key_name-1\ud83d\ude00"],"ok":""}
+{"fn":"md5","args":["src/a/b.ts"],"ok":""}
+{"fn":"md5","args":["a..bİstanbul"],"ok":""}
+{"fn":"md5","args":[".leading"],"ok":""}
+{"fn":"md5","args":["ns:key.pathHello World"],"ok":""}
+{"fn":"md5","args":["./x/**/*.jsona.b.c"],"ok":""}
+{"fn":"md5","args":["abcünïcödé"],"ok":""}
+{"fn":"md5","args":["key_name-1"],"ok":""}
+{"fn":"md5","args":["abcΣΊΣΥΦΟΣ"],"ok":""}
+{"fn":"md5","args":["éa..b"],"ok":""}
+{"fn":"md5","args":["abc"],"ok":""}
+{"fn":"md5","args":["ΣΊΣΥΦΟΣ\ud83d\ude00"],"ok":""}
+{"fn":"md5","args":["key_name-1ab"],"ok":""}
+{"fn":"md5","args":["日本語のテキストstraße"],"ok":""}
+{"fn":"md5","args":["{name} has {count} itemsa..b"],"ok":""}
+{"fn":"md5","args":["é"],"ok":""}
+{"fn":"md5","args":["hello worldİstanbul"],"ok":""}
+{"fn":"md5","args":["ΣΊΣΥΦΟΣa:b:c"],"ok":""}
+{"fn":"md5","args":["étrailing."],"ok":""}
+{"fn":"md5","args":["a.b.ctab\tseparated"],"ok":""}
+{"fn":"md5","args":["a:b:chello"],"ok":""}
+{"fn":"md5","args":["line1\nline2tab\tseparated"],"ok":""}
+{"fn":"md5","args":["{name} has {count} items"],"ok":""}
+{"fn":"md5","args":["ünïcödé"],"ok":""}
+{"fn":"md5","args":["abcab"],"ok":""}
+{"fn":"md5","args":["a.b.c"],"ok":""}
+{"fn":"md5","args":["ΣΊΣΥΦΟΣemoji \ud83d\udc4d\ud83c\udffd mix"],"ok":""}
+{"fn":"md5","args":["héllo wörld"],"ok":""}
+{"fn":"md5","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"ok":""}
+{"fn":"md5","args":["日本語"],"ok":""}
+{"fn":"md5","args":["ılık ırmak"],"ok":""}
+{"fn":"md5","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"ok":""}
+{"fn":"md5","args":["a b"],"ok":""}
+{"fn":"md5","args":["ΣΊΣΥΦΟΣ"],"ok":""}
+{"fn":"md5","args":["a\ud83d\ude00b"],"ok":""}
+{"fn":"md5","args":["a²b x½ y①"],"ok":""}
+{"fn":"md5","args":["aⅠb Ⅻ"],"ok":""}
+{"fn":"md5","args":["a\ud801\udc00b \ud835\udc00bc"],"ok":""}
+{"fn":"md5","args":["कि ٣٤"],"ok":""}
+{"fn":"md5","args":["Iı İi"],"ok":""}
+{"fn":"md5","args":["K K k"],"ok":""}
+{"fn":"md5","args":["ſ s S"],"ok":""}
+{"fn":"md5","args":["x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67"],"ok":""}
+{"fn":"md5","args":["a b c　d"],"ok":""}
+{"fn":"md5","args":["١٢٣ ٤٥"],"ok":""}
+{"fn":"md5","args":["\ud835\udfd8\ud835\udfd9 ²³"],"ok":""}
+{"fn":"md5","args":["snake_case foo-bar o'neil"],"ok":""}
+{"fn":"md5","args":["ǅungla Ǆ"],"ok":""}
+{"fn":"md5","args":["one\r\ntwo threefour"],"ok":""}
+{"fn":"md5","args":["café café"],"ok":""}
+{"fn":"md5","args":["ΣΑΣ σας ς"],"ok":""}
+{"fn":"digest","args":[[100,0,2],"line1\nline2"],"error":"line1\nline2 MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[7,1],"a:b:c"],"error":"a:b:c MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"src/a/b.tshello world"],"error":"src/a/b.tshello world MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[7,-1],"tab\tseparated"],"error":"tab\tseparated MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"./x/**/*.json"],"error":"./x/**/*.json MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[-100,7,0],"  padded  "],"error":"  padded   MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[7],"key_name-1"],"error":"key_name-1 MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"hello"],"error":"hello MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"emoji \ud83d\udc4d\ud83c\udffd mix MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[-1,-1,100],"helloa\ud83d\ude00b\ud83d\ude00c"],"error":"helloa\ud83d\ude00b\ud83d\ude00c MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],":abc"],"error":":abc MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"  padded  "],"error":"  padded   MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[-1,1,1],"a:b:ckey_name-1"],"error":"a:b:ckey_name-1 MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[42],"Hello World"],"error":"Hello World MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"a"],"error":"a MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"emoji \ud83d\udc4d\ud83c\udffd mixtrailing."],"error":"emoji \ud83d\udc4d\ud83c\udffd mixtrailing. MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[2,-100],"emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"emoji \ud83d\udc4d\ud83c\udffd mix MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[2,0],"{name} has {count} items"],"error":"{name} has {count} items MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[-1],"src/a/b.ts"],"error":"src/a/b.ts MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],".leading"],"error":".leading MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[2,1,0],"İstanbul"],"error":"İstanbul MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[2,0],"İstanbul"],"error":"İstanbul MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"a:b:c"],"error":"a:b:c MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"日本語のテキスト"],"error":"日本語のテキスト MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[2,1],"abİstanbul"],"error":"abİstanbul MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[-100,1],"ΣΊΣΥΦΟΣ"],"error":"ΣΊΣΥΦΟΣ MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[1,-1,1],"emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"emoji \ud83d\udc4d\ud83c\udffd mix MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[42],"éünïcödé"],"error":"éünïcödé MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[2,0],"ns:key.path"],"error":"ns:key.path MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[],"line1\nline2"],"error":"line1\nline2 MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"héllo wörld"],"error":"héllo wörld MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"\ud83d\udc4d\ud83c\udffd thumbs"],"error":"\ud83d\udc4d\ud83c\udffd thumbs MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"日本語"],"error":"日本語 MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],""],"error":" MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"é"],"error":"é MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"İstanbul"],"error":"İstanbul MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"straße"],"error":"straße MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"ılık ırmak"],"error":"ılık ırmak MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"error":"\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"a b"],"error":"a b MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"ΣΊΣΥΦΟΣ"],"error":"ΣΊΣΥΦΟΣ MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"a\ud83d\ude00b"],"error":"a\ud83d\ude00b MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"﻿bom"],"error":"﻿bom MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"a²b x½ y①"],"error":"a²b x½ y① MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"aⅠb Ⅻ"],"error":"aⅠb Ⅻ MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"a\ud801\udc00b \ud835\udc00bc"],"error":"a\ud801\udc00b \ud835\udc00bc MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"कि ٣٤"],"error":"कि ٣٤ MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"Iı İi"],"error":"Iı İi MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"K K k"],"error":"K K k MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"ſ s S"],"error":"ſ s S MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67"],"error":"x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"a b c　d"],"error":"a b c　d MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"١٢٣ ٤٥"],"error":"١٢٣ ٤٥ MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"\ud835\udfd8\ud835\udfd9 ²³"],"error":"\ud835\udfd8\ud835\udfd9 ²³ MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"snake_case foo-bar o'neil"],"error":"snake_case foo-bar o'neil MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"ǅungla Ǆ"],"error":"ǅungla Ǆ MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"one\r\ntwo threefour"],"error":"one\r\ntwo threefour MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"café café"],"error":"café café MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"digest","args":[[100,0,2],"ΣΑΣ σας ς"],"error":"ΣΑΣ σας ς MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"verify","args":[[],"ünïcödéns:key.path"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[42],".leading"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[100,-1],"emoji \ud83d\udc4d\ud83c\udffd mix"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[42],"a"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[-1,0,7],"./x/**/*.json"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[-100],"hello world"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[-100,7],"tab\tseparated"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"key_name-1﻿bom"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[1],"日本語のテキスト"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[100,2],""],"ok":null}
+{"fn":"verify","args":[[100,2,0],"ns:key.path"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[1],"./x/**/*.json"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[1],"ésrc/a/b.ts"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[-100],"é"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[1,2],"{name} has {count} items"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[2,7,1],"a.b.c"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"é"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[7,-1],"HELLO"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"Hello World"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[100],"İstanbul"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"a.b.c"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[7],"./x/**/*.json"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"日本語のテキスト"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"src/a/b.ts"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[7,2,-100],"﻿bom{name} has {count} items"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[42,1,42],"a.b.ckey_name-1"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[1],"éa:b:c"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"\ud83d\ude00"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[0],"src/a/b.ts"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[-100,0],"  padded    padded  "],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"line1\nline2./x/**/*.json"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[1,7,2],"tab\tseparated"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[-100],"a:b:c"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"trailing.trailing."],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"a\ud83d\ude00b\ud83d\ude00c"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[1],"Hello World"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[-1,-1],"a:b:c"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[2],"abc"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"Hello Worlda:b:c"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"héllo wörld"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"\ud83d\udc4d\ud83c\udffd thumbs"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"日本語"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],""],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"İstanbul"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"straße"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"ılık ırmak"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"a b"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"ΣΊΣΥΦΟΣ"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"a\ud83d\ude00b"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"﻿bom"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"a²b x½ y①"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"aⅠb Ⅻ"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"a\ud801\udc00b \ud835\udc00bc"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"कि ٣٤"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"Iı İi"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"K K k"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"ſ s S"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"a b c　d"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"١٢٣ ٤٥"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"\ud835\udfd8\ud835\udfd9 ²³"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"snake_case foo-bar o'neil"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"ǅungla Ǆ"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"one\r\ntwo threefour"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"café café"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"ΣΑΣ σας ς"],"error":"size","error_type":"CheckFailed"}
+{"fn":"payloadFault","args":["line1\nline2"],"ok":""}
+{"fn":"payloadFault","args":["a..b"],"ok":""}
+{"fn":"payloadFault","args":["日本語のテキスト"],"ok":""}
+{"fn":"payloadFault","args":["{name} has {count} items﻿bom"],"ok":""}
+{"fn":"payloadFault","args":["tab\tseparated"],"ok":""}
+{"fn":"payloadFault","args":["ns:key.path"],"ok":""}
+{"fn":"payloadFault","args":[""],"ok":"empty bytes=0"}
+{"fn":"payloadFault","args":["a"],"ok":""}
+{"fn":"payloadFault","args":["./x/**/*.jsonabc"],"ok":""}
+{"fn":"payloadFault","args":["src/a/b.ts"],"ok":""}
+{"fn":"payloadFault","args":["\ud83d\ude00"],"ok":""}
+{"fn":"payloadFault","args":["straße"],"ok":""}
+{"fn":"payloadFault","args":[".leadinga"],"ok":""}
+{"fn":"payloadFault","args":["ünïcödé"],"ok":""}
+{"fn":"payloadFault","args":["abc"],"ok":""}
+{"fn":"payloadFault","args":["  padded  "],"ok":""}
+{"fn":"payloadFault","args":["é"],"ok":""}
+{"fn":"payloadFault","args":["trailing.line1\nline2"],"ok":""}
+{"fn":"payloadFault","args":["key_name-1"],"ok":""}
+{"fn":"payloadFault","args":["ab"],"ok":""}
+{"fn":"payloadFault","args":["ΣΊΣΥΦΟΣ"],"ok":""}
+{"fn":"payloadFault","args":["a\ud83d\ude00b\ud83d\ude00c"],"ok":""}
+{"fn":"payloadFault","args":["emoji \ud83d\udc4d\ud83c\udffd mix"],"ok":""}
+{"fn":"payloadFault","args":["line1\nline2  padded  "],"ok":""}
+{"fn":"payloadFault","args":["HELLO"],"ok":""}
+{"fn":"payloadFault","args":["hello world"],"ok":""}
+{"fn":"payloadFault","args":["trailing."],"ok":""}
+{"fn":"payloadFault","args":["Hello World"],"ok":""}
+{"fn":"payloadFault","args":["  padded  .leading"],"ok":""}
+{"fn":"payloadFault","args":["İstanbul"],"ok":""}
+{"fn":"payloadFault","args":["line1\nline2a"],"ok":""}
+{"fn":"payloadFault","args":["hello"],"ok":""}
+{"fn":"payloadFault","args":["a.b.c"],"ok":""}
+{"fn":"payloadFault","args":["src/a/b.tsΣΊΣΥΦΟΣ"],"ok":""}
+{"fn":"payloadFault","args":["a:b:c"],"ok":""}
+{"fn":"payloadFault","args":["ns:key.pathΣΊΣΥΦΟΣ"],"ok":""}
+{"fn":"payloadFault","args":["abhello"],"ok":""}
+{"fn":"payloadFault","args":["ünïcödéa:b:c"],"ok":""}
+{"fn":"payloadFault","args":["trailing.src/a/b.ts"],"ok":""}
+{"fn":"payloadFault","args":[".leading"],"ok":""}
+{"fn":"payloadFault","args":["﻿bomé"],"ok":""}
+{"fn":"payloadFault","args":["ns:key.patha..b"],"ok":""}
+{"fn":"payloadFault","args":["./x/**/*.jsonİstanbul"],"ok":""}
+{"fn":"payloadFault","args":["./x/**/*.json"],"ok":""}
+{"fn":"payloadFault","args":["{name} has {count} items"],"ok":""}
+{"fn":"payloadFault","args":["straßehello world"],"ok":""}
+{"fn":"payloadFault","args":["helloΣΊΣΥΦΟΣ"],"ok":""}
+{"fn":"payloadFault","args":["helloHELLO"],"ok":""}
+{"fn":"payloadFault","args":["{name} has {count} items:"],"ok":""}
+{"fn":"payloadFault","args":["﻿bom"],"ok":""}
+{"fn":"payloadFault","args":["héllo wörld"],"ok":""}
+{"fn":"payloadFault","args":["\ud83d\udc4d\ud83c\udffd thumbs"],"ok":""}
+{"fn":"payloadFault","args":["日本語"],"ok":""}
+{"fn":"payloadFault","args":["ılık ırmak"],"ok":""}
+{"fn":"payloadFault","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"],"ok":""}
+{"fn":"payloadFault","args":["a b"],"ok":""}
+{"fn":"payloadFault","args":["a\ud83d\ude00b"],"ok":""}
+{"fn":"payloadFault","args":["a²b x½ y①"],"ok":""}
+{"fn":"payloadFault","args":["aⅠb Ⅻ"],"ok":""}
+{"fn":"payloadFault","args":["a\ud801\udc00b \ud835\udc00bc"],"ok":""}
+{"fn":"payloadFault","args":["कि ٣٤"],"ok":""}
+{"fn":"payloadFault","args":["Iı İi"],"ok":""}
+{"fn":"payloadFault","args":["K K k"],"ok":""}
+{"fn":"payloadFault","args":["ſ s S"],"ok":""}
+{"fn":"payloadFault","args":["x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67"],"ok":""}
+{"fn":"payloadFault","args":["a b c　d"],"ok":""}
+{"fn":"payloadFault","args":["١٢٣ ٤٥"],"ok":""}
+{"fn":"payloadFault","args":["\ud835\udfd8\ud835\udfd9 ²³"],"ok":""}
+{"fn":"payloadFault","args":["snake_case foo-bar o'neil"],"ok":""}
+{"fn":"payloadFault","args":["ǅungla Ǆ"],"ok":""}
+{"fn":"payloadFault","args":["one\r\ntwo threefour"],"ok":""}
+{"fn":"payloadFault","args":["café café"],"ok":""}
+{"fn":"payloadFault","args":["ΣΑΣ σας ς"],"ok":""}
+{"fn":"readAllCapped","args":[[]],"ok":[]}
+{"fn":"readAllCapped","args":[[7,0,1]],"ok":[7,0,1]}
+{"fn":"readAllCapped","args":[[-100,7]],"ok":[-100,7]}
+{"fn":"readAllCapped","args":[[100]],"ok":[100]}
+{"fn":"readAllCapped","args":[[1,100,1]],"ok":[1,100,1]}
+{"fn":"readAllCapped","args":[[-100,100,100]],"ok":[-100,100,100]}
+{"fn":"readAllCapped","args":[[42]],"ok":[42]}
+{"fn":"readAllCapped","args":[[2]],"ok":[2]}
+{"fn":"readAllCapped","args":[[-100]],"ok":[-100]}
+{"fn":"readAllCapped","args":[[7,0]],"ok":[7,0]}
+{"fn":"readAllCapped","args":[[1,-100]],"ok":[1,-100]}
+{"fn":"readAllCapped","args":[[2,100,7]],"ok":[2,100,7]}
+{"fn":"readAllCapped","args":[[7]],"ok":[7]}
+{"fn":"readAllCapped","args":[[42,-100,2]],"ok":[42,-100,2]}
+{"fn":"readAllCapped","args":[[-1]],"ok":[-1]}
+{"fn":"readAllCapped","args":[[0,7,100]],"ok":[0,7,100]}
+{"fn":"readAllCapped","args":[[7,42]],"ok":[7,42]}
+{"fn":"readAllCapped","args":[[-1,100,7]],"ok":[-1,100,7]}
+{"fn":"readAllCapped","args":[[-1,0,1]],"ok":[-1,0,1]}
+{"fn":"readAllCapped","args":[[0]],"ok":[0]}
+{"fn":"readAllCapped","args":[[-100,7,1]],"ok":[-100,7,1]}
+{"fn":"readAllCapped","args":[[1]],"ok":[1]}
+{"fn":"readAllCapped","args":[[0,1]],"ok":[0,1]}
+{"fn":"readAllCapped","args":[[-100,-100]],"ok":[-100,-100]}
+{"fn":"readAllCapped","args":[[100,2,-1]],"ok":[100,2,-1]}
+{"fn":"readAllCapped","args":[[2,100,42]],"ok":[2,100,42]}
+{"fn":"readAllCapped","args":[[42,100,100]],"ok":[42,100,100]}
+{"fn":"checkLabel","args":["a..bhello",7],"ok":"a..bhello"}
+{"fn":"checkLabel","args":["ab",-100],"ok":"ab"}
+{"fn":"checkLabel","args":["a:b:c",255],"ok":"a:b:c"}
+{"fn":"checkLabel","args":["﻿bomtab\tseparated",1],"ok":"﻿bomtab\tseparated"}
+{"fn":"checkLabel","args":["key_name-1",100],"ok":"key_name-1"}
+{"fn":"checkLabel","args":["a.b.c:",42],"ok":"a.b.c:"}
+{"fn":"checkLabel","args":["Hello World",2],"ok":"Hello World"}
+{"fn":"checkLabel","args":["straße",-100],"ok":"straße"}
+{"fn":"checkLabel","args":["abc",1],"ok":"abc"}
+{"fn":"checkLabel","args":["﻿bom",7],"ok":"﻿bom"}
+{"fn":"checkLabel","args":["HELLO",2],"ok":"HELLO"}
+{"fn":"checkLabel","args":["src/a/b.ts",100],"ok":"src/a/b.ts"}
+{"fn":"checkLabel","args":["İstanbul",2147483647],"ok":"İstanbul"}
+{"fn":"checkLabel","args":["src/a/b.ts",2],"ok":"src/a/b.ts"}
+{"fn":"checkLabel","args":["HELLO",-2147483648],"ok":"HELLO"}
+{"fn":"checkLabel","args":["emoji \ud83d\udc4d\ud83c\udffd mix",-100],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"checkLabel","args":["HELLO",0],"ok":"HELLO"}
+{"fn":"checkLabel","args":["key_name-1",-2147483648],"ok":"key_name-1"}
+{"fn":"checkLabel","args":["emoji \ud83d\udc4d\ud83c\udffd mix",-2147483648],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"checkLabel","args":["a",7],"ok":"a"}
+{"fn":"checkLabel","args":["src/a/b.ts",0],"ok":"src/a/b.ts"}
+{"fn":"checkLabel","args":["tab\tseparated",2147483647],"ok":"tab\tseparated"}
+{"fn":"checkLabel","args":["HELLOemoji \ud83d\udc4d\ud83c\udffd mix",-2147483648],"ok":"HELLOemoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"checkLabel","args":["emoji \ud83d\udc4d\ud83c\udffd mix",2147483647],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"checkLabel","args":["a\ud83d\ude00b\ud83d\ude00c",2],"ok":"a\ud83d\ude00b\ud83d\ude00c"}
+{"fn":"checkLabel","args":["ünïcödé",1],"ok":"ünïcödé"}
+{"fn":"checkLabel","args":["﻿bom",1],"ok":"﻿bom"}
+{"fn":"checkLabel","args":["tab\tseparated",100],"ok":"tab\tseparated"}
+{"fn":"checkLabel","args":["",255],"ok":"unknown"}
+{"fn":"checkLabel","args":["emoji \ud83d\udc4d\ud83c\udffd mix",0],"ok":"emoji \ud83d\udc4d\ud83c\udffd mix"}
+{"fn":"checkLabel","args":["é",-1],"ok":"é"}
+{"fn":"checkLabel","args":["ünïcödéhello world",100],"ok":"ünïcödéhello world"}
+{"fn":"checkLabel","args":["hello world",-100],"ok":"hello world"}
+{"fn":"checkLabel","args":["./x/**/*.jsontrailing.",7],"ok":"./x/**/*.jsontrailing."}
+{"fn":"checkLabel","args":["é",0],"ok":"é"}
+{"fn":"checkLabel","args":["ünïcödé",255],"ok":"ünïcödé"}
+{"fn":"checkLabel","args":["HELLO",255],"ok":"HELLO"}
+{"fn":"checkLabel","args":["abc",2],"ok":"abc"}
+{"fn":"checkLabel","args":[":",-1],"ok":":"}
+{"fn":"checkLabel","args":["key_name-1",-100],"ok":"key_name-1"}
+{"fn":"checkLabel","args":["line1\nline2",-100],"ok":"line1\nline2"}
+{"fn":"checkLabel","args":[":",0],"ok":":"}
+{"fn":"checkLabel","args":["a..b",7],"ok":"a..b"}
+{"fn":"checkLabel","args":["  padded  ",7],"ok":"  padded  "}
+{"fn":"checkLabel","args":["{name} has {count} items",-100],"ok":"{name} has {count} items"}
+{"fn":"checkLabel","args":["héllo wörld",7],"ok":"héllo wörld"}
+{"fn":"checkLabel","args":["\ud83d\udc4d\ud83c\udffd thumbs",7],"ok":"\ud83d\udc4d\ud83c\udffd thumbs"}
+{"fn":"checkLabel","args":["日本語",7],"ok":"日本語"}
+{"fn":"checkLabel","args":["",7],"ok":"unknown"}
+{"fn":"checkLabel","args":["é",7],"ok":"é"}
+{"fn":"checkLabel","args":["İstanbul",7],"ok":"İstanbul"}
+{"fn":"checkLabel","args":["straße",7],"ok":"straße"}
+{"fn":"checkLabel","args":["ılık ırmak",7],"ok":"ılık ırmak"}
+{"fn":"checkLabel","args":["\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family",7],"ok":"\ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67 family"}
+{"fn":"checkLabel","args":["a b",7],"ok":"a b"}
+{"fn":"checkLabel","args":["ΣΊΣΥΦΟΣ",7],"ok":"ΣΊΣΥΦΟΣ"}
+{"fn":"checkLabel","args":["a\ud83d\ude00b",7],"ok":"a\ud83d\ude00b"}
+{"fn":"checkLabel","args":["a²b x½ y①",7],"ok":"a²b x½ y①"}
+{"fn":"checkLabel","args":["aⅠb Ⅻ",7],"ok":"aⅠb Ⅻ"}
+{"fn":"checkLabel","args":["a\ud801\udc00b \ud835\udc00bc",7],"ok":"a\ud801\udc00b \ud835\udc00bc"}
+{"fn":"checkLabel","args":["कि ٣٤",7],"ok":"कि ٣٤"}
+{"fn":"checkLabel","args":["Iı İi",7],"ok":"Iı İi"}
+{"fn":"checkLabel","args":["K K k",7],"ok":"K K k"}
+{"fn":"checkLabel","args":["ſ s S",7],"ok":"ſ s S"}
+{"fn":"checkLabel","args":["x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67",7],"ok":"x‍y \ud83d\udc68‍\ud83d\udc69‍\ud83d\udc67"}
+{"fn":"checkLabel","args":["a b c　d",7],"ok":"a b c　d"}
+{"fn":"checkLabel","args":["١٢٣ ٤٥",7],"ok":"١٢٣ ٤٥"}
+{"fn":"checkLabel","args":["\ud835\udfd8\ud835\udfd9 ²³",7],"ok":"\ud835\udfd8\ud835\udfd9 ²³"}
+{"fn":"checkLabel","args":["snake_case foo-bar o'neil",7],"ok":"snake_case foo-bar o'neil"}
+{"fn":"checkLabel","args":["ǅungla Ǆ",7],"ok":"ǅungla Ǆ"}
+{"fn":"checkLabel","args":["one\r\ntwo threefour",7],"ok":"one\r\ntwo threefour"}
+{"fn":"checkLabel","args":["café café",7],"ok":"café café"}
+{"fn":"checkLabel","args":["ΣΑΣ σας ς",7],"ok":"ΣΑΣ σας ς"}
+{"fn":"checkLabel","args":["a..bhello",-7],"ok":"a..bhello"}
+{"fn":"checkLabel","args":["a..bhello",-1],"ok":"a..bhello"}
+{"fn":"checkLabel","args":["a..bhello",0],"ok":"a..bhello"}
+{"fn":"className","args":["csp_LibvioGuard"],"ok":"com.github.catvod.spider.LibvioGuard"}
+{"fn":"className","args":["csp_Foo"],"ok":"com.github.catvod.spider.Foo"}
+{"fn":"className","args":["csp_$Bar"],"ok":"com.github.catvod.spider.$Bar"}
+{"fn":"className","args":["csp_../../Other"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["csp_"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"className","args":["Libvio"],"error":"classname","error_type":"CheckFailed"}
+{"fn":"md5","args":["https://example.org/jar;md5;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"],"ok":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+{"fn":"md5","args":["https://example.org/jar;md5;abcdef0123456789ABCDEF0123456789"],"ok":"abcdef0123456789abcdef0123456789"}
+{"fn":"md5","args":["https://example.org/jar"],"ok":""}
+{"fn":"md5","args":["https://cdn.example/jar;md5;not-hex"],"error":"md5-format","error_type":"CheckFailed"}
+{"fn":"md5","args":["x;md5;0000000000000000000000000000000"],"error":"md5-format","error_type":"CheckFailed"}
+{"fn":"md5","args":["x;md5;000000000000000000000000000000001"],"error":"md5-format","error_type":"CheckFailed"}
+{"fn":"digest","args":[[102,105,120,116,117,114,101],"MD5"],"ok":"4cf9d4f0069fc18fb3fcc0a50dceb852"}
+{"fn":"digest","args":[[],"MD5"],"ok":"d41d8cd98f00b204e9800998ecf8427e"}
+{"fn":"digest","args":[[1],"SHA-256"],"ok":"4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"}
+{"fn":"digest","args":[[1],"SHA-1"],"ok":"bf8b4530d8d246dd74ac53a13471bba17941dff7"}
+{"fn":"digest","args":[[1],"nope"],"error":"nope MessageDigest not available","error_type":"IllegalArgumentException"}
+{"fn":"verify","args":[[102,105,120,116,117,114,101],""],"ok":null}
+{"fn":"verify","args":[[],""],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[],"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],"error":"size","error_type":"CheckFailed"}
+{"fn":"verify","args":[[102,105,120,116,117,114,101],"00000000000000000000000000000000"],"error":"checksum","error_type":"CheckFailed"}
+{"fn":"payloadFault","args":[null],"ok":"empty"}
+{"fn":"payloadFault","args":[" \n\t"],"ok":"empty bytes=3"}
+{"fn":"payloadFault","args":["{\"list\":[]}"],"ok":""}
+{"fn":"payloadFault","args":[""],"ok":"empty bytes=0"}
+{"fn":"checkLabel","args":["size",0],"ok":"size bytes=0"}
+{"fn":"checkLabel","args":["size",16777217],"ok":"size bytes=16777217"}
+{"fn":"checkLabel","args":["checksum",7],"ok":"checksum"}
+{"fn":"checkLabel","args":["md5-format",-1],"ok":"md5-format"}
+{"fn":"checkLabel","args":["classname",-1],"ok":"classname"}
+{"fn":"checkLabel","args":["",0],"ok":"unknown"}
+{"fn":"readAllCapped","args":[[1,2,3]],"ok":[1,2,3]}
+{"fn":"readAllCapped","args":[[]],"ok":[]}

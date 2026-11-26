@@ -17,3 +17,4 @@ cinema-ui/assets/fusion-default.json
 
 # Local design-review snapshots contain machine-specific paths
 .impeccable/
+android-sdk/

@@ -1,5 +1,15 @@
 # 随影（MediaPocket）项目说明 —— 给接手的 AI / 开发者
 
+> 0.1.194（code 195）：`libfullscreen_rs.so` 打进 APK（三 ABI）；`FullscreenRules` / `VideoFullscreenRules` / `Media3ControlRules` 经 `FullscreenRsNative` 调 Rust（只加 Native，共用 Wire/Error）。`fullscreen-rs` diff 1644/1644。config-text / rules JNI 仍在。真机安装启动通过。
+
+> 0.1.193（code 194）：`libconfig_text_rs.so` 打进 APK（三 ABI），`ConfigTextRules` 经 `ConfigTextRsNative` 调 Rust；共用已有 `rustanything` Wire/Error，不复制第二套（ADR-010）。`rust/config-text-rs` gate 1515/1515。rules-rs JNI 仍在。真机安装启动通过。
+
+> 0.1.192（code 193）：影视仓配置正文抽出 `ConfigTextRules` / `ConfigTextFailed`；`TvBoxConfigText` 改成门面。`rust/config-text-rs` gate 1515/1515。APK 当时仍走纯 Java（JNI 暂缓，见 ADR-009→010）。rules-rs JNI 仍在。没有真机点选。
+
+> 0.1.191（code 192）：`librules_rs.so` 打进 APK（三 ABI），`SpiderComponentRules` 经 JNI 调 Rust；流式 `readComponent` 仍在 Java。JVM 测试加载本机 `.so`。gate 483/483，JVM 117/117。没有真机点选。
+
+> 0.1.190（code 191）：用 rust-anything 开整应用迁移。形状是 Android 库 + JNI（见 `rust/DECISIONS.md`），不是 tools 里的 CLI。首单元是影视仓组件校验 Rules（`SpiderComponentRules`），`TvSpiderRules` 做门面；`rust/rules-rs` 上 `gate` 通过（483/483）。APK 行为与 0.1.189 对齐，尚未装入 JNI。没有签名包，没有真机点选。
+
 > 0.1.189（code 190）：影视仓组件失败能分清下载超限 `size bytes=<已读字节数>`、空正文 `size bytes=0`、`checksum`、`md5-format` 和 `classname`。空白返回只记 `empty` / `empty bytes=<字符数>`。不放宽校验，也不给分类自动重试。诊断见 `docs/superpowers/plans/2026-11-20-tvbox-component-diagnostics.md`。没有签名包，没有真机点选。`VALIDATION.json` 仍是 0.1.187 的真机记录。
 
 > 0.1.184（code 185）：首页导航四个图标统一成细线条，选中只加粗（1.6 → 2.1）不填实；房子去掉门洞。只改 `HomeNavIcon` 和 `BottomNavRules.iconStroke`，文字、底块、滑动、侧轨不变。没有真机验证。

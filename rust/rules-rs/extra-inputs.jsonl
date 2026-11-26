@@ -1,0 +1,34 @@
+{"fn": "className", "args": ["csp_LibvioGuard"]}
+{"fn": "className", "args": ["csp_Foo"]}
+{"fn": "className", "args": ["csp_$Bar"]}
+{"fn": "className", "args": ["csp_../../Other"]}
+{"fn": "className", "args": ["csp_"]}
+{"fn": "className", "args": ["Libvio"]}
+{"fn": "md5", "args": ["https://example.org/jar;md5;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"]}
+{"fn": "md5", "args": ["https://example.org/jar;md5;abcdef0123456789ABCDEF0123456789"]}
+{"fn": "md5", "args": ["https://example.org/jar"]}
+{"fn": "md5", "args": ["https://cdn.example/jar;md5;not-hex"]}
+{"fn": "md5", "args": ["x;md5;0000000000000000000000000000000"]}
+{"fn": "md5", "args": ["x;md5;000000000000000000000000000000001"]}
+{"fn": "digest", "args": [[102, 105, 120, 116, 117, 114, 101], "MD5"]}
+{"fn": "digest", "args": [[], "MD5"]}
+{"fn": "digest", "args": [[0, 1, 2, 255], "MD5"]}
+{"fn": "digest", "args": [[1], "SHA-256"]}
+{"fn": "digest", "args": [[1], "SHA-1"]}
+{"fn": "digest", "args": [[1], "nope"]}
+{"fn": "verify", "args": [[102, 105, 120, 116, 117, 114, 101], ""]}
+{"fn": "verify", "args": [[], ""]}
+{"fn": "verify", "args": [[], "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]}
+{"fn": "verify", "args": [[102, 105, 120, 116, 117, 114, 101], "00000000000000000000000000000000"]}
+{"fn": "payloadFault", "args": [null]}
+{"fn": "payloadFault", "args": [" \n\t"]}
+{"fn": "payloadFault", "args": ["{\"list\":[]}"]}
+{"fn": "payloadFault", "args": [""]}
+{"fn": "checkLabel", "args": ["size", 0]}
+{"fn": "checkLabel", "args": ["size", 16777217]}
+{"fn": "checkLabel", "args": ["checksum", 7]}
+{"fn": "checkLabel", "args": ["md5-format", -1]}
+{"fn": "checkLabel", "args": ["classname", -1]}
+{"fn": "checkLabel", "args": ["", 0]}
+{"fn": "readAllCapped", "args": [[1, 2, 3]]}
+{"fn": "readAllCapped", "args": [[]]}

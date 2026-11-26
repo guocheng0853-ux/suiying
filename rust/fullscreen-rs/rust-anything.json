@@ -1,0 +1,1371 @@
+{
+  "schema": "rust-anything/bridge@1",
+  "root": "C:\\Users\\李俊飞\\Documents\\ChatGPT\\suiying\\.worktrees\\rust-anything-whole-app-26d5",
+  "unit": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/",
+  "language": "java",
+  "kind": "ffi",
+  "crate_name": "fullscreen-rs",
+  "exports": [
+    {
+      "name": "mode",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 20,
+      "params": [
+        {
+          "name": "saved",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "migrated",
+          "ts_type": "boolean",
+          "optional": false,
+          "rest": false,
+          "native_type": "boolean"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.mode(String saved, boolean migrated)"
+    },
+    {
+      "name": "tabletStretch",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 25,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.tabletStretch(String mode, int smallestWidthDp)"
+    },
+    {
+      "name": "stretchFill",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 29,
+      "params": [
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.stretchFill(int screenW, int screenH, int videoW, int videoH)"
+    },
+    {
+      "name": "smartDefault",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 36,
+      "params": [
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.smartDefault(int screenW, int screenH, int videoW, int videoH)"
+    },
+    {
+      "name": "smart",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 40,
+      "params": [
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.smart(int screenW, int screenH, int videoW, int videoH, int smallestWidthDp)"
+    },
+    {
+      "name": "zoom",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 51,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "saved",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        }
+      ],
+      "returns": "number",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.zoom(String mode, float saved)"
+    },
+    {
+      "name": "layoutMode",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 55,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.layoutMode(String mode)"
+    },
+    {
+      "name": "next",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 59,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.next(String mode)"
+    },
+    {
+      "name": "quickNext",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 63,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.quickNext(String mode)"
+    },
+    {
+      "name": "cycleHud",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 67,
+      "params": [
+        {
+          "name": "label",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.cycleHud(String label)"
+    },
+    {
+      "name": "lookDefault",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 71,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.lookDefault(String mode, int screenW, int screenH, int videoW, int videoH)"
+    },
+    {
+      "name": "look",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 75,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.look(String mode, int screenW, int screenH, int videoW, int videoH, int smallestWidthDp)"
+    },
+    {
+      "name": "displayWidth",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 86,
+      "params": [
+        {
+          "name": "width",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "sarNum",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "sarDen",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "int",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.displayWidth(int width, int sarNum, int sarDen)"
+    },
+    {
+      "name": "sameLook",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 95,
+      "params": [
+        {
+          "name": "a",
+          "ts_type": "number[]",
+          "optional": false,
+          "rest": false,
+          "native_type": "float[]"
+        },
+        {
+          "name": "b",
+          "ts_type": "number[]",
+          "optional": false,
+          "rest": false,
+          "native_type": "float[]"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.sameLook(float[] a, float[] b)"
+    },
+    {
+      "name": "visibleNextDefault",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 99,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.visibleNextDefault(String mode, int screenW, int screenH, int videoW, int videoH)"
+    },
+    {
+      "name": "visibleNext",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 104,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.visibleNext(String mode, int screenW, int screenH, int videoW, int videoH, int smallestWidthDp)"
+    },
+    {
+      "name": "index",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 116,
+      "params": [
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "int",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.index(String mode)"
+    },
+    {
+      "name": "clamp",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 121,
+      "params": [
+        {
+          "name": "v",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        }
+      ],
+      "returns": "number",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.clamp(float v)"
+    },
+    {
+      "name": "originalScale",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 126,
+      "params": [
+        {
+          "name": "fitWidth",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoWidth",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.originalScale(int fitWidth, int videoWidth)"
+    },
+    {
+      "name": "axisScale",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 131,
+      "params": [
+        {
+          "name": "spanX",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "prevX",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "spanY",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "prevY",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        }
+      ],
+      "returns": "number[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.axisScale(float spanX, float prevX, float spanY, float prevY)"
+    },
+    {
+      "name": "custom",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 137,
+      "params": [
+        {
+          "name": "x",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "y",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.custom(float x, float y)"
+    },
+    {
+      "name": "zoomLabel",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 141,
+      "params": [
+        {
+          "name": "x",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "y",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        }
+      ],
+      "returns": "string",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "String",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.zoomLabel(float x, float y)"
+    },
+    {
+      "name": "pipRatio",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 148,
+      "params": [
+        {
+          "name": "w",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "h",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.pipRatio(int w, int h)"
+    },
+    {
+      "name": "surfaceDirty",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/FullscreenRules.java",
+      "line": 153,
+      "params": [
+        {
+          "name": "pivotX",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "pivotY",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "tx",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "ty",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "sx",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "sy",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "wantPx",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "wantPy",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "wantSx",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        },
+        {
+          "name": "wantSy",
+          "ts_type": "number",
+          "optional": false,
+          "rest": false,
+          "native_type": "float"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.fullscreen.FullscreenRules.surfaceDirty(float pivotX, float pivotY, float tx, float ty, float sx, float sy, float wantPx, float wantPy, float wantSx, float wantSy)"
+    },
+    {
+      "name": "boxDefault",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/Media3ControlRules.java",
+      "line": 8,
+      "params": [
+        {
+          "name": "parentW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "parentH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        }
+      ],
+      "returns": "int[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.Media3ControlRules.boxDefault(int parentW, int parentH, int videoW, int videoH, String mode)"
+    },
+    {
+      "name": "box",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/Media3ControlRules.java",
+      "line": 12,
+      "params": [
+        {
+          "name": "parentW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "parentH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "int[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.Media3ControlRules.box(int parentW, int parentH, int videoW, int videoH, String mode, int smallestWidthDp)"
+    },
+    {
+      "name": "place",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/Media3ControlRules.java",
+      "line": 43,
+      "params": [
+        {
+          "name": "parentW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "parentH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "mode",
+          "ts_type": "string",
+          "optional": false,
+          "rest": false,
+          "native_type": "String"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "number[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "float[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.Media3ControlRules.place(int parentW, int parentH, int videoW, int videoH, String mode, int smallestWidthDp)"
+    },
+    {
+      "name": "seek",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/Media3ControlRules.java",
+      "line": 64,
+      "params": [
+        {
+          "name": "current",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "duration",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "delta",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "int",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int",
+      "prototype": "com.guocheng.mediapocket.fullscreen.Media3ControlRules.seek(int current, int duration, int delta)"
+    },
+    {
+      "name": "tablet",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 12,
+      "params": [
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.tablet(int smallestWidthDp)"
+    },
+    {
+      "name": "immersive",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 17,
+      "params": [
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "landscape",
+          "ts_type": "boolean",
+          "optional": false,
+          "rest": false,
+          "native_type": "boolean"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.immersive(int smallestWidthDp, boolean landscape)"
+    },
+    {
+      "name": "reserveStatusBar",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 22,
+      "params": [
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "portrait",
+          "ts_type": "boolean",
+          "optional": false,
+          "rest": false,
+          "native_type": "boolean"
+        }
+      ],
+      "returns": "boolean",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "boolean",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.reserveStatusBar(int smallestWidthDp, boolean portrait)"
+    },
+    {
+      "name": "stage",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 31,
+      "params": [
+        {
+          "name": "windowW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "windowH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "statusTop",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "navBottom",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "landscape",
+          "ts_type": "boolean",
+          "optional": false,
+          "rest": false,
+          "native_type": "boolean"
+        },
+        {
+          "name": "videoW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "videoH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "int[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.stage(int windowW, int windowH, int statusTop, int navBottom, int smallestWidthDp, boolean landscape, int videoW, int videoH)"
+    },
+    {
+      "name": "chromeEdge",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 61,
+      "params": [
+        {
+          "name": "barAndCutout",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "cutoutOnly",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "portrait",
+          "ts_type": "boolean",
+          "optional": false,
+          "rest": false,
+          "native_type": "boolean"
+        }
+      ],
+      "returns": "int",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.chromeEdge(int barAndCutout, int cutoutOnly, int smallestWidthDp, boolean portrait)"
+    },
+    {
+      "name": "dialogWindow",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 70,
+      "params": [
+        {
+          "name": "screenW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "screenH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "windowW",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "windowH",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "multi",
+          "ts_type": "boolean",
+          "optional": false,
+          "rest": false,
+          "native_type": "boolean"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "int[]",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int[]",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.dialogWindow(int screenW, int screenH, int windowW, int windowH, boolean multi, int smallestWidthDp)"
+    },
+    {
+      "name": "orientation",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 84,
+      "params": [
+        {
+          "name": "multi",
+          "ts_type": "boolean",
+          "optional": false,
+          "rest": false,
+          "native_type": "boolean"
+        },
+        {
+          "name": "smallestWidthDp",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "desired",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "int",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.orientation(boolean multi, int smallestWidthDp, int desired)"
+    },
+    {
+      "name": "clearOf",
+      "file": "portables/fullscreen/com/guocheng/mediapocket/fullscreen/VideoFullscreenRules.java",
+      "line": 90,
+      "params": [
+        {
+          "name": "basePx",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        },
+        {
+          "name": "cutoutPx",
+          "ts_type": "int",
+          "optional": false,
+          "rest": false,
+          "native_type": "int"
+        }
+      ],
+      "returns": "int",
+      "is_async": false,
+      "is_generator": false,
+      "type_params": [],
+      "uses_instanceof": false,
+      "native_return": "int",
+      "prototype": "com.guocheng.mediapocket.fullscreen.VideoFullscreenRules.clearOf(int basePx, int cutoutPx)"
+    }
+  ],
+  "classes": [],
+  "js_only": []
+}
+

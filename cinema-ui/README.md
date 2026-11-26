@@ -1,3 +1,22 @@
+# 随影 0.1.194 fullscreen JNI（code 195）
+
+基于本分支 0.1.193。FullscreenRules / VideoFullscreenRules / Media3ControlRules 走 libfullscreen_rs.so（三 ABI），只加 FullscreenRsNative。ullscreen-rs diff **1644/1644**。config-text / rules JNI 仍在。真机安装启动通过。
+# 随影 0.1.193 config-text JNI（code 194）
+
+基于本分支 0.1.192。`ConfigTextRules` 在 APK 里走 `libconfig_text_rs.so`（arm64-v8a / armeabi-v7a / x86_64），只加 `ConfigTextRsNative`，共用 rules-rs 的 `rustanything` Wire/Error（ADR-010）。纯 Java 仍在 `portables/config-text`。`scripts/run_tests.sh` 同时加载 rules + config-text host 库。`rust/config-text-rs` gate 1515/1515。没有真机点选。
+
+# 随影 0.1.192 影视仓配置正文 Rules（code 193）
+
+基于本分支 0.1.191。抽出 `com.guocheng.mediapocket.config.ConfigTextRules` / `ConfigTextFailed`，`TvBoxConfigText` 改成门面（只做 `JSONObject` 验收并把失败转成无 cause 的 `IOException`）。可移植根在 `portables/config-text`；Rust 单元 `rust/config-text-rs` gate **1515/1515**。当时 APK 仍跑纯 Java Rules——第二份 JNI 暂缓（ADR-009，后由 ADR-010 落地）。`librules_rs.so` 仍在。`scripts/run_tests.sh`：117/117。没有真机点选。
+
+# 随影 0.1.191 rust-anything JNI 接入（code 192）
+
+基于本分支 0.1.190。`SpiderComponentRules` 在 APK 里走 `librules_rs.so`（arm64-v8a / armeabi-v7a / x86_64），`readComponent(InputStream)` 仍在 JVM。`CheckFailed` 单参构造支持 `size|<bytes>` 线格式，JNI 还原后 `getMessage()` 仍是 `size`。`scripts/run_tests.sh` 用 `-Drust-anything.lib.rules_rs=` 加载本机 `.so`。`rust/rules-rs` gate 483/483；JVM 117/117。未签名包含三份 `.so`。没有真机点选。
+
+# 随影 0.1.190 rust-anything 首单元（code 191）
+
+基于 `origin/main` `b280ace`（0.1.189 / versionCode 190）。整应用迁移按 `rust/DECISIONS.md`：Android 库 + JNI，UI / base.apk 暂留 Java。本版抽出 `com.guocheng.mediapocket.rules`（`SpiderComponentRules` + `CheckFailed`），`TvSpiderRules` 改成门面；`portables/spider-component` 是给 rust-anything 用的无编译根。Rust 单元在 `rust/rules-rs`，`diff` 483/483，`gate` 通过。APK 仍走 Java 实现，尚未链入 JNI `.so`。没有签名包，没有真机。
+
 # 随影 0.1.189 影视仓组件失败原因码（code 190）
 
 基于 `origin/main` `1bf9617`（0.1.188 / versionCode 189）。`git fetch` 之后核对了全部分支清单：最高就是 0.1.188 / 189，没有 `zcode/*`。开放的只有 PR #30（0.1.147）和 issue #38（旧的 0.1.161 打包说明）。没有人占用 0.1.189 / versionCode 190。0.1.185–0.1.188 不复用。
@@ -1437,3 +1456,4 @@ SourceSearchRulesTest和TvSpiderRulesTest通过；APK编译签名与原始方法
 字幕：中文“第2集”等旧搜索表单曾回落到E1/movie，现用季集解析器生成可核对默认季集并在无显式电影类型时默认剧集。查询诊断记录实际编号/类型/语言、兼容提供者数、每插件返回条数/错误与20秒未完成查询；显式服务器error/message不吞掉。下载/解析异常与Cue交付数追加报告，可从字幕来源里的字幕查询诊断复制。没有声称已识别中文片名的IMDb，也没有替用户配置APIKey或账号。SubPool作者资料要求启用用户来源，有些需个人账号/key；公开默认manifest资源是subtitles，Sources和Languages为空，不能据此断言用户实际配置情况。
 
 FullscreenRulesTest（旧crop/放大倍率迁移、后续自选模式保留）、中文季集规则测试通过；编译/签名/ABI/原方法检查通过。只替换字幕查询及aspect菜单，原字幕start和failure方法体附加调用后仍保留，其余16080个原方法体逐指令保留。Android实际拉伸全屏、字幕搜索与文字显示均未真机确认，不用策略测试代替视觉实播验证。
+

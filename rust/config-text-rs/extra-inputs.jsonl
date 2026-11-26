@@ -1,0 +1,38 @@
+{"fn": "normalizeBody", "args": ["{\"sites\":[]}"]}
+{"fn": "normalizeBody", "args": ["  {\"a\":1}  "]}
+{"fn": "normalizeBody", "args": [""]}
+{"fn": "normalizeBody", "args": [null]}
+{"fn": "normalizeBody", "args": ["not-json"]}
+{"fn": "normalizeBody", "args": ["{\"a\":1 // comment\n}"]}
+{"fn": "normalizeBody", "args": ["{\"a\":1 /* c */ }"]}
+{"fn": "normalizeBody", "args": ["# head\n{\"a\":1}"]}
+{"fn": "normalizeBody", "args": ["{'a':1}"]}
+{"fn": "normalizeBody", "args": ["{\"a\":1"]}
+{"fn": "normalizeBody", "args": ["{\"a\": /*"]}
+{"fn": "base64", "args": ["eyJhfQ=="]}
+{"fn": "base64", "args": ["eyJhIjoxfQ"]}
+{"fn": "base64", "args": ["not!!!"]}
+{"fn": "base64", "args": ["++++----"]}
+{"fn": "bom", "args": ["﻿{\"a\":1}"]}
+{"fn": "bom", "args": ["  hi  "]}
+{"fn": "strip", "args": ["{\"a\":1 // x\n}"]}
+{"fn": "strip", "args": ["{\"a\":\"http://x\"}"]}
+{"fn": "strip", "args": ["{'a':1}"]}
+{"fn": "preparedJson", "args": ["{\"a\":1}"]}
+{"fn": "preparedJson", "args": ["[]"]}
+{"fn": "structure", "args": ["{\"a\":1}"]}
+{"fn": "structure", "args": ["{\"a\":"]}
+{"fn": "decode", "args": ["eyJhfQ=="]}
+{"fn": "decode", "args": ["!!!!"]}
+{"fn": "strip", "args": ["{\"a\": /*"]}
+{"fn": "strip", "args": ["{\"a\": \"unterminated"]}
+{"fn": "strip", "args": ["{\"a\": \\"]}
+{"fn": "structure", "args": ["{\"a\":1"]}
+{"fn": "structure", "args": ["{"]}
+{"fn": "structure", "args": ["{\"a\":[1,2"]}
+{"fn": "structure", "args": ["{\"a\":{\"b\":1}}"]}
+{"fn": "normalizeBody", "args": ["{\"a\": /* unclosed"]}
+{"fn": "decode", "args": ["ab"]}
+{"fn": "decode", "args": ["===="]}
+{"fn": "strip", "args": ["/*"]}
+{"fn": "strip", "args": ["{ /* no end"]}
